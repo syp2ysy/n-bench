@@ -1,0 +1,10 @@
+{
+  "should_stop": false,
+  "terminal_state": "continue",
+  "reason": "The loop has not reached the ready gate; continue with prior-round context.",
+  "round_index": 2,
+  "blocker_signature": "phase=case_gen|needs_case_generation|review_missing_tasks=T1,T2,T4",
+  "repeat_count": 1,
+  "no_progress_count": 2,
+  "requires_repair": false
+}

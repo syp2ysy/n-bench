@@ -1,0 +1,689 @@
+{
+  "spec_version": "v1",
+  "goal_title": "GOAL：EgoConseq-Bench",
+  "source_goal_path": "goal.md",
+  "generated_from_round": 1,
+  "previous_round": null,
+  "phase": "pipeline_verify",
+  "phase_gates": {
+    "design_ready": true,
+    "probe_verified": false,
+    "case_manifest_ready": false,
+    "showcase_ready": false,
+    "done": false
+  },
+  "blackboard_path": "agent_loop/runs/20260626-142446-93cc8c6b/blackboard/state.json",
+  "design_doc_status": "frozen_for_pipeline_verify",
+  "motivation": "EgoConseq-Bench evaluates whether a vision-language model can infer the visible local physical consequence of its own body executing a short action from one egocentric RGB image. The target is not navigation, object physics, or generic spatial relations; it is body-conditioned ego swept-volume consequence reasoning.",
+  "adjudication": {
+    "decision": "design_ready",
+    "blocked_by_failed_agents": [],
+    "rationale": "Accept the phase-1 design with revisions: freeze the public design and executable case_generation_spec for pipeline verification, keep T1/T2/T4 core, keep T3/T5 as extensions, and mark all current cases as illustrative until simulator-backed artifacts exist."
+  },
+  "design_principles": [
+    "Single-image ego-action VQA: one RGB frame, one body description, one action primitive, one answer.",
+    "Body is a query-conditioned causal collision operator: do(body=r) can flip the consequence on the same image.",
+    "Distances are body-width normalized, with 1 body-width = 2r, avoiding absolute metric-distance claims from monocular RGB.",
+    "Labels come from deterministic swept-cylinder geometry and visibility filtering, not LLM judgment.",
+    "Core cases must be visible or directly inferable: no hidden-corner, off-image, or occluded decisive geometry.",
+    "Counterfactual body/action pairs, blind controls, option balancing, and shortcut heuristics are mandatory validity checks.",
+    "Swept-cylinder collision is the label engine, not the novelty claim; the novelty is the isolated diagnostic of MLLM embodied consequence grounding."
+  ],
+  "benchmark_config": {
+    "body": {
+      "shape": "cylinder",
+      "height_m": 1.5,
+      "radius_m": [
+        0.1,
+        0.25,
+        0.4
+      ],
+      "body_width_definition": "1 body-width = 2r"
+    },
+    "actions": {
+      "forward": true,
+      "turn_degrees": [
+        -30,
+        -15,
+        15,
+        30
+      ],
+      "direction_ranking_degrees": [
+        -30,
+        0,
+        30
+      ]
+    },
+    "t1_bins_body_widths": [
+      "<2",
+      "2-4",
+      "4-8",
+      ">8"
+    ],
+    "core_demo_tasks": [
+      "T1",
+      "T2",
+      "T4"
+    ],
+    "extension_tasks": [
+      "T3",
+      "T5"
+    ],
+    "spatial_intelligence_taxonomy": [
+      {
+        "name": "Forward swept-volume extent",
+        "tasks": [
+          "T1"
+        ],
+        "inspired_by": [
+          "EgoConseq swept-volume formula; VSI-Bench / Thinking in Space only as motivation-to-QA methodology inspiration"
+        ],
+        "goal_fit": "Reads out how far the current body can move forward before first visible collision, normalized by body width."
+      },
+      {
+        "name": "Visible directional swept-volume comparison",
+        "tasks": [
+          "T2",
+          "T5"
+        ],
+        "inspired_by": [
+          "EgoConseq action-conditioned visible collision evidence; prior spatial benchmarks only as coverage-design inspiration"
+        ],
+        "goal_fit": "Compares which visible candidate sweep, or fixed visible horizon, remains collision-free for the queried body."
+      },
+      {
+        "name": "Short action-sequence consequence",
+        "tasks": [
+          "T3"
+        ],
+        "inspired_by": [
+          "MindCube only as what-if QA construction inspiration, not unseen-space reasoning"
+        ],
+        "goal_fit": "Tests a small turn-then-forward consequence while retaining the visible-local swept-volume boundary."
+      },
+      {
+        "name": "Body-intervention consequence",
+        "tasks": [
+          "T4"
+        ],
+        "inspired_by": [
+          "Counterfactual QA methodology only; the intervention is EgoConseq's do(body=r) collision operator"
+        ],
+        "goal_fit": "Holds image and action fixed while changing radius to test embodiment-sensitive consequence flips and no-flip controls."
+      }
+    ],
+    "ambiguity_filters": {
+      "visible_sweep_ratio_min": 0.7,
+      "discard_hidden_collision_points": true,
+      "discard_requires_hidden_geometry": true,
+      "discard_bin_boundary_cases": true
+    }
+  },
+  "showcase_requirements": {
+    "target_cases_per_task": 10,
+    "tasks": [
+      "T1",
+      "T2",
+      "T3",
+      "T4",
+      "T5"
+    ],
+    "required_case_fields": [
+      "case_id",
+      "task",
+      "question",
+      "answer",
+      "tests",
+      "visibility",
+      "selection_reason",
+      "sim_validation_status",
+      "rgb_path",
+      "depth_path",
+      "topdown_path",
+      "sweep_overlay_path",
+      "visible_sweep_ratio",
+      "collision_point_visible",
+      "requires_hidden_geometry",
+      "fov_supported",
+      "bin_margin_body_widths",
+      "flip_pair_id",
+      "counterfactual_group_id"
+    ],
+    "selection_reason_max_chars": 50,
+    "review_status_values": [
+      "show",
+      "revise",
+      "remove"
+    ],
+    "decision_values": [
+      "needs_design",
+      "design_ready",
+      "needs_pipeline_verify",
+      "probe_verified",
+      "needs_case_generation",
+      "case_manifest_ready",
+      "needs_case_coverage",
+      "ready_for_showcase_review",
+      "blocked"
+    ]
+  },
+  "case_generation_spec": {
+    "status": "frozen",
+    "core_tasks": [
+      "T1",
+      "T2",
+      "T4"
+    ],
+    "extension_tasks": [
+      "T3",
+      "T5"
+    ],
+    "requires_pipeline_probe": true,
+    "evidence_requirements": [
+      "case_id",
+      "scene_id",
+      "pose",
+      "intrinsics",
+      "rgb_path",
+      "depth_path",
+      "topdown_path",
+      "sweep_overlay_path",
+      "body_radius",
+      "body_width",
+      "body_height",
+      "action",
+      "answer_options",
+      "label",
+      "max_safe_distance_body_widths",
+      "collision_point_3d",
+      "collision_point_pixel",
+      "visible_sweep_ratio",
+      "collision_point_visible",
+      "requires_hidden_geometry",
+      "fov_supported",
+      "bin_margin_body_widths",
+      "ambiguous",
+      "ambiguity_reason",
+      "flip_pair_id",
+      "counterfactual_group_id",
+      "oracle_trace_path",
+      "geometric_explanation",
+      "visible_evidence_notes"
+    ],
+    "tasks": [
+      {
+        "task": "T1",
+        "target_count": 20,
+        "question_template": "Body: cylinder radius {r} m, height 1.5 m. Action: move straight forward. How many body-widths can it move before first contact? Options: <2, 2-4, 4-8, >8.",
+        "answer_derivation": "Compute forward max_safe_distance_body_widths on the radius-specific navmesh and bin into <2 / 2-4 / 4-8 / >8; require bin_margin_body_widths >= 0.5.",
+        "visibility_filters": {
+          "visible_sweep_ratio_min": 0.7,
+          "requires_hidden_geometry": false
+        }
+      },
+      {
+        "task": "T2",
+        "target_count": 20,
+        "question_template": "Body: cylinder radius {r} m, height 1.5 m. Candidate directions: left-front {theta} degrees, straight, right-front {theta} degrees. Rank them by maximum distance before first contact, longest to shortest.",
+        "answer_derivation": "Compute swept distances for {-theta,0,+theta}, sort descending, and require visible evidence plus a ranking margin sufficient to avoid ties; theta defaults to 30 degrees with 15 degrees allowed.",
+        "visibility_filters": {
+          "visible_sweep_ratio_min": 0.7,
+          "requires_hidden_geometry": false
+        }
+      },
+      {
+        "task": "T4",
+        "target_count": 20,
+        "question_template": "Same RGB and action: move straight forward for {horizon} body-widths. Compare Body A radius {r_a} m and Body B radius {r_b} m, height 1.5 m. Which bodies complete the action without contact? Options use both / only smaller body / neither, unless body order is randomized.",
+        "answer_derivation": "At the same pose/action/horizon, compare passability across radius-specific navmeshes; produce flip and no-flip controls with counterfactual_group_id and flip_pair_id.",
+        "visibility_filters": {
+          "visible_sweep_ratio_min": 0.7,
+          "requires_hidden_geometry": false
+        }
+      },
+      {
+        "task": "T3",
+        "target_count": 10,
+        "question_template": "Body: cylinder radius {r} m, height 1.5 m. Compare A) move straight forward and B) rotate {theta} degrees, then move forward. Which action allows more body-widths before first contact? Options: A, B, about the same.",
+        "answer_derivation": "Compare straight max distance with turn-then-forward max distance; label about the same only within a fixed tie margin of 0.5 body-width. Extension-only until FOV support is verified.",
+        "visibility_filters": {
+          "visible_sweep_ratio_min": 0.7,
+          "requires_hidden_geometry": false
+        }
+      },
+      {
+        "task": "T5",
+        "target_count": 10,
+        "question_template": "Body: cylinder radius {r} m, height 1.5 m. Action: move forward for {horizon} body-widths within the currently visible region. Is the swept body contact-free? Options: yes, no.",
+        "answer_derivation": "Check whether every swept sample through the fixed horizon remains navigable for the radius-specific body. Extension-only until hidden-geometry and shortcut risks are audited.",
+        "visibility_filters": {
+          "visible_sweep_ratio_min": 0.7,
+          "requires_hidden_geometry": false
+        }
+      }
+    ]
+  },
+  "case_coverage": {
+    "target_per_task": 10,
+    "core_tasks": [
+      "T1",
+      "T2",
+      "T4"
+    ],
+    "extension_tasks": [
+      "T3",
+      "T5"
+    ],
+    "counts": {
+      "T1": 10,
+      "T2": 10,
+      "T3": 10,
+      "T4": 10,
+      "T5": 10
+    },
+    "reviewed_counts": {
+      "T1": 0,
+      "T2": 0,
+      "T3": 0,
+      "T4": 0,
+      "T5": 0
+    },
+    "missing": {
+      "T1": 0,
+      "T2": 0,
+      "T3": 0,
+      "T4": 0,
+      "T5": 0
+    },
+    "review_missing": {
+      "T1": 10,
+      "T2": 10,
+      "T3": 10,
+      "T4": 10,
+      "T5": 10
+    },
+    "core_complete": true,
+    "core_review_complete": false,
+    "extension_complete": true,
+    "extension_review_complete": false,
+    "complete": true,
+    "review_complete": false
+  },
+  "task_families": [
+    "T1",
+    "T2",
+    "T3",
+    "T4",
+    "T5"
+  ],
+  "qa_design": [
+    {
+      "task": "T1",
+      "name": "Body-Width Forward Horizon",
+      "spatial_layer": "Forward swept-volume extent",
+      "question_pattern": "Ask how many body widths the queried cylindrical body can move straight forward before first visible contact.",
+      "answer_space": "<2 / 2-4 / 4-8 / >8 body-widths",
+      "core": true
+    },
+    {
+      "task": "T2",
+      "name": "Visible Directional Sweep Ranking",
+      "spatial_layer": "Visible directional swept-volume comparison",
+      "question_pattern": "Rank left-front, straight, and right-front swept distances within the current FOV.",
+      "answer_space": "ordered direction list",
+      "core": true
+    },
+    {
+      "task": "T3",
+      "name": "Composite Motion Consequence",
+      "spatial_layer": "Short action-sequence consequence",
+      "question_pattern": "Compare straight motion with a small turn-then-forward action under the same body constraints.",
+      "answer_space": "A / B / about the same",
+      "core": false
+    },
+    {
+      "task": "T4",
+      "name": "Body Counterfactual Sweep",
+      "spatial_layer": "Body-intervention consequence",
+      "question_pattern": "Hold RGB and action fixed while changing body radius, then ask which bodies complete the sweep.",
+      "answer_space": "both / only smaller body / neither",
+      "core": true
+    },
+    {
+      "task": "T5",
+      "name": "Visible Passability",
+      "spatial_layer": "Visible directional swept-volume comparison",
+      "question_pattern": "Ask whether a fixed forward swept horizon in the visible region is contact-free for the queried body.",
+      "answer_space": "yes / no",
+      "core": false
+    }
+  ],
+  "novelty_positioning": [
+    "EgoConseq is single-frame, ego-body, action-conditioned consequence VQA; it is not route navigation, active exploration, or long-horizon planning.",
+    "The benchmark does not claim novel collision geometry; swept-cylinder intersection is the deterministic label engine.",
+    "Compared with PhysBench, it asks about the ego body rather than object or scene physics.",
+    "Compared with CapNav, it is one-step visible-local consequence reasoning rather than route-level capability-conditioned navigation.",
+    "Compared with TouchSafeBench, it uses a hypothetical action from single RGB rather than multi-view/current collision grounding.",
+    "Compared with ENACT and EXPLORE-Bench, it isolates body-width swept-volume collision/passability rather than broad affordance or scene-state evolution.",
+    "VSI-Bench, Thinking in Space, MindCube, and ESI-Bench are cited only for benchmark-design discipline and adjacent positioning, not for importing their QA categories."
+  ],
+  "agent_findings": [
+    {
+      "agent": "paper_designer",
+      "findings": [
+        {
+          "claim": "The strongest CVPR/ICLR diagnostic contribution is the isolation of ego-body action consequence reasoning from navigation, generic spatial relations, and object physics.",
+          "evidence": "goal.md defines the target as single RGB plus body description plus action primitive, labeled by body swept-volume intersection in the currently visible or directly inferable region."
+        },
+        {
+          "claim": "T1, T2, and T4 should be the core demo tasks; T3 and T5 should remain extensions until visibility and ambiguity probes pass.",
+          "evidence": "T1 tests body-normalized metric extent, T2 tests visible configurational sweep comparison, and T4 directly tests the H3 body intervention; T3/T5 are labelable but more exposed to hidden-geometry and semantic-passability ambiguity."
+        },
+        {
+          "claim": "The QA taxonomy should be derived from the EgoConseq label formula, not imported from VSI-Bench, MindCube, or ESI-Bench.",
+          "evidence": "VSI-Bench targets video spatial memory; MindCube targets limited-view mental models including unseen space; ESI-Bench targets active perception-action loops. They are useful as examples of motivation-to-QA discipline, while EgoConseq should derive QA types from body radius, action trajectory, visible swept volume, and collision evidence."
+        },
+        {
+          "claim": "Near-neighbor contrast must include PhysBench, CapNav, TouchSafeBench, ENACT, EXPLORE-Bench, VSI-Bench, MindCube, and ESI-Bench.",
+          "evidence": "These cover object and scene physics, capability-conditioned route navigation, current or imminent collision grounding, egocentric interaction world modeling, long-horizon scene prediction, video spatial memory, limited-view spatial mental modeling, and active embodied spatial intelligence."
+        },
+        {
+          "claim": "All five tasks are feasible in principle with a deterministic Habitat plus swept-cylinder pipeline, but only if every sample carries oracle and visibility metadata.",
+          "evidence": "goal.md already specifies radius-specific navmesh recomputation, depth projection for collision visibility, visible_sweep_ratio, hidden-geometry flags, bin margins, and counterfactual group IDs."
+        },
+        {
+          "claim": "The current public state has no simulator-backed case manifest, so illustrative cases must not be treated as evaluation data.",
+          "evidence": "input_manifest.json has data_manifest_path=null and blackboard coverage counts of zero for T1-T5."
+        }
+      ]
+    },
+    {
+      "agent": "case_author",
+      "findings": [
+        {
+          "claim": "The current phase permits illustrative case authoring rather than manifest-only selection.",
+          "evidence": "input_manifest.json has blackboard.phase=design and data_manifest_path=null."
+        },
+        {
+          "claim": "Drafted 50 representative cases with 10 cases for each task T1-T5.",
+          "evidence": "Cases T1-01 through T5-10 cover metric measurement, configurational comparison, action mental simulation, embodied counterfactuals, and visible passability."
+        },
+        {
+          "claim": "Questions avoid scene-specific answer leakage and keep geometric explanations outside the prompt text.",
+          "evidence": "Case questions specify body, action, candidates, and answer options; visibility assumptions and geometry are placed in visibility/rationale fields."
+        }
+      ]
+    },
+    {
+      "agent": "expert_reviewer",
+      "findings": [
+        {
+          "claim": "The benchmark is not yet publishable because there is no simulator-backed data manifest, oracle output, visibility audit, or baseline result.",
+          "evidence": "input_manifest.json has data_manifest_path=null; blackboard coverage counts are 0 for T1-T5; case_generation_spec.status is bootstrap."
+        },
+        {
+          "claim": "The core invalidity condition is hidden or visually underdetermined geometry.",
+          "evidence": "goal.md requires visible_sweep_ratio >= 0.7, collision_point_visible when applicable, requires_hidden_geometry=false, fov_supported=true, and bin_margin_body_widths >= 0.5 for T1."
+        },
+        {
+          "claim": "The demo must empirically prove H1, H2, H3, human solvability, and oracle-label reliability; none can be assumed from the design text.",
+          "evidence": "goal.md defines validity as M4 near 95%+, blind M5 near random, best VLM well below oracle, and human/geometric annotators above VLM."
+        },
+        {
+          "claim": "Showcase requirements are necessary but insufficient.",
+          "evidence": "The blackboard asks for 10 cases per task and text fields, but not mandatory rgb/depth/topdown/overlay paths, collision pixels, visibility ratios, bin margins, flip_pair_id, or heuristic-baseline outcomes in each reviewed case."
+        },
+        {
+          "claim": "The drafted T4 template is currently unanswerable and leaks structure.",
+          "evidence": "T4-01 through T4-10 say 'specified horizon' but provide no numeric horizon; Body A is always smaller than Body B, making 'only B' structurally impossible under monotone collision geometry."
+        },
+        {
+          "claim": "The illustrative cases can often be solved without ego-body swept-volume reasoning.",
+          "evidence": "T1 can reduce to center-ray depth or visible corridor length; T2/T3 to largest visible floor wedge; T4 to radius monotonicity and answer priors; T5 to radius/horizon priors unless counterfactual pairs and heuristics fail."
+        },
+        {
+          "claim": "The case set nominally covers T1-T5, but executable design is over-narrowed to T1/T2/T4 until T3/T5 pass visibility filters.",
+          "evidence": "qa_design lists T1-T5, while case_generation_spec.tasks includes only T1, T2, and T4 as generated tasks."
+        },
+        {
+          "claim": "Answer balance is incomplete, especially for T4.",
+          "evidence": "Case-author labels count T1 as 2/2/3/3 across bins, T3 as A/B/tie = 3/4/3, T5 as 5/5, but T4 has only A/both/neither = 4/3/3 and never 'only B'."
+        },
+        {
+          "claim": "Novelty positioning remains vulnerable unless supported by citations and ablations against adjacent benchmarks.",
+          "evidence": "goal.md lists near neighbors, but the current manifest contains no bibliography, no formal task contrast table with cited protocols, and no evidence that generic spatial or collision heuristics fail."
+        }
+      ]
+    },
+    {
+      "agent": "arbiter",
+      "findings": [
+        {
+          "claim": "Freeze T1, T2, and T4 as the core demo task families; keep T3 and T5 as extension families for the showcase and later validation.",
+          "evidence": "goal.md prioritizes T1/T2/T4 for the demo and marks T3/T5 as add-ons if visibility and ambiguity gates pass."
+        },
+        {
+          "claim": "The final showcase may use VSI-Bench, Thinking in Space, MindCube, and ESI-Bench only as methodology inspiration, not as copied QA taxonomies.",
+          "evidence": "The adjudicated taxonomy is derived from Body x Action_trajectory intersecting visible Scene_geometry: forward extent, directional sweep comparison, composite action consequence, body intervention, and fixed-horizon passability."
+        },
+        {
+          "claim": "All 50 case_author cases are illustrative, not evaluation data.",
+          "evidence": "input_manifest.json has data_manifest_path=null, blackboard coverage counts are 0 for T1-T5, and the case visibility fields repeatedly use assumed visibility rather than oracle metadata."
+        },
+        {
+          "claim": "The bootstrap case_generation_spec over-narrowed executable generation to T1/T2/T4; the adjudicated frozen spec preserves T3/T5 as extension generation targets so the benchmark is not reduced to three tasks.",
+          "evidence": "expert_reviewer flagged the mismatch between qa_design T1-T5 and case_generation_spec.tasks listing only T1/T2/T4."
+        },
+        {
+          "claim": "No illustrative cases need removal, but T3 and T4 require revisions before HTML display as polished examples.",
+          "evidence": "T3 needs an explicit tie margin and FOV-supported post-turn visibility; T4 currently offers an impossible 'only B' distractor while Body A is always smaller."
+        },
+        {
+          "claim": "Claims that must be marked not simulator-validated include all illustrative answers, all visibility assumptions, T1 bin occupancy, T2/T3 rankings, T4 flip/no-flip outcomes, T5 passability labels, and H1/H2/H3 validity-gate claims.",
+          "evidence": "No simulator-backed data_manifest, oracle trace, depth projection, baseline result, or human sanity result is available in this phase."
+        }
+      ]
+    }
+  ],
+  "agent_recommendations": [
+    {
+      "agent": "paper_designer",
+      "recommendations": [
+        "Freeze the demo core as T1/T2/T4 with about 20 cases each, plus 10 cases each for T3/T5 as extension coverage, for an 80-case first demo.",
+        "Run survey mode before final sampling to verify T1 bin occupancy and adjust body-width bins only if the empirical distribution makes the draft bins unusable.",
+        "Use Fei-Fei Li spatial-intelligence benchmarks only as methodological references for benchmark discipline, not as sources of EgoConseq task categories.",
+        "State explicitly in the paper that swept-cylinder collision is the deterministic label engine, not the technical novelty.",
+        "Require case_author to include oracle, visibility, counterfactual, and display-asset fields so HTML cases can be audited before simulator validation.",
+        "Promote T3 or T5 to core only if the pipeline can produce enough unambiguous visible cases with balanced labels.",
+        "Report validity gates and shortcut baselines as part of the benchmark definition, not as optional experiments."
+      ]
+    },
+    {
+      "agent": "case_author",
+      "recommendations": [
+        "Use T1/T2/T4 as the demo core and treat T3/T5 as extension coverage until empirical visibility filters pass.",
+        "Run a template lint pass for banned leakage words before evaluation.",
+        "Keep these case IDs stable when simulator-backed manifest cases replace the illustrative answers."
+      ]
+    },
+    {
+      "agent": "expert_reviewer",
+      "recommendations": [
+        "Do not mark design_ready or showcase_ready until a real probe produces audited cases for T1/T2/T4 with oracle geometry, visibility metadata, and shortcut baselines.",
+        "Minimal continue gate: 60-100 demo cases, M4 at least 95%, M5 within about chance +5 percentage points, human at least best VLM +10 points, best M1 at least 15 points below M4, and nontrivial H3 pair-consistency failures by VLMs.",
+        "Stop or redesign if audited oracle labels disagree with rendered evidence on more than 5% of cases, if hidden-geometry filtering removes most candidates, or if humans cannot beat VLMs reliably.",
+        "Remove or downgrade any task where center-ray, floor-patch, corridor-width, radius-only, action-only, or answer-prior baselines approach model performance.",
+        "For every public showcase case, require rgb_path, depth_path, topdown_path, sweep_overlay_path, max_safe_distance_body_widths, visible_sweep_ratio, collision_point_visible, requires_hidden_geometry, bin_margin_body_widths, flip_pair_id, and heuristic predictions.",
+        "Fix T4 before use: specify the action horizon, randomize small/large body labels, add flip_pair_id/counterfactual_group_id, and avoid an answer option that is mathematically impossible under radius monotonicity.",
+        "Keep T3/T5 as extension evidence only; do not claim full action mental simulation or passability coverage until their real cases pass the same visibility and shortcut gates as T1/T2/T4.",
+        "Add a formal removal gate for template leakage: any prompt whose text alone lets M5 exceed chance materially should be rewritten or removed."
+      ]
+    },
+    {
+      "agent": "arbiter",
+      "recommendations": [
+        "Set the next phase to pipeline_verify. Do not spend another round debating the design unless the probe fails a gate.",
+        "Produce `case_generation_spec.frozen.json` from the design_doc below as the exact handoff artifact for pipeline_verify.",
+        "Produce `ego_conseq_showcase_illustrative.html`: goal + task taxonomy + 10 illustrative cases per T1-T5, with every case marked not simulator-validated.",
+        "Produce `ego_conseq_design_rationale.html`: motivation, design principles, near-neighbor positioning, validity gates, baselines, and why prior spatial benchmarks are inspiration only.",
+        "Pipeline_verify should next output `pipeline_probe_manifest.json` with at least T1/T2/T4 audited cases containing rgb/depth/topdown/overlay paths and oracle/visibility metadata.",
+        "After simulator-backed cases exist, replace or relabel illustrative answers rather than treating them as ground truth."
+      ]
+    }
+  ],
+  "risks": [
+    {
+      "agent": "paper_designer",
+      "risk": "Reviewers may dismiss the benchmark as only wall-collision detection.",
+      "severity": "high",
+      "mitigation": "Frame the task family as metric consequence, configurational comparison, short action simulation, and embodied counterfactual reasoning; report T1/T2/T4 separately and use T3/T5 only after validation."
+    },
+    {
+      "agent": "paper_designer",
+      "risk": "Single-image monocular scale ambiguity could make some labels visually underdetermined.",
+      "severity": "high",
+      "mitigation": "Use body-width normalization, discard bin-boundary cases, require visible_sweep_ratio >= 0.7, require collision visibility where relevant, and run human sanity checks."
+    },
+    {
+      "agent": "paper_designer",
+      "risk": "Hidden geometry could turn the benchmark into guessing around corners or behind occluders.",
+      "severity": "high",
+      "mitigation": "Core cases must have requires_hidden_geometry=false, fov_supported=true, ambiguous=false, and visible decisive evidence."
+    },
+    {
+      "agent": "paper_designer",
+      "risk": "Language priors, radius priors, answer imbalance, or action priors could explain model performance.",
+      "severity": "high",
+      "mitigation": "Use same-image counterfactual groups, balanced labels, blind M5, radius-only/action-only baselines, majority baselines, and geometric heuristics such as center-ray and corridor-width controls."
+    },
+    {
+      "agent": "paper_designer",
+      "risk": "Habitat navmesh labels may not match what is visually legible from RGB.",
+      "severity": "medium",
+      "mitigation": "Store RGB, depth, top-down, sweep overlay, oracle trace, collision pixel, geometric explanation, and visible evidence notes; manually audit showcase cases before scaling."
+    },
+    {
+      "agent": "paper_designer",
+      "risk": "T4 flip cases may be sparse or too subtle in random samples.",
+      "severity": "medium",
+      "mitigation": "Run a survey pass over scenes and radii first, then stratified rejection sample around visible bottlenecks while retaining no-flip controls."
+    },
+    {
+      "agent": "paper_designer",
+      "risk": "Prompt wording may leak labels through spatial adjectives.",
+      "severity": "medium",
+      "mitigation": "Lint templates against banned answer-revealing words and keep scene explanations in display-only fields."
+    },
+    {
+      "agent": "paper_designer",
+      "risk": "If oracle, blind, human, and VLM validity gates do not separate cleanly, the paper claim collapses.",
+      "severity": "critical",
+      "mitigation": "Treat the demo as a go/no-go probe: stop or redesign if M4 is not high, M5 is not near random, humans do not beat VLMs, or VLMs approach the oracle."
+    },
+    {
+      "agent": "case_author",
+      "risk": "These are illustrative cases, not simulator-oracle labels.",
+      "severity": "high",
+      "mitigation": "Replace or verify every answer with Habitat swept-cylinder labels once data_manifest.json is available."
+    },
+    {
+      "agent": "case_author",
+      "risk": "T3 and T5 are more vulnerable to hidden-geometry ambiguity than T1/T2/T4.",
+      "severity": "medium",
+      "mitigation": "Only keep T3/T5 cases with fov_supported=true, visible_sweep_ratio>=0.7, and requires_hidden_geometry=false."
+    },
+    {
+      "agent": "case_author",
+      "risk": "Some display cases require an indicated local target or direction overlay in the rendered prompt package.",
+      "severity": "medium",
+      "mitigation": "Ensure the final HTML/data view includes the target/action marker when the question references an indicated target."
+    },
+    {
+      "agent": "expert_reviewer",
+      "risk": "Published benchmark collapses into visible corridor-width or wall-distance classification rather than body-conditioned swept-volume reasoning.",
+      "severity": "critical",
+      "mitigation": "Require center-ray, largest-floor-patch, corridor-width, radius-only, action-only, and majority baselines to stay near chance or clearly below M1/humans."
+    },
+    {
+      "agent": "expert_reviewer",
+      "risk": "Labels disagree with what a single RGB image supports because navmesh collision points are outside view, behind occluders, or created by depth/rendering artifacts.",
+      "severity": "critical",
+      "mitigation": "Gate every case with saved RGB/depth/topdown/sweep overlay, collision_point_pixel, visible_sweep_ratio, collision_point_visible, requires_hidden_geometry=false, and manual audit."
+    },
+    {
+      "agent": "expert_reviewer",
+      "risk": "T4 becomes a monotonic-radius quiz instead of an embodied counterfactual test.",
+      "severity": "high",
+      "mitigation": "Randomize body A/B order, remove impossible distractors or score against a monotonic prior baseline, specify horizon, and require same-image flip plus no-flip groups."
+    },
+    {
+      "agent": "expert_reviewer",
+      "risk": "Single-image monocular scale makes T1 bins visually noisy near thresholds.",
+      "severity": "high",
+      "mitigation": "Freeze bins only after survey histograms; discard bin_margin_body_widths < 0.5; report human agreement and ordinal off-by-one error."
+    },
+    {
+      "agent": "expert_reviewer",
+      "risk": "Prompt/template leakage makes M5 non-random.",
+      "severity": "high",
+      "mitigation": "Lint prompts for banned geometry words, balance templates, and fail or revise any task where blind M5 exceeds chance by more than a small tolerance."
+    },
+    {
+      "agent": "expert_reviewer",
+      "risk": "T3 and long-horizon T5 require predicting around turns, outside the FOV, or beyond reliable visible evidence.",
+      "severity": "high",
+      "mitigation": "Keep T3/T5 extension-only until fov_supported and visible_sweep_ratio pass on real cases; remove any sample with decisive hidden geometry."
+    },
+    {
+      "agent": "expert_reviewer",
+      "risk": "Taxonomy may look borrowed from spatial-intelligence benchmarks rather than derived from EgoConseq's formula.",
+      "severity": "medium",
+      "mitigation": "Name categories directly from swept-volume readouts and cite external taxonomies only as methodological inspiration, not as task definitions."
+    },
+    {
+      "agent": "arbiter",
+      "risk": "Live pipeline verification is blocked if the Habitat environment, HM3D/MP3D paths, radius-specific navmesh recomputation, or writeable artifact directory are unavailable under --runner codex.",
+      "severity": "critical",
+      "mitigation": "Start pipeline_verify with a small environment probe that saves RGB, depth, top-down, sweep overlay, oracle trace, and data_manifest entries before generating the full demo."
+    },
+    {
+      "agent": "arbiter",
+      "risk": "Oracle labels may be wrong if navmesh erosion is double-counted or visibility projection is mishandled.",
+      "severity": "critical",
+      "mitigation": "Recompute navmesh per radius, use 0.05m stepping, store collision pixels, and manually audit at least 20 probe cases."
+    },
+    {
+      "agent": "arbiter",
+      "risk": "Illustrative HTML may be mistaken for validated benchmark evidence.",
+      "severity": "high",
+      "mitigation": "Add a visible 'illustrative only / not simulator-validated' badge to every non-oracle case and keep empirical claims out of the HTML until pipeline_verify passes."
+    },
+    {
+      "agent": "arbiter",
+      "risk": "Prompt wording, answer priors, radius-only priors, or center-ray heuristics can create shortcut solutions.",
+      "severity": "high",
+      "mitigation": "Run prompt lint, balance answer distributions, and report M5, majority, radius-only, action-only, center-ray, and corridor-width baselines."
+    },
+    {
+      "agent": "arbiter",
+      "risk": "T3 and T5 can drift into hidden-space inference rather than visible local consequence reasoning.",
+      "severity": "high",
+      "mitigation": "Keep them extension-only until visible_sweep_ratio >= 0.7, fov_supported=true, collision evidence visibility, and requires_hidden_geometry=false are verified."
+    },
+    {
+      "agent": "arbiter",
+      "risk": "Current T4 wording creates a monotonicity shortcut because 'only B' is impossible when Body B is always larger.",
+      "severity": "medium",
+      "mitigation": "Either remove 'only B' from the answer space or randomize body order and label choices as only smaller / only larger with explicit radius metadata."
+    }
+  ],
+  "next_round_inputs": {
+    "needs_design": false,
+    "needs_pipeline_verify": true,
+    "needs_case_generation": false,
+    "needs_paper_evidence": false,
+    "needs_case_coverage": false,
+    "needs_case_review": false,
+    "needs_html_review": false
+  }
+}

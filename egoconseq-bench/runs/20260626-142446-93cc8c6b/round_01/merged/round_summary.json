@@ -1,0 +1,174 @@
+{
+  "round_index": 1,
+  "round_status": "ok",
+  "phases": [
+    "phase_1_isolated",
+    "phase_2_cross_exam"
+  ],
+  "agents": [
+    "paper_designer",
+    "case_author",
+    "expert_reviewer",
+    "arbiter"
+  ],
+  "isolation_policy": "phase 1 isolated; phase 2 receives phase 1 final outputs only",
+  "status_by_agent": {
+    "paper_designer": "ok",
+    "case_author": "ok",
+    "expert_reviewer": "ok",
+    "arbiter": "ok"
+  },
+  "failed_agents": [],
+  "risk_count": 24,
+  "recommendation_count": 24,
+  "open_risks": [
+    {
+      "agent": "paper_designer",
+      "risk": "Reviewers may dismiss the benchmark as only wall-collision detection.",
+      "severity": "high",
+      "mitigation": "Frame the task family as metric consequence, configurational comparison, short action simulation, and embodied counterfactual reasoning; report T1/T2/T4 separately and use T3/T5 only after validation."
+    },
+    {
+      "agent": "paper_designer",
+      "risk": "Single-image monocular scale ambiguity could make some labels visually underdetermined.",
+      "severity": "high",
+      "mitigation": "Use body-width normalization, discard bin-boundary cases, require visible_sweep_ratio >= 0.7, require collision visibility where relevant, and run human sanity checks."
+    },
+    {
+      "agent": "paper_designer",
+      "risk": "Hidden geometry could turn the benchmark into guessing around corners or behind occluders.",
+      "severity": "high",
+      "mitigation": "Core cases must have requires_hidden_geometry=false, fov_supported=true, ambiguous=false, and visible decisive evidence."
+    },
+    {
+      "agent": "paper_designer",
+      "risk": "Language priors, radius priors, answer imbalance, or action priors could explain model performance.",
+      "severity": "high",
+      "mitigation": "Use same-image counterfactual groups, balanced labels, blind M5, radius-only/action-only baselines, majority baselines, and geometric heuristics such as center-ray and corridor-width controls."
+    },
+    {
+      "agent": "paper_designer",
+      "risk": "Habitat navmesh labels may not match what is visually legible from RGB.",
+      "severity": "medium",
+      "mitigation": "Store RGB, depth, top-down, sweep overlay, oracle trace, collision pixel, geometric explanation, and visible evidence notes; manually audit showcase cases before scaling."
+    },
+    {
+      "agent": "paper_designer",
+      "risk": "T4 flip cases may be sparse or too subtle in random samples.",
+      "severity": "medium",
+      "mitigation": "Run a survey pass over scenes and radii first, then stratified rejection sample around visible bottlenecks while retaining no-flip controls."
+    },
+    {
+      "agent": "paper_designer",
+      "risk": "Prompt wording may leak labels through spatial adjectives.",
+      "severity": "medium",
+      "mitigation": "Lint templates against banned answer-revealing words and keep scene explanations in display-only fields."
+    },
+    {
+      "agent": "paper_designer",
+      "risk": "If oracle, blind, human, and VLM validity gates do not separate cleanly, the paper claim collapses.",
+      "severity": "critical",
+      "mitigation": "Treat the demo as a go/no-go probe: stop or redesign if M4 is not high, M5 is not near random, humans do not beat VLMs, or VLMs approach the oracle."
+    },
+    {
+      "agent": "case_author",
+      "risk": "These are illustrative cases, not simulator-oracle labels.",
+      "severity": "high",
+      "mitigation": "Replace or verify every answer with Habitat swept-cylinder labels once data_manifest.json is available."
+    },
+    {
+      "agent": "case_author",
+      "risk": "T3 and T5 are more vulnerable to hidden-geometry ambiguity than T1/T2/T4.",
+      "severity": "medium",
+      "mitigation": "Only keep T3/T5 cases with fov_supported=true, visible_sweep_ratio>=0.7, and requires_hidden_geometry=false."
+    },
+    {
+      "agent": "case_author",
+      "risk": "Some display cases require an indicated local target or direction overlay in the rendered prompt package.",
+      "severity": "medium",
+      "mitigation": "Ensure the final HTML/data view includes the target/action marker when the question references an indicated target."
+    },
+    {
+      "agent": "expert_reviewer",
+      "risk": "Published benchmark collapses into visible corridor-width or wall-distance classification rather than body-conditioned swept-volume reasoning.",
+      "severity": "critical",
+      "mitigation": "Require center-ray, largest-floor-patch, corridor-width, radius-only, action-only, and majority baselines to stay near chance or clearly below M1/humans."
+    },
+    {
+      "agent": "expert_reviewer",
+      "risk": "Labels disagree with what a single RGB image supports because navmesh collision points are outside view, behind occluders, or created by depth/rendering artifacts.",
+      "severity": "critical",
+      "mitigation": "Gate every case with saved RGB/depth/topdown/sweep overlay, collision_point_pixel, visible_sweep_ratio, collision_point_visible, requires_hidden_geometry=false, and manual audit."
+    },
+    {
+      "agent": "expert_reviewer",
+      "risk": "T4 becomes a monotonic-radius quiz instead of an embodied counterfactual test.",
+      "severity": "high",
+      "mitigation": "Randomize body A/B order, remove impossible distractors or score against a monotonic prior baseline, specify horizon, and require same-image flip plus no-flip groups."
+    },
+    {
+      "agent": "expert_reviewer",
+      "risk": "Single-image monocular scale makes T1 bins visually noisy near thresholds.",
+      "severity": "high",
+      "mitigation": "Freeze bins only after survey histograms; discard bin_margin_body_widths < 0.5; report human agreement and ordinal off-by-one error."
+    },
+    {
+      "agent": "expert_reviewer",
+      "risk": "Prompt/template leakage makes M5 non-random.",
+      "severity": "high",
+      "mitigation": "Lint prompts for banned geometry words, balance templates, and fail or revise any task where blind M5 exceeds chance by more than a small tolerance."
+    },
+    {
+      "agent": "expert_reviewer",
+      "risk": "T3 and long-horizon T5 require predicting around turns, outside the FOV, or beyond reliable visible evidence.",
+      "severity": "high",
+      "mitigation": "Keep T3/T5 extension-only until fov_supported and visible_sweep_ratio pass on real cases; remove any sample with decisive hidden geometry."
+    },
+    {
+      "agent": "expert_reviewer",
+      "risk": "Taxonomy may look borrowed from spatial-intelligence benchmarks rather than derived from EgoConseq's formula.",
+      "severity": "medium",
+      "mitigation": "Name categories directly from swept-volume readouts and cite external taxonomies only as methodological inspiration, not as task definitions."
+    },
+    {
+      "agent": "arbiter",
+      "risk": "Live pipeline verification is blocked if the Habitat environment, HM3D/MP3D paths, radius-specific navmesh recomputation, or writeable artifact directory are unavailable under --runner codex.",
+      "severity": "critical",
+      "mitigation": "Start pipeline_verify with a small environment probe that saves RGB, depth, top-down, sweep overlay, oracle trace, and data_manifest entries before generating the full demo."
+    },
+    {
+      "agent": "arbiter",
+      "risk": "Oracle labels may be wrong if navmesh erosion is double-counted or visibility projection is mishandled.",
+      "severity": "critical",
+      "mitigation": "Recompute navmesh per radius, use 0.05m stepping, store collision pixels, and manually audit at least 20 probe cases."
+    },
+    {
+      "agent": "arbiter",
+      "risk": "Illustrative HTML may be mistaken for validated benchmark evidence.",
+      "severity": "high",
+      "mitigation": "Add a visible 'illustrative only / not simulator-validated' badge to every non-oracle case and keep empirical claims out of the HTML until pipeline_verify passes."
+    },
+    {
+      "agent": "arbiter",
+      "risk": "Prompt wording, answer priors, radius-only priors, or center-ray heuristics can create shortcut solutions.",
+      "severity": "high",
+      "mitigation": "Run prompt lint, balance answer distributions, and report M5, majority, radius-only, action-only, center-ray, and corridor-width baselines."
+    },
+    {
+      "agent": "arbiter",
+      "risk": "T3 and T5 can drift into hidden-space inference rather than visible local consequence reasoning.",
+      "severity": "high",
+      "mitigation": "Keep them extension-only until visible_sweep_ratio >= 0.7, fov_supported=true, collision evidence visibility, and requires_hidden_geometry=false are verified."
+    },
+    {
+      "agent": "arbiter",
+      "risk": "Current T4 wording creates a monotonicity shortcut because 'only B' is impossible when Body B is always larger.",
+      "severity": "medium",
+      "mitigation": "Either remove 'only B' from the answer space or randomize body order and label choices as only smaller / only larger with explicit radius metadata."
+    }
+  ],
+  "phase_output_counts": {
+    "phase_1_isolated": 3,
+    "phase_2_cross_exam": 4
+  }
+}

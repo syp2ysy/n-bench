@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Discussion Summary</title>
+  <style>
+
+    :root { color-scheme: light; font-family: Inter, Arial, sans-serif; }
+    body { margin: 0; background: #f7f8fa; color: #16181d; }
+    header, section { max-width: 1180px; margin: 0 auto; padding: 28px 24px; }
+    header { border-bottom: 1px solid #d9dde5; }
+    h1 { margin: 4px 0 10px; font-size: 32px; line-height: 1.1; }
+    h2 { margin: 0 0 16px; font-size: 22px; }
+    p { line-height: 1.5; color: #53606f; }
+    .eyebrow { margin: 0; color: #53606f; font-size: 13px; text-transform: uppercase; letter-spacing: 0; }
+    table { border-collapse: collapse; width: 100%; background: #fff; }
+    th, td { border: 1px solid #d9dde5; padding: 10px 12px; text-align: left; vertical-align: top; }
+    th { background: #eef1f5; }
+    li { margin: 8px 0; }
+  </style>
+</head>
+<body>
+
+            <header>
+              <p class="eyebrow">EgoConseq-Bench</p>
+              <h1>Discussion Summary</h1>
+              <p>Cross-round public summary of agent outputs, adjudication, coverage, and blackboard updates.</p>
+            </header>
+            <section>
+              <h2>Rounds</h2>
+              <table>
+                <tr><th>Round</th><th>Agents</th><th>Decision</th><th>Core Reviewed</th><th>Open Risks</th></tr>
+                <tr><td>Round 1</td><td>paper_designer, case_author, expert_reviewer, arbiter</td><td>design_ready</td><td>T1:0, T2:0, T4:0</td><td>24</td></tr><tr><td>Round 2</td><td></td><td>needs_case_generation</td><td>T1:0, T2:0, T4:0</td><td>0</td></tr><tr><td>Round 3</td><td>paper_designer, case_author, expert_reviewer, arbiter</td><td>needs_case_coverage</td><td>T1:0, T2:0, T4:0</td><td>21</td></tr><tr><td>Round 4</td><td>expert_reviewer, arbiter</td><td>needs_case_coverage</td><td>T1:0, T2:0, T4:0</td><td>11</td></tr><tr><td>Round 5</td><td>expert_reviewer, arbiter</td><td>needs_case_coverage</td><td>T1:0, T2:0, T4:0</td><td>14</td></tr>
+              </table>
+            </section>
+            <section>
+              <h2>Design Document History</h2>
+              <ul><li>Round 1 · paper_designer · benchmark_config, case_generation_spec, design_principles, motivation, novelty_positioning, qa_design, showcase_requirements, status, task_families</li><li>Round 1 · arbiter · benchmark_config, case_generation_spec, design_principles, motivation, novelty_positioning, qa_design, showcase_requirements, status, task_families</li><li>Round 3 · paper_designer · benchmark_config, case_generation_spec, design_principles, motivation, novelty_positioning, qa_design, showcase_requirements, status, task_families</li><li>Round 3 · paper_designer · benchmark_config, case_generation_spec, design_principles, motivation, novelty_positioning, qa_design, showcase_requirements, status, task_families</li><li>Round 3 · arbiter · benchmark_config, case_generation_spec, design_principles, motivation, novelty_positioning, qa_design, showcase_requirements, status, task_families</li><li>Round 4 · arbiter · benchmark_config, case_generation_spec, design_principles, motivation, novelty_positioning, qa_design, showcase_requirements, status, task_families</li><li>Round 5 · arbiter · benchmark_config, case_generation_spec, design_principles, motivation, novelty_positioning, qa_design, showcase_requirements, status, task_families</li></ul>
+            </section>
+            <section>
+              <h2>Blackboard Round Log</h2>
+              <ul><li>Round 1 ran paper_designer, case_author, expert_reviewer, arbiter; surviving delta {&#x27;T1&#x27;: 0, &#x27;T2&#x27;: 0, &#x27;T3&#x27;: 0, &#x27;T4&#x27;: 0, &#x27;T5&#x27;: 0}</li><li>Round 2 ran pipeline_probe; surviving delta {&#x27;T1&#x27;: 0, &#x27;T2&#x27;: 0, &#x27;T3&#x27;: 0, &#x27;T4&#x27;: 0, &#x27;T5&#x27;: 0}</li><li>Round 3 ran pipeline_case_generator; surviving delta {&#x27;T1&#x27;: 0, &#x27;T2&#x27;: 0, &#x27;T3&#x27;: 0, &#x27;T4&#x27;: 0, &#x27;T5&#x27;: 0}</li><li>Round 3 ran paper_designer, case_author, expert_reviewer, arbiter; surviving delta {&#x27;T1&#x27;: 0, &#x27;T2&#x27;: 0, &#x27;T3&#x27;: 0, &#x27;T4&#x27;: 0, &#x27;T5&#x27;: 0}</li><li>Round 4 ran case_author, expert_reviewer, arbiter; surviving delta {&#x27;T1&#x27;: 0, &#x27;T2&#x27;: 0, &#x27;T3&#x27;: 0, &#x27;T4&#x27;: 0, &#x27;T5&#x27;: 0}</li><li>Round 5 ran case_author, expert_reviewer, arbiter; surviving delta {&#x27;T1&#x27;: 0, &#x27;T2&#x27;: 0, &#x27;T3&#x27;: 0, &#x27;T4&#x27;: 0, &#x27;T5&#x27;: 0}</li></ul>
+            </section>
+            
+</body>
+</html>

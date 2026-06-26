@@ -1,0 +1,1194 @@
+[10:33:51:320473]:[Metadata] AttributesManagerBase.h(380)::createFromJsonOrDefaultInternal : <Dataset>: Proposing JSON name : default.scene_dataset_config.json from original name : default| This file does not exist.
+[10:33:51:320542]:[Metadata] AssetAttributesManager.cpp(123)::createObject : Asset attributes (capsule3DSolid:capsule3DSolid_hemiRings_4_cylRings_1_segments_12_halfLen_0.75_useTexCoords_false_useTangents_false) created and registered.
+[10:33:51:320562]:[Metadata] AssetAttributesManager.cpp(123)::createObject : Asset attributes (capsule3DWireframe:capsule3DWireframe_hemiRings_8_cylRings_1_segments_16_halfLen_1) created and registered.
+[10:33:51:320577]:[Metadata] AssetAttributesManager.cpp(123)::createObject : Asset attributes (coneSolid:coneSolid_segments_12_halfLen_1.25_rings_1_useTexCoords_false_useTangents_false_capEnd_true) created and registered.
+[10:33:51:320589]:[Metadata] AssetAttributesManager.cpp(123)::createObject : Asset attributes (coneWireframe:coneWireframe_segments_32_halfLen_1.25) created and registered.
+[10:33:51:320600]:[Metadata] AssetAttributesManager.cpp(123)::createObject : Asset attributes (cubeSolid:cubeSolid) created and registered.
+[10:33:51:320611]:[Metadata] AssetAttributesManager.cpp(123)::createObject : Asset attributes (cubeWireframe:cubeWireframe) created and registered.
+[10:33:51:320623]:[Metadata] AssetAttributesManager.cpp(123)::createObject : Asset attributes (cylinderSolid:cylinderSolid_rings_1_segments_12_halfLen_1_useTexCoords_false_useTangents_false_capEnds_true) created and registered.
+[10:33:51:320635]:[Metadata] AssetAttributesManager.cpp(123)::createObject : Asset attributes (cylinderWireframe:cylinderWireframe_rings_1_segments_32_halfLen_1) created and registered.
+[10:33:51:320645]:[Metadata] AssetAttributesManager.cpp(123)::createObject : Asset attributes (icosphereSolid:icosphereSolid_subdivs_1) created and registered.
+[10:33:51:320656]:[Metadata] AssetAttributesManager.cpp(123)::createObject : Asset attributes (icosphereWireframe:icosphereWireframe_subdivs_1) created and registered.
+[10:33:51:320668]:[Metadata] AssetAttributesManager.cpp(123)::createObject : Asset attributes (uvSphereSolid:uvSphereSolid_rings_8_segments_16_useTexCoords_false_useTangents_false) created and registered.
+[10:33:51:320678]:[Metadata] AssetAttributesManager.cpp(123)::createObject : Asset attributes (uvSphereWireframe:uvSphereWireframe_rings_16_segments_32) created and registered.
+[10:33:51:320686]:[Metadata] AssetAttributesManager.cpp(112)::AssetAttributesManager : Built default primitive asset templates : 12
+[10:33:51:320819]:[Metadata] SceneDatasetAttributesManager.cpp(37)::createObject : File (default) not found, so new default dataset attributes created  and registered.
+[10:33:51:320826]:[Metadata] MetadataMediator.cpp(120)::createSceneDataset : Dataset default successfully created.
+[10:33:51:320835]:[Metadata] AttributesManagerBase.h(380)::createFromJsonOrDefaultInternal : <Physics Manager>: Proposing JSON name : ./data/default.physics_config.json from original name : ./data/default.physics_config.json| This file does not exist.
+[10:33:51:320846]:[Metadata] PhysicsAttributesManager.cpp(26)::createObject : File (./data/default.physics_config.json) not found, so new default physics manager attributes created and registered.
+[10:33:51:320853]:[Metadata] MetadataMediator.cpp(210)::setActiveSceneDatasetName : Attempting to create new dataset /home/zhangshan/syp/datasets/versioned_data/hm3d-0.2/hm3d/val/hm3d_annotated_val_basis.scene_dataset_config.json
+[10:33:51:320861]:[Metadata] AttributesManagerBase.h(380)::createFromJsonOrDefaultInternal : <Dataset>: Proposing JSON name : /home/zhangshan/syp/datasets/versioned_data/hm3d-0.2/hm3d/val/hm3d_annotated_val_basis.scene_dataset_config.json from original name : /home/zhangshan/syp/datasets/versioned_data/hm3d-0.2/hm3d/val/hm3d_annotated_val_basis.scene_dataset_config.json| This file exists.
+[10:33:51:320903]:[Metadata] AssetAttributesManager.cpp(123)::createObject : Asset attributes (capsule3DSolid:capsule3DSolid_hemiRings_4_cylRings_1_segments_12_halfLen_0.75_useTexCoords_false_useTangents_false) created and registered.
+[10:33:51:320916]:[Metadata] AssetAttributesManager.cpp(123)::createObject : Asset attributes (capsule3DWireframe:capsule3DWireframe_hemiRings_8_cylRings_1_segments_16_halfLen_1) created and registered.
+[10:33:51:320927]:[Metadata] AssetAttributesManager.cpp(123)::createObject : Asset attributes (coneSolid:coneSolid_segments_12_halfLen_1.25_rings_1_useTexCoords_false_useTangents_false_capEnd_true) created and registered.
+[10:33:51:320937]:[Metadata] AssetAttributesManager.cpp(123)::createObject : Asset attributes (coneWireframe:coneWireframe_segments_32_halfLen_1.25) created and registered.
+[10:33:51:320946]:[Metadata] AssetAttributesManager.cpp(123)::createObject : Asset attributes (cubeSolid:cubeSolid) created and registered.
+[10:33:51:320954]:[Metadata] AssetAttributesManager.cpp(123)::createObject : Asset attributes (cubeWireframe:cubeWireframe) created and registered.
+[10:33:51:320964]:[Metadata] AssetAttributesManager.cpp(123)::createObject : Asset attributes (cylinderSolid:cylinderSolid_rings_1_segments_12_halfLen_1_useTexCoords_false_useTangents_false_capEnds_true) created and registered.
+[10:33:51:320974]:[Metadata] AssetAttributesManager.cpp(123)::createObject : Asset attributes (cylinderWireframe:cylinderWireframe_rings_1_segments_32_halfLen_1) created and registered.
+[10:33:51:320982]:[Metadata] AssetAttributesManager.cpp(123)::createObject : Asset attributes (icosphereSolid:icosphereSolid_subdivs_1) created and registered.
+[10:33:51:320991]:[Metadata] AssetAttributesManager.cpp(123)::createObject : Asset attributes (icosphereWireframe:icosphereWireframe_subdivs_1) created and registered.
+[10:33:51:321000]:[Metadata] AssetAttributesManager.cpp(123)::createObject : Asset attributes (uvSphereSolid:uvSphereSolid_rings_8_segments_16_useTexCoords_false_useTangents_false) created and registered.
+[10:33:51:321009]:[Metadata] AssetAttributesManager.cpp(123)::createObject : Asset attributes (uvSphereWireframe:uvSphereWireframe_rings_16_segments_32) created and registered.
+[10:33:51:321016]:[Metadata] AssetAttributesManager.cpp(112)::AssetAttributesManager : Built default primitive asset templates : 12
+[10:33:51:321230]:[Metadata] AttributesManagerBase.h(265)::loadAllFileBasedTemplates : Loading 1  Stage Template templates found in /home/zhangshan/syp/datasets/versioned_data/hm3d-0.2/hm3d/val/00800-TEEsavR23oF
+[10:33:51:321241]:[Metadata] AttributesManagerBase.h(380)::createFromJsonOrDefaultInternal : <Stage Template>: Proposing JSON name : /home/zhangshan/syp/datasets/versioned_data/hm3d-0.2/hm3d/val/00800-TEEsavR23oF/TEEsavR23oF.basis.stage_config.json from original name : /home/zhangshan/syp/datasets/versioned_data/hm3d-0.2/hm3d/val/00800-TEEsavR23oF/TEEsavR23oF.basis.glb| This file does not exist.
+[10:33:51:321281]:[Metadata] AbstractObjectAttributesManagerBase.h(184)::createObject : File (/home/zhangshan/syp/datasets/versioned_data/hm3d-0.2/hm3d/val/00800-TEEsavR23oF/TEEsavR23oF.basis.glb) exists but is not a recognized config filename extension, so new default Stage Template attributes created and registered.
+[10:33:51:321300]:[Metadata] AttributesManagerBase.h(285)::loadAllFileBasedTemplates : <Stage Template> : Loaded file-based templates: 1
+[10:33:51:321348]:[Metadata] AttributesManagerBase.h(265)::loadAllFileBasedTemplates : Loading 1  Stage Template templates found in /home/zhangshan/syp/datasets/versioned_data/hm3d-0.2/hm3d/val/00802-wcojb4TFT35
+[10:33:51:321357]:[Metadata] AttributesManagerBase.h(380)::createFromJsonOrDefaultInternal : <Stage Template>: Proposing JSON name : /home/zhangshan/syp/datasets/versioned_data/hm3d-0.2/hm3d/val/00802-wcojb4TFT35/wcojb4TFT35.basis.stage_config.json from original name : /home/zhangshan/syp/datasets/versioned_data/hm3d-0.2/hm3d/val/00802-wcojb4TFT35/wcojb4TFT35.basis.glb| This file does not exist.
+[10:33:51:321394]:[Metadata] AbstractObjectAttributesManagerBase.h(184)::createObject : File (/home/zhangshan/syp/datasets/versioned_data/hm3d-0.2/hm3d/val/00802-wcojb4TFT35/wcojb4TFT35.basis.glb) exists but is not a recognized config filename extension, so new default Stage Template attributes created and registered.
+[10:33:51:321401]:[Metadata] AttributesManagerBase.h(285)::loadAllFileBasedTemplates : <Stage Template> : Loaded file-based templates: 1
+[10:33:51:321442]:[Metadata] AttributesManagerBase.h(265)::loadAllFileBasedTemplates : Loading 1  Stage Template templates found in /home/zhangshan/syp/datasets/versioned_data/hm3d-0.2/hm3d/val/00803-k1cupFYWXJ6
+[10:33:51:321450]:[Metadata] AttributesManagerBase.h(380)::createFromJsonOrDefaultInternal : <Stage Template>: Proposing JSON name : /home/zhangshan/syp/datasets/versioned_data/hm3d-0.2/hm3d/val/00803-k1cupFYWXJ6/k1cupFYWXJ6.basis.stage_config.json from original name : /home/zhangshan/syp/datasets/versioned_data/hm3d-0.2/hm3d/val/00803-k1cupFYWXJ6/k1cupFYWXJ6.basis.glb| This file does not exist.
+[10:33:51:321484]:[Metadata] AbstractObjectAttributesManagerBase.h(184)::createObject : File (/home/zhangshan/syp/datasets/versioned_data/hm3d-0.2/hm3d/val/00803-k1cupFYWXJ6/k1cupFYWXJ6.basis.glb) exists but is not a recognized config filename extension, so new default Stage Template attributes created and registered.
+[10:33:51:321491]:[Metadata] AttributesManagerBase.h(285)::loadAllFileBasedTemplates : <Stage Template> : Loaded file-based templates: 1
+[10:33:51:321533]:[Metadata] AttributesManagerBase.h(265)::loadAllFileBasedTemplates : Loading 1  Stage Template templates found in /home/zhangshan/syp/datasets/versioned_data/hm3d-0.2/hm3d/val/00808-y9hTuugGdiq
+[10:33:51:321541]:[Metadata] AttributesManagerBase.h(380)::createFromJsonOrDefaultInternal : <Stage Template>: Proposing JSON name : /home/zhangshan/syp/datasets/versioned_data/hm3d-0.2/hm3d/val/00808-y9hTuugGdiq/y9hTuugGdiq.basis.stage_config.json from original name : /home/zhangshan/syp/datasets/versioned_data/hm3d-0.2/hm3d/val/00808-y9hTuugGdiq/y9hTuugGdiq.basis.glb| This file does not exist.
+[10:33:51:321577]:[Metadata] AbstractObjectAttributesManagerBase.h(184)::createObject : File (/home/zhangshan/syp/datasets/versioned_data/hm3d-0.2/hm3d/val/00808-y9hTuugGdiq/y9hTuugGdiq.basis.glb) exists but is not a recognized config filename extension, so new default Stage Template attributes created and registered.
+[10:33:51:321583]:[Metadata] AttributesManagerBase.h(285)::loadAllFileBasedTemplates : <Stage Template> : Loaded file-based templates: 1
+[10:33:51:321623]:[Metadata] AttributesManagerBase.h(265)::loadAllFileBasedTemplates : Loading 1  Stage Template templates found in /home/zhangshan/syp/datasets/versioned_data/hm3d-0.2/hm3d/val/00810-CrMo8WxCyVb
+[10:33:51:321631]:[Metadata] AttributesManagerBase.h(380)::createFromJsonOrDefaultInternal : <Stage Template>: Proposing JSON name : /home/zhangshan/syp/datasets/versioned_data/hm3d-0.2/hm3d/val/00810-CrMo8WxCyVb/CrMo8WxCyVb.basis.stage_config.json from original name : /home/zhangshan/syp/datasets/versioned_data/hm3d-0.2/hm3d/val/00810-CrMo8WxCyVb/CrMo8WxCyVb.basis.glb| This file does not exist.
+[10:33:51:321666]:[Metadata] AbstractObjectAttributesManagerBase.h(184)::createObject : File (/home/zhangshan/syp/datasets/versioned_data/hm3d-0.2/hm3d/val/00810-CrMo8WxCyVb/CrMo8WxCyVb.basis.glb) exists but is not a recognized config filename extension, so new default Stage Template attributes created and registered.
+[10:33:51:321673]:[Metadata] AttributesManagerBase.h(285)::loadAllFileBasedTemplates : <Stage Template> : Loaded file-based templates: 1
+[10:33:51:321713]:[Metadata] AttributesManagerBase.h(265)::loadAllFileBasedTemplates : Loading 1  Stage Template templates found in /home/zhangshan/syp/datasets/versioned_data/hm3d-0.2/hm3d/val/00813-svBbv1Pavdk
+[10:33:51:321721]:[Metadata] AttributesManagerBase.h(380)::createFromJsonOrDefaultInternal : <Stage Template>: Proposing JSON name : /home/zhangshan/syp/datasets/versioned_data/hm3d-0.2/hm3d/val/00813-svBbv1Pavdk/svBbv1Pavdk.basis.stage_config.json from original name : /home/zhangshan/syp/datasets/versioned_data/hm3d-0.2/hm3d/val/00813-svBbv1Pavdk/svBbv1Pavdk.basis.glb| This file does not exist.
+[10:33:51:321755]:[Metadata] AbstractObjectAttributesManagerBase.h(184)::createObject : File (/home/zhangshan/syp/datasets/versioned_data/hm3d-0.2/hm3d/val/00813-svBbv1Pavdk/svBbv1Pavdk.basis.glb) exists but is not a recognized config filename extension, so new default Stage Template attributes created and registered.
+[10:33:51:321762]:[Metadata] AttributesManagerBase.h(285)::loadAllFileBasedTemplates : <Stage Template> : Loaded file-based templates: 1
+[10:33:51:321801]:[Metadata] AttributesManagerBase.h(265)::loadAllFileBasedTemplates : Loading 1  Stage Template templates found in /home/zhangshan/syp/datasets/versioned_data/hm3d-0.2/hm3d/val/00814-p53SfW6mjZe
+[10:33:51:321809]:[Metadata] AttributesManagerBase.h(380)::createFromJsonOrDefaultInternal : <Stage Template>: Proposing JSON name : /home/zhangshan/syp/datasets/versioned_data/hm3d-0.2/hm3d/val/00814-p53SfW6mjZe/p53SfW6mjZe.basis.stage_config.json from original name : /home/zhangshan/syp/datasets/versioned_data/hm3d-0.2/hm3d/val/00814-p53SfW6mjZe/p53SfW6mjZe.basis.glb| This file does not exist.
+[10:33:51:321843]:[Metadata] AbstractObjectAttributesManagerBase.h(184)::createObject : File (/home/zhangshan/syp/datasets/versioned_data/hm3d-0.2/hm3d/val/00814-p53SfW6mjZe/p53SfW6mjZe.basis.glb) exists but is not a recognized config filename extension, so new default Stage Template attributes created and registered.
+[10:33:51:321850]:[Metadata] AttributesManagerBase.h(285)::loadAllFileBasedTemplates : <Stage Template> : Loaded file-based templates: 1
+[10:33:51:321890]:[Metadata] AttributesManagerBase.h(265)::loadAllFileBasedTemplates : Loading 1  Stage Template templates found in /home/zhangshan/syp/datasets/versioned_data/hm3d-0.2/hm3d/val/00815-h1zeeAwLh9Z
+[10:33:51:321898]:[Metadata] AttributesManagerBase.h(380)::createFromJsonOrDefaultInternal : <Stage Template>: Proposing JSON name : /home/zhangshan/syp/datasets/versioned_data/hm3d-0.2/hm3d/val/00815-h1zeeAwLh9Z/h1zeeAwLh9Z.basis.stage_config.json from original name : /home/zhangshan/syp/datasets/versioned_data/hm3d-0.2/hm3d/val/00815-h1zeeAwLh9Z/h1zeeAwLh9Z.basis.glb| This file does not exist.
+[10:33:51:321929]:[Metadata] AbstractObjectAttributesManagerBase.h(184)::createObject : File (/home/zhangshan/syp/datasets/versioned_data/hm3d-0.2/hm3d/val/00815-h1zeeAwLh9Z/h1zeeAwLh9Z.basis.glb) exists but is not a recognized config filename extension, so new default Stage Template attributes created and registered.
+[10:33:51:321936]:[Metadata] AttributesManagerBase.h(285)::loadAllFileBasedTemplates : <Stage Template> : Loaded file-based templates: 1
+[10:33:51:321976]:[Metadata] AttributesManagerBase.h(265)::loadAllFileBasedTemplates : Loading 1  Stage Template templates found in /home/zhangshan/syp/datasets/versioned_data/hm3d-0.2/hm3d/val/00820-mL8ThkuaVTM
+[10:33:51:321984]:[Metadata] AttributesManagerBase.h(380)::createFromJsonOrDefaultInternal : <Stage Template>: Proposing JSON name : /home/zhangshan/syp/datasets/versioned_data/hm3d-0.2/hm3d/val/00820-mL8ThkuaVTM/mL8ThkuaVTM.basis.stage_config.json from original name : /home/zhangshan/syp/datasets/versioned_data/hm3d-0.2/hm3d/val/00820-mL8ThkuaVTM/mL8ThkuaVTM.basis.glb| This file does not exist.
+[10:33:51:322016]:[Metadata] AbstractObjectAttributesManagerBase.h(184)::createObject : File (/home/zhangshan/syp/datasets/versioned_data/hm3d-0.2/hm3d/val/00820-mL8ThkuaVTM/mL8ThkuaVTM.basis.glb) exists but is not a recognized config filename extension, so new default Stage Template attributes created and registered.
+[10:33:51:322022]:[Metadata] AttributesManagerBase.h(285)::loadAllFileBasedTemplates : <Stage Template> : Loaded file-based templates: 1
+[10:33:51:322063]:[Metadata] AttributesManagerBase.h(265)::loadAllFileBasedTemplates : Loading 1  Stage Template templates found in /home/zhangshan/syp/datasets/versioned_data/hm3d-0.2/hm3d/val/00821-eF36g7L6Z9M
+[10:33:51:322071]:[Metadata] AttributesManagerBase.h(380)::createFromJsonOrDefaultInternal : <Stage Template>: Proposing JSON name : /home/zhangshan/syp/datasets/versioned_data/hm3d-0.2/hm3d/val/00821-eF36g7L6Z9M/eF36g7L6Z9M.basis.stage_config.json from original name : /home/zhangshan/syp/datasets/versioned_data/hm3d-0.2/hm3d/val/00821-eF36g7L6Z9M/eF36g7L6Z9M.basis.glb| This file does not exist.
+[10:33:51:322103]:[Metadata] AbstractObjectAttributesManagerBase.h(184)::createObject : File (/home/zhangshan/syp/datasets/versioned_data/hm3d-0.2/hm3d/val/00821-eF36g7L6Z9M/eF36g7L6Z9M.basis.glb) exists but is not a recognized config filename extension, so new default Stage Template attributes created and registered.
+[10:33:51:322109]:[Metadata] AttributesManagerBase.h(285)::loadAllFileBasedTemplates : <Stage Template> : Loaded file-based templates: 1
+[10:33:51:322149]:[Metadata] AttributesManagerBase.h(265)::loadAllFileBasedTemplates : Loading 1  Stage Template templates found in /home/zhangshan/syp/datasets/versioned_data/hm3d-0.2/hm3d/val/00823-7MXmsvcQjpJ
+[10:33:51:322157]:[Metadata] AttributesManagerBase.h(380)::createFromJsonOrDefaultInternal : <Stage Template>: Proposing JSON name : /home/zhangshan/syp/datasets/versioned_data/hm3d-0.2/hm3d/val/00823-7MXmsvcQjpJ/7MXmsvcQjpJ.basis.stage_config.json from original name : /home/zhangshan/syp/datasets/versioned_data/hm3d-0.2/hm3d/val/00823-7MXmsvcQjpJ/7MXmsvcQjpJ.basis.glb| This file does not exist.
+[10:33:51:322191]:[Metadata] AbstractObjectAttributesManagerBase.h(184)::createObject : File (/home/zhangshan/syp/datasets/versioned_data/hm3d-0.2/hm3d/val/00823-7MXmsvcQjpJ/7MXmsvcQjpJ.basis.glb) exists but is not a recognized config filename extension, so new default Stage Template attributes created and registered.
+[10:33:51:322198]:[Metadata] AttributesManagerBase.h(285)::loadAllFileBasedTemplates : <Stage Template> : Loaded file-based templates: 1
+[10:33:51:322237]:[Metadata] AttributesManagerBase.h(265)::loadAllFileBasedTemplates : Loading 1  Stage Template templates found in /home/zhangshan/syp/datasets/versioned_data/hm3d-0.2/hm3d/val/00824-Dd4bFSTQ8gi
+[10:33:51:322246]:[Metadata] AttributesManagerBase.h(380)::createFromJsonOrDefaultInternal : <Stage Template>: Proposing JSON name : /home/zhangshan/syp/datasets/versioned_data/hm3d-0.2/hm3d/val/00824-Dd4bFSTQ8gi/Dd4bFSTQ8gi.basis.stage_config.json from original name : /home/zhangshan/syp/datasets/versioned_data/hm3d-0.2/hm3d/val/00824-Dd4bFSTQ8gi/Dd4bFSTQ8gi.basis.glb| This file does not exist.
+[10:33:51:322277]:[Metadata] AbstractObjectAttributesManagerBase.h(184)::createObject : File (/home/zhangshan/syp/datasets/versioned_data/hm3d-0.2/hm3d/val/00824-Dd4bFSTQ8gi/Dd4bFSTQ8gi.basis.glb) exists but is not a recognized config filename extension, so new default Stage Template attributes created and registered.
+[10:33:51:322283]:[Metadata] AttributesManagerBase.h(285)::loadAllFileBasedTemplates : <Stage Template> : Loaded file-based templates: 1
+[10:33:51:322322]:[Metadata] AttributesManagerBase.h(265)::loadAllFileBasedTemplates : Loading 1  Stage Template templates found in /home/zhangshan/syp/datasets/versioned_data/hm3d-0.2/hm3d/val/00827-BAbdmeyTvMZ
+[10:33:51:322331]:[Metadata] AttributesManagerBase.h(380)::createFromJsonOrDefaultInternal : <Stage Template>: Proposing JSON name : /home/zhangshan/syp/datasets/versioned_data/hm3d-0.2/hm3d/val/00827-BAbdmeyTvMZ/BAbdmeyTvMZ.basis.stage_config.json from original name : /home/zhangshan/syp/datasets/versioned_data/hm3d-0.2/hm3d/val/00827-BAbdmeyTvMZ/BAbdmeyTvMZ.basis.glb| This file does not exist.
+[10:33:51:322363]:[Metadata] AbstractObjectAttributesManagerBase.h(184)::createObject : File (/home/zhangshan/syp/datasets/versioned_data/hm3d-0.2/hm3d/val/00827-BAbdmeyTvMZ/BAbdmeyTvMZ.basis.glb) exists but is not a recognized config filename extension, so new default Stage Template attributes created and registered.
+[10:33:51:322369]:[Metadata] AttributesManagerBase.h(285)::loadAllFileBasedTemplates : <Stage Template> : Loaded file-based templates: 1
+[10:33:51:322409]:[Metadata] AttributesManagerBase.h(265)::loadAllFileBasedTemplates : Loading 1  Stage Template templates found in /home/zhangshan/syp/datasets/versioned_data/hm3d-0.2/hm3d/val/00829-QaLdnwvtxbs
+[10:33:51:322417]:[Metadata] AttributesManagerBase.h(380)::createFromJsonOrDefaultInternal : <Stage Template>: Proposing JSON name : /home/zhangshan/syp/datasets/versioned_data/hm3d-0.2/hm3d/val/00829-QaLdnwvtxbs/QaLdnwvtxbs.basis.stage_config.json from original name : /home/zhangshan/syp/datasets/versioned_data/hm3d-0.2/hm3d/val/00829-QaLdnwvtxbs/QaLdnwvtxbs.basis.glb| This file does not exist.
+[10:33:51:322451]:[Metadata] AbstractObjectAttributesManagerBase.h(184)::createObject : File (/home/zhangshan/syp/datasets/versioned_data/hm3d-0.2/hm3d/val/00829-QaLdnwvtxbs/QaLdnwvtxbs.basis.glb) exists but is not a recognized config filename extension, so new default Stage Template attributes created and registered.
+[10:33:51:322457]:[Metadata] AttributesManagerBase.h(285)::loadAllFileBasedTemplates : <Stage Template> : Loaded file-based templates: 1
+[10:33:51:322496]:[Metadata] AttributesManagerBase.h(265)::loadAllFileBasedTemplates : Loading 1  Stage Template templates found in /home/zhangshan/syp/datasets/versioned_data/hm3d-0.2/hm3d/val/00831-yr17PDCnDDW
+[10:33:51:322505]:[Metadata] AttributesManagerBase.h(380)::createFromJsonOrDefaultInternal : <Stage Template>: Proposing JSON name : /home/zhangshan/syp/datasets/versioned_data/hm3d-0.2/hm3d/val/00831-yr17PDCnDDW/yr17PDCnDDW.basis.stage_config.json from original name : /home/zhangshan/syp/datasets/versioned_data/hm3d-0.2/hm3d/val/00831-yr17PDCnDDW/yr17PDCnDDW.basis.glb| This file does not exist.
+[10:33:51:322536]:[Metadata] AbstractObjectAttributesManagerBase.h(184)::createObject : File (/home/zhangshan/syp/datasets/versioned_data/hm3d-0.2/hm3d/val/00831-yr17PDCnDDW/yr17PDCnDDW.basis.glb) exists but is not a recognized config filename extension, so new default Stage Template attributes created and registered.
+[10:33:51:322543]:[Metadata] AttributesManagerBase.h(285)::loadAllFileBasedTemplates : <Stage Template> : Loaded file-based templates: 1
+[10:33:51:322583]:[Metadata] AttributesManagerBase.h(265)::loadAllFileBasedTemplates : Loading 1  Stage Template templates found in /home/zhangshan/syp/datasets/versioned_data/hm3d-0.2/hm3d/val/00832-qyAac8rV8Zk
+[10:33:51:322592]:[Metadata] AttributesManagerBase.h(380)::createFromJsonOrDefaultInternal : <Stage Template>: Proposing JSON name : /home/zhangshan/syp/datasets/versioned_data/hm3d-0.2/hm3d/val/00832-qyAac8rV8Zk/qyAac8rV8Zk.basis.stage_config.json from original name : /home/zhangshan/syp/datasets/versioned_data/hm3d-0.2/hm3d/val/00832-qyAac8rV8Zk/qyAac8rV8Zk.basis.glb| This file does not exist.
+[10:33:51:322623]:[Metadata] AbstractObjectAttributesManagerBase.h(184)::createObject : File (/home/zhangshan/syp/datasets/versioned_data/hm3d-0.2/hm3d/val/00832-qyAac8rV8Zk/qyAac8rV8Zk.basis.glb) exists but is not a recognized config filename extension, so new default Stage Template attributes created and registered.
+[10:33:51:322629]:[Metadata] AttributesManagerBase.h(285)::loadAllFileBasedTemplates : <Stage Template> : Loaded file-based templates: 1
+[10:33:51:322669]:[Metadata] AttributesManagerBase.h(265)::loadAllFileBasedTemplates : Loading 1  Stage Template templates found in /home/zhangshan/syp/datasets/versioned_data/hm3d-0.2/hm3d/val/00835-q3zU7Yy5E5s
+[10:33:51:322677]:[Metadata] AttributesManagerBase.h(380)::createFromJsonOrDefaultInternal : <Stage Template>: Proposing JSON name : /home/zhangshan/syp/datasets/versioned_data/hm3d-0.2/hm3d/val/00835-q3zU7Yy5E5s/q3zU7Yy5E5s.basis.stage_config.json from original name : /home/zhangshan/syp/datasets/versioned_data/hm3d-0.2/hm3d/val/00835-q3zU7Yy5E5s/q3zU7Yy5E5s.basis.glb| This file does not exist.
+[10:33:51:322711]:[Metadata] AbstractObjectAttributesManagerBase.h(184)::createObject : File (/home/zhangshan/syp/datasets/versioned_data/hm3d-0.2/hm3d/val/00835-q3zU7Yy5E5s/q3zU7Yy5E5s.basis.glb) exists but is not a recognized config filename extension, so new default Stage Template attributes created and registered.
+[10:33:51:322717]:[Metadata] AttributesManagerBase.h(285)::loadAllFileBasedTemplates : <Stage Template> : Loaded file-based templates: 1
+[10:33:51:322756]:[Metadata] AttributesManagerBase.h(265)::loadAllFileBasedTemplates : Loading 1  Stage Template templates found in /home/zhangshan/syp/datasets/versioned_data/hm3d-0.2/hm3d/val/00839-zt1RVoi7PcG
+[10:33:51:322764]:[Metadata] AttributesManagerBase.h(380)::createFromJsonOrDefaultInternal : <Stage Template>: Proposing JSON name : /home/zhangshan/syp/datasets/versioned_data/hm3d-0.2/hm3d/val/00839-zt1RVoi7PcG/zt1RVoi7PcG.basis.stage_config.json from original name : /home/zhangshan/syp/datasets/versioned_data/hm3d-0.2/hm3d/val/00839-zt1RVoi7PcG/zt1RVoi7PcG.basis.glb| This file does not exist.
+[10:33:51:322797]:[Metadata] AbstractObjectAttributesManagerBase.h(184)::createObject : File (/home/zhangshan/syp/datasets/versioned_data/hm3d-0.2/hm3d/val/00839-zt1RVoi7PcG/zt1RVoi7PcG.basis.glb) exists but is not a recognized config filename extension, so new default Stage Template attributes created and registered.
+[10:33:51:322803]:[Metadata] AttributesManagerBase.h(285)::loadAllFileBasedTemplates : <Stage Template> : Loaded file-based templates: 1
+[10:33:51:322843]:[Metadata] AttributesManagerBase.h(265)::loadAllFileBasedTemplates : Loading 1  Stage Template templates found in /home/zhangshan/syp/datasets/versioned_data/hm3d-0.2/hm3d/val/00843-DYehNKdT76V
+[10:33:51:322851]:[Metadata] AttributesManagerBase.h(380)::createFromJsonOrDefaultInternal : <Stage Template>: Proposing JSON name : /home/zhangshan/syp/datasets/versioned_data/hm3d-0.2/hm3d/val/00843-DYehNKdT76V/DYehNKdT76V.basis.stage_config.json from original name : /home/zhangshan/syp/datasets/versioned_data/hm3d-0.2/hm3d/val/00843-DYehNKdT76V/DYehNKdT76V.basis.glb| This file does not exist.
+[10:33:51:322882]:[Metadata] AbstractObjectAttributesManagerBase.h(184)::createObject : File (/home/zhangshan/syp/datasets/versioned_data/hm3d-0.2/hm3d/val/00843-DYehNKdT76V/DYehNKdT76V.basis.glb) exists but is not a recognized config filename extension, so new default Stage Template attributes created and registered.
+[10:33:51:322889]:[Metadata] AttributesManagerBase.h(285)::loadAllFileBasedTemplates : <Stage Template> : Loaded file-based templates: 1
+[10:33:51:322928]:[Metadata] AttributesManagerBase.h(265)::loadAllFileBasedTemplates : Loading 1  Stage Template templates found in /home/zhangshan/syp/datasets/versioned_data/hm3d-0.2/hm3d/val/00844-q5QZSEeHe5g
+[10:33:51:322936]:[Metadata] AttributesManagerBase.h(380)::createFromJsonOrDefaultInternal : <Stage Template>: Proposing JSON name : /home/zhangshan/syp/datasets/versioned_data/hm3d-0.2/hm3d/val/00844-q5QZSEeHe5g/q5QZSEeHe5g.basis.stage_config.json from original name : /home/zhangshan/syp/datasets/versioned_data/hm3d-0.2/hm3d/val/00844-q5QZSEeHe5g/q5QZSEeHe5g.basis.glb| This file does not exist.
+[10:33:51:322970]:[Metadata] AbstractObjectAttributesManagerBase.h(184)::createObject : File (/home/zhangshan/syp/datasets/versioned_data/hm3d-0.2/hm3d/val/00844-q5QZSEeHe5g/q5QZSEeHe5g.basis.glb) exists but is not a recognized config filename extension, so new default Stage Template attributes created and registered.
+[10:33:51:322977]:[Metadata] AttributesManagerBase.h(285)::loadAllFileBasedTemplates : <Stage Template> : Loaded file-based templates: 1
+[10:33:51:323017]:[Metadata] AttributesManagerBase.h(265)::loadAllFileBasedTemplates : Loading 1  Stage Template templates found in /home/zhangshan/syp/datasets/versioned_data/hm3d-0.2/hm3d/val/00847-bCPU9suPUw9
+[10:33:51:323026]:[Metadata] AttributesManagerBase.h(380)::createFromJsonOrDefaultInternal : <Stage Template>: Proposing JSON name : /home/zhangshan/syp/datasets/versioned_data/hm3d-0.2/hm3d/val/00847-bCPU9suPUw9/bCPU9suPUw9.basis.stage_config.json from original name : /home/zhangshan/syp/datasets/versioned_data/hm3d-0.2/hm3d/val/00847-bCPU9suPUw9/bCPU9suPUw9.basis.glb| This file does not exist.
+[10:33:51:323058]:[Metadata] AbstractObjectAttributesManagerBase.h(184)::createObject : File (/home/zhangshan/syp/datasets/versioned_data/hm3d-0.2/hm3d/val/00847-bCPU9suPUw9/bCPU9suPUw9.basis.glb) exists but is not a recognized config filename extension, so new default Stage Template attributes created and registered.
+[10:33:51:323064]:[Metadata] AttributesManagerBase.h(285)::loadAllFileBasedTemplates : <Stage Template> : Loaded file-based templates: 1
+[10:33:51:323103]:[Metadata] AttributesManagerBase.h(265)::loadAllFileBasedTemplates : Loading 1  Stage Template templates found in /home/zhangshan/syp/datasets/versioned_data/hm3d-0.2/hm3d/val/00848-ziup5kvtCCR
+[10:33:51:323111]:[Metadata] AttributesManagerBase.h(380)::createFromJsonOrDefaultInternal : <Stage Template>: Proposing JSON name : /home/zhangshan/syp/datasets/versioned_data/hm3d-0.2/hm3d/val/00848-ziup5kvtCCR/ziup5kvtCCR.basis.stage_config.json from original name : /home/zhangshan/syp/datasets/versioned_data/hm3d-0.2/hm3d/val/00848-ziup5kvtCCR/ziup5kvtCCR.basis.glb| This file does not exist.
+[10:33:51:323143]:[Metadata] AbstractObjectAttributesManagerBase.h(184)::createObject : File (/home/zhangshan/syp/datasets/versioned_data/hm3d-0.2/hm3d/val/00848-ziup5kvtCCR/ziup5kvtCCR.basis.glb) exists but is not a recognized config filename extension, so new default Stage Template attributes created and registered.
+[10:33:51:323149]:[Metadata] AttributesManagerBase.h(285)::loadAllFileBasedTemplates : <Stage Template> : Loaded file-based templates: 1
+[10:33:51:323188]:[Metadata] AttributesManagerBase.h(265)::loadAllFileBasedTemplates : Loading 1  Stage Template templates found in /home/zhangshan/syp/datasets/versioned_data/hm3d-0.2/hm3d/val/00849-a8BtkwhxdRV
+[10:33:51:323196]:[Metadata] AttributesManagerBase.h(380)::createFromJsonOrDefaultInternal : <Stage Template>: Proposing JSON name : /home/zhangshan/syp/datasets/versioned_data/hm3d-0.2/hm3d/val/00849-a8BtkwhxdRV/a8BtkwhxdRV.basis.stage_config.json from original name : /home/zhangshan/syp/datasets/versioned_data/hm3d-0.2/hm3d/val/00849-a8BtkwhxdRV/a8BtkwhxdRV.basis.glb| This file does not exist.
+[10:33:51:323229]:[Metadata] AbstractObjectAttributesManagerBase.h(184)::createObject : File (/home/zhangshan/syp/datasets/versioned_data/hm3d-0.2/hm3d/val/00849-a8BtkwhxdRV/a8BtkwhxdRV.basis.glb) exists but is not a recognized config filename extension, so new default Stage Template attributes created and registered.
+[10:33:51:323236]:[Metadata] AttributesManagerBase.h(285)::loadAllFileBasedTemplates : <Stage Template> : Loaded file-based templates: 1
+[10:33:51:323275]:[Metadata] AttributesManagerBase.h(265)::loadAllFileBasedTemplates : Loading 1  Stage Template templates found in /home/zhangshan/syp/datasets/versioned_data/hm3d-0.2/hm3d/val/00853-5cdEh9F2hJL
+[10:33:51:323283]:[Metadata] AttributesManagerBase.h(380)::createFromJsonOrDefaultInternal : <Stage Template>: Proposing JSON name : /home/zhangshan/syp/datasets/versioned_data/hm3d-0.2/hm3d/val/00853-5cdEh9F2hJL/5cdEh9F2hJL.basis.stage_config.json from original name : /home/zhangshan/syp/datasets/versioned_data/hm3d-0.2/hm3d/val/00853-5cdEh9F2hJL/5cdEh9F2hJL.basis.glb| This file does not exist.
+[10:33:51:323315]:[Metadata] AbstractObjectAttributesManagerBase.h(184)::createObject : File (/home/zhangshan/syp/datasets/versioned_data/hm3d-0.2/hm3d/val/00853-5cdEh9F2hJL/5cdEh9F2hJL.basis.glb) exists but is not a recognized config filename extension, so new default Stage Template attributes created and registered.
+[10:33:51:323322]:[Metadata] AttributesManagerBase.h(285)::loadAllFileBasedTemplates : <Stage Template> : Loaded file-based templates: 1
+[10:33:51:323364]:[Metadata] AttributesManagerBase.h(265)::loadAllFileBasedTemplates : Loading 1  Stage Template templates found in /home/zhangshan/syp/datasets/versioned_data/hm3d-0.2/hm3d/val/00861-GLAQ4DNUx5U
+[10:33:51:323372]:[Metadata] AttributesManagerBase.h(380)::createFromJsonOrDefaultInternal : <Stage Template>: Proposing JSON name : /home/zhangshan/syp/datasets/versioned_data/hm3d-0.2/hm3d/val/00861-GLAQ4DNUx5U/GLAQ4DNUx5U.basis.stage_config.json from original name : /home/zhangshan/syp/datasets/versioned_data/hm3d-0.2/hm3d/val/00861-GLAQ4DNUx5U/GLAQ4DNUx5U.basis.glb| This file does not exist.
+[10:33:51:323404]:[Metadata] AbstractObjectAttributesManagerBase.h(184)::createObject : File (/home/zhangshan/syp/datasets/versioned_data/hm3d-0.2/hm3d/val/00861-GLAQ4DNUx5U/GLAQ4DNUx5U.basis.glb) exists but is not a recognized config filename extension, so new default Stage Template attributes created and registered.
+[10:33:51:323411]:[Metadata] AttributesManagerBase.h(285)::loadAllFileBasedTemplates : <Stage Template> : Loaded file-based templates: 1
+[10:33:51:323450]:[Metadata] AttributesManagerBase.h(265)::loadAllFileBasedTemplates : Loading 1  Stage Template templates found in /home/zhangshan/syp/datasets/versioned_data/hm3d-0.2/hm3d/val/00862-LT9Jq6dN3Ea
+[10:33:51:323458]:[Metadata] AttributesManagerBase.h(380)::createFromJsonOrDefaultInternal : <Stage Template>: Proposing JSON name : /home/zhangshan/syp/datasets/versioned_data/hm3d-0.2/hm3d/val/00862-LT9Jq6dN3Ea/LT9Jq6dN3Ea.basis.stage_config.json from original name : /home/zhangshan/syp/datasets/versioned_data/hm3d-0.2/hm3d/val/00862-LT9Jq6dN3Ea/LT9Jq6dN3Ea.basis.glb| This file does not exist.
+[10:33:51:323492]:[Metadata] AbstractObjectAttributesManagerBase.h(184)::createObject : File (/home/zhangshan/syp/datasets/versioned_data/hm3d-0.2/hm3d/val/00862-LT9Jq6dN3Ea/LT9Jq6dN3Ea.basis.glb) exists but is not a recognized config filename extension, so new default Stage Template attributes created and registered.
+[10:33:51:323498]:[Metadata] AttributesManagerBase.h(285)::loadAllFileBasedTemplates : <Stage Template> : Loaded file-based templates: 1
+[10:33:51:323537]:[Metadata] AttributesManagerBase.h(265)::loadAllFileBasedTemplates : Loading 1  Stage Template templates found in /home/zhangshan/syp/datasets/versioned_data/hm3d-0.2/hm3d/val/00869-MHPLjHsuG27
+[10:33:51:323546]:[Metadata] AttributesManagerBase.h(380)::createFromJsonOrDefaultInternal : <Stage Template>: Proposing JSON name : /home/zhangshan/syp/datasets/versioned_data/hm3d-0.2/hm3d/val/00869-MHPLjHsuG27/MHPLjHsuG27.basis.stage_config.json from original name : /home/zhangshan/syp/datasets/versioned_data/hm3d-0.2/hm3d/val/00869-MHPLjHsuG27/MHPLjHsuG27.basis.glb| This file does not exist.
+[10:33:51:323577]:[Metadata] AbstractObjectAttributesManagerBase.h(184)::createObject : File (/home/zhangshan/syp/datasets/versioned_data/hm3d-0.2/hm3d/val/00869-MHPLjHsuG27/MHPLjHsuG27.basis.glb) exists but is not a recognized config filename extension, so new default Stage Template attributes created and registered.
+[10:33:51:323583]:[Metadata] AttributesManagerBase.h(285)::loadAllFileBasedTemplates : <Stage Template> : Loaded file-based templates: 1
+[10:33:51:323623]:[Metadata] AttributesManagerBase.h(265)::loadAllFileBasedTemplates : Loading 1  Stage Template templates found in /home/zhangshan/syp/datasets/versioned_data/hm3d-0.2/hm3d/val/00871-VBzV5z6i1WS
+[10:33:51:323631]:[Metadata] AttributesManagerBase.h(380)::createFromJsonOrDefaultInternal : <Stage Template>: Proposing JSON name : /home/zhangshan/syp/datasets/versioned_data/hm3d-0.2/hm3d/val/00871-VBzV5z6i1WS/VBzV5z6i1WS.basis.stage_config.json from original name : /home/zhangshan/syp/datasets/versioned_data/hm3d-0.2/hm3d/val/00871-VBzV5z6i1WS/VBzV5z6i1WS.basis.glb| This file does not exist.
+[10:33:51:323663]:[Metadata] AbstractObjectAttributesManagerBase.h(184)::createObject : File (/home/zhangshan/syp/datasets/versioned_data/hm3d-0.2/hm3d/val/00871-VBzV5z6i1WS/VBzV5z6i1WS.basis.glb) exists but is not a recognized config filename extension, so new default Stage Template attributes created and registered.
+[10:33:51:323669]:[Metadata] AttributesManagerBase.h(285)::loadAllFileBasedTemplates : <Stage Template> : Loaded file-based templates: 1
+[10:33:51:323709]:[Metadata] AttributesManagerBase.h(265)::loadAllFileBasedTemplates : Loading 1  Stage Template templates found in /home/zhangshan/syp/datasets/versioned_data/hm3d-0.2/hm3d/val/00873-bxsVRursffK
+[10:33:51:323717]:[Metadata] AttributesManagerBase.h(380)::createFromJsonOrDefaultInternal : <Stage Template>: Proposing JSON name : /home/zhangshan/syp/datasets/versioned_data/hm3d-0.2/hm3d/val/00873-bxsVRursffK/bxsVRursffK.basis.stage_config.json from original name : /home/zhangshan/syp/datasets/versioned_data/hm3d-0.2/hm3d/val/00873-bxsVRursffK/bxsVRursffK.basis.glb| This file does not exist.
+[10:33:51:323751]:[Metadata] AbstractObjectAttributesManagerBase.h(184)::createObject : File (/home/zhangshan/syp/datasets/versioned_data/hm3d-0.2/hm3d/val/00873-bxsVRursffK/bxsVRursffK.basis.glb) exists but is not a recognized config filename extension, so new default Stage Template attributes created and registered.
+[10:33:51:323758]:[Metadata] AttributesManagerBase.h(285)::loadAllFileBasedTemplates : <Stage Template> : Loaded file-based templates: 1
+[10:33:51:323797]:[Metadata] AttributesManagerBase.h(265)::loadAllFileBasedTemplates : Loading 1  Stage Template templates found in /home/zhangshan/syp/datasets/versioned_data/hm3d-0.2/hm3d/val/00876-mv2HUxq3B53
+[10:33:51:323805]:[Metadata] AttributesManagerBase.h(380)::createFromJsonOrDefaultInternal : <Stage Template>: Proposing JSON name : /home/zhangshan/syp/datasets/versioned_data/hm3d-0.2/hm3d/val/00876-mv2HUxq3B53/mv2HUxq3B53.basis.stage_config.json from original name : /home/zhangshan/syp/datasets/versioned_data/hm3d-0.2/hm3d/val/00876-mv2HUxq3B53/mv2HUxq3B53.basis.glb| This file does not exist.
+[10:33:51:323837]:[Metadata] AbstractObjectAttributesManagerBase.h(184)::createObject : File (/home/zhangshan/syp/datasets/versioned_data/hm3d-0.2/hm3d/val/00876-mv2HUxq3B53/mv2HUxq3B53.basis.glb) exists but is not a recognized config filename extension, so new default Stage Template attributes created and registered.
+[10:33:51:323843]:[Metadata] AttributesManagerBase.h(285)::loadAllFileBasedTemplates : <Stage Template> : Loaded file-based templates: 1
+[10:33:51:323883]:[Metadata] AttributesManagerBase.h(265)::loadAllFileBasedTemplates : Loading 1  Stage Template templates found in /home/zhangshan/syp/datasets/versioned_data/hm3d-0.2/hm3d/val/00877-4ok3usBNeis
+[10:33:51:323892]:[Metadata] AttributesManagerBase.h(380)::createFromJsonOrDefaultInternal : <Stage Template>: Proposing JSON name : /home/zhangshan/syp/datasets/versioned_data/hm3d-0.2/hm3d/val/00877-4ok3usBNeis/4ok3usBNeis.basis.stage_config.json from original name : /home/zhangshan/syp/datasets/versioned_data/hm3d-0.2/hm3d/val/00877-4ok3usBNeis/4ok3usBNeis.basis.glb| This file does not exist.
+[10:33:51:323926]:[Metadata] AbstractObjectAttributesManagerBase.h(184)::createObject : File (/home/zhangshan/syp/datasets/versioned_data/hm3d-0.2/hm3d/val/00877-4ok3usBNeis/4ok3usBNeis.basis.glb) exists but is not a recognized config filename extension, so new default Stage Template attributes created and registered.
+[10:33:51:323932]:[Metadata] AttributesManagerBase.h(285)::loadAllFileBasedTemplates : <Stage Template> : Loaded file-based templates: 1
+[10:33:51:323976]:[Metadata] AttributesManagerBase.h(265)::loadAllFileBasedTemplates : Loading 1  Stage Template templates found in /home/zhangshan/syp/datasets/versioned_data/hm3d-0.2/hm3d/val/00878-XB4GS9ShBRE
+[10:33:51:323985]:[Metadata] AttributesManagerBase.h(380)::createFromJsonOrDefaultInternal : <Stage Template>: Proposing JSON name : /home/zhangshan/syp/datasets/versioned_data/hm3d-0.2/hm3d/val/00878-XB4GS9ShBRE/XB4GS9ShBRE.basis.stage_config.json from original name : /home/zhangshan/syp/datasets/versioned_data/hm3d-0.2/hm3d/val/00878-XB4GS9ShBRE/XB4GS9ShBRE.basis.glb| This file does not exist.
+[10:33:51:324017]:[Metadata] AbstractObjectAttributesManagerBase.h(184)::createObject : File (/home/zhangshan/syp/datasets/versioned_data/hm3d-0.2/hm3d/val/00878-XB4GS9ShBRE/XB4GS9ShBRE.basis.glb) exists but is not a recognized config filename extension, so new default Stage Template attributes created and registered.
+[10:33:51:324023]:[Metadata] AttributesManagerBase.h(285)::loadAllFileBasedTemplates : <Stage Template> : Loaded file-based templates: 1
+[10:33:51:324063]:[Metadata] AttributesManagerBase.h(265)::loadAllFileBasedTemplates : Loading 1  Stage Template templates found in /home/zhangshan/syp/datasets/versioned_data/hm3d-0.2/hm3d/val/00880-Nfvxx8J5NCo
+[10:33:51:324071]:[Metadata] AttributesManagerBase.h(380)::createFromJsonOrDefaultInternal : <Stage Template>: Proposing JSON name : /home/zhangshan/syp/datasets/versioned_data/hm3d-0.2/hm3d/val/00880-Nfvxx8J5NCo/Nfvxx8J5NCo.basis.stage_config.json from original name : /home/zhangshan/syp/datasets/versioned_data/hm3d-0.2/hm3d/val/00880-Nfvxx8J5NCo/Nfvxx8J5NCo.basis.glb| This file does not exist.
+[10:33:51:324103]:[Metadata] AbstractObjectAttributesManagerBase.h(184)::createObject : File (/home/zhangshan/syp/datasets/versioned_data/hm3d-0.2/hm3d/val/00880-Nfvxx8J5NCo/Nfvxx8J5NCo.basis.glb) exists but is not a recognized config filename extension, so new default Stage Template attributes created and registered.
+[10:33:51:324109]:[Metadata] AttributesManagerBase.h(285)::loadAllFileBasedTemplates : <Stage Template> : Loaded file-based templates: 1
+[10:33:51:324149]:[Metadata] AttributesManagerBase.h(265)::loadAllFileBasedTemplates : Loading 1  Stage Template templates found in /home/zhangshan/syp/datasets/versioned_data/hm3d-0.2/hm3d/val/00890-6s7QHgap2fW
+[10:33:51:324157]:[Metadata] AttributesManagerBase.h(380)::createFromJsonOrDefaultInternal : <Stage Template>: Proposing JSON name : /home/zhangshan/syp/datasets/versioned_data/hm3d-0.2/hm3d/val/00890-6s7QHgap2fW/6s7QHgap2fW.basis.stage_config.json from original name : /home/zhangshan/syp/datasets/versioned_data/hm3d-0.2/hm3d/val/00890-6s7QHgap2fW/6s7QHgap2fW.basis.glb| This file does not exist.
+[10:33:51:324189]:[Metadata] AbstractObjectAttributesManagerBase.h(184)::createObject : File (/home/zhangshan/syp/datasets/versioned_data/hm3d-0.2/hm3d/val/00890-6s7QHgap2fW/6s7QHgap2fW.basis.glb) exists but is not a recognized config filename extension, so new default Stage Template attributes created and registered.
+[10:33:51:324195]:[Metadata] AttributesManagerBase.h(285)::loadAllFileBasedTemplates : <Stage Template> : Loaded file-based templates: 1
+[10:33:51:324236]:[Metadata] AttributesManagerBase.h(265)::loadAllFileBasedTemplates : Loading 1  Stage Template templates found in /home/zhangshan/syp/datasets/versioned_data/hm3d-0.2/hm3d/val/00891-cvZr5TUy5C5
+[10:33:51:324244]:[Metadata] AttributesManagerBase.h(380)::createFromJsonOrDefaultInternal : <Stage Template>: Proposing JSON name : /home/zhangshan/syp/datasets/versioned_data/hm3d-0.2/hm3d/val/00891-cvZr5TUy5C5/cvZr5TUy5C5.basis.stage_config.json from original name : /home/zhangshan/syp/datasets/versioned_data/hm3d-0.2/hm3d/val/00891-cvZr5TUy5C5/cvZr5TUy5C5.basis.glb| This file does not exist.
+[10:33:51:324276]:[Metadata] AbstractObjectAttributesManagerBase.h(184)::createObject : File (/home/zhangshan/syp/datasets/versioned_data/hm3d-0.2/hm3d/val/00891-cvZr5TUy5C5/cvZr5TUy5C5.basis.glb) exists but is not a recognized config filename extension, so new default Stage Template attributes created and registered.
+[10:33:51:324282]:[Metadata] AttributesManagerBase.h(285)::loadAllFileBasedTemplates : <Stage Template> : Loaded file-based templates: 1
+[10:33:51:324321]:[Metadata] AttributesManagerBase.h(265)::loadAllFileBasedTemplates : Loading 1  Stage Template templates found in /home/zhangshan/syp/datasets/versioned_data/hm3d-0.2/hm3d/val/00894-HY1NcmCgn3n
+[10:33:51:324329]:[Metadata] AttributesManagerBase.h(380)::createFromJsonOrDefaultInternal : <Stage Template>: Proposing JSON name : /home/zhangshan/syp/datasets/versioned_data/hm3d-0.2/hm3d/val/00894-HY1NcmCgn3n/HY1NcmCgn3n.basis.stage_config.json from original name : /home/zhangshan/syp/datasets/versioned_data/hm3d-0.2/hm3d/val/00894-HY1NcmCgn3n/HY1NcmCgn3n.basis.glb| This file does not exist.
+[10:33:51:324361]:[Metadata] AbstractObjectAttributesManagerBase.h(184)::createObject : File (/home/zhangshan/syp/datasets/versioned_data/hm3d-0.2/hm3d/val/00894-HY1NcmCgn3n/HY1NcmCgn3n.basis.glb) exists but is not a recognized config filename extension, so new default Stage Template attributes created and registered.
+[10:33:51:324367]:[Metadata] AttributesManagerBase.h(285)::loadAllFileBasedTemplates : <Stage Template> : Loaded file-based templates: 1
+[10:33:51:324372]:[Metadata] AttributesManagerBase.h(360)::buildAttrSrcPathsFromJSONAndLoad : <Stage Template>:36paths specified in JSON doc forStage Templatetemplates.
+[10:33:51:325082]:[Metadata] AttributesManagerBase.h(360)::buildAttrSrcPathsFromJSONAndLoad : <Scene Instance>:36paths specified in JSON doc forScene Instancetemplates.
+[10:33:51:325090]:[Metadata] SceneDatasetAttributesManager.cpp(37)::createObject : JSON Configuration File (/home/zhangshan/syp/datasets/versioned_data/hm3d-0.2/hm3d/val/hm3d_annotated_val_basis.scene_dataset_config.json) based dataset attributes created  and registered.
+[10:33:51:325096]:[Metadata] MetadataMediator.cpp(120)::createSceneDataset : Dataset /home/zhangshan/syp/datasets/versioned_data/hm3d-0.2/hm3d/val/hm3d_annotated_val_basis.scene_dataset_config.json successfully created.
+[10:33:51:325102]:[Metadata] MetadataMediator.cpp(217)::setActiveSceneDatasetName : Attempt to create new dataset /home/zhangshan/syp/datasets/versioned_data/hm3d-0.2/hm3d/val/hm3d_annotated_val_basis.scene_dataset_config.json   succeeded. Currently active dataset : /home/zhangshan/syp/datasets/versioned_data/hm3d-0.2/hm3d/val/hm3d_annotated_val_basis.scene_dataset_config.json
+[10:33:51:325107]:[Metadata] MetadataMediator.cpp(175)::setCurrPhysicsAttributesHandle : Old physics manager attributes  changed to ./data/default.physics_config.json successfully.
+[10:33:51:325114]:[Metadata] MetadataMediator.cpp(66)::setSimulatorConfiguration : Set new simulator config for scene/stage : /home/zhangshan/syp/datasets/versioned_data/hm3d-0.2/hm3d/val/00800-TEEsavR23oF/TEEsavR23oF.basis.glb and dataset : /home/zhangshan/syp/datasets/versioned_data/hm3d-0.2/hm3d/val/hm3d_annotated_val_basis.scene_dataset_config.json which is currently active dataset.
+Renderer: NVIDIA GeForce RTX 4090/PCIe/SSE2 by NVIDIA Corporation
+OpenGL version: 4.6.0 NVIDIA 575.57.08
+Using optional features:
+    GL_ARB_vertex_array_object
+    GL_ARB_separate_shader_objects
+    GL_ARB_robustness
+    GL_ARB_texture_storage
+    GL_ARB_texture_view
+    GL_ARB_framebuffer_no_attachments
+    GL_ARB_invalidate_subdata
+    GL_ARB_texture_storage_multisample
+    GL_ARB_multi_bind
+    GL_ARB_direct_state_access
+    GL_ARB_get_texture_sub_image
+    GL_ARB_texture_filter_anisotropic
+    GL_KHR_debug
+    GL_KHR_parallel_shader_compile
+    GL_NV_depth_buffer_float
+Using driver workarounds:
+    no-forward-compatible-core-context
+    nv-egl-incorrect-gl11-function-pointers
+    no-layout-qualifiers-on-old-glsl
+    nv-zero-context-profile-mask
+    nv-implementation-color-read-format-dsa-broken
+    nv-cubemap-inconsistent-compressed-image-size
+    nv-cubemap-broken-full-compressed-image-query
+    nv-compressed-block-size-in-bits
+[10:33:51:732607]:[Metadata] MetadataMediator.cpp(279)::getSceneInstanceAttributesByName : No existing scene instance attributes containing name /home/zhangshan/syp/datasets/versioned_data/hm3d-0.2/hm3d/val/00800-TEEsavR23oF/TEEsavR23oF.basis.glb found in Dataset : /home/zhangshan/syp/datasets/versioned_data/hm3d-0.2/hm3d/val/hm3d_annotated_val_basis.scene_dataset_config.json but 1 StageAttributes found.  Using /home/zhangshan/syp/datasets/versioned_data/hm3d-0.2/hm3d/val/00800-TEEsavR23oF/TEEsavR23oF.basis.glb as stage and to construct a SceneInstanceAttributes with same name that will be added to Dataset.
+[10:33:51:732663]:[Metadata] SceneDatasetAttributes.cpp(47)::addNewSceneInstanceToDataset : Dataset : 'hm3d_annotated_val_basis' : Stage Attributes '/home/zhangshan/syp/datasets/versioned_data/hm3d-0.2/hm3d/val/00800-TEEsavR23oF/TEEsavR23oF.basis.glb' specified in Scene Attributes exists in dataset library.
+[10:33:51:732672]:[Metadata] SceneDatasetAttributes.cpp(84)::addNewSceneInstanceToDataset : Dataset : 'hm3d_annotated_val_basis' : Lighting Layout Attributes 'no_lights' specified in Scene Attributes but does not exist in dataset, so creating.
+[10:33:51:732689]:[Metadata] AttributesManagerBase.h(380)::createFromJsonOrDefaultInternal : <Lighting Layout>: Proposing JSON name : no_lights.lighting_config.json from original name : no_lights| This file does not exist.
+[10:33:51:732710]:[Metadata] LightLayoutAttributesManager.cpp(38)::createObject : File (no_lights) not found, so new default light layout attributes created and registered.
+[10:33:51:732722]:[Sim] Simulator.cpp(235)::createSceneInstance : Navmesh file location in scene instance : /home/zhangshan/syp/datasets/versioned_data/hm3d-0.2/hm3d/val/00800-TEEsavR23oF/TEEsavR23oF.basis.navmesh
+[10:33:51:732743]:[Sim] Simulator.cpp(240)::createSceneInstance : Loading navmesh from /home/zhangshan/syp/datasets/versioned_data/hm3d-0.2/hm3d/val/00800-TEEsavR23oF/TEEsavR23oF.basis.navmesh
+[10:33:51:732821]:[Sim] Simulator.cpp(242)::createSceneInstance : Navmesh Loaded.
+[10:33:51:732846]:[Scene] SceneGraph.h(85)::createDrawableGroup : Created DrawableGroup: 
+[10:33:51:732856]:[Assets] ResourceManager.cpp(308)::loadSemanticSceneDescriptor : SceneInstance : /home/zhangshan/syp/datasets/versioned_data/hm3d-0.2/hm3d/val/00800-TEEsavR23oF/TEEsavR23oF.basis.glb proposed Semantic Scene Descriptor filename : /home/zhangshan/syp/datasets/versioned_data/hm3d-0.2/hm3d/val/00800-TEEsavR23oF/TEEsavR23oF.semantic.txt
+[10:33:51:733861]:[Assets] ResourceManager.cpp(319)::loadSemanticSceneDescriptor : SSD with SceneInstanceAttributes-provided name  /home/zhangshan/syp/datasets/versioned_data/hm3d-0.2/hm3d/val/00800-TEEsavR23oF/TEEsavR23oF.semantic.txt successfully found and loaded
+[10:33:51:733886]:[Assets] ResourceManager.cpp(1666)::configureImporterManagerGLExtensions : Importing Basis files as BC7.
+[10:33:51:734197]:[Sim] Simulator.cpp(309)::createSceneInstance : Using scene instance-specified Light key : - no_lights -
+[10:33:51:734213]:[Metadata] MetadataMediator.cpp(66)::setSimulatorConfiguration : Set new simulator config for scene/stage : /home/zhangshan/syp/datasets/versioned_data/hm3d-0.2/hm3d/val/00800-TEEsavR23oF/TEEsavR23oF.basis.glb and dataset : /home/zhangshan/syp/datasets/versioned_data/hm3d-0.2/hm3d/val/hm3d_annotated_val_basis.scene_dataset_config.json which is currently active dataset.
+[10:33:51:734240]:[Sim] Simulator.cpp(419)::instanceStageForSceneAttributes : Start to load stage named : /home/zhangshan/syp/datasets/versioned_data/hm3d-0.2/hm3d/val/00800-TEEsavR23oF/TEEsavR23oF.basis.glb with render asset : /home/zhangshan/syp/datasets/versioned_data/hm3d-0.2/hm3d/val/00800-TEEsavR23oF/TEEsavR23oF.basis.glb and collision asset : /home/zhangshan/syp/datasets/versioned_data/hm3d-0.2/hm3d/val/00800-TEEsavR23oF/TEEsavR23oF.basis.glb
+[10:33:51:734266]:[Assets] ResourceManager.cpp(702)::createStageAssetInfosFromAttributes : Frame :{"up":[0,0,1],"front":[0,1,0],"origin":[0,0,0]} for render mesh named : /home/zhangshan/syp/datasets/versioned_data/hm3d-0.2/hm3d/val/00800-TEEsavR23oF/TEEsavR23oF.basis.glb|No Semantic asset info specified.
+[10:33:51:734274]:[Assets] ResourceManager.cpp(484)::loadStage : Not loading semantic mesh
+[10:33:51:734284]:[Assets] ResourceManager.cpp(518)::loadStage : Start load render asset /home/zhangshan/syp/datasets/versioned_data/hm3d-0.2/hm3d/val/00800-TEEsavR23oF/TEEsavR23oF.basis.glb .
+[10:33:51:734293]:[Assets] ResourceManager.cpp(984)::loadStageInternal : Attempting to load stage /home/zhangshan/syp/datasets/versioned_data/hm3d-0.2/hm3d/val/00800-TEEsavR23oF/TEEsavR23oF.basis.glb 
+[10:33:51:734306]:[Assets] ResourceManager.cpp(866)::loadRenderAsset : Loading general asset named: /home/zhangshan/syp/datasets/versioned_data/hm3d-0.2/hm3d/val/00800-TEEsavR23oF/TEEsavR23oF.basis.glb
+[10:33:51:734313]:[Assets] ResourceManager.cpp(1666)::configureImporterManagerGLExtensions : Importing Basis files as BC7.
+[10:33:52:858857]:[Assets] ResourceManager.cpp(2105)::loadMaterials : Building 41 materials for asset named 'TEEsavR23oF.basis.glb' : 
+[10:33:52:858922]:[Assets] ResourceManager.cpp(2210)::loadMaterials : Idx 00:Flat.
+[10:33:52:858940]:[Assets] ResourceManager.cpp(2210)::loadMaterials : Idx 01:Flat.
+[10:33:52:858958]:[Assets] ResourceManager.cpp(2210)::loadMaterials : Idx 02:Flat.
+[10:33:52:858974]:[Assets] ResourceManager.cpp(2210)::loadMaterials : Idx 03:Flat.
+[10:33:52:858990]:[Assets] ResourceManager.cpp(2210)::loadMaterials : Idx 04:Flat.
+[10:33:52:859005]:[Assets] ResourceManager.cpp(2210)::loadMaterials : Idx 05:Flat.
+[10:33:52:859023]:[Assets] ResourceManager.cpp(2210)::loadMaterials : Idx 06:Flat.
+[10:33:52:859037]:[Assets] ResourceManager.cpp(2210)::loadMaterials : Idx 07:Flat.
+[10:33:52:859051]:[Assets] ResourceManager.cpp(2210)::loadMaterials : Idx 08:Flat.
+[10:33:52:859064]:[Assets] ResourceManager.cpp(2210)::loadMaterials : Idx 09:Flat.
+[10:33:52:859078]:[Assets] ResourceManager.cpp(2210)::loadMaterials : Idx 10:Flat.
+[10:33:52:859095]:[Assets] ResourceManager.cpp(2210)::loadMaterials : Idx 11:Flat.
+[10:33:52:859108]:[Assets] ResourceManager.cpp(2210)::loadMaterials : Idx 12:Flat.
+[10:33:52:859122]:[Assets] ResourceManager.cpp(2210)::loadMaterials : Idx 13:Flat.
+[10:33:52:859136]:[Assets] ResourceManager.cpp(2210)::loadMaterials : Idx 14:Flat.
+[10:33:52:859149]:[Assets] ResourceManager.cpp(2210)::loadMaterials : Idx 15:Flat.
+[10:33:52:859163]:[Assets] ResourceManager.cpp(2210)::loadMaterials : Idx 16:Flat.
+[10:33:52:859176]:[Assets] ResourceManager.cpp(2210)::loadMaterials : Idx 17:Flat.
+[10:33:52:859190]:[Assets] ResourceManager.cpp(2210)::loadMaterials : Idx 18:Flat.
+[10:33:52:859204]:[Assets] ResourceManager.cpp(2210)::loadMaterials : Idx 19:Flat.
+[10:33:52:859218]:[Assets] ResourceManager.cpp(2210)::loadMaterials : Idx 20:Flat.
+[10:33:52:859231]:[Assets] ResourceManager.cpp(2210)::loadMaterials : Idx 21:Flat.
+[10:33:52:859245]:[Assets] ResourceManager.cpp(2210)::loadMaterials : Idx 22:Flat.
+[10:33:52:859258]:[Assets] ResourceManager.cpp(2210)::loadMaterials : Idx 23:Flat.
+[10:33:52:859272]:[Assets] ResourceManager.cpp(2210)::loadMaterials : Idx 24:Flat.
+[10:33:52:859286]:[Assets] ResourceManager.cpp(2210)::loadMaterials : Idx 25:Flat.
+[10:33:52:859300]:[Assets] ResourceManager.cpp(2210)::loadMaterials : Idx 26:Flat.
+[10:33:52:859314]:[Assets] ResourceManager.cpp(2210)::loadMaterials : Idx 27:Flat.
+[10:33:52:859327]:[Assets] ResourceManager.cpp(2210)::loadMaterials : Idx 28:Flat.
+[10:33:52:859341]:[Assets] ResourceManager.cpp(2210)::loadMaterials : Idx 29:Flat.
+[10:33:52:859356]:[Assets] ResourceManager.cpp(2210)::loadMaterials : Idx 30:Flat.
+[10:33:52:859370]:[Assets] ResourceManager.cpp(2210)::loadMaterials : Idx 31:Flat.
+[10:33:52:859383]:[Assets] ResourceManager.cpp(2210)::loadMaterials : Idx 32:Flat.
+[10:33:52:859397]:[Assets] ResourceManager.cpp(2210)::loadMaterials : Idx 33:Flat.
+[10:33:52:859410]:[Assets] ResourceManager.cpp(2210)::loadMaterials : Idx 34:Flat.
+[10:33:52:859424]:[Assets] ResourceManager.cpp(2210)::loadMaterials : Idx 35:Flat.
+[10:33:52:859437]:[Assets] ResourceManager.cpp(2210)::loadMaterials : Idx 36:Flat.
+[10:33:52:859450]:[Assets] ResourceManager.cpp(2210)::loadMaterials : Idx 37:Flat.
+[10:33:52:859463]:[Assets] ResourceManager.cpp(2210)::loadMaterials : Idx 38:Flat.
+[10:33:52:859477]:[Assets] ResourceManager.cpp(2210)::loadMaterials : Idx 39:Flat.
+[10:33:52:859490]:[Assets] ResourceManager.cpp(2210)::loadMaterials : Idx 40:Flat.
+[10:33:52:965887]:[Sim] Simulator.cpp(446)::instanceStageForSceneAttributes : Successfully loaded stage named : /home/zhangshan/syp/datasets/versioned_data/hm3d-0.2/hm3d/val/00800-TEEsavR23oF/TEEsavR23oF.basis.glb
+[10:33:52:965956]:[Sim] Simulator.cpp(203)::reconfigure : CreateSceneInstance success == true for active scene name : /home/zhangshan/syp/datasets/versioned_data/hm3d-0.2/hm3d/val/00800-TEEsavR23oF/TEEsavR23oF.basis.glb  with renderer.
+[10:33:52:982116]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:33:53:069833]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:33:53:069855]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:33:53:082860]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:33:53:169339]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:33:53:169361]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:33:53:181112]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:33:53:267514]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:33:53:267534]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:33:53:277241]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:33:53:363641]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:33:53:363662]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:33:53:373306]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:33:53:459738]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:33:53:459759]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:33:53:469502]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:33:53:555930]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:33:53:555951]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:33:53:565710]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:33:53:652091]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:33:53:652112]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:33:53:661504]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:33:53:747999]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:33:53:748021]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:33:53:757610]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:33:53:844152]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:33:53:844172]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:33:53:853785]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:33:53:940211]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:33:53:940230]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:33:53:949865]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:33:54:036314]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:33:54:036335]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:33:54:046120]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:33:54:132465]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:33:54:132486]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:33:54:142045]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:33:54:228427]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:33:54:228448]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:33:54:238177]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:33:54:324612]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:33:54:324633]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:33:54:334183]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:33:54:420647]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:33:54:420668]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:33:54:430293]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:33:54:516725]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:33:54:516745]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:33:54:526512]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:33:54:612947]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:33:54:612967]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:33:54:622397]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:33:54:708863]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:33:54:708884]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:33:54:718976]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:33:54:805498]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:33:54:805521]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:33:54:815078]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:33:54:901663]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:33:54:901688]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:33:54:911516]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:33:54:998049]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:33:54:998072]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:33:55:008646]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:33:55:095079]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:33:55:095098]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:33:55:105003]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:33:55:191539]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:33:55:191561]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:33:55:201386]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:33:55:287925]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:33:55:287947]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:33:55:298095]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:33:55:384612]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:33:55:384636]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:33:55:395344]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:33:55:481870]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:33:55:481890]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:33:55:492022]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:33:55:578484]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:33:55:578505]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:33:55:588555]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:33:55:675022]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:33:55:675042]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:33:55:684971]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:33:55:771540]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:33:55:771565]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:33:55:781890]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:33:55:868499]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:33:55:868521]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:33:55:878860]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:33:55:965363]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:33:55:965389]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:33:55:975993]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:33:56:062500]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:33:56:062524]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:33:56:073321]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:33:56:159774]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:33:56:159795]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:33:56:170898]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:33:56:257693]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:33:56:257726]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:33:56:268779]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:33:56:355519]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:33:56:355551]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:33:56:367039]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:33:56:453556]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:33:56:453577]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:33:56:464486]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:33:56:551060]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:33:56:551084]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:33:56:562377]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:33:56:648798]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:33:56:648817]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:33:56:659419]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:33:56:746226]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:33:56:746260]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:33:56:757516]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:33:56:844215]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:33:56:844245]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:33:56:855692]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:33:56:942161]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:33:56:942183]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:33:56:953665]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:33:57:040301]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:33:57:040327]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:33:57:051006]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:33:57:137448]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:33:57:137468]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:33:57:148654]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:33:57:235119]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:33:57:235138]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:33:57:246623]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:33:57:333061]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:33:57:333082]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:33:57:344516]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:33:57:431393]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:33:57:431418]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:33:57:442159]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:33:57:528754]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:33:57:528778]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:33:57:540359]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:33:57:626804]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:33:57:626825]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:33:57:639039]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:33:57:725567]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:33:57:725593]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:33:57:736551]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:33:57:823243]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:33:57:823268]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:33:57:833938]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:33:57:920355]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:33:57:920375]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:33:57:931870]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:33:58:018358]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:33:58:018379]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:33:58:029028]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:33:58:115479]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:33:58:115499]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:33:58:126632]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:33:58:213070]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:33:58:213093]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:33:58:224264]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:33:58:310797]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:33:58:310816]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:33:58:321575]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:33:58:408291]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:33:58:408315]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:33:58:419508]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:33:58:505931]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:33:58:505952]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:33:58:516513]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:33:58:602964]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:33:58:602985]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:33:58:613501]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:33:58:699965]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:33:58:699984]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:33:58:710886]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:33:58:797489]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:33:58:797514]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:33:58:808520]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:33:58:895079]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:33:58:895103]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:33:58:905840]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:33:58:992318]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:33:58:992343]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:33:59:003269]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:33:59:089689]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:33:59:089707]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:33:59:100676]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:33:59:187203]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:33:59:187225]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:33:59:197650]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:33:59:284129]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:33:59:284149]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:33:59:295378]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:33:59:381881]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:33:59:381903]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:33:59:392742]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:33:59:479243]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:33:59:479266]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:33:59:489704]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:33:59:576198]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:33:59:576218]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:33:59:587324]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:33:59:673741]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:33:59:673762]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:33:59:684757]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:33:59:771418]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:33:59:771440]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:33:59:781948]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:33:59:868420]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:33:59:868438]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:33:59:879565]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:33:59:966076]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:33:59:966094]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:33:59:976835]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:00:063380]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:00:063401]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:00:074573]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:00:161100]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:00:161120]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:00:172053]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:00:258507]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:00:258521]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:00:269880]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:00:356324]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:00:356342]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:00:367003]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:00:453436]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:00:453456]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:00:464795]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:00:551270]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:00:551287]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:00:563046]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:00:649592]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:00:649608]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:00:660502]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:00:747184]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:00:747206]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:00:758417]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:00:844942]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:00:844961]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:00:855815]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:00:942472]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:00:942490]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:00:953425]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:01:039992]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:01:040012]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:01:051378]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:01:137958]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:01:137978]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:01:148861]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:01:235469]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:01:235490]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:01:246374]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:01:333286]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:01:333308]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:01:344222]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:01:430842]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:01:430861]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:01:441673]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:01:528208]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:01:528231]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:01:538926]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:01:625424]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:01:625439]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:01:635810]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:01:722387]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:01:722414]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:01:733421]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:01:820026]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:01:820052]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:01:830992]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:01:917601]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:01:917624]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:01:928422]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:02:015036]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:02:015058]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:02:026022]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:02:112463]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:02:112483]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:02:123676]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:02:210179]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:02:210198]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:02:220819]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:02:307370]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:02:307392]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:02:318044]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:02:404604]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:02:404625]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:02:415403]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:02:501915]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:02:501932]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:02:512688]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:02:599192]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:02:599208]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:02:610222]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:02:696715]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:02:696735]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:02:707736]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:02:794800]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:02:794841]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:02:805765]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:02:892314]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:02:892339]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:02:903801]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:02:990308]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:02:990328]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:03:001425]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:03:087898]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:03:087913]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:03:098710]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:03:185277]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:03:185298]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:03:195905]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:03:282382]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:03:282401]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:03:292961]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:03:379409]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:03:379428]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:03:390305]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:03:476760]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:03:476776]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:03:487675]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:03:574066]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:03:574084]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:03:584823]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:03:671251]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:03:671270]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:03:682336]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:03:768820]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:03:768842]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:03:779936]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:03:866438]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:03:866458]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:03:877168]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:03:963578]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:03:963595]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:03:974364]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:04:060767]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:04:060785]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:04:071238]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:04:157746]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:04:157767]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:04:168991]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:04:255520]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:04:255538]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:04:265980]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:04:352511]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:04:352531]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:04:363727]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:04:450214]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:04:450233]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:04:461251]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:04:547622]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:04:547640]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:04:558630]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:04:645040]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:04:645056]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:04:655736]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:04:742341]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:04:742362]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:04:753704]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:04:840258]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:04:840281]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:04:851195]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:04:937734]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:04:937753]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:04:948376]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:05:034900]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:05:034923]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:05:045903]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:05:132323]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:05:132339]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:05:142671]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:05:229181]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:05:229199]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:05:239825]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:05:326315]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:05:326333]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:05:336851]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:05:423380]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:05:423400]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:05:434468]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:05:520965]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:05:520983]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:05:531631]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:05:618087]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:05:618104]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:05:628937]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:05:715296]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:05:715312]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:05:726209]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:05:812697]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:05:812713]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:05:823241]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:05:909743]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:05:909761]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:05:920612]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:06:007092]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:06:007112]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:06:018331]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:06:104832]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:06:104849]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:06:115242]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:06:201823]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:06:201845]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:06:212811]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:06:299190]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:06:299207]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:06:309748]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:06:396182]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:06:396198]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:06:407572]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:06:494039]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:06:494055]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:06:504881]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:06:591347]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:06:591364]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:06:602095]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:06:688524]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:06:688539]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:06:699346]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:06:785905]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:06:785926]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:06:796834]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:06:883271]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:06:883291]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:06:893199]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:06:979665]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:06:979680]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:06:989538]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:07:076164]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:07:076186]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:07:086856]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:07:173416]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:07:173439]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:07:184573]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:07:271087]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:07:271105]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:07:282000]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:07:368458]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:07:368473]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:07:380472]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:07:467270]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:07:467293]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:07:478152]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:07:564565]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:07:564582]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:07:575243]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:07:661717]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:07:661734]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:07:672244]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:07:758760]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:07:758780]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:07:769661]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:07:856182]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:07:856203]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:07:867115]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:07:953574]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:07:953595]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:07:964610]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:08:051112]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:08:051129]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:08:062464]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:08:148921]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:08:148940]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:08:159735]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:08:246186]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:08:246202]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:08:257328]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:08:343972]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:08:343991]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:08:354890]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:08:441373]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:08:441392]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:08:451932]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:08:538594]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:08:538616]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:08:549292]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:08:635756]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:08:635773]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:08:646829]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:08:733343]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:08:733364]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:08:744370]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:08:830976]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:08:830998]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:08:841662]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:08:928125]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:08:928143]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:08:938947]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:09:025421]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:09:025445]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:09:036586]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:09:123016]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:09:123034]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:09:133861]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:09:220373]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:09:220397]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:09:230861]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:09:317366]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:09:317385]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:09:327684]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:09:414093]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:09:414112]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:09:424766]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:09:511274]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:09:511293]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:09:521913]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:09:608387]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:09:608407]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:09:618931]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:09:705429]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:09:705444]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:09:716628]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:09:803192]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:09:803211]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:09:814024]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:09:900608]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:09:900630]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:09:911416]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:09:997841]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:09:997856]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:10:009247]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:10:095708]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:10:095723]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:10:106385]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:10:192824]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:10:192843]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:10:204078]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:10:290552]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:10:290569]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:10:301234]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:10:387727]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:10:387745]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:10:398193]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:10:484679]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:10:484694]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:10:495478]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:10:581938]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:10:581957]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:10:593137]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:10:679591]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:10:679608]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:10:690447]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:10:777005]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:10:777027]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:10:788052]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:10:874560]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:10:874582]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:10:885550]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:10:972211]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:10:972231]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:10:983436]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:11:069894]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:11:069914]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:11:080846]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:11:167244]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:11:167261]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:11:177995]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:11:264642]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:11:264662]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:11:275162]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:11:361656]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:11:361674]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:11:372491]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:11:458952]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:11:458970]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:11:470021]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:11:556523]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:11:556541]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:11:567360]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:11:653812]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:11:653830]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:11:664017]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:11:750515]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:11:750540]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:11:761182]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:11:847645]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:11:847665]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:11:858164]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:11:944605]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:11:944627]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:11:955802]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:12:042312]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:12:042334]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:12:053406]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:12:139940]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:12:139958]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:12:150412]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:12:236860]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:12:236878]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:12:247800]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:12:334271]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:12:334288]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:12:345028]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:12:431450]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:12:431467]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:12:442232]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:12:528584]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:12:528599]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:12:539547]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:12:625941]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:12:625958]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:12:636486]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:12:722921]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:12:722938]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:12:733728]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:12:820208]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:12:820228]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:12:831253]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:12:917806]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:12:917826]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:12:928359]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:13:014858]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:13:014880]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:13:025761]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:13:112110]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:13:112126]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:13:122331]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:13:208843]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:13:208860]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:13:219400]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:13:305936]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:13:305953]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:13:317165]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:13:403573]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:13:403589]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:13:414529]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:13:500999]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:13:501017]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:13:511619]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:13:598105]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:13:598124]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:13:609074]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:13:695430]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:13:695449]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:13:705889]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:13:792365]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:13:792382]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:13:802877]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:13:889375]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:13:889394]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:13:900367]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:13:987260]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:13:987286]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:13:998237]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:14:084887]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:14:084911]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:14:095318]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:14:182022]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:14:182049]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:14:192667]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:14:279096]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:14:279114]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:14:289700]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:14:376518]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:14:376547]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:14:387522]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:14:474040]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:14:474058]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:14:485217]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:14:571806]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:14:571826]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:14:583179]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:14:669627]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:14:669647]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:14:680174]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:14:767134]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:14:767167]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:14:778350]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:14:864793]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:14:864810]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:14:875280]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:14:961754]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:14:961772]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:14:972325]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:15:058795]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:15:058816]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:15:070096]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:15:156541]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:15:156561]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:15:167284]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:15:253899]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:15:253918]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:15:264425]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:15:350853]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:15:350870]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:15:361599]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:15:447958]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:15:447974]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:15:458426]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:15:544837]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:15:544853]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:15:555309]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:15:641777]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:15:641796]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:15:654421]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:15:740912]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:15:740933]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:15:752153]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:15:838644]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:15:838663]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:15:849320]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:15:935773]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:15:935790]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:15:947458]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:16:033946]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:16:033964]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:16:045331]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:16:131754]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:16:131769]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:16:142705]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:16:229092]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:16:229111]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:16:239546]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:16:325993]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:16:326010]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:16:336306]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:16:422684]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:16:422700]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:16:433593]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:16:520073]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:16:520091]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:16:530933]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:16:617393]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:16:617409]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:16:627952]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:16:714459]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:16:714474]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:16:725460]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:16:811931]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:16:811952]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:16:823218]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:16:909704]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:16:909720]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:16:920245]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:17:006724]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:17:006741]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:17:017782]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:17:104258]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:17:104277]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:17:115264]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:17:201820]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:17:201839]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:17:212338]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:17:298972]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:17:298994]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:17:309673]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:17:396093]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:17:396109]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:17:406418]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:17:492851]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:17:492866]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:17:503238]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:17:589749]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:17:589770]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:17:600539]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:17:687049]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:17:687069]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:17:698398]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:17:785245]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:17:785274]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:17:796207]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:17:882775]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:17:882796]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:17:893794]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:17:980218]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:17:980234]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:17:990530]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:18:077116]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:18:077136]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:18:087636]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:18:174124]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:18:174142]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:18:185030]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:18:271501]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:18:271519]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:18:282391]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:18:368921]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:18:368939]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:18:379532]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:18:466129]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:18:466148]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:18:477447]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:18:564155]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:18:564181]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:18:575953]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:18:662591]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:18:662612]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:18:674025]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:18:764021]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:18:764067]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:18:782777]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:18:869410]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:18:869431]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:18:880948]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:18:967707]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:18:967736]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:18:979711]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:19:066698]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:19:066727]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:19:077759]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:19:164384]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:19:164409]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:19:175630]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:19:262557]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:19:262586]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:19:274069]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:19:360769]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:19:360793]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:19:371873]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:19:458491]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:19:458517]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:19:469524]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:19:556236]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:19:556260]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:19:567196]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:19:653762]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:19:653782]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:19:664797]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:19:754709]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:19:754750]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:19:765771]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:19:852480]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:19:852505]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:19:863456]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:19:949962]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:19:949981]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:19:960829]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:20:047591]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:20:047616]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:20:058864]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:20:145502]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:20:145523]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:20:156904]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:20:243537]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:20:243559]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:20:254670]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:20:341548]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:20:341571]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:20:352822]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:20:439433]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:20:439452]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:20:450202]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:20:536777]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:20:536795]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:20:547706]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:20:634302]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:20:634324]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:20:644904]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:20:731949]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:20:731974]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:20:742974]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:20:829621]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:20:829643]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:20:840502]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:20:927144]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:20:927163]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:20:938092]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:21:024706]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:21:024727]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:21:035907]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:21:122631]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:21:122649]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:21:133519]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:21:220160]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:21:220177]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:21:231016]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:21:317954]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:21:317977]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:21:329213]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:21:416029]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:21:416048]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:21:427188]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:21:514296]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:21:514325]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:21:525896]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:21:616342]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:21:616383]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:21:627311]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:21:714185]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:21:714215]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:21:725425]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:21:812511]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:21:812540]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:21:823743]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:21:910693]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:21:910718]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:21:922058]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:22:009082]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:22:009112]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:22:020200]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:22:107137]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:22:107164]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:22:118138]:[Nav] PathFinder.cpp(571)::build : Building navmesh with 332 x 223 cells
+[10:34:22:204993]:[Nav] PathFinder.cpp(845)::build : Created navmesh with 272 vertices 134 polygons
+[10:34:22:205018]:[Sim] Simulator.cpp(908)::recomputeNavMesh : reconstruct navmesh successful
+[10:34:22:207779]:[Physics] PhysicsManager.cpp(54)::~PhysicsManager : Deconstructing PhysicsManager
+[10:34:22:207815]:[Scene] SceneManager.h(21)::~SceneManager : Deconstructing SceneManager
+[10:34:22:207822]:[Scene] SceneGraph.h(25)::~SceneGraph : Deconstructing SceneGraph
+[10:34:22:208168]:[Sensor] Sensor.cpp(69)::~Sensor : Deconstructing Sensor
+[10:34:22:208623]:[Sensor] Sensor.cpp(69)::~Sensor : Deconstructing Sensor
+[10:34:22:208670]:[Scene] SemanticScene.h(48)::~SemanticScene : Deconstructing SemanticScene
+[10:34:22:212178]:[Gfx] Renderer.cpp(71)::~Impl : Deconstructing Renderer
+[10:34:22:212191]:[Gfx] WindowlessContext.h(17)::~WindowlessContext : Deconstructing WindowlessContext
+[10:34:22:220564]:[Sim] Simulator.cpp(69)::~Simulator : Deconstructing Simulator
+{
+  "manifest_path": "agent_loop/runs/20260626-142446-93cc8c6b/pipeline_cases/data_manifest.json",
+  "counts": {
+    "T1": 0,
+    "T2": 0,
+    "T4": 0
+  },
+  "complete": false
+}
