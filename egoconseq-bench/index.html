@@ -3,23 +3,530 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>EgoConseq-Bench Showcase</title>
+  <title>R2R Ego-Consequence Benchmark Showcase</title>
   <style>
-    :root { font-family: Inter, Arial, sans-serif; color: #16181d; background: #f7f8fa; }
-    body { margin: 0; }
-    main { max-width: 920px; margin: 0 auto; padding: 48px 24px; }
-    h1 { margin: 0 0 12px; font-size: 34px; }
-    p { color: #53606f; line-height: 1.5; }
-    a { display: block; margin: 12px 0; padding: 14px 16px; background: #fff; border: 1px solid #d9dde5; border-radius: 8px; color: #1f4b7a; text-decoration: none; }
-  </style>
+:root { color-scheme: light; font-family: Inter, Arial, sans-serif; background: #f5f6f8; color: #17191f; }
+body { margin: 0; }
+header { max-width: 1220px; margin: 0 auto; padding: 28px 24px 20px; border-bottom: 1px solid #d7dce3; }
+main { max-width: 1220px; margin: 0 auto; padding: 0 24px 36px; }
+h1 { margin: 4px 0 10px; font-size: 34px; line-height: 1.1; }
+h2 { margin: 0; font-size: 22px; }
+h3 { margin: 10px 0; font-size: 17px; line-height: 1.35; }
+p { line-height: 1.48; }
+.lead { max-width: 880px; color: #465261; }
+.eyebrow { margin: 0; color: #657386; font-size: 12px; text-transform: uppercase; letter-spacing: .02em; }
+.hero-grid { display: grid; grid-template-columns: 1fr 330px; gap: 28px; align-items: end; }
+.stats-panel { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; overflow: hidden; border: 1px solid #c8d0da; border-radius: 8px; background: #c8d0da; }
+.stats-panel div { background: #fff; padding: 14px 12px; }
+.stats-panel strong { display: block; font-size: 26px; line-height: 1; color: #102033; }
+.stats-panel span { display: block; margin-top: 6px; color: #657386; font-size: 12px; }
+.tabs { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 18px; }
+.tab { display: inline-flex; align-items: center; min-height: 34px; padding: 0 12px; border: 1px solid #bcc6d2; border-radius: 6px; color: #21496d; background: #fff; text-decoration: none; font-size: 14px; }
+section { padding: 24px 0; }
+table { border-collapse: collapse; width: 100%; background: #fff; border: 1px solid #d7dce3; }
+th, td { border-bottom: 1px solid #d7dce3; padding: 10px 12px; text-align: left; vertical-align: top; }
+th { background: #eef1f4; width: 230px; }
+.method { color: #465261; max-width: 980px; }
+.section-title { display: grid; grid-template-columns: minmax(240px, 360px) 1fr; gap: 18px; align-items: start; margin-bottom: 14px; }
+.section-title.single { grid-template-columns: minmax(280px, 420px) 1fr; }
+.section-title > p { margin: 0; color: #465261; }
+.category-cards { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+.category-card { display: block; min-height: 164px; padding: 14px; border: 1px solid #d7dce3; border-top-width: 5px; border-radius: 8px; background: #fff; color: inherit; text-decoration: none; }
+.category-card span { display: block; color: #657386; font-size: 12px; text-transform: uppercase; }
+.category-card strong { display: block; margin-top: 8px; font-size: 17px; line-height: 1.25; }
+.category-card em { display: inline-block; margin-top: 10px; color: #21496d; font-style: normal; font-size: 13px; }
+.category-card p { margin: 10px 0 0; color: #465261; font-size: 14px; }
+.accent-0 { border-top-color: #2d6cdf; }
+.accent-1 { border-top-color: #d65f3d; }
+.accent-2 { border-top-color: #2b9b6f; }
+.accent-3 { border-top-color: #9b6b20; }
+.case-grid { display: grid; grid-template-columns: 1fr; gap: 16px; }
+.case-card { display: grid; grid-template-columns: minmax(300px, 44%) 1fr; gap: 16px; padding: 14px; background: #fff; border: 1px solid #d7dce3; border-radius: 8px; }
+.media { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; align-content: start; }
+.media figure { margin: 0; }
+.media img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; border: 1px solid #d7dce3; border-radius: 6px 6px 0 0; background: #101820; display: block; }
+.media figcaption { padding: 7px 8px; border: 1px solid #d7dce3; border-top: 0; border-radius: 0 0 6px 6px; color: #465261; background: #f8fafc; font-size: 12px; }
+.case-body { min-width: 0; }
+.case-meta { display: flex; justify-content: space-between; gap: 12px; color: #657386; font-size: 12px; }
+.qa-grid { display: grid; grid-template-columns: minmax(180px, .8fr) 1fr; gap: 12px; }
+.answer-box { border: 1px solid #b8c7d9; border-radius: 8px; padding: 10px 12px; background: #f2f7fd; }
+.answer-box p { margin: 8px 0 0; font-size: 24px; line-height: 1.15; color: #173f65; font-weight: 700; overflow-wrap: anywhere; }
+.evidence { margin-top: 10px; border-top: 1px solid #e0e5eb; }
+.evidence p { display: grid; grid-template-columns: 128px 1fr; gap: 12px; margin: 0; padding: 9px 0; border-bottom: 1px solid #e8edf2; }
+.evidence strong { color: #263445; }
+.evidence span { color: #303b49; }
+ul { margin: 6px 0 0; padding-left: 18px; }
+.source { color: #657386; font-size: 13px; }
+.empty { color: #7a4a05; }
+@media (max-width: 820px) {
+  h1 { font-size: 28px; }
+  .hero-grid, .section-title, .section-title.single, .case-card, .qa-grid, .evidence p { grid-template-columns: 1fr; }
+  .category-cards { grid-template-columns: 1fr; }
+  .media { grid-template-columns: 1fr; }
+}
+</style>
 </head>
 <body>
+  <header>
+    <div class="hero-grid">
+      <div>
+        <p class="eyebrow">R2R depth/pose grounded demo</p>
+        <h1>Ego-Consequence QA Showcase</h1>
+        <p class="lead">Benchmark categories are organized by the embodied consequence being tested. Every case below has an R2R RGB frame, depth evidence, camera pose, a concrete QA prompt, and a GT answer computed from extracted depth/pose.</p>
+      </div>
+      <div class="stats-panel">
+        <div><strong>12</strong><span>QA cases</span></div>
+        <div><strong>4</strong><span>categories</span></div>
+        <div><strong>1</strong><span>R2R scan(s)</span></div>
+      </div>
+    </div>
+    <div class="tabs"><a class="tab" href="#visible_forward_clearance">Visible Forward Clearance</a><a class="tab" href="#action_direction_choice">Action Direction Consequence</a><a class="tab" href="#body_size_counterfactual">Body-Size Counterfactual</a><a class="tab" href="#nearest_visible_constraint">Nearest Visible Constraint</a></div>
+  </header>
   <main>
-    <h1>EgoConseq-Bench Showcase</h1>
-    <p>Published static bundle for run <strong>20260626-142446-93cc8c6b</strong>.</p>
-    <a href="runs/20260626-142446-93cc8c6b/round_05/merged/design_overview.html">Design Overview</a>
-    <a href="runs/20260626-142446-93cc8c6b/round_05/merged/case_showcase.html">Case Showcase</a>
-    <a href="runs/20260626-142446-93cc8c6b/discussion_summary.html">Discussion Summary</a>
+    <section class="overview">
+      <div class="section-title single">
+        <div>
+          <p class="eyebrow">classification design</p>
+          <h2>What The Benchmark Categories Cover</h2>
+        </div>
+        <p>These categories are not copied from another benchmark. They use the R2R navigation setting to test visible egocentric action consequences: distance, action choice, body-size counterfactuals, and the nearest visible constraint.</p>
+      </div>
+      <div class="category-cards">
+        <a class="category-card accent-0" href="#visible_forward_clearance">
+          <span>multiple-choice</span>
+          <strong>Visible Forward Clearance</strong>
+          <em>3 R2R cases</em>
+          <p>Does the model infer how far its own body can keep moving from one egocentric image?</p>
+        </a>
+        
+        <a class="category-card accent-1" href="#action_direction_choice">
+          <span>ranking choice</span>
+          <strong>Action Direction Consequence</strong>
+          <em>3 R2R cases</em>
+          <p>Does the model compare consequences of left/front/right navigation actions instead of naming objects?</p>
+        </a>
+        
+        <a class="category-card accent-2" href="#body_size_counterfactual">
+          <span>multiple-choice</span>
+          <strong>Body-Size Counterfactual</strong>
+          <em>3 R2R cases</em>
+          <p>Does the answer change when the same image is paired with a different robot width?</p>
+        </a>
+        
+        <a class="category-card accent-3" href="#nearest_visible_constraint">
+          <span>open-set short answer</span>
+          <strong>Nearest Visible Constraint</strong>
+          <em>3 R2R cases</em>
+          <p>Can the model identify the visible constraint that determines the action outcome?</p>
+        </a>
+        </div>
+      <p class="method">GT method: R2R RGB + extracted normalized depth + camera intrinsics/pose; visible single-image geometry only. The overlay marks the image regions used for visible single-image geometry; the depth preview is copied from the R2R extracted depth map.</p>
+    </section>
+    
+            <section id="visible_forward_clearance" class="category">
+              <div class="section-title">
+                <div>
+                  <p class="eyebrow">multiple-choice</p>
+                  <h2>Visible Forward Clearance</h2>
+                </div>
+                <p>Does the model infer how far its own body can keep moving from one egocentric image?</p>
+              </div>
+              <div class="case-grid">
+    <article class="case-card">
+      <div class="media">
+        <figure>
+          <img src="assets/17DRP5sb8fy_r2r_000515_011_overlay.jpg" alt="visible_forward_clearance-01 RGB overlay">
+          <figcaption>R2R RGB + sampled action windows</figcaption>
+        </figure>
+        <figure>
+          <img src="assets/17DRP5sb8fy_r2r_000515_011_depth.jpg" alt="visible_forward_clearance-01 depth preview">
+          <figcaption>Extracted depth preview</figcaption>
+        </figure>
+      </div>
+      <div class="case-body">
+        <div class="case-meta">
+          <span>visible_forward_clearance-01</span>
+          <span>17DRP5sb8fy · frame 011</span>
+        </div>
+        <h3>You are a cylindrical robot with width 0.50 m at the R2R camera pose. If you continue straight forward, how many body-widths of visible clearance are available?</h3>
+        <div class="qa-grid">
+          <div><strong>Options</strong><ul><li>&lt;2</li><li>2-4</li><li>4-8</li><li>&gt;8</li></ul></div>
+          <div class="answer-box"><strong>GT Answer</strong><p>2-4</p></div>
+        </div>
+        <div class="evidence">
+          <p><strong>GT derivation</strong><span>front depth quantile=1.02 m; body-widths=2.04</span></p>
+          <p><strong>Pose</strong><span>xyz=[-9.136, 1.322, 1.482], quat=[-0.924, 0.0, 0.383, 0.0], hfov=79.0</span></p>
+          <p><strong>R2R instruction</strong><span>Exit the bedroom, enter the bathroom, wait at the toilet.</span></p>
+        </div>
+        <p class="source">Source: R2R extracted rgb/depth/pose · episode 17DRP5sb8fy_r2r_000515</p>
+      </div>
+    </article>
+    
+    <article class="case-card">
+      <div class="media">
+        <figure>
+          <img src="assets/17DRP5sb8fy_r2r_000515_022_overlay.jpg" alt="visible_forward_clearance-02 RGB overlay">
+          <figcaption>R2R RGB + sampled action windows</figcaption>
+        </figure>
+        <figure>
+          <img src="assets/17DRP5sb8fy_r2r_000515_022_depth.jpg" alt="visible_forward_clearance-02 depth preview">
+          <figcaption>Extracted depth preview</figcaption>
+        </figure>
+      </div>
+      <div class="case-body">
+        <div class="case-meta">
+          <span>visible_forward_clearance-02</span>
+          <span>17DRP5sb8fy · frame 022</span>
+        </div>
+        <h3>You are a cylindrical robot with width 0.50 m at the R2R camera pose. If you continue straight forward, how many body-widths of visible clearance are available?</h3>
+        <div class="qa-grid">
+          <div><strong>Options</strong><ul><li>&lt;2</li><li>2-4</li><li>4-8</li><li>&gt;8</li></ul></div>
+          <div class="answer-box"><strong>GT Answer</strong><p>4-8</p></div>
+        </div>
+        <div class="evidence">
+          <p><strong>GT derivation</strong><span>front depth quantile=3.10 m; body-widths=6.20</span></p>
+          <p><strong>Pose</strong><span>xyz=[-8.29, 1.322, 0.273], quat=[-0.707, 0.0, 0.707, 0.0], hfov=79.0</span></p>
+          <p><strong>R2R instruction</strong><span>Exit the bedroom, enter the bathroom, wait at the toilet.</span></p>
+        </div>
+        <p class="source">Source: R2R extracted rgb/depth/pose · episode 17DRP5sb8fy_r2r_000515</p>
+      </div>
+    </article>
+    
+    <article class="case-card">
+      <div class="media">
+        <figure>
+          <img src="assets/17DRP5sb8fy_r2r_000515_032_overlay.jpg" alt="visible_forward_clearance-03 RGB overlay">
+          <figcaption>R2R RGB + sampled action windows</figcaption>
+        </figure>
+        <figure>
+          <img src="assets/17DRP5sb8fy_r2r_000515_032_depth.jpg" alt="visible_forward_clearance-03 depth preview">
+          <figcaption>Extracted depth preview</figcaption>
+        </figure>
+      </div>
+      <div class="case-body">
+        <div class="case-meta">
+          <span>visible_forward_clearance-03</span>
+          <span>17DRP5sb8fy · frame 032</span>
+        </div>
+        <h3>You are a cylindrical robot with width 0.50 m at the R2R camera pose. If you continue straight forward, how many body-widths of visible clearance are available?</h3>
+        <div class="qa-grid">
+          <div><strong>Options</strong><ul><li>&lt;2</li><li>2-4</li><li>4-8</li><li>&gt;8</li></ul></div>
+          <div class="answer-box"><strong>GT Answer</strong><p>4-8</p></div>
+        </div>
+        <div class="evidence">
+          <p><strong>GT derivation</strong><span>front depth quantile=2.39 m; body-widths=4.78</span></p>
+          <p><strong>Pose</strong><span>xyz=[-6.796, 1.322, 0.221], quat=[-0.707, 0.0, 0.707, 0.0], hfov=79.0</span></p>
+          <p><strong>R2R instruction</strong><span>Exit the bedroom, enter the bathroom, wait at the toilet.</span></p>
+        </div>
+        <p class="source">Source: R2R extracted rgb/depth/pose · episode 17DRP5sb8fy_r2r_000515</p>
+      </div>
+    </article>
+    </div>
+            </section>
+            
+            <section id="action_direction_choice" class="category">
+              <div class="section-title">
+                <div>
+                  <p class="eyebrow">ranking choice</p>
+                  <h2>Action Direction Consequence</h2>
+                </div>
+                <p>Does the model compare consequences of left/front/right navigation actions instead of naming objects?</p>
+              </div>
+              <div class="case-grid">
+    <article class="case-card">
+      <div class="media">
+        <figure>
+          <img src="assets/17DRP5sb8fy_r2r_000515_011_overlay.jpg" alt="action_direction_choice-01 RGB overlay">
+          <figcaption>R2R RGB + sampled action windows</figcaption>
+        </figure>
+        <figure>
+          <img src="assets/17DRP5sb8fy_r2r_000515_011_depth.jpg" alt="action_direction_choice-01 depth preview">
+          <figcaption>Extracted depth preview</figcaption>
+        </figure>
+      </div>
+      <div class="case-body">
+        <div class="case-meta">
+          <span>action_direction_choice-01</span>
+          <span>17DRP5sb8fy · frame 011</span>
+        </div>
+        <h3>Compare the visible clearance for three navigation actions: left-forward, straight, and right-forward. Rank them from safest/longest to shortest.</h3>
+        <div class="qa-grid">
+          <div><strong>Options</strong><ul><li>rank left / front / right</li></ul></div>
+          <div class="answer-box"><strong>GT Answer</strong><p>left &gt; front &gt; right</p></div>
+        </div>
+        <div class="evidence">
+          <p><strong>GT derivation</strong><span>depth quantiles in action windows: left=1.92 m, front=1.02 m, right=0.67 m</span></p>
+          <p><strong>Pose</strong><span>xyz=[-9.136, 1.322, 1.482], quat=[-0.924, 0.0, 0.383, 0.0], hfov=79.0</span></p>
+          <p><strong>R2R instruction</strong><span>Exit the bedroom, enter the bathroom, wait at the toilet.</span></p>
+        </div>
+        <p class="source">Source: R2R extracted rgb/depth/pose · episode 17DRP5sb8fy_r2r_000515</p>
+      </div>
+    </article>
+    
+    <article class="case-card">
+      <div class="media">
+        <figure>
+          <img src="assets/17DRP5sb8fy_r2r_000515_022_overlay.jpg" alt="action_direction_choice-02 RGB overlay">
+          <figcaption>R2R RGB + sampled action windows</figcaption>
+        </figure>
+        <figure>
+          <img src="assets/17DRP5sb8fy_r2r_000515_022_depth.jpg" alt="action_direction_choice-02 depth preview">
+          <figcaption>Extracted depth preview</figcaption>
+        </figure>
+      </div>
+      <div class="case-body">
+        <div class="case-meta">
+          <span>action_direction_choice-02</span>
+          <span>17DRP5sb8fy · frame 022</span>
+        </div>
+        <h3>Compare the visible clearance for three navigation actions: left-forward, straight, and right-forward. Rank them from safest/longest to shortest.</h3>
+        <div class="qa-grid">
+          <div><strong>Options</strong><ul><li>rank left / front / right</li></ul></div>
+          <div class="answer-box"><strong>GT Answer</strong><p>front &gt; right &gt; left</p></div>
+        </div>
+        <div class="evidence">
+          <p><strong>GT derivation</strong><span>depth quantiles in action windows: left=1.29 m, front=3.10 m, right=1.37 m</span></p>
+          <p><strong>Pose</strong><span>xyz=[-8.29, 1.322, 0.273], quat=[-0.707, 0.0, 0.707, 0.0], hfov=79.0</span></p>
+          <p><strong>R2R instruction</strong><span>Exit the bedroom, enter the bathroom, wait at the toilet.</span></p>
+        </div>
+        <p class="source">Source: R2R extracted rgb/depth/pose · episode 17DRP5sb8fy_r2r_000515</p>
+      </div>
+    </article>
+    
+    <article class="case-card">
+      <div class="media">
+        <figure>
+          <img src="assets/17DRP5sb8fy_r2r_000515_032_overlay.jpg" alt="action_direction_choice-03 RGB overlay">
+          <figcaption>R2R RGB + sampled action windows</figcaption>
+        </figure>
+        <figure>
+          <img src="assets/17DRP5sb8fy_r2r_000515_032_depth.jpg" alt="action_direction_choice-03 depth preview">
+          <figcaption>Extracted depth preview</figcaption>
+        </figure>
+      </div>
+      <div class="case-body">
+        <div class="case-meta">
+          <span>action_direction_choice-03</span>
+          <span>17DRP5sb8fy · frame 032</span>
+        </div>
+        <h3>Compare the visible clearance for three navigation actions: left-forward, straight, and right-forward. Rank them from safest/longest to shortest.</h3>
+        <div class="qa-grid">
+          <div><strong>Options</strong><ul><li>rank left / front / right</li></ul></div>
+          <div class="answer-box"><strong>GT Answer</strong><p>front &gt; right &gt; left</p></div>
+        </div>
+        <div class="evidence">
+          <p><strong>GT derivation</strong><span>depth quantiles in action windows: left=0.98 m, front=2.39 m, right=1.37 m</span></p>
+          <p><strong>Pose</strong><span>xyz=[-6.796, 1.322, 0.221], quat=[-0.707, 0.0, 0.707, 0.0], hfov=79.0</span></p>
+          <p><strong>R2R instruction</strong><span>Exit the bedroom, enter the bathroom, wait at the toilet.</span></p>
+        </div>
+        <p class="source">Source: R2R extracted rgb/depth/pose · episode 17DRP5sb8fy_r2r_000515</p>
+      </div>
+    </article>
+    </div>
+            </section>
+            
+            <section id="body_size_counterfactual" class="category">
+              <div class="section-title">
+                <div>
+                  <p class="eyebrow">multiple-choice</p>
+                  <h2>Body-Size Counterfactual</h2>
+                </div>
+                <p>Does the answer change when the same image is paired with a different robot width?</p>
+              </div>
+              <div class="case-grid">
+    <article class="case-card">
+      <div class="media">
+        <figure>
+          <img src="assets/17DRP5sb8fy_r2r_000515_011_overlay.jpg" alt="body_size_counterfactual-01 RGB overlay">
+          <figcaption>R2R RGB + sampled action windows</figcaption>
+        </figure>
+        <figure>
+          <img src="assets/17DRP5sb8fy_r2r_000515_011_depth.jpg" alt="body_size_counterfactual-01 depth preview">
+          <figcaption>Extracted depth preview</figcaption>
+        </figure>
+      </div>
+      <div class="case-body">
+        <div class="case-meta">
+          <span>body_size_counterfactual-01</span>
+          <span>17DRP5sb8fy · frame 011</span>
+        </div>
+        <h3>At the same image and pose, compare a small robot width 0.20 m with a large robot width 0.80 m. Which body can pass through the visible forward channel to the measured target depth?</h3>
+        <div class="qa-grid">
+          <div><strong>Options</strong><ul><li>both pass</li><li>only small passes</li><li>neither passes</li></ul></div>
+          <div class="answer-box"><strong>GT Answer</strong><p>both pass</p></div>
+        </div>
+        <div class="evidence">
+          <p><strong>GT derivation</strong><span>visible channel width at 1.00 m is 0.94 m</span></p>
+          <p><strong>Pose</strong><span>xyz=[-9.136, 1.322, 1.482], quat=[-0.924, 0.0, 0.383, 0.0], hfov=79.0</span></p>
+          <p><strong>R2R instruction</strong><span>Exit the bedroom, enter the bathroom, wait at the toilet.</span></p>
+        </div>
+        <p class="source">Source: R2R extracted rgb/depth/pose · episode 17DRP5sb8fy_r2r_000515</p>
+      </div>
+    </article>
+    
+    <article class="case-card">
+      <div class="media">
+        <figure>
+          <img src="assets/17DRP5sb8fy_r2r_000515_022_overlay.jpg" alt="body_size_counterfactual-02 RGB overlay">
+          <figcaption>R2R RGB + sampled action windows</figcaption>
+        </figure>
+        <figure>
+          <img src="assets/17DRP5sb8fy_r2r_000515_022_depth.jpg" alt="body_size_counterfactual-02 depth preview">
+          <figcaption>Extracted depth preview</figcaption>
+        </figure>
+      </div>
+      <div class="case-body">
+        <div class="case-meta">
+          <span>body_size_counterfactual-02</span>
+          <span>17DRP5sb8fy · frame 022</span>
+        </div>
+        <h3>At the same image and pose, compare a small robot width 0.20 m with a large robot width 0.80 m. Which body can pass through the visible forward channel to the measured target depth?</h3>
+        <div class="qa-grid">
+          <div><strong>Options</strong><ul><li>both pass</li><li>only small passes</li><li>neither passes</li></ul></div>
+          <div class="answer-box"><strong>GT Answer</strong><p>both pass</p></div>
+        </div>
+        <div class="evidence">
+          <p><strong>GT derivation</strong><span>visible channel width at 2.00 m is 1.48 m</span></p>
+          <p><strong>Pose</strong><span>xyz=[-8.29, 1.322, 0.273], quat=[-0.707, 0.0, 0.707, 0.0], hfov=79.0</span></p>
+          <p><strong>R2R instruction</strong><span>Exit the bedroom, enter the bathroom, wait at the toilet.</span></p>
+        </div>
+        <p class="source">Source: R2R extracted rgb/depth/pose · episode 17DRP5sb8fy_r2r_000515</p>
+      </div>
+    </article>
+    
+    <article class="case-card">
+      <div class="media">
+        <figure>
+          <img src="assets/17DRP5sb8fy_r2r_000515_032_overlay.jpg" alt="body_size_counterfactual-03 RGB overlay">
+          <figcaption>R2R RGB + sampled action windows</figcaption>
+        </figure>
+        <figure>
+          <img src="assets/17DRP5sb8fy_r2r_000515_032_depth.jpg" alt="body_size_counterfactual-03 depth preview">
+          <figcaption>Extracted depth preview</figcaption>
+        </figure>
+      </div>
+      <div class="case-body">
+        <div class="case-meta">
+          <span>body_size_counterfactual-03</span>
+          <span>17DRP5sb8fy · frame 032</span>
+        </div>
+        <h3>At the same image and pose, compare a small robot width 0.20 m with a large robot width 0.80 m. Which body can pass through the visible forward channel to the measured target depth?</h3>
+        <div class="qa-grid">
+          <div><strong>Options</strong><ul><li>both pass</li><li>only small passes</li><li>neither passes</li></ul></div>
+          <div class="answer-box"><strong>GT Answer</strong><p>both pass</p></div>
+        </div>
+        <div class="evidence">
+          <p><strong>GT derivation</strong><span>visible channel width at 1.91 m is 2.00 m</span></p>
+          <p><strong>Pose</strong><span>xyz=[-6.796, 1.322, 0.221], quat=[-0.707, 0.0, 0.707, 0.0], hfov=79.0</span></p>
+          <p><strong>R2R instruction</strong><span>Exit the bedroom, enter the bathroom, wait at the toilet.</span></p>
+        </div>
+        <p class="source">Source: R2R extracted rgb/depth/pose · episode 17DRP5sb8fy_r2r_000515</p>
+      </div>
+    </article>
+    </div>
+            </section>
+            
+            <section id="nearest_visible_constraint" class="category">
+              <div class="section-title">
+                <div>
+                  <p class="eyebrow">open-set short answer</p>
+                  <h2>Nearest Visible Constraint</h2>
+                </div>
+                <p>Can the model identify the visible constraint that determines the action outcome?</p>
+              </div>
+              <div class="case-grid">
+    <article class="case-card">
+      <div class="media">
+        <figure>
+          <img src="assets/17DRP5sb8fy_r2r_000515_011_overlay.jpg" alt="nearest_visible_constraint-01 RGB overlay">
+          <figcaption>R2R RGB + sampled action windows</figcaption>
+        </figure>
+        <figure>
+          <img src="assets/17DRP5sb8fy_r2r_000515_011_depth.jpg" alt="nearest_visible_constraint-01 depth preview">
+          <figcaption>Extracted depth preview</figcaption>
+        </figure>
+      </div>
+      <div class="case-body">
+        <div class="case-meta">
+          <span>nearest_visible_constraint-01</span>
+          <span>17DRP5sb8fy · frame 011</span>
+        </div>
+        <h3>Open answer: where is the nearest visible navigation constraint in the ego view, and what is its approximate distance?</h3>
+        <div class="qa-grid">
+          <div><strong>Options</strong><ul><li>open-set answer</li></ul></div>
+          <div class="answer-box"><strong>GT Answer</strong><p>right-forward, about 0.7 m</p></div>
+        </div>
+        <div class="evidence">
+          <p><strong>GT derivation</strong><span>minimum among left/front/right visible depth windows: left=1.92 m, front=1.02 m, right=0.67 m</span></p>
+          <p><strong>Pose</strong><span>xyz=[-9.136, 1.322, 1.482], quat=[-0.924, 0.0, 0.383, 0.0], hfov=79.0</span></p>
+          <p><strong>R2R instruction</strong><span>Exit the bedroom, enter the bathroom, wait at the toilet.</span></p>
+        </div>
+        <p class="source">Source: R2R extracted rgb/depth/pose · episode 17DRP5sb8fy_r2r_000515</p>
+      </div>
+    </article>
+    
+    <article class="case-card">
+      <div class="media">
+        <figure>
+          <img src="assets/17DRP5sb8fy_r2r_000515_022_overlay.jpg" alt="nearest_visible_constraint-02 RGB overlay">
+          <figcaption>R2R RGB + sampled action windows</figcaption>
+        </figure>
+        <figure>
+          <img src="assets/17DRP5sb8fy_r2r_000515_022_depth.jpg" alt="nearest_visible_constraint-02 depth preview">
+          <figcaption>Extracted depth preview</figcaption>
+        </figure>
+      </div>
+      <div class="case-body">
+        <div class="case-meta">
+          <span>nearest_visible_constraint-02</span>
+          <span>17DRP5sb8fy · frame 022</span>
+        </div>
+        <h3>Open answer: where is the nearest visible navigation constraint in the ego view, and what is its approximate distance?</h3>
+        <div class="qa-grid">
+          <div><strong>Options</strong><ul><li>open-set answer</li></ul></div>
+          <div class="answer-box"><strong>GT Answer</strong><p>left-forward, about 1.3 m</p></div>
+        </div>
+        <div class="evidence">
+          <p><strong>GT derivation</strong><span>minimum among left/front/right visible depth windows: left=1.29 m, front=3.10 m, right=1.37 m</span></p>
+          <p><strong>Pose</strong><span>xyz=[-8.29, 1.322, 0.273], quat=[-0.707, 0.0, 0.707, 0.0], hfov=79.0</span></p>
+          <p><strong>R2R instruction</strong><span>Exit the bedroom, enter the bathroom, wait at the toilet.</span></p>
+        </div>
+        <p class="source">Source: R2R extracted rgb/depth/pose · episode 17DRP5sb8fy_r2r_000515</p>
+      </div>
+    </article>
+    
+    <article class="case-card">
+      <div class="media">
+        <figure>
+          <img src="assets/17DRP5sb8fy_r2r_000515_032_overlay.jpg" alt="nearest_visible_constraint-03 RGB overlay">
+          <figcaption>R2R RGB + sampled action windows</figcaption>
+        </figure>
+        <figure>
+          <img src="assets/17DRP5sb8fy_r2r_000515_032_depth.jpg" alt="nearest_visible_constraint-03 depth preview">
+          <figcaption>Extracted depth preview</figcaption>
+        </figure>
+      </div>
+      <div class="case-body">
+        <div class="case-meta">
+          <span>nearest_visible_constraint-03</span>
+          <span>17DRP5sb8fy · frame 032</span>
+        </div>
+        <h3>Open answer: where is the nearest visible navigation constraint in the ego view, and what is its approximate distance?</h3>
+        <div class="qa-grid">
+          <div><strong>Options</strong><ul><li>open-set answer</li></ul></div>
+          <div class="answer-box"><strong>GT Answer</strong><p>left-forward, about 1.0 m</p></div>
+        </div>
+        <div class="evidence">
+          <p><strong>GT derivation</strong><span>minimum among left/front/right visible depth windows: left=0.98 m, front=2.39 m, right=1.37 m</span></p>
+          <p><strong>Pose</strong><span>xyz=[-6.796, 1.322, 0.221], quat=[-0.707, 0.0, 0.707, 0.0], hfov=79.0</span></p>
+          <p><strong>R2R instruction</strong><span>Exit the bedroom, enter the bathroom, wait at the toilet.</span></p>
+        </div>
+        <p class="source">Source: R2R extracted rgb/depth/pose · episode 17DRP5sb8fy_r2r_000515</p>
+      </div>
+    </article>
+    </div>
+            </section>
+            
   </main>
 </body>
 </html>

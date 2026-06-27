@@ -1,0 +1,522 @@
+{
+  "generator": "pipeline.make_r2r_showcase",
+  "source": "/home/zhangshan/syp/datasets/StreamVLN-Trajectory-Data/R2R",
+  "gt_method": "R2R RGB + extracted normalized depth + camera intrinsics/pose; visible single-image geometry only",
+  "body": {
+    "default_radius_m": 0.25,
+    "default_width_m": 0.5,
+    "small_width_m": 0.2,
+    "large_width_m": 0.8
+  },
+  "categories": [
+    {
+      "id": "visible_forward_clearance",
+      "title": "Visible Forward Clearance",
+      "motivation": "Does the model infer how far its own body can keep moving from one egocentric image?",
+      "qa_type": "multiple-choice"
+    },
+    {
+      "id": "action_direction_choice",
+      "title": "Action Direction Consequence",
+      "motivation": "Does the model compare consequences of left/front/right navigation actions instead of naming objects?",
+      "qa_type": "ranking choice"
+    },
+    {
+      "id": "body_size_counterfactual",
+      "title": "Body-Size Counterfactual",
+      "motivation": "Does the answer change when the same image is paired with a different robot width?",
+      "qa_type": "multiple-choice"
+    },
+    {
+      "id": "nearest_visible_constraint",
+      "title": "Nearest Visible Constraint",
+      "motivation": "Can the model identify the visible constraint that determines the action outcome?",
+      "qa_type": "open-set short answer"
+    }
+  ],
+  "counts": {
+    "visible_forward_clearance": 3,
+    "action_direction_choice": 3,
+    "body_size_counterfactual": 3,
+    "nearest_visible_constraint": 3
+  },
+  "cases": [
+    {
+      "scan": "17DRP5sb8fy",
+      "episode": "17DRP5sb8fy_r2r_000515",
+      "frame": "011",
+      "instruction": "Exit the bedroom, enter the bathroom, wait at the toilet. ",
+      "rgb_path": "assets/17DRP5sb8fy_r2r_000515_011_rgb.jpg",
+      "depth_path": "assets/17DRP5sb8fy_r2r_000515_011_depth.jpg",
+      "overlay_path": "assets/17DRP5sb8fy_r2r_000515_011_overlay.jpg",
+      "pose": {
+        "position_xyz": [
+          -9.136,
+          1.322,
+          1.482
+        ],
+        "rotation_wxyz": [
+          -0.924,
+          0.0,
+          0.383,
+          0.0
+        ],
+        "hfov": 79.0,
+        "fx": 388.19,
+        "depth_range_m": [
+          0.0,
+          10.0
+        ]
+      },
+      "source": "R2R extracted rgb/depth/pose",
+      "not_simulator_validated": false,
+      "category_id": "visible_forward_clearance",
+      "question_type": "multiple-choice",
+      "question": "You are a cylindrical robot with width 0.50 m at the R2R camera pose. If you continue straight forward, how many body-widths of visible clearance are available?",
+      "options": [
+        "<2",
+        "2-4",
+        "4-8",
+        ">8"
+      ],
+      "answer": "2-4",
+      "gt_derivation": "front depth quantile=1.02 m; body-widths=2.04",
+      "case_id": "visible_forward_clearance-01"
+    },
+    {
+      "scan": "17DRP5sb8fy",
+      "episode": "17DRP5sb8fy_r2r_000515",
+      "frame": "022",
+      "instruction": "Exit the bedroom, enter the bathroom, wait at the toilet. ",
+      "rgb_path": "assets/17DRP5sb8fy_r2r_000515_022_rgb.jpg",
+      "depth_path": "assets/17DRP5sb8fy_r2r_000515_022_depth.jpg",
+      "overlay_path": "assets/17DRP5sb8fy_r2r_000515_022_overlay.jpg",
+      "pose": {
+        "position_xyz": [
+          -8.29,
+          1.322,
+          0.273
+        ],
+        "rotation_wxyz": [
+          -0.707,
+          0.0,
+          0.707,
+          0.0
+        ],
+        "hfov": 79.0,
+        "fx": 388.19,
+        "depth_range_m": [
+          0.0,
+          10.0
+        ]
+      },
+      "source": "R2R extracted rgb/depth/pose",
+      "not_simulator_validated": false,
+      "category_id": "visible_forward_clearance",
+      "question_type": "multiple-choice",
+      "question": "You are a cylindrical robot with width 0.50 m at the R2R camera pose. If you continue straight forward, how many body-widths of visible clearance are available?",
+      "options": [
+        "<2",
+        "2-4",
+        "4-8",
+        ">8"
+      ],
+      "answer": "4-8",
+      "gt_derivation": "front depth quantile=3.10 m; body-widths=6.20",
+      "case_id": "visible_forward_clearance-02"
+    },
+    {
+      "scan": "17DRP5sb8fy",
+      "episode": "17DRP5sb8fy_r2r_000515",
+      "frame": "032",
+      "instruction": "Exit the bedroom, enter the bathroom, wait at the toilet. ",
+      "rgb_path": "assets/17DRP5sb8fy_r2r_000515_032_rgb.jpg",
+      "depth_path": "assets/17DRP5sb8fy_r2r_000515_032_depth.jpg",
+      "overlay_path": "assets/17DRP5sb8fy_r2r_000515_032_overlay.jpg",
+      "pose": {
+        "position_xyz": [
+          -6.796,
+          1.322,
+          0.221
+        ],
+        "rotation_wxyz": [
+          -0.707,
+          0.0,
+          0.707,
+          0.0
+        ],
+        "hfov": 79.0,
+        "fx": 388.19,
+        "depth_range_m": [
+          0.0,
+          10.0
+        ]
+      },
+      "source": "R2R extracted rgb/depth/pose",
+      "not_simulator_validated": false,
+      "category_id": "visible_forward_clearance",
+      "question_type": "multiple-choice",
+      "question": "You are a cylindrical robot with width 0.50 m at the R2R camera pose. If you continue straight forward, how many body-widths of visible clearance are available?",
+      "options": [
+        "<2",
+        "2-4",
+        "4-8",
+        ">8"
+      ],
+      "answer": "4-8",
+      "gt_derivation": "front depth quantile=2.39 m; body-widths=4.78",
+      "case_id": "visible_forward_clearance-03"
+    },
+    {
+      "scan": "17DRP5sb8fy",
+      "episode": "17DRP5sb8fy_r2r_000515",
+      "frame": "011",
+      "instruction": "Exit the bedroom, enter the bathroom, wait at the toilet. ",
+      "rgb_path": "assets/17DRP5sb8fy_r2r_000515_011_rgb.jpg",
+      "depth_path": "assets/17DRP5sb8fy_r2r_000515_011_depth.jpg",
+      "overlay_path": "assets/17DRP5sb8fy_r2r_000515_011_overlay.jpg",
+      "pose": {
+        "position_xyz": [
+          -9.136,
+          1.322,
+          1.482
+        ],
+        "rotation_wxyz": [
+          -0.924,
+          0.0,
+          0.383,
+          0.0
+        ],
+        "hfov": 79.0,
+        "fx": 388.19,
+        "depth_range_m": [
+          0.0,
+          10.0
+        ]
+      },
+      "source": "R2R extracted rgb/depth/pose",
+      "not_simulator_validated": false,
+      "category_id": "action_direction_choice",
+      "question_type": "ranking choice",
+      "question": "Compare the visible clearance for three navigation actions: left-forward, straight, and right-forward. Rank them from safest/longest to shortest.",
+      "options": [
+        "rank left / front / right"
+      ],
+      "answer": "left > front > right",
+      "gt_derivation": "depth quantiles in action windows: left=1.92 m, front=1.02 m, right=0.67 m",
+      "case_id": "action_direction_choice-01"
+    },
+    {
+      "scan": "17DRP5sb8fy",
+      "episode": "17DRP5sb8fy_r2r_000515",
+      "frame": "022",
+      "instruction": "Exit the bedroom, enter the bathroom, wait at the toilet. ",
+      "rgb_path": "assets/17DRP5sb8fy_r2r_000515_022_rgb.jpg",
+      "depth_path": "assets/17DRP5sb8fy_r2r_000515_022_depth.jpg",
+      "overlay_path": "assets/17DRP5sb8fy_r2r_000515_022_overlay.jpg",
+      "pose": {
+        "position_xyz": [
+          -8.29,
+          1.322,
+          0.273
+        ],
+        "rotation_wxyz": [
+          -0.707,
+          0.0,
+          0.707,
+          0.0
+        ],
+        "hfov": 79.0,
+        "fx": 388.19,
+        "depth_range_m": [
+          0.0,
+          10.0
+        ]
+      },
+      "source": "R2R extracted rgb/depth/pose",
+      "not_simulator_validated": false,
+      "category_id": "action_direction_choice",
+      "question_type": "ranking choice",
+      "question": "Compare the visible clearance for three navigation actions: left-forward, straight, and right-forward. Rank them from safest/longest to shortest.",
+      "options": [
+        "rank left / front / right"
+      ],
+      "answer": "front > right > left",
+      "gt_derivation": "depth quantiles in action windows: left=1.29 m, front=3.10 m, right=1.37 m",
+      "case_id": "action_direction_choice-02"
+    },
+    {
+      "scan": "17DRP5sb8fy",
+      "episode": "17DRP5sb8fy_r2r_000515",
+      "frame": "032",
+      "instruction": "Exit the bedroom, enter the bathroom, wait at the toilet. ",
+      "rgb_path": "assets/17DRP5sb8fy_r2r_000515_032_rgb.jpg",
+      "depth_path": "assets/17DRP5sb8fy_r2r_000515_032_depth.jpg",
+      "overlay_path": "assets/17DRP5sb8fy_r2r_000515_032_overlay.jpg",
+      "pose": {
+        "position_xyz": [
+          -6.796,
+          1.322,
+          0.221
+        ],
+        "rotation_wxyz": [
+          -0.707,
+          0.0,
+          0.707,
+          0.0
+        ],
+        "hfov": 79.0,
+        "fx": 388.19,
+        "depth_range_m": [
+          0.0,
+          10.0
+        ]
+      },
+      "source": "R2R extracted rgb/depth/pose",
+      "not_simulator_validated": false,
+      "category_id": "action_direction_choice",
+      "question_type": "ranking choice",
+      "question": "Compare the visible clearance for three navigation actions: left-forward, straight, and right-forward. Rank them from safest/longest to shortest.",
+      "options": [
+        "rank left / front / right"
+      ],
+      "answer": "front > right > left",
+      "gt_derivation": "depth quantiles in action windows: left=0.98 m, front=2.39 m, right=1.37 m",
+      "case_id": "action_direction_choice-03"
+    },
+    {
+      "scan": "17DRP5sb8fy",
+      "episode": "17DRP5sb8fy_r2r_000515",
+      "frame": "011",
+      "instruction": "Exit the bedroom, enter the bathroom, wait at the toilet. ",
+      "rgb_path": "assets/17DRP5sb8fy_r2r_000515_011_rgb.jpg",
+      "depth_path": "assets/17DRP5sb8fy_r2r_000515_011_depth.jpg",
+      "overlay_path": "assets/17DRP5sb8fy_r2r_000515_011_overlay.jpg",
+      "pose": {
+        "position_xyz": [
+          -9.136,
+          1.322,
+          1.482
+        ],
+        "rotation_wxyz": [
+          -0.924,
+          0.0,
+          0.383,
+          0.0
+        ],
+        "hfov": 79.0,
+        "fx": 388.19,
+        "depth_range_m": [
+          0.0,
+          10.0
+        ]
+      },
+      "source": "R2R extracted rgb/depth/pose",
+      "not_simulator_validated": false,
+      "category_id": "body_size_counterfactual",
+      "question_type": "multiple-choice",
+      "question": "At the same image and pose, compare a small robot width 0.20 m with a large robot width 0.80 m. Which body can pass through the visible forward channel to the measured target depth?",
+      "options": [
+        "both pass",
+        "only small passes",
+        "neither passes"
+      ],
+      "answer": "both pass",
+      "gt_derivation": "visible channel width at 1.00 m is 0.94 m",
+      "case_id": "body_size_counterfactual-01"
+    },
+    {
+      "scan": "17DRP5sb8fy",
+      "episode": "17DRP5sb8fy_r2r_000515",
+      "frame": "022",
+      "instruction": "Exit the bedroom, enter the bathroom, wait at the toilet. ",
+      "rgb_path": "assets/17DRP5sb8fy_r2r_000515_022_rgb.jpg",
+      "depth_path": "assets/17DRP5sb8fy_r2r_000515_022_depth.jpg",
+      "overlay_path": "assets/17DRP5sb8fy_r2r_000515_022_overlay.jpg",
+      "pose": {
+        "position_xyz": [
+          -8.29,
+          1.322,
+          0.273
+        ],
+        "rotation_wxyz": [
+          -0.707,
+          0.0,
+          0.707,
+          0.0
+        ],
+        "hfov": 79.0,
+        "fx": 388.19,
+        "depth_range_m": [
+          0.0,
+          10.0
+        ]
+      },
+      "source": "R2R extracted rgb/depth/pose",
+      "not_simulator_validated": false,
+      "category_id": "body_size_counterfactual",
+      "question_type": "multiple-choice",
+      "question": "At the same image and pose, compare a small robot width 0.20 m with a large robot width 0.80 m. Which body can pass through the visible forward channel to the measured target depth?",
+      "options": [
+        "both pass",
+        "only small passes",
+        "neither passes"
+      ],
+      "answer": "both pass",
+      "gt_derivation": "visible channel width at 2.00 m is 1.48 m",
+      "case_id": "body_size_counterfactual-02"
+    },
+    {
+      "scan": "17DRP5sb8fy",
+      "episode": "17DRP5sb8fy_r2r_000515",
+      "frame": "032",
+      "instruction": "Exit the bedroom, enter the bathroom, wait at the toilet. ",
+      "rgb_path": "assets/17DRP5sb8fy_r2r_000515_032_rgb.jpg",
+      "depth_path": "assets/17DRP5sb8fy_r2r_000515_032_depth.jpg",
+      "overlay_path": "assets/17DRP5sb8fy_r2r_000515_032_overlay.jpg",
+      "pose": {
+        "position_xyz": [
+          -6.796,
+          1.322,
+          0.221
+        ],
+        "rotation_wxyz": [
+          -0.707,
+          0.0,
+          0.707,
+          0.0
+        ],
+        "hfov": 79.0,
+        "fx": 388.19,
+        "depth_range_m": [
+          0.0,
+          10.0
+        ]
+      },
+      "source": "R2R extracted rgb/depth/pose",
+      "not_simulator_validated": false,
+      "category_id": "body_size_counterfactual",
+      "question_type": "multiple-choice",
+      "question": "At the same image and pose, compare a small robot width 0.20 m with a large robot width 0.80 m. Which body can pass through the visible forward channel to the measured target depth?",
+      "options": [
+        "both pass",
+        "only small passes",
+        "neither passes"
+      ],
+      "answer": "both pass",
+      "gt_derivation": "visible channel width at 1.91 m is 2.00 m",
+      "case_id": "body_size_counterfactual-03"
+    },
+    {
+      "scan": "17DRP5sb8fy",
+      "episode": "17DRP5sb8fy_r2r_000515",
+      "frame": "011",
+      "instruction": "Exit the bedroom, enter the bathroom, wait at the toilet. ",
+      "rgb_path": "assets/17DRP5sb8fy_r2r_000515_011_rgb.jpg",
+      "depth_path": "assets/17DRP5sb8fy_r2r_000515_011_depth.jpg",
+      "overlay_path": "assets/17DRP5sb8fy_r2r_000515_011_overlay.jpg",
+      "pose": {
+        "position_xyz": [
+          -9.136,
+          1.322,
+          1.482
+        ],
+        "rotation_wxyz": [
+          -0.924,
+          0.0,
+          0.383,
+          0.0
+        ],
+        "hfov": 79.0,
+        "fx": 388.19,
+        "depth_range_m": [
+          0.0,
+          10.0
+        ]
+      },
+      "source": "R2R extracted rgb/depth/pose",
+      "not_simulator_validated": false,
+      "category_id": "nearest_visible_constraint",
+      "question_type": "open-set short answer",
+      "question": "Open answer: where is the nearest visible navigation constraint in the ego view, and what is its approximate distance?",
+      "options": [],
+      "answer": "right-forward, about 0.7 m",
+      "gt_derivation": "minimum among left/front/right visible depth windows: left=1.92 m, front=1.02 m, right=0.67 m",
+      "case_id": "nearest_visible_constraint-01"
+    },
+    {
+      "scan": "17DRP5sb8fy",
+      "episode": "17DRP5sb8fy_r2r_000515",
+      "frame": "022",
+      "instruction": "Exit the bedroom, enter the bathroom, wait at the toilet. ",
+      "rgb_path": "assets/17DRP5sb8fy_r2r_000515_022_rgb.jpg",
+      "depth_path": "assets/17DRP5sb8fy_r2r_000515_022_depth.jpg",
+      "overlay_path": "assets/17DRP5sb8fy_r2r_000515_022_overlay.jpg",
+      "pose": {
+        "position_xyz": [
+          -8.29,
+          1.322,
+          0.273
+        ],
+        "rotation_wxyz": [
+          -0.707,
+          0.0,
+          0.707,
+          0.0
+        ],
+        "hfov": 79.0,
+        "fx": 388.19,
+        "depth_range_m": [
+          0.0,
+          10.0
+        ]
+      },
+      "source": "R2R extracted rgb/depth/pose",
+      "not_simulator_validated": false,
+      "category_id": "nearest_visible_constraint",
+      "question_type": "open-set short answer",
+      "question": "Open answer: where is the nearest visible navigation constraint in the ego view, and what is its approximate distance?",
+      "options": [],
+      "answer": "left-forward, about 1.3 m",
+      "gt_derivation": "minimum among left/front/right visible depth windows: left=1.29 m, front=3.10 m, right=1.37 m",
+      "case_id": "nearest_visible_constraint-02"
+    },
+    {
+      "scan": "17DRP5sb8fy",
+      "episode": "17DRP5sb8fy_r2r_000515",
+      "frame": "032",
+      "instruction": "Exit the bedroom, enter the bathroom, wait at the toilet. ",
+      "rgb_path": "assets/17DRP5sb8fy_r2r_000515_032_rgb.jpg",
+      "depth_path": "assets/17DRP5sb8fy_r2r_000515_032_depth.jpg",
+      "overlay_path": "assets/17DRP5sb8fy_r2r_000515_032_overlay.jpg",
+      "pose": {
+        "position_xyz": [
+          -6.796,
+          1.322,
+          0.221
+        ],
+        "rotation_wxyz": [
+          -0.707,
+          0.0,
+          0.707,
+          0.0
+        ],
+        "hfov": 79.0,
+        "fx": 388.19,
+        "depth_range_m": [
+          0.0,
+          10.0
+        ]
+      },
+      "source": "R2R extracted rgb/depth/pose",
+      "not_simulator_validated": false,
+      "category_id": "nearest_visible_constraint",
+      "question_type": "open-set short answer",
+      "question": "Open answer: where is the nearest visible navigation constraint in the ego view, and what is its approximate distance?",
+      "options": [],
+      "answer": "left-forward, about 1.0 m",
+      "gt_derivation": "minimum among left/front/right visible depth windows: left=0.98 m, front=2.39 m, right=1.37 m",
+      "case_id": "nearest_visible_constraint-03"
+    }
+  ]
+}

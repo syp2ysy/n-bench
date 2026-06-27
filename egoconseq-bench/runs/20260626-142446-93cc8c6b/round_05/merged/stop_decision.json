@@ -1,9 +1,0 @@
-{
-  "should_stop": true,
-  "terminal_state": "repeated_no_progress",
-  "reason": "Reviewed core-case progress did not increase for 5 rounds.",
-  "round_index": 5,
-  "blocker_signature": "no_review_progress|phase=showcase|needs_case_coverage|review_missing_tasks=T1,T2,T4",
-  "repeat_count": 5,
-  "requires_repair": false
-}
