@@ -81,7 +81,7 @@
             </div>
             <table>
               <tr><th>状态</th><td>已冻结</td></tr>
-              <tr><th>数据来源</th><td>Habitat MP3D / R2R-CE simulator rollouts</td></tr>
+              <tr><th>数据来源</th><td>Habitat / MP3D / R2R-CE 模拟器动作执行</td></tr>
               <tr><th>参考原则</th><td>参考空间智能 benchmark 的“动机到 QA”设计方法，但不照搬其 taxonomy；本 benchmark 聚焦单帧可见局部空间中的身体扫掠后果。</td></tr>
             </table>
           </div>
@@ -90,13 +90,13 @@
           <h2>冻结后的分类设计</h2>
           <table class="category-table">
             <tr><th>分类</th><th>QA 类型</th><th>对应动机</th><th>R2R 标注规则</th><th>接收标准</th><th>案例数</th></tr>
-            <tr><td>Local Progress Estimation</td><td>coarse_progress_estimation</td><td>Tests H1: whether the model estimates body-relative progress from visible egocentric geometry rather than merely describing apparent free space.</td><td>From a valid Habitat/R2R-CE start state, render the initial RGB for the model-facing item, then offline execute N direct move_forward actions for body radius r. Label from actual_distance_m, intended_distance_m, progress_ratio, collision, stopped_early, height_delta_m, hazard_type, and replayable rollout trace; score a coarse progress range rather than exact distance.</td><td>Question states body radius or width, forward step count, approximate meter horizon, and approximate body-width horizon. Accept only visible-local, repeat-stable, margin-separated, non-ambiguous progress cases; route stair/drop/support-risk outcomes to feasibility or hazard categories; enforce answer balance.</td><td>10</td></tr><tr><td>动作时域碰撞</td><td>二值 / 短答</td><td>检验模型能否在给定短动作序列时预测会撞、停住、下落还是正常推进。</td><td>真实执行 1、2、3、5、10 步动作序列，读取 collision、stopped_early、height_delta 和 hazard_type。</td><td>action sequence 与问题文字一致，rollout outcome 完整，起点合法。</td><td>10</td></tr><tr><td>Directional Rollout Comparison</td><td>directional_ranking</td><td>Tests H1: whether the model binds left/straight/right egocentric directions to traversable swept-volume progress instead of using a center prior.</td><td>From the same start RGB, pose, yaw, and body radius, roll out left-turn-then-forward, straight-forward, and right-turn-then-forward candidates. Label the direction with the largest actual_distance_m only when the winner is margin-separated and repeat-stable; score top-direction selection.</td><td>Question states body size, left/right turn angle, matched forward step count, approximate meter horizon, and approximate body-width horizon. Reject near ties unless routed to a separate about-same diagnostic outside core scoring; enforce direction answer balance.</td><td>10</td></tr><tr><td>身体反事实翻转</td><td>自然短答 / 三类标签</td><td>检验模型是否真正把身体半径作为碰撞算子；同一张图、同一动作下，换身体尺寸应改变结论。</td><td>同一起点同一动作，分别用紧凑型、标准型或宽体机器人半径执行 rollout，比较 completion / collision / progress。</td><td>必须满足半径单调性；只保留 both、small-only、neither 三种物理可行标签。</td><td>10</td></tr><tr><td>Local Hazard Explanation and First-Contact Grounding</td><td>local_hazard_explanation</td><td>Diagnostic for H1: checks whether failure judgments are grounded in rollout-derived collision, step/drop, support risk, or stable first-contact evidence rather than yes/no priors.</td><td>Execute the specified short rollout and derive dominant hazard_type from collision, stopped_early, height_delta_m, support/fall indicators when available, progress_ratio, rollout trace, and offline semantic context. Optional first-contact region may be labeled only when stable and visible, with a no-visible-contact option. Semantic context can support filtering/display but cannot override rollout evidence.</td><td>Question states body size, action direction or turn angle when present, approximate meter horizon, and approximate body-width horizon. Hazard or first contact must be visible or locally inferable; mixed, hidden, unstable, or purely semantic cases are rejected. This category remains diagnostic and outside the core death gate.</td><td>10</td></tr>
+            <tr><td>局部推进范围估计</td><td>自然短答 / 粗范围</td><td>检验模型能否从起始第一人称图像估计机器人在可见局部空间中实际能推进多远，而不是只描述看起来空不空。</td><td>从合法 Habitat / R2R-CE 起点渲染初始 RGB，然后离线执行 N 次前进一步；标签来自实际推进距离、计划推进距离、推进比例、碰撞、提前停止、高度变化和可复放的执行轨迹。</td><td>问题说明身体尺寸、前进步数、近似米制距离和身体宽度距离；只接收起点合法、反馈完整、边界间隔足够、非歧义、答案分布可控的样本。</td><td>10</td></tr><tr><td>动作时域碰撞</td><td>二值 / 短答</td><td>检验模型能否在给定短动作序列时预测会撞、停住、下落还是正常推进。</td><td>真实执行 1、2、3、5、10 步动作序列，读取碰撞、提前停止、高度变化和主要风险类型。</td><td>动作序列与问题文字一致，执行反馈完整，起点合法。</td><td>10</td></tr><tr><td>方向动作后果比较</td><td>自然短答 / 方向选择</td><td>检验模型是否把左前、正前、右前三个第一人称方向绑定到真实可通行的 3D 动作后果，而不是套用中心偏置。</td><td>在同一初始 RGB、位姿和身体半径下，分别执行左转后前进、直行、右转后前进三条候选序列；只在最优方向与次优方向距离差足够大时保留。</td><td>问题说明身体尺寸、左右转角、匹配的前进步数、近似米制距离和身体宽度距离；拒绝近似平局样本，并约束方向答案分布。</td><td>10</td></tr><tr><td>身体反事实翻转</td><td>自然短答 / 三类标签</td><td>检验模型是否真正把身体半径作为碰撞算子；同一张图、同一动作下，换身体尺寸应改变结论。</td><td>同一起点同一动作，分别用紧凑型、标准型或宽体机器人半径执行动作序列，比较是否完成、是否碰撞和实际推进比例。</td><td>必须满足半径单调性；只保留“两个都可以 / 只有小身体可以 / 两个都不适合”三种物理可行标签。</td><td>10</td></tr><tr><td>局部风险解释</td><td>开放短答 / 风险类型</td><td>诊断模型是否能把失败判断落到真实执行反馈中的碰撞、提前停止、高度变化或局部支撑风险，而不是只回答安全/不安全。</td><td>执行指定短动作序列，并从碰撞、提前停止、高度变化、推进比例、逐步轨迹和离线语义上下文中派生主要风险类型。</td><td>问题说明身体尺寸、动作方向或转角、近似米制距离和身体宽度距离；风险必须在当前可见局部空间内有证据，隐藏或混合风险样本拒绝。</td><td>10</td></tr>
           </table>
         </section>
         
     <section>
       <h2>有效性与统计</h2>
-      <p class="note">这些数字来自确定性 Habitat rollout manifest 和 hard validity gate。只有这个 gate 通过时，展示页才被视为可发布。</p>
+      <p class="note">这些数字来自确定性 Habitat 动作执行清单和硬有效性闸门。只有这个闸门通过时，展示页才被视为可发布。</p>
       <div class="stat-grid">
         <div class="stat-card"><strong><span class="status-fail">未通过</span></strong><span>硬有效性闸门</span></div>
         <div class="stat-card"><strong>50</strong><span>已接收案例</span></div>
@@ -109,9 +109,9 @@
         <div class="stat-card"><strong>0</strong><span>半径单调性违例数</span></div>
       </div>
       <h3>答案分布</h3>
-      <table class="category-table"><tr><th>分类</th><th>总数</th><th>答案</th></tr><tr><td>动作时域碰撞</td><td>10</td><td>不能安全完成: 5, 可以完成: 5</td></tr><tr><td>身体反事实翻转</td><td>10</td><td>两个都不适合: 1, 两个都可以: 9</td></tr><tr><td>directional_rollout_comparison</td><td>10</td><td>右前方: 5, 左前方: 5</td></tr><tr><td>local_hazard_explanation</td><td>10</td><td>可见范围内无明显局部风险: 10</td></tr><tr><td>local_progress_estimation</td><td>10</td><td>0.5-1m: 2, 1 到 2 米: 2, &lt;0.5m: 5, &gt;2m: 1</td></tr></table>
+      <table class="category-table"><tr><th>分类</th><th>总数</th><th>答案</th></tr><tr><td>动作时域碰撞</td><td>10</td><td>不能安全完成: 5, 可以完成: 5</td></tr><tr><td>身体反事实翻转</td><td>10</td><td>两个都不适合: 1, 两个都可以: 9</td></tr><tr><td>方向动作后果比较</td><td>10</td><td>右前方: 5, 左前方: 5</td></tr><tr><td>局部风险解释</td><td>10</td><td>可见范围内无明显局部风险: 10</td></tr><tr><td>局部推进范围估计</td><td>10</td><td>0.5-1m: 2, 1 到 2 米: 2, &lt;0.5m: 5, &gt;2m: 1</td></tr></table>
       <h3>闸门违例</h3>
-      <ul class="violation-list"><li><strong>答案分布</strong>: 分类=身体反事实翻转, 最大答案占比=0.9, 上限=0.48, 分布={两个都可以: 9, 两个都不适合: 1}</li><li><strong>答案分布</strong>: 分类=local_hazard_explanation, 最大答案占比=1.0, 上限=0.5, 分布={可见范围内无明显局部风险: 10}</li></ul>
+      <ul class="violation-list"><li><strong>答案分布</strong>: 分类=身体反事实翻转, 最大答案占比=0.9, 上限=0.48, 分布={两个都可以: 9, 两个都不适合: 1}</li><li><strong>答案分布</strong>: 分类=局部风险解释, 最大答案占比=1.0, 上限=0.5, 分布={可见范围内无明显局部风险: 10}</li></ul>
     </section>
     
         <section>
@@ -124,7 +124,7 @@
         </section>
         <section>
           <h2>后续建议</h2>
-          <ul><li>当前展示只发布通过 hard gate 的 R2R 真实案例；后续如修改 goal.md，应重新运行设计共识阶段。</li></ul>
+          <ul><li>当前展示包含确定性生成的 R2R 真实案例，并在设计页显式报告硬有效性闸门是否通过；后续如修改 goal.md，应重新运行设计共识阶段。</li></ul>
         </section>
         
 </body>

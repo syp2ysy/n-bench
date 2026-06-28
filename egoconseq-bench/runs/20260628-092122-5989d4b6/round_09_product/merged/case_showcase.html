@@ -66,21 +66,21 @@
         <header>
           <p class="eyebrow">EgoConseq-Bench</p>
           <h1>R2R 案例展示</h1>
-          <p class="lead">下面每张卡片都来自真实 R2R RGB、提取深度和相机位姿；GT 答案由深度/位姿字段确定性计算得到，不是 LLM 编写的占位样例。</p>
+          <p class="lead">下面每张卡片都来自 Habitat / MP3D / R2R-CE 模拟器中的真实起点图像；GT 答案由离线执行短动作序列后的碰撞、停止、推进距离和高度变化确定，不是 LLM 编写的占位样例。</p>
         </header>
         
             <section class="case-group" id="local_progress_estimation">
-              <h2>local_progress_estimation</h2>
-              <p>R2R 真实数据支持的分类。</p>
+              <h2>局部推进范围估计</h2>
+              <p>检验模型能否从起始第一人称图像估计机器人在可见局部空间中实际能推进多远，而不是只描述看起来空不空。</p>
               <div class="case-grid">
     <article class="case-card">
-      <div class="media"><figure><img src="assets/local_progress_estimation-001_rollout_strip.jpg" alt="local_progress_estimation-001 起始 RGB 与 rollout 轨迹示意"><figcaption>起始 RGB 与 rollout 轨迹示意</figcaption></figure><figure><img src="assets/local_progress_estimation-001_topdown.jpg" alt="local_progress_estimation-001 局部动作轨迹草图"><figcaption>局部动作轨迹草图</figcaption></figure></div>
+      <div class="media"><figure><img src="assets/local_progress_estimation-001_rollout_strip.jpg" alt="local_progress_estimation-001 起始 RGB 与动作执行轨迹示意"><figcaption>起始 RGB 与动作执行轨迹示意</figcaption></figure><figure><img src="assets/local_progress_estimation-001_topdown.jpg" alt="local_progress_estimation-001 局部动作轨迹草图"><figcaption>局部动作轨迹草图</figcaption></figure></div>
       <div class="case-body">
         <div class="case-meta">
-          <span>local_progress_estimation-001</span>
-          <span>17DRP5sb8fy · 帧 00000</span>
+          <span>局部推进范围估计案例 001</span>
+          <span>场景 17DRP5sb8fy · 帧 00000</span>
         </div>
-        <p><span class="badge">coarse_progress_estimation</span></p>
+        <p><span class="badge">自然短答 / 粗范围</span></p>
         <h3>机器人半径约 0.25 米，宽约 0.5 米。只看这张第一视角图，让它从这里直走 1 步，约 0.25 米（约 0.5 个自身宽度）。它实际大概会推进到什么程度？请先用一个标签回答：基本走完 / 走一部分 / 很快停住 / 明显风险；后面可补一句原因。</h3>
         <div class="qa-grid">
           <div><strong>选项</strong><ul><li>&lt;0.5m</li><li>0.5-1m</li><li>1 到 2 米</li><li>&gt;2m</li></ul></div>
@@ -88,27 +88,27 @@
         </div>
         <div class="evidence">
           <p><strong>GT 推导</strong><span>在 Habitat 中从该起点真实执行动作序列，实际推进约 0.25 m，计划推进约 0.25 m，主要反馈为：可见范围内无明显风险。</span></p>
-          <p><strong>真实 rollout 反馈</strong><span>碰撞=否；提前停止=否；高度变化=0 m；推进比例=1；风险=可见范围内无明显风险。</span></p>
-          <p><strong>粗 3D 参数</strong><span>动作序列=前进一步；米制范围=&lt;0.5m；身体宽度范围=小于 2 个身体宽度；可行性=feasible；置信度=medium；计划推进约 0.25 m。</span></p>
+          <p><strong>真实执行反馈</strong><span>碰撞=否；提前停止=否；高度变化=0 m；推进比例=1；风险=可见范围内无明显风险。</span></p>
+          <p><strong>粗 3D 参数</strong><span>动作序列=前进一步；米制范围=&lt;0.5m；身体宽度范围=小于 2 个身体宽度；可行性=feasible；置信度=中；计划推进约 0.25 m。</span></p>
           <p><strong>动作轨迹</strong><span>1:前进一步</span></p>
-          <p><strong>场景合理性</strong><span>几何标签=open-or-passable；平地支持=是；适合普通前进=是；文本提示=wall、misc、shower、counter、shelving、mirror。该问题来自真实 Habitat rollout，题型为 coarse_progress_estimation，GT 由动作执行后的 progress/collision/height 信号确定。</span></p>
+          <p><strong>场景合理性</strong><span>几何标签=开放或可通行；平地支持=是；适合普通前进=是；可见类别=墙面、其他物体、淋浴区、台面、架子、镜子。该问题来自真实 Habitat 动作执行，题型为 coarse_推进比例_estimation，真值 由动作执行后的 推进比例/碰撞/高度 信号确定。</span></p>
           <p><strong>评分规则</strong><span>{&#x27;type&#x27;: &#x27;range_match&#x27;, &#x27;unit&#x27;: &#x27;m&#x27;}</span></p>
           <p><strong>身体与动作</strong><span>机器人类型=standard indoor mobile base；半径=0.25 m；宽度=0.5 m；动作=前进一步。</span></p>
           <p><strong>位姿</strong><span>位置=[-2.904015064239502, 0.07244661450386047, -1.2754919528961182], 四元数=None, 水平视场=None</span></p>
           <p><strong>来源</strong><span>Habitat / MP3D / R2R-CE 起点状态 · 轨迹 17DRP5sb8fy_sampled_00000</span></p>
-          <p><strong>备注</strong><span>模型输入只包含起始 RGB 与问题；rollout trace、深度和语义只用于离线 GT 与展示。</span></p>
+          <p><strong>备注</strong><span>模型输入只包含起始 RGB 与问题；动作执行轨迹、深度和语义只用于离线 GT 与展示。</span></p>
         </div>
       </div>
     </article>
     
     <article class="case-card">
-      <div class="media"><figure><img src="assets/local_progress_estimation-002_rollout_strip.jpg" alt="local_progress_estimation-002 起始 RGB 与 rollout 轨迹示意"><figcaption>起始 RGB 与 rollout 轨迹示意</figcaption></figure><figure><img src="assets/local_progress_estimation-002_topdown.jpg" alt="local_progress_estimation-002 局部动作轨迹草图"><figcaption>局部动作轨迹草图</figcaption></figure></div>
+      <div class="media"><figure><img src="assets/local_progress_estimation-002_rollout_strip.jpg" alt="local_progress_estimation-002 起始 RGB 与动作执行轨迹示意"><figcaption>起始 RGB 与动作执行轨迹示意</figcaption></figure><figure><img src="assets/local_progress_estimation-002_topdown.jpg" alt="local_progress_estimation-002 局部动作轨迹草图"><figcaption>局部动作轨迹草图</figcaption></figure></div>
       <div class="case-body">
         <div class="case-meta">
-          <span>local_progress_estimation-002</span>
-          <span>17DRP5sb8fy · 帧 00001</span>
+          <span>局部推进范围估计案例 002</span>
+          <span>场景 17DRP5sb8fy · 帧 00001</span>
         </div>
-        <p><span class="badge">coarse_progress_estimation</span></p>
+        <p><span class="badge">自然短答 / 粗范围</span></p>
         <h3>机器人半径约 0.25 米，宽约 0.5 米。只看这张第一视角图，让它从这里直走 2 步，约 0.5 米（约 1.0 个自身宽度）。它实际大概会推进到什么程度？请先用一个标签回答：基本走完 / 走一部分 / 很快停住 / 明显风险；后面可补一句原因。</h3>
         <div class="qa-grid">
           <div><strong>选项</strong><ul><li>&lt;0.5m</li><li>0.5-1m</li><li>1 到 2 米</li><li>&gt;2m</li></ul></div>
@@ -116,27 +116,27 @@
         </div>
         <div class="evidence">
           <p><strong>GT 推导</strong><span>在 Habitat 中从该起点真实执行动作序列，实际推进约 0.5 m，计划推进约 0.5 m，主要反馈为：可见范围内无明显风险。</span></p>
-          <p><strong>真实 rollout 反馈</strong><span>碰撞=否；提前停止=否；高度变化=0 m；推进比例=1；风险=可见范围内无明显风险。</span></p>
-          <p><strong>粗 3D 参数</strong><span>动作序列=前进一步 → 前进一步；米制范围=&lt;0.5m；身体宽度范围=小于 2 个身体宽度；可行性=feasible；置信度=medium；计划推进约 0.5 m。</span></p>
+          <p><strong>真实执行反馈</strong><span>碰撞=否；提前停止=否；高度变化=0 m；推进比例=1；风险=可见范围内无明显风险。</span></p>
+          <p><strong>粗 3D 参数</strong><span>动作序列=前进一步 → 前进一步；米制范围=&lt;0.5m；身体宽度范围=小于 2 个身体宽度；可行性=feasible；置信度=中；计划推进约 0.5 m。</span></p>
           <p><strong>动作轨迹</strong><span>1:前进一步；2:前进一步</span></p>
-          <p><strong>场景合理性</strong><span>几何标签=open-or-passable；平地支持=是；适合普通前进=是；文本提示=shower、wall、mirror、floor、clothes。该问题来自真实 Habitat rollout，题型为 coarse_progress_estimation，GT 由动作执行后的 progress/collision/height 信号确定。</span></p>
+          <p><strong>场景合理性</strong><span>几何标签=开放或可通行；平地支持=是；适合普通前进=是；可见类别=淋浴区、墙面、镜子、地面、衣物。该问题来自真实 Habitat 动作执行，题型为 coarse_推进比例_estimation，真值 由动作执行后的 推进比例/碰撞/高度 信号确定。</span></p>
           <p><strong>评分规则</strong><span>{&#x27;type&#x27;: &#x27;range_match&#x27;, &#x27;unit&#x27;: &#x27;m&#x27;}</span></p>
           <p><strong>身体与动作</strong><span>机器人类型=standard indoor mobile base；半径=0.25 m；宽度=0.5 m；动作=前进一步 → 前进一步。</span></p>
           <p><strong>位姿</strong><span>位置=[-7.034534931182861, 0.07244661450386047, -1.4064828157424927], 四元数=None, 水平视场=None</span></p>
           <p><strong>来源</strong><span>Habitat / MP3D / R2R-CE 起点状态 · 轨迹 17DRP5sb8fy_sampled_00001</span></p>
-          <p><strong>备注</strong><span>模型输入只包含起始 RGB 与问题；rollout trace、深度和语义只用于离线 GT 与展示。</span></p>
+          <p><strong>备注</strong><span>模型输入只包含起始 RGB 与问题；动作执行轨迹、深度和语义只用于离线 GT 与展示。</span></p>
         </div>
       </div>
     </article>
     
     <article class="case-card">
-      <div class="media"><figure><img src="assets/local_progress_estimation-003_rollout_strip.jpg" alt="local_progress_estimation-003 起始 RGB 与 rollout 轨迹示意"><figcaption>起始 RGB 与 rollout 轨迹示意</figcaption></figure><figure><img src="assets/local_progress_estimation-003_topdown.jpg" alt="local_progress_estimation-003 局部动作轨迹草图"><figcaption>局部动作轨迹草图</figcaption></figure></div>
+      <div class="media"><figure><img src="assets/local_progress_estimation-003_rollout_strip.jpg" alt="local_progress_estimation-003 起始 RGB 与动作执行轨迹示意"><figcaption>起始 RGB 与动作执行轨迹示意</figcaption></figure><figure><img src="assets/local_progress_estimation-003_topdown.jpg" alt="local_progress_estimation-003 局部动作轨迹草图"><figcaption>局部动作轨迹草图</figcaption></figure></div>
       <div class="case-body">
         <div class="case-meta">
-          <span>local_progress_estimation-003</span>
-          <span>17DRP5sb8fy · 帧 00002</span>
+          <span>局部推进范围估计案例 003</span>
+          <span>场景 17DRP5sb8fy · 帧 00002</span>
         </div>
-        <p><span class="badge">coarse_progress_estimation</span></p>
+        <p><span class="badge">自然短答 / 粗范围</span></p>
         <h3>机器人半径约 0.25 米，宽约 0.5 米。只看这张第一视角图，让它从这里直走 3 步，约 0.75 米（约 1.5 个自身宽度）。它实际大概会推进到什么程度？请先用一个标签回答：基本走完 / 走一部分 / 很快停住 / 明显风险；后面可补一句原因。</h3>
         <div class="qa-grid">
           <div><strong>选项</strong><ul><li>&lt;0.5m</li><li>0.5-1m</li><li>1 到 2 米</li><li>&gt;2m</li></ul></div>
@@ -144,27 +144,27 @@
         </div>
         <div class="evidence">
           <p><strong>GT 推导</strong><span>在 Habitat 中从该起点真实执行动作序列，实际推进约 0.68 m，计划推进约 0.75 m，主要反馈为：可见范围内无明显风险。</span></p>
-          <p><strong>真实 rollout 反馈</strong><span>碰撞=否；提前停止=否；高度变化=0 m；推进比例=0.9；风险=可见范围内无明显风险。</span></p>
-          <p><strong>粗 3D 参数</strong><span>动作序列=前进一步 → 前进一步 → 前进一步；米制范围=0.5-1m；身体宽度范围=小于 2 个身体宽度；可行性=feasible；置信度=medium；计划推进约 0.75 m。</span></p>
+          <p><strong>真实执行反馈</strong><span>碰撞=否；提前停止=否；高度变化=0 m；推进比例=0.9；风险=可见范围内无明显风险。</span></p>
+          <p><strong>粗 3D 参数</strong><span>动作序列=前进一步 → 前进一步 → 前进一步；米制范围=0.5-1m；身体宽度范围=小于 2 个身体宽度；可行性=feasible；置信度=中；计划推进约 0.75 m。</span></p>
           <p><strong>动作轨迹</strong><span>1:前进一步；2:前进一步；3:前进一步</span></p>
-          <p><strong>场景合理性</strong><span>几何标签=open-or-passable；平地支持=是；适合普通前进=是；文本提示=floor、wall、door、sofa、shower、counter。该问题来自真实 Habitat rollout，题型为 coarse_progress_estimation，GT 由动作执行后的 progress/collision/height 信号确定。</span></p>
+          <p><strong>场景合理性</strong><span>几何标签=开放或可通行；平地支持=是；适合普通前进=是；可见类别=地面、墙面、门、沙发、淋浴区、台面。该问题来自真实 Habitat 动作执行，题型为 coarse_推进比例_estimation，真值 由动作执行后的 推进比例/碰撞/高度 信号确定。</span></p>
           <p><strong>评分规则</strong><span>{&#x27;type&#x27;: &#x27;range_match&#x27;, &#x27;unit&#x27;: &#x27;m&#x27;}</span></p>
           <p><strong>身体与动作</strong><span>机器人类型=standard indoor mobile base；半径=0.25 m；宽度=0.5 m；动作=前进一步 → 前进一步 → 前进一步。</span></p>
           <p><strong>位姿</strong><span>位置=[2.532283067703247, 0.07244661450386047, -4.216582298278809], 四元数=None, 水平视场=None</span></p>
           <p><strong>来源</strong><span>Habitat / MP3D / R2R-CE 起点状态 · 轨迹 17DRP5sb8fy_sampled_00002</span></p>
-          <p><strong>备注</strong><span>模型输入只包含起始 RGB 与问题；rollout trace、深度和语义只用于离线 GT 与展示。</span></p>
+          <p><strong>备注</strong><span>模型输入只包含起始 RGB 与问题；动作执行轨迹、深度和语义只用于离线 GT 与展示。</span></p>
         </div>
       </div>
     </article>
     
     <article class="case-card">
-      <div class="media"><figure><img src="assets/local_progress_estimation-004_rollout_strip.jpg" alt="local_progress_estimation-004 起始 RGB 与 rollout 轨迹示意"><figcaption>起始 RGB 与 rollout 轨迹示意</figcaption></figure><figure><img src="assets/local_progress_estimation-004_topdown.jpg" alt="local_progress_estimation-004 局部动作轨迹草图"><figcaption>局部动作轨迹草图</figcaption></figure></div>
+      <div class="media"><figure><img src="assets/local_progress_estimation-004_rollout_strip.jpg" alt="local_progress_estimation-004 起始 RGB 与动作执行轨迹示意"><figcaption>起始 RGB 与动作执行轨迹示意</figcaption></figure><figure><img src="assets/local_progress_estimation-004_topdown.jpg" alt="local_progress_estimation-004 局部动作轨迹草图"><figcaption>局部动作轨迹草图</figcaption></figure></div>
       <div class="case-body">
         <div class="case-meta">
-          <span>local_progress_estimation-004</span>
-          <span>17DRP5sb8fy · 帧 00003</span>
+          <span>局部推进范围估计案例 004</span>
+          <span>场景 17DRP5sb8fy · 帧 00003</span>
         </div>
-        <p><span class="badge">coarse_progress_estimation</span></p>
+        <p><span class="badge">自然短答 / 粗范围</span></p>
         <h3>机器人半径约 0.25 米，宽约 0.5 米。只看这张第一视角图，让它从这里直走 5 步，约 1.25 米（约 2.5 个自身宽度）。它实际大概会推进到什么程度？请先用一个标签回答：基本走完 / 走一部分 / 很快停住 / 明显风险；后面可补一句原因。</h3>
         <div class="qa-grid">
           <div><strong>选项</strong><ul><li>&lt;0.5m</li><li>0.5-1m</li><li>1 到 2 米</li><li>&gt;2m</li></ul></div>
@@ -172,27 +172,27 @@
         </div>
         <div class="evidence">
           <p><strong>GT 推导</strong><span>在 Habitat 中从该起点真实执行动作序列，实际推进约 1.25 m，计划推进约 1.25 m，主要反馈为：可见范围内无明显风险。</span></p>
-          <p><strong>真实 rollout 反馈</strong><span>碰撞=否；提前停止=否；高度变化=0 m；推进比例=1；风险=可见范围内无明显风险。</span></p>
-          <p><strong>粗 3D 参数</strong><span>动作序列=前进一步 → 前进一步 → 前进一步 → 前进一步 → 前进一步；米制范围=1 到 2 米；身体宽度范围=2 到 4 个身体宽度；可行性=feasible；置信度=medium；计划推进约 1.25 m。</span></p>
+          <p><strong>真实执行反馈</strong><span>碰撞=否；提前停止=否；高度变化=0 m；推进比例=1；风险=可见范围内无明显风险。</span></p>
+          <p><strong>粗 3D 参数</strong><span>动作序列=前进一步 → 前进一步 → 前进一步 → 前进一步 → 前进一步；米制范围=1 到 2 米；身体宽度范围=2 到 4 个身体宽度；可行性=feasible；置信度=中；计划推进约 1.25 m。</span></p>
           <p><strong>动作轨迹</strong><span>1:前进一步；2:前进一步；3:前进一步；4:前进一步；5:前进一步</span></p>
-          <p><strong>场景合理性</strong><span>几何标签=open-or-passable；平地支持=是；适合普通前进=是；文本提示=shower。该问题来自真实 Habitat rollout，题型为 coarse_progress_estimation，GT 由动作执行后的 progress/collision/height 信号确定。</span></p>
+          <p><strong>场景合理性</strong><span>几何标签=开放或可通行；平地支持=是；适合普通前进=是；可见类别=淋浴区。该问题来自真实 Habitat 动作执行，题型为 coarse_推进比例_estimation，真值 由动作执行后的 推进比例/碰撞/高度 信号确定。</span></p>
           <p><strong>评分规则</strong><span>{&#x27;type&#x27;: &#x27;range_match&#x27;, &#x27;unit&#x27;: &#x27;m&#x27;}</span></p>
           <p><strong>身体与动作</strong><span>机器人类型=standard indoor mobile base；半径=0.25 m；宽度=0.5 m；动作=前进一步 → 前进一步 → 前进一步 → 前进一步 → 前进一步。</span></p>
           <p><strong>位姿</strong><span>位置=[-7.291738510131836, 0.07244661450386047, -1.2422606945037842], 四元数=None, 水平视场=None</span></p>
           <p><strong>来源</strong><span>Habitat / MP3D / R2R-CE 起点状态 · 轨迹 17DRP5sb8fy_sampled_00003</span></p>
-          <p><strong>备注</strong><span>模型输入只包含起始 RGB 与问题；rollout trace、深度和语义只用于离线 GT 与展示。</span></p>
+          <p><strong>备注</strong><span>模型输入只包含起始 RGB 与问题；动作执行轨迹、深度和语义只用于离线 GT 与展示。</span></p>
         </div>
       </div>
     </article>
     
     <article class="case-card">
-      <div class="media"><figure><img src="assets/local_progress_estimation-005_rollout_strip.jpg" alt="local_progress_estimation-005 起始 RGB 与 rollout 轨迹示意"><figcaption>起始 RGB 与 rollout 轨迹示意</figcaption></figure><figure><img src="assets/local_progress_estimation-005_topdown.jpg" alt="local_progress_estimation-005 局部动作轨迹草图"><figcaption>局部动作轨迹草图</figcaption></figure></div>
+      <div class="media"><figure><img src="assets/local_progress_estimation-005_rollout_strip.jpg" alt="local_progress_estimation-005 起始 RGB 与动作执行轨迹示意"><figcaption>起始 RGB 与动作执行轨迹示意</figcaption></figure><figure><img src="assets/local_progress_estimation-005_topdown.jpg" alt="local_progress_estimation-005 局部动作轨迹草图"><figcaption>局部动作轨迹草图</figcaption></figure></div>
       <div class="case-body">
         <div class="case-meta">
-          <span>local_progress_estimation-005</span>
-          <span>1LXtFkjw3qL · 帧 00000</span>
+          <span>局部推进范围估计案例 005</span>
+          <span>场景 1LXtFkjw3qL · 帧 00000</span>
         </div>
-        <p><span class="badge">coarse_progress_estimation</span></p>
+        <p><span class="badge">自然短答 / 粗范围</span></p>
         <h3>机器人半径约 0.25 米，宽约 0.5 米。只看这张第一视角图，让它从这里直走 10 步，约 2.5 米（约 5.0 个自身宽度）。它实际大概会推进到什么程度？请先用一个标签回答：基本走完 / 走一部分 / 很快停住 / 明显风险；后面可补一句原因。</h3>
         <div class="qa-grid">
           <div><strong>选项</strong><ul><li>&lt;0.5m</li><li>0.5-1m</li><li>1 到 2 米</li><li>&gt;2m</li></ul></div>
@@ -200,27 +200,27 @@
         </div>
         <div class="evidence">
           <p><strong>GT 推导</strong><span>在 Habitat 中从该起点真实执行动作序列，实际推进约 2.41 m，计划推进约 2.5 m，主要反馈为：可见范围内无明显风险。</span></p>
-          <p><strong>真实 rollout 反馈</strong><span>碰撞=否；提前停止=否；高度变化=0 m；推进比例=0.96；风险=可见范围内无明显风险。</span></p>
-          <p><strong>粗 3D 参数</strong><span>动作序列=前进一步 → 前进一步 → 前进一步 → 前进一步 → 前进一步 → 前进一步 → 前进一步 → 前进一步 → 前进一步 → 前进一步；米制范围=&gt;2m；身体宽度范围=4 到 8 个身体宽度；可行性=feasible；置信度=medium；计划推进约 2.5 m。</span></p>
+          <p><strong>真实执行反馈</strong><span>碰撞=否；提前停止=否；高度变化=0 m；推进比例=0.96；风险=可见范围内无明显风险。</span></p>
+          <p><strong>粗 3D 参数</strong><span>动作序列=前进一步 → 前进一步 → 前进一步 → 前进一步 → 前进一步 → 前进一步 → 前进一步 → 前进一步 → 前进一步 → 前进一步；米制范围=&gt;2m；身体宽度范围=4 到 8 个身体宽度；可行性=feasible；置信度=中；计划推进约 2.5 m。</span></p>
           <p><strong>动作轨迹</strong><span>1:前进一步；2:前进一步；3:前进一步；4:前进一步；5:前进一步；6:前进一步；7:前进一步；8:前进一步；…</span></p>
-          <p><strong>场景合理性</strong><span>几何标签=open-or-passable；平地支持=是；适合普通前进=是；文本提示=无可靠语义类别。该问题来自真实 Habitat rollout，题型为 coarse_progress_estimation，GT 由动作执行后的 progress/collision/height 信号确定。</span></p>
+          <p><strong>场景合理性</strong><span>几何标签=开放或可通行；平地支持=是；适合普通前进=是；可见类别=无可靠语义类别。该问题来自真实 Habitat 动作执行，题型为 coarse_推进比例_estimation，真值 由动作执行后的 推进比例/碰撞/高度 信号确定。</span></p>
           <p><strong>评分规则</strong><span>{&#x27;type&#x27;: &#x27;range_match&#x27;, &#x27;unit&#x27;: &#x27;m&#x27;}</span></p>
           <p><strong>身体与动作</strong><span>机器人类型=standard indoor mobile base；半径=0.25 m；宽度=0.5 m；动作=前进一步 → 前进一步 → 前进一步 → 前进一步 → 前进一步 → 前进一步 → 前进一步 → 前进一步 → 前进一步 → 前进一步。</span></p>
           <p><strong>位姿</strong><span>位置=[-1.0728425979614258, -2.9155871868133545, 8.507789611816406], 四元数=None, 水平视场=None</span></p>
           <p><strong>来源</strong><span>Habitat / MP3D / R2R-CE 起点状态 · 轨迹 1LXtFkjw3qL_sampled_00000</span></p>
-          <p><strong>备注</strong><span>模型输入只包含起始 RGB 与问题；rollout trace、深度和语义只用于离线 GT 与展示。</span></p>
+          <p><strong>备注</strong><span>模型输入只包含起始 RGB 与问题；动作执行轨迹、深度和语义只用于离线 GT 与展示。</span></p>
         </div>
       </div>
     </article>
     
     <article class="case-card">
-      <div class="media"><figure><img src="assets/local_progress_estimation-006_rollout_strip.jpg" alt="local_progress_estimation-006 起始 RGB 与 rollout 轨迹示意"><figcaption>起始 RGB 与 rollout 轨迹示意</figcaption></figure><figure><img src="assets/local_progress_estimation-006_topdown.jpg" alt="local_progress_estimation-006 局部动作轨迹草图"><figcaption>局部动作轨迹草图</figcaption></figure></div>
+      <div class="media"><figure><img src="assets/local_progress_estimation-006_rollout_strip.jpg" alt="local_progress_estimation-006 起始 RGB 与动作执行轨迹示意"><figcaption>起始 RGB 与动作执行轨迹示意</figcaption></figure><figure><img src="assets/local_progress_estimation-006_topdown.jpg" alt="local_progress_estimation-006 局部动作轨迹草图"><figcaption>局部动作轨迹草图</figcaption></figure></div>
       <div class="case-body">
         <div class="case-meta">
-          <span>local_progress_estimation-006</span>
-          <span>1LXtFkjw3qL · 帧 00001</span>
+          <span>局部推进范围估计案例 006</span>
+          <span>场景 1LXtFkjw3qL · 帧 00001</span>
         </div>
-        <p><span class="badge">coarse_progress_estimation</span></p>
+        <p><span class="badge">自然短答 / 粗范围</span></p>
         <h3>机器人半径约 0.25 米，宽约 0.5 米。只看这张第一视角图，让它从这里直走 1 步，约 0.25 米（约 0.5 个自身宽度）。它实际大概会推进到什么程度？请先用一个标签回答：基本走完 / 走一部分 / 很快停住 / 明显风险；后面可补一句原因。</h3>
         <div class="qa-grid">
           <div><strong>选项</strong><ul><li>&lt;0.5m</li><li>0.5-1m</li><li>1 到 2 米</li><li>&gt;2m</li></ul></div>
@@ -228,27 +228,27 @@
         </div>
         <div class="evidence">
           <p><strong>GT 推导</strong><span>在 Habitat 中从该起点真实执行动作序列，实际推进约 0.25 m，计划推进约 0.25 m，主要反馈为：可见范围内无明显风险。</span></p>
-          <p><strong>真实 rollout 反馈</strong><span>碰撞=否；提前停止=否；高度变化=0 m；推进比例=0.98；风险=可见范围内无明显风险。</span></p>
-          <p><strong>粗 3D 参数</strong><span>动作序列=前进一步；米制范围=&lt;0.5m；身体宽度范围=小于 2 个身体宽度；可行性=feasible；置信度=medium；计划推进约 0.25 m。</span></p>
+          <p><strong>真实执行反馈</strong><span>碰撞=否；提前停止=否；高度变化=0 m；推进比例=0.98；风险=可见范围内无明显风险。</span></p>
+          <p><strong>粗 3D 参数</strong><span>动作序列=前进一步；米制范围=&lt;0.5m；身体宽度范围=小于 2 个身体宽度；可行性=feasible；置信度=中；计划推进约 0.25 m。</span></p>
           <p><strong>动作轨迹</strong><span>1:前进一步</span></p>
-          <p><strong>场景合理性</strong><span>几何标签=open-or-passable；平地支持=是；适合普通前进=是；文本提示=无可靠语义类别。该问题来自真实 Habitat rollout，题型为 coarse_progress_estimation，GT 由动作执行后的 progress/collision/height 信号确定。</span></p>
+          <p><strong>场景合理性</strong><span>几何标签=开放或可通行；平地支持=是；适合普通前进=是；可见类别=无可靠语义类别。该问题来自真实 Habitat 动作执行，题型为 coarse_推进比例_estimation，真值 由动作执行后的 推进比例/碰撞/高度 信号确定。</span></p>
           <p><strong>评分规则</strong><span>{&#x27;type&#x27;: &#x27;range_match&#x27;, &#x27;unit&#x27;: &#x27;m&#x27;}</span></p>
           <p><strong>身体与动作</strong><span>机器人类型=standard indoor mobile base；半径=0.25 m；宽度=0.5 m；动作=前进一步。</span></p>
           <p><strong>位姿</strong><span>位置=[-2.622478485107422, -2.9155871868133545, 8.927088737487793], 四元数=None, 水平视场=None</span></p>
           <p><strong>来源</strong><span>Habitat / MP3D / R2R-CE 起点状态 · 轨迹 1LXtFkjw3qL_sampled_00001</span></p>
-          <p><strong>备注</strong><span>模型输入只包含起始 RGB 与问题；rollout trace、深度和语义只用于离线 GT 与展示。</span></p>
+          <p><strong>备注</strong><span>模型输入只包含起始 RGB 与问题；动作执行轨迹、深度和语义只用于离线 GT 与展示。</span></p>
         </div>
       </div>
     </article>
     
     <article class="case-card">
-      <div class="media"><figure><img src="assets/local_progress_estimation-007_rollout_strip.jpg" alt="local_progress_estimation-007 起始 RGB 与 rollout 轨迹示意"><figcaption>起始 RGB 与 rollout 轨迹示意</figcaption></figure><figure><img src="assets/local_progress_estimation-007_topdown.jpg" alt="local_progress_estimation-007 局部动作轨迹草图"><figcaption>局部动作轨迹草图</figcaption></figure></div>
+      <div class="media"><figure><img src="assets/local_progress_estimation-007_rollout_strip.jpg" alt="local_progress_estimation-007 起始 RGB 与动作执行轨迹示意"><figcaption>起始 RGB 与动作执行轨迹示意</figcaption></figure><figure><img src="assets/local_progress_estimation-007_topdown.jpg" alt="local_progress_estimation-007 局部动作轨迹草图"><figcaption>局部动作轨迹草图</figcaption></figure></div>
       <div class="case-body">
         <div class="case-meta">
-          <span>local_progress_estimation-007</span>
-          <span>1LXtFkjw3qL · 帧 00002</span>
+          <span>局部推进范围估计案例 007</span>
+          <span>场景 1LXtFkjw3qL · 帧 00002</span>
         </div>
-        <p><span class="badge">coarse_progress_estimation</span></p>
+        <p><span class="badge">自然短答 / 粗范围</span></p>
         <h3>机器人半径约 0.25 米，宽约 0.5 米。只看这张第一视角图，让它从这里直走 2 步，约 0.5 米（约 1.0 个自身宽度）。它实际大概会推进到什么程度？请先用一个标签回答：基本走完 / 走一部分 / 很快停住 / 明显风险；后面可补一句原因。</h3>
         <div class="qa-grid">
           <div><strong>选项</strong><ul><li>&lt;0.5m</li><li>0.5-1m</li><li>1 到 2 米</li><li>&gt;2m</li></ul></div>
@@ -256,27 +256,27 @@
         </div>
         <div class="evidence">
           <p><strong>GT 推导</strong><span>在 Habitat 中从该起点真实执行动作序列，实际推进约 0.5 m，计划推进约 0.5 m，主要反馈为：可见范围内无明显风险。</span></p>
-          <p><strong>真实 rollout 反馈</strong><span>碰撞=否；提前停止=否；高度变化=0 m；推进比例=1；风险=可见范围内无明显风险。</span></p>
-          <p><strong>粗 3D 参数</strong><span>动作序列=前进一步 → 前进一步；米制范围=&lt;0.5m；身体宽度范围=小于 2 个身体宽度；可行性=feasible；置信度=medium；计划推进约 0.5 m。</span></p>
+          <p><strong>真实执行反馈</strong><span>碰撞=否；提前停止=否；高度变化=0 m；推进比例=1；风险=可见范围内无明显风险。</span></p>
+          <p><strong>粗 3D 参数</strong><span>动作序列=前进一步 → 前进一步；米制范围=&lt;0.5m；身体宽度范围=小于 2 个身体宽度；可行性=feasible；置信度=中；计划推进约 0.5 m。</span></p>
           <p><strong>动作轨迹</strong><span>1:前进一步；2:前进一步</span></p>
-          <p><strong>场景合理性</strong><span>几何标签=open-or-passable；平地支持=是；适合普通前进=是；文本提示=wall、ceiling、railing、beam、picture、misc。该问题来自真实 Habitat rollout，题型为 coarse_progress_estimation，GT 由动作执行后的 progress/collision/height 信号确定。</span></p>
+          <p><strong>场景合理性</strong><span>几何标签=开放或可通行；平地支持=是；适合普通前进=是；可见类别=墙面、天花板、栏杆、梁、画框、其他物体。该问题来自真实 Habitat 动作执行，题型为 coarse_推进比例_estimation，真值 由动作执行后的 推进比例/碰撞/高度 信号确定。</span></p>
           <p><strong>评分规则</strong><span>{&#x27;type&#x27;: &#x27;range_match&#x27;, &#x27;unit&#x27;: &#x27;m&#x27;}</span></p>
           <p><strong>身体与动作</strong><span>机器人类型=standard indoor mobile base；半径=0.25 m；宽度=0.5 m；动作=前进一步 → 前进一步。</span></p>
           <p><strong>位姿</strong><span>位置=[1.2366777658462524, 0.6844127178192139, -2.781653881072998], 四元数=None, 水平视场=None</span></p>
           <p><strong>来源</strong><span>Habitat / MP3D / R2R-CE 起点状态 · 轨迹 1LXtFkjw3qL_sampled_00002</span></p>
-          <p><strong>备注</strong><span>模型输入只包含起始 RGB 与问题；rollout trace、深度和语义只用于离线 GT 与展示。</span></p>
+          <p><strong>备注</strong><span>模型输入只包含起始 RGB 与问题；动作执行轨迹、深度和语义只用于离线 GT 与展示。</span></p>
         </div>
       </div>
     </article>
     
     <article class="case-card">
-      <div class="media"><figure><img src="assets/local_progress_estimation-008_rollout_strip.jpg" alt="local_progress_estimation-008 起始 RGB 与 rollout 轨迹示意"><figcaption>起始 RGB 与 rollout 轨迹示意</figcaption></figure><figure><img src="assets/local_progress_estimation-008_topdown.jpg" alt="local_progress_estimation-008 局部动作轨迹草图"><figcaption>局部动作轨迹草图</figcaption></figure></div>
+      <div class="media"><figure><img src="assets/local_progress_estimation-008_rollout_strip.jpg" alt="local_progress_estimation-008 起始 RGB 与动作执行轨迹示意"><figcaption>起始 RGB 与动作执行轨迹示意</figcaption></figure><figure><img src="assets/local_progress_estimation-008_topdown.jpg" alt="local_progress_estimation-008 局部动作轨迹草图"><figcaption>局部动作轨迹草图</figcaption></figure></div>
       <div class="case-body">
         <div class="case-meta">
-          <span>local_progress_estimation-008</span>
-          <span>1LXtFkjw3qL · 帧 00003</span>
+          <span>局部推进范围估计案例 008</span>
+          <span>场景 1LXtFkjw3qL · 帧 00003</span>
         </div>
-        <p><span class="badge">coarse_progress_estimation</span></p>
+        <p><span class="badge">自然短答 / 粗范围</span></p>
         <h3>机器人半径约 0.25 米，宽约 0.5 米。只看这张第一视角图，让它从这里直走 3 步，约 0.75 米（约 1.5 个自身宽度）。它实际大概会推进到什么程度？请先用一个标签回答：基本走完 / 走一部分 / 很快停住 / 明显风险；后面可补一句原因。</h3>
         <div class="qa-grid">
           <div><strong>选项</strong><ul><li>&lt;0.5m</li><li>0.5-1m</li><li>1 到 2 米</li><li>&gt;2m</li></ul></div>
@@ -284,27 +284,27 @@
         </div>
         <div class="evidence">
           <p><strong>GT 推导</strong><span>在 Habitat 中从该起点真实执行动作序列，实际推进约 0.75 m，计划推进约 0.75 m，主要反馈为：可见范围内无明显风险。</span></p>
-          <p><strong>真实 rollout 反馈</strong><span>碰撞=否；提前停止=否；高度变化=0 m；推进比例=1；风险=可见范围内无明显风险。</span></p>
-          <p><strong>粗 3D 参数</strong><span>动作序列=前进一步 → 前进一步 → 前进一步；米制范围=0.5-1m；身体宽度范围=小于 2 个身体宽度；可行性=feasible；置信度=medium；计划推进约 0.75 m。</span></p>
+          <p><strong>真实执行反馈</strong><span>碰撞=否；提前停止=否；高度变化=0 m；推进比例=1；风险=可见范围内无明显风险。</span></p>
+          <p><strong>粗 3D 参数</strong><span>动作序列=前进一步 → 前进一步 → 前进一步；米制范围=0.5-1m；身体宽度范围=小于 2 个身体宽度；可行性=feasible；置信度=中；计划推进约 0.75 m。</span></p>
           <p><strong>动作轨迹</strong><span>1:前进一步；2:前进一步；3:前进一步</span></p>
-          <p><strong>场景合理性</strong><span>几何标签=open-or-passable；平地支持=是；适合普通前进=是；文本提示=无可靠语义类别。该问题来自真实 Habitat rollout，题型为 coarse_progress_estimation，GT 由动作执行后的 progress/collision/height 信号确定。</span></p>
+          <p><strong>场景合理性</strong><span>几何标签=开放或可通行；平地支持=是；适合普通前进=是；可见类别=无可靠语义类别。该问题来自真实 Habitat 动作执行，题型为 coarse_推进比例_estimation，真值 由动作执行后的 推进比例/碰撞/高度 信号确定。</span></p>
           <p><strong>评分规则</strong><span>{&#x27;type&#x27;: &#x27;range_match&#x27;, &#x27;unit&#x27;: &#x27;m&#x27;}</span></p>
           <p><strong>身体与动作</strong><span>机器人类型=standard indoor mobile base；半径=0.25 m；宽度=0.5 m；动作=前进一步 → 前进一步 → 前进一步。</span></p>
           <p><strong>位姿</strong><span>位置=[-0.7629624009132385, -2.9155871868133545, 12.627571105957031], 四元数=None, 水平视场=None</span></p>
           <p><strong>来源</strong><span>Habitat / MP3D / R2R-CE 起点状态 · 轨迹 1LXtFkjw3qL_sampled_00003</span></p>
-          <p><strong>备注</strong><span>模型输入只包含起始 RGB 与问题；rollout trace、深度和语义只用于离线 GT 与展示。</span></p>
+          <p><strong>备注</strong><span>模型输入只包含起始 RGB 与问题；动作执行轨迹、深度和语义只用于离线 GT 与展示。</span></p>
         </div>
       </div>
     </article>
     
     <article class="case-card">
-      <div class="media"><figure><img src="assets/local_progress_estimation-009_rollout_strip.jpg" alt="local_progress_estimation-009 起始 RGB 与 rollout 轨迹示意"><figcaption>起始 RGB 与 rollout 轨迹示意</figcaption></figure><figure><img src="assets/local_progress_estimation-009_topdown.jpg" alt="local_progress_estimation-009 局部动作轨迹草图"><figcaption>局部动作轨迹草图</figcaption></figure></div>
+      <div class="media"><figure><img src="assets/local_progress_estimation-009_rollout_strip.jpg" alt="local_progress_estimation-009 起始 RGB 与动作执行轨迹示意"><figcaption>起始 RGB 与动作执行轨迹示意</figcaption></figure><figure><img src="assets/local_progress_estimation-009_topdown.jpg" alt="local_progress_estimation-009 局部动作轨迹草图"><figcaption>局部动作轨迹草图</figcaption></figure></div>
       <div class="case-body">
         <div class="case-meta">
-          <span>local_progress_estimation-009</span>
-          <span>1pXnuDYAj8r · 帧 00000</span>
+          <span>局部推进范围估计案例 009</span>
+          <span>场景 1pXnuDYAj8r · 帧 00000</span>
         </div>
-        <p><span class="badge">coarse_progress_estimation</span></p>
+        <p><span class="badge">自然短答 / 粗范围</span></p>
         <h3>机器人半径约 0.25 米，宽约 0.5 米。只看这张第一视角图，让它从这里直走 5 步，约 1.25 米（约 2.5 个自身宽度）。它实际大概会推进到什么程度？请先用一个标签回答：基本走完 / 走一部分 / 很快停住 / 明显风险；后面可补一句原因。</h3>
         <div class="qa-grid">
           <div><strong>选项</strong><ul><li>&lt;0.5m</li><li>0.5-1m</li><li>1 到 2 米</li><li>&gt;2m</li></ul></div>
@@ -312,27 +312,27 @@
         </div>
         <div class="evidence">
           <p><strong>GT 推导</strong><span>在 Habitat 中从该起点真实执行动作序列，实际推进约 1.25 m，计划推进约 1.25 m，主要反馈为：可见范围内无明显风险。</span></p>
-          <p><strong>真实 rollout 反馈</strong><span>碰撞=否；提前停止=否；高度变化=0 m；推进比例=1；风险=可见范围内无明显风险。</span></p>
-          <p><strong>粗 3D 参数</strong><span>动作序列=前进一步 → 前进一步 → 前进一步 → 前进一步 → 前进一步；米制范围=1 到 2 米；身体宽度范围=2 到 4 个身体宽度；可行性=feasible；置信度=medium；计划推进约 1.25 m。</span></p>
+          <p><strong>真实执行反馈</strong><span>碰撞=否；提前停止=否；高度变化=0 m；推进比例=1；风险=可见范围内无明显风险。</span></p>
+          <p><strong>粗 3D 参数</strong><span>动作序列=前进一步 → 前进一步 → 前进一步 → 前进一步 → 前进一步；米制范围=1 到 2 米；身体宽度范围=2 到 4 个身体宽度；可行性=feasible；置信度=中；计划推进约 1.25 m。</span></p>
           <p><strong>动作轨迹</strong><span>1:前进一步；2:前进一步；3:前进一步；4:前进一步；5:前进一步</span></p>
-          <p><strong>场景合理性</strong><span>几何标签=open-or-passable；平地支持=是；适合普通前进=是；文本提示=无可靠语义类别。该问题来自真实 Habitat rollout，题型为 coarse_progress_estimation，GT 由动作执行后的 progress/collision/height 信号确定。</span></p>
+          <p><strong>场景合理性</strong><span>几何标签=开放或可通行；平地支持=是；适合普通前进=是；可见类别=无可靠语义类别。该问题来自真实 Habitat 动作执行，题型为 coarse_推进比例_estimation，真值 由动作执行后的 推进比例/碰撞/高度 信号确定。</span></p>
           <p><strong>评分规则</strong><span>{&#x27;type&#x27;: &#x27;range_match&#x27;, &#x27;unit&#x27;: &#x27;m&#x27;}</span></p>
           <p><strong>身体与动作</strong><span>机器人类型=standard indoor mobile base；半径=0.25 m；宽度=0.5 m；动作=前进一步 → 前进一步 → 前进一步 → 前进一步 → 前进一步。</span></p>
           <p><strong>位姿</strong><span>位置=[8.368339538574219, 0.11414670944213867, 3.283545732498169], 四元数=None, 水平视场=None</span></p>
           <p><strong>来源</strong><span>Habitat / MP3D / R2R-CE 起点状态 · 轨迹 1pXnuDYAj8r_sampled_00000</span></p>
-          <p><strong>备注</strong><span>模型输入只包含起始 RGB 与问题；rollout trace、深度和语义只用于离线 GT 与展示。</span></p>
+          <p><strong>备注</strong><span>模型输入只包含起始 RGB 与问题；动作执行轨迹、深度和语义只用于离线 GT 与展示。</span></p>
         </div>
       </div>
     </article>
     
     <article class="case-card">
-      <div class="media"><figure><img src="assets/local_progress_estimation-010_rollout_strip.jpg" alt="local_progress_estimation-010 起始 RGB 与 rollout 轨迹示意"><figcaption>起始 RGB 与 rollout 轨迹示意</figcaption></figure><figure><img src="assets/local_progress_estimation-010_topdown.jpg" alt="local_progress_estimation-010 局部动作轨迹草图"><figcaption>局部动作轨迹草图</figcaption></figure></div>
+      <div class="media"><figure><img src="assets/local_progress_estimation-010_rollout_strip.jpg" alt="local_progress_estimation-010 起始 RGB 与动作执行轨迹示意"><figcaption>起始 RGB 与动作执行轨迹示意</figcaption></figure><figure><img src="assets/local_progress_estimation-010_topdown.jpg" alt="local_progress_estimation-010 局部动作轨迹草图"><figcaption>局部动作轨迹草图</figcaption></figure></div>
       <div class="case-body">
         <div class="case-meta">
-          <span>local_progress_estimation-010</span>
-          <span>1pXnuDYAj8r · 帧 00001</span>
+          <span>局部推进范围估计案例 010</span>
+          <span>场景 1pXnuDYAj8r · 帧 00001</span>
         </div>
-        <p><span class="badge">coarse_progress_estimation</span></p>
+        <p><span class="badge">自然短答 / 粗范围</span></p>
         <h3>机器人半径约 0.25 米，宽约 0.5 米。只看这张第一视角图，让它从这里直走 10 步，约 2.5 米（约 5.0 个自身宽度）。它实际大概会推进到什么程度？请先用一个标签回答：基本走完 / 走一部分 / 很快停住 / 明显风险；后面可补一句原因。</h3>
         <div class="qa-grid">
           <div><strong>选项</strong><ul><li>&lt;0.5m</li><li>0.5-1m</li><li>1 到 2 米</li><li>&gt;2m</li></ul></div>
@@ -340,15 +340,15 @@
         </div>
         <div class="evidence">
           <p><strong>GT 推导</strong><span>在 Habitat 中从该起点真实执行动作序列，实际推进约 0.2 m，计划推进约 2.5 m，主要反馈为：可见范围内无明显风险。</span></p>
-          <p><strong>真实 rollout 反馈</strong><span>碰撞=否；提前停止=是；高度变化=0 m；推进比例=0.08；风险=可见范围内无明显风险。</span></p>
-          <p><strong>粗 3D 参数</strong><span>动作序列=前进一步 → 前进一步 → 前进一步 → 前进一步 → 前进一步 → 前进一步 → 前进一步 → 前进一步 → 前进一步 → 前进一步；米制范围=&lt;0.5m；身体宽度范围=小于 2 个身体宽度；可行性=incomplete；置信度=high；计划推进约 2.5 m。</span></p>
+          <p><strong>真实执行反馈</strong><span>碰撞=否；提前停止=是；高度变化=0 m；推进比例=0.08；风险=可见范围内无明显风险。</span></p>
+          <p><strong>粗 3D 参数</strong><span>动作序列=前进一步 → 前进一步 → 前进一步 → 前进一步 → 前进一步 → 前进一步 → 前进一步 → 前进一步 → 前进一步 → 前进一步；米制范围=&lt;0.5m；身体宽度范围=小于 2 个身体宽度；可行性=incomplete；置信度=高；计划推进约 2.5 m。</span></p>
           <p><strong>动作轨迹</strong><span>1:前进一步；2:前进一步；3:前进一步；4:前进一步；5:前进一步；6:前进一步；7:前进一步；8:前进一步；…</span></p>
-          <p><strong>场景合理性</strong><span>几何标签=open-or-passable；平地支持=是；适合普通前进=否；文本提示=无可靠语义类别。该问题来自真实 Habitat rollout，题型为 coarse_progress_estimation，GT 由动作执行后的 progress/collision/height 信号确定。</span></p>
+          <p><strong>场景合理性</strong><span>几何标签=开放或可通行；平地支持=是；适合普通前进=否；可见类别=无可靠语义类别。该问题来自真实 Habitat 动作执行，题型为 coarse_推进比例_estimation，真值 由动作执行后的 推进比例/碰撞/高度 信号确定。</span></p>
           <p><strong>评分规则</strong><span>{&#x27;type&#x27;: &#x27;range_match&#x27;, &#x27;unit&#x27;: &#x27;m&#x27;}</span></p>
           <p><strong>身体与动作</strong><span>机器人类型=standard indoor mobile base；半径=0.25 m；宽度=0.5 m；动作=前进一步 → 前进一步 → 前进一步 → 前进一步 → 前进一步 → 前进一步 → 前进一步 → 前进一步 → 前进一步 → 前进一步。</span></p>
           <p><strong>位姿</strong><span>位置=[4.330360412597656, 0.11414670944213867, 2.519526481628418], 四元数=None, 水平视场=None</span></p>
           <p><strong>来源</strong><span>Habitat / MP3D / R2R-CE 起点状态 · 轨迹 1pXnuDYAj8r_sampled_00001</span></p>
-          <p><strong>备注</strong><span>模型输入只包含起始 RGB 与问题；rollout trace、深度和语义只用于离线 GT 与展示。</span></p>
+          <p><strong>备注</strong><span>模型输入只包含起始 RGB 与问题；动作执行轨迹、深度和语义只用于离线 GT 与展示。</span></p>
         </div>
       </div>
     </article>
@@ -360,11 +360,11 @@
               <p>检验模型能否在给定短动作序列时预测会撞、停住、下落还是正常推进。</p>
               <div class="case-grid">
     <article class="case-card">
-      <div class="media"><figure><img src="assets/action_horizon_collision-010_rollout_strip.jpg" alt="action_horizon_collision-010 起始 RGB 与 rollout 轨迹示意"><figcaption>起始 RGB 与 rollout 轨迹示意</figcaption></figure><figure><img src="assets/action_horizon_collision-010_topdown.jpg" alt="action_horizon_collision-010 局部动作轨迹草图"><figcaption>局部动作轨迹草图</figcaption></figure></div>
+      <div class="media"><figure><img src="assets/action_horizon_collision-010_rollout_strip.jpg" alt="action_horizon_collision-010 起始 RGB 与动作执行轨迹示意"><figcaption>起始 RGB 与动作执行轨迹示意</figcaption></figure><figure><img src="assets/action_horizon_collision-010_topdown.jpg" alt="action_horizon_collision-010 局部动作轨迹草图"><figcaption>局部动作轨迹草图</figcaption></figure></div>
       <div class="case-body">
         <div class="case-meta">
-          <span>action_horizon_collision-010</span>
-          <span>1pXnuDYAj8r · 帧 00001</span>
+          <span>动作时域碰撞案例 010</span>
+          <span>场景 1pXnuDYAj8r · 帧 00001</span>
         </div>
         <p><span class="badge">二值 / 短答</span></p>
         <h3>机器人半径约 0.25 米，宽约 0.5 米。只看当前图，如果它向前一步，然后向前一步，然后向前一步，然后向前一步，然后向前一步，然后向前一步，然后向前一步，然后向前一步，然后向前一步，然后向前一步，总共会尝试前进约 2.5 米（约 5.0 个自身宽度）。这个短动作大概能不能做完？请先回答：可以完成 / 不能完成；后面可补一句原因。</h3>
@@ -374,25 +374,25 @@
         </div>
         <div class="evidence">
           <p><strong>GT 推导</strong><span>在 Habitat 中从该起点真实执行动作序列，实际推进约 0.2 m，计划推进约 2.5 m，主要反馈为：可见范围内无明显风险。</span></p>
-          <p><strong>真实 rollout 反馈</strong><span>碰撞=否；提前停止=是；高度变化=0 m；推进比例=0.08；风险=可见范围内无明显风险。</span></p>
-          <p><strong>粗 3D 参数</strong><span>动作序列=前进一步 → 前进一步 → 前进一步 → 前进一步 → 前进一步 → 前进一步 → 前进一步 → 前进一步 → 前进一步 → 前进一步；米制范围=&lt;0.5m；身体宽度范围=小于 2 个身体宽度；可行性=incomplete；置信度=high；计划推进约 2.5 m。</span></p>
+          <p><strong>真实执行反馈</strong><span>碰撞=否；提前停止=是；高度变化=0 m；推进比例=0.08；风险=可见范围内无明显风险。</span></p>
+          <p><strong>粗 3D 参数</strong><span>动作序列=前进一步 → 前进一步 → 前进一步 → 前进一步 → 前进一步 → 前进一步 → 前进一步 → 前进一步 → 前进一步 → 前进一步；米制范围=&lt;0.5m；身体宽度范围=小于 2 个身体宽度；可行性=incomplete；置信度=高；计划推进约 2.5 m。</span></p>
           <p><strong>动作轨迹</strong><span>1:前进一步；2:前进一步；3:前进一步；4:前进一步；5:前进一步；6:前进一步；7:前进一步；8:前进一步；…</span></p>
-          <p><strong>场景合理性</strong><span>几何标签=open-or-passable；平地支持=是；适合普通前进=否；文本提示=无可靠语义类别。该问题来自真实 Habitat rollout，题型为 single_action_feasibility，GT 由动作执行后的 progress/collision/height 信号确定。</span></p>
+          <p><strong>场景合理性</strong><span>几何标签=开放或可通行；平地支持=是；适合普通前进=否；可见类别=无可靠语义类别。该问题来自真实 Habitat 动作执行，题型为 单动作可行性判断，真值 由动作执行后的 推进比例/碰撞/高度 信号确定。</span></p>
           <p><strong>评分规则</strong><span>离散标签精确匹配。</span></p>
           <p><strong>身体与动作</strong><span>机器人类型=standard indoor mobile base；半径=0.25 m；宽度=0.5 m；动作=前进一步 → 前进一步 → 前进一步 → 前进一步 → 前进一步 → 前进一步 → 前进一步 → 前进一步 → 前进一步 → 前进一步。</span></p>
           <p><strong>位姿</strong><span>位置=[4.330360412597656, 0.11414670944213867, 2.519526481628418], 四元数=None, 水平视场=None</span></p>
           <p><strong>来源</strong><span>Habitat / MP3D / R2R-CE 起点状态 · 轨迹 1pXnuDYAj8r_sampled_00001</span></p>
-          <p><strong>备注</strong><span>模型输入只包含起始 RGB 与问题；rollout trace、深度和语义只用于离线 GT 与展示。</span></p>
+          <p><strong>备注</strong><span>模型输入只包含起始 RGB 与问题；动作执行轨迹、深度和语义只用于离线 GT 与展示。</span></p>
         </div>
       </div>
     </article>
     
     <article class="case-card">
-      <div class="media"><figure><img src="assets/action_horizon_collision-014_rollout_strip.jpg" alt="action_horizon_collision-014 起始 RGB 与 rollout 轨迹示意"><figcaption>起始 RGB 与 rollout 轨迹示意</figcaption></figure><figure><img src="assets/action_horizon_collision-014_topdown.jpg" alt="action_horizon_collision-014 局部动作轨迹草图"><figcaption>局部动作轨迹草图</figcaption></figure></div>
+      <div class="media"><figure><img src="assets/action_horizon_collision-014_rollout_strip.jpg" alt="action_horizon_collision-014 起始 RGB 与动作执行轨迹示意"><figcaption>起始 RGB 与动作执行轨迹示意</figcaption></figure><figure><img src="assets/action_horizon_collision-014_topdown.jpg" alt="action_horizon_collision-014 局部动作轨迹草图"><figcaption>局部动作轨迹草图</figcaption></figure></div>
       <div class="case-body">
         <div class="case-meta">
-          <span>action_horizon_collision-014</span>
-          <span>29hnd4uzFmX · 帧 00001</span>
+          <span>动作时域碰撞案例 014</span>
+          <span>场景 29hnd4uzFmX · 帧 00001</span>
         </div>
         <p><span class="badge">二值 / 短答</span></p>
         <h3>机器人半径约 0.25 米，宽约 0.5 米。只看当前图，如果它向前一步，然后向前一步，然后向前一步，然后向前一步，然后向前一步，总共会尝试前进约 1.25 米（约 2.5 个自身宽度）。这个短动作大概能不能做完？请先回答：可以完成 / 不能完成；后面可补一句原因。</h3>
@@ -402,25 +402,25 @@
         </div>
         <div class="evidence">
           <p><strong>GT 推导</strong><span>在 Habitat 中从该起点真实执行动作序列，实际推进约 1.13 m，计划推进约 1.25 m，主要反馈为：可见范围内无明显风险。</span></p>
-          <p><strong>真实 rollout 反馈</strong><span>碰撞=否；提前停止=否；高度变化=0 m；推进比例=0.9；风险=可见范围内无明显风险。</span></p>
-          <p><strong>粗 3D 参数</strong><span>动作序列=前进一步 → 前进一步 → 前进一步 → 前进一步 → 前进一步；米制范围=1 到 2 米；身体宽度范围=2 到 4 个身体宽度；可行性=feasible；置信度=high；计划推进约 1.25 m。</span></p>
+          <p><strong>真实执行反馈</strong><span>碰撞=否；提前停止=否；高度变化=0 m；推进比例=0.9；风险=可见范围内无明显风险。</span></p>
+          <p><strong>粗 3D 参数</strong><span>动作序列=前进一步 → 前进一步 → 前进一步 → 前进一步 → 前进一步；米制范围=1 到 2 米；身体宽度范围=2 到 4 个身体宽度；可行性=feasible；置信度=高；计划推进约 1.25 m。</span></p>
           <p><strong>动作轨迹</strong><span>1:前进一步；2:前进一步；3:前进一步；4:前进一步；5:前进一步</span></p>
-          <p><strong>场景合理性</strong><span>几何标签=open-or-passable；平地支持=是；适合普通前进=是；文本提示=无可靠语义类别。该问题来自真实 Habitat rollout，题型为 single_action_feasibility，GT 由动作执行后的 progress/collision/height 信号确定。</span></p>
+          <p><strong>场景合理性</strong><span>几何标签=开放或可通行；平地支持=是；适合普通前进=是；可见类别=无可靠语义类别。该问题来自真实 Habitat 动作执行，题型为 单动作可行性判断，真值 由动作执行后的 推进比例/碰撞/高度 信号确定。</span></p>
           <p><strong>评分规则</strong><span>离散标签精确匹配。</span></p>
           <p><strong>身体与动作</strong><span>机器人类型=standard indoor mobile base；半径=0.25 m；宽度=0.5 m；动作=前进一步 → 前进一步 → 前进一步 → 前进一步 → 前进一步。</span></p>
           <p><strong>位姿</strong><span>位置=[-1.2635596990585327, 2.791041374206543, -5.652444839477539], 四元数=None, 水平视场=None</span></p>
           <p><strong>来源</strong><span>Habitat / MP3D / R2R-CE 起点状态 · 轨迹 29hnd4uzFmX_sampled_00001</span></p>
-          <p><strong>备注</strong><span>模型输入只包含起始 RGB 与问题；rollout trace、深度和语义只用于离线 GT 与展示。</span></p>
+          <p><strong>备注</strong><span>模型输入只包含起始 RGB 与问题；动作执行轨迹、深度和语义只用于离线 GT 与展示。</span></p>
         </div>
       </div>
     </article>
     
     <article class="case-card">
-      <div class="media"><figure><img src="assets/action_horizon_collision-015_rollout_strip.jpg" alt="action_horizon_collision-015 起始 RGB 与 rollout 轨迹示意"><figcaption>起始 RGB 与 rollout 轨迹示意</figcaption></figure><figure><img src="assets/action_horizon_collision-015_topdown.jpg" alt="action_horizon_collision-015 局部动作轨迹草图"><figcaption>局部动作轨迹草图</figcaption></figure></div>
+      <div class="media"><figure><img src="assets/action_horizon_collision-015_rollout_strip.jpg" alt="action_horizon_collision-015 起始 RGB 与动作执行轨迹示意"><figcaption>起始 RGB 与动作执行轨迹示意</figcaption></figure><figure><img src="assets/action_horizon_collision-015_topdown.jpg" alt="action_horizon_collision-015 局部动作轨迹草图"><figcaption>局部动作轨迹草图</figcaption></figure></div>
       <div class="case-body">
         <div class="case-meta">
-          <span>action_horizon_collision-015</span>
-          <span>29hnd4uzFmX · 帧 00002</span>
+          <span>动作时域碰撞案例 015</span>
+          <span>场景 29hnd4uzFmX · 帧 00002</span>
         </div>
         <p><span class="badge">二值 / 短答</span></p>
         <h3>机器人半径约 0.25 米，宽约 0.5 米。只看当前图，如果它向前一步，然后向前一步，然后向前一步，然后向前一步，然后向前一步，然后向前一步，然后向前一步，然后向前一步，然后向前一步，然后向前一步，总共会尝试前进约 2.5 米（约 5.0 个自身宽度）。这个短动作大概能不能做完？请先回答：可以完成 / 不能完成；后面可补一句原因。</h3>
@@ -430,25 +430,25 @@
         </div>
         <div class="evidence">
           <p><strong>GT 推导</strong><span>在 Habitat 中从该起点真实执行动作序列，实际推进约 0.96 m，计划推进约 2.5 m，主要反馈为：可见范围内无明显风险。</span></p>
-          <p><strong>真实 rollout 反馈</strong><span>碰撞=否；提前停止=是；高度变化=0 m；推进比例=0.38；风险=可见范围内无明显风险。</span></p>
-          <p><strong>粗 3D 参数</strong><span>动作序列=前进一步 → 前进一步 → 前进一步 → 前进一步 → 前进一步 → 前进一步 → 前进一步 → 前进一步 → 前进一步 → 前进一步；米制范围=0.5-1m；身体宽度范围=小于 2 个身体宽度；可行性=incomplete；置信度=high；计划推进约 2.5 m。</span></p>
+          <p><strong>真实执行反馈</strong><span>碰撞=否；提前停止=是；高度变化=0 m；推进比例=0.38；风险=可见范围内无明显风险。</span></p>
+          <p><strong>粗 3D 参数</strong><span>动作序列=前进一步 → 前进一步 → 前进一步 → 前进一步 → 前进一步 → 前进一步 → 前进一步 → 前进一步 → 前进一步 → 前进一步；米制范围=0.5-1m；身体宽度范围=小于 2 个身体宽度；可行性=incomplete；置信度=高；计划推进约 2.5 m。</span></p>
           <p><strong>动作轨迹</strong><span>1:前进一步；2:前进一步；3:前进一步；4:前进一步；5:前进一步；6:前进一步；7:前进一步；8:前进一步；…</span></p>
-          <p><strong>场景合理性</strong><span>几何标签=open-or-passable；平地支持=是；适合普通前进=否；文本提示=sofa、floor、window、wall、door、misc。该问题来自真实 Habitat rollout，题型为 single_action_feasibility，GT 由动作执行后的 progress/collision/height 信号确定。</span></p>
+          <p><strong>场景合理性</strong><span>几何标签=开放或可通行；平地支持=是；适合普通前进=否；可见类别=沙发、地面、窗户、墙面、门、其他物体。该问题来自真实 Habitat 动作执行，题型为 单动作可行性判断，真值 由动作执行后的 推进比例/碰撞/高度 信号确定。</span></p>
           <p><strong>评分规则</strong><span>离散标签精确匹配。</span></p>
           <p><strong>身体与动作</strong><span>机器人类型=standard indoor mobile base；半径=0.25 m；宽度=0.5 m；动作=前进一步 → 前进一步 → 前进一步 → 前进一步 → 前进一步 → 前进一步 → 前进一步 → 前进一步 → 前进一步 → 前进一步。</span></p>
           <p><strong>位姿</strong><span>位置=[-3.0955493450164795, 2.791041374206543, -5.286020755767822], 四元数=None, 水平视场=None</span></p>
           <p><strong>来源</strong><span>Habitat / MP3D / R2R-CE 起点状态 · 轨迹 29hnd4uzFmX_sampled_00002</span></p>
-          <p><strong>备注</strong><span>模型输入只包含起始 RGB 与问题；rollout trace、深度和语义只用于离线 GT 与展示。</span></p>
+          <p><strong>备注</strong><span>模型输入只包含起始 RGB 与问题；动作执行轨迹、深度和语义只用于离线 GT 与展示。</span></p>
         </div>
       </div>
     </article>
     
     <article class="case-card">
-      <div class="media"><figure><img src="assets/action_horizon_collision-019_rollout_strip.jpg" alt="action_horizon_collision-019 起始 RGB 与 rollout 轨迹示意"><figcaption>起始 RGB 与 rollout 轨迹示意</figcaption></figure><figure><img src="assets/action_horizon_collision-019_topdown.jpg" alt="action_horizon_collision-019 局部动作轨迹草图"><figcaption>局部动作轨迹草图</figcaption></figure></div>
+      <div class="media"><figure><img src="assets/action_horizon_collision-019_rollout_strip.jpg" alt="action_horizon_collision-019 起始 RGB 与动作执行轨迹示意"><figcaption>起始 RGB 与动作执行轨迹示意</figcaption></figure><figure><img src="assets/action_horizon_collision-019_topdown.jpg" alt="action_horizon_collision-019 局部动作轨迹草图"><figcaption>局部动作轨迹草图</figcaption></figure></div>
       <div class="case-body">
         <div class="case-meta">
-          <span>action_horizon_collision-019</span>
-          <span>2azQ1b91cZZ · 帧 00002</span>
+          <span>动作时域碰撞案例 019</span>
+          <span>场景 2azQ1b91cZZ · 帧 00002</span>
         </div>
         <p><span class="badge">二值 / 短答</span></p>
         <h3>机器人半径约 0.25 米，宽约 0.5 米。只看当前图，如果它向前一步，然后向前一步，然后向前一步，然后向前一步，然后向前一步，总共会尝试前进约 1.25 米（约 2.5 个自身宽度）。这个短动作大概能不能做完？请先回答：可以完成 / 不能完成；后面可补一句原因。</h3>
@@ -458,25 +458,25 @@
         </div>
         <div class="evidence">
           <p><strong>GT 推导</strong><span>在 Habitat 中从该起点真实执行动作序列，实际推进约 0.45 m，计划推进约 1.25 m，主要反馈为：可见范围内无明显风险。</span></p>
-          <p><strong>真实 rollout 反馈</strong><span>碰撞=否；提前停止=是；高度变化=0 m；推进比例=0.36；风险=可见范围内无明显风险。</span></p>
-          <p><strong>粗 3D 参数</strong><span>动作序列=前进一步 → 前进一步 → 前进一步 → 前进一步 → 前进一步；米制范围=&lt;0.5m；身体宽度范围=小于 2 个身体宽度；可行性=incomplete；置信度=high；计划推进约 1.25 m。</span></p>
+          <p><strong>真实执行反馈</strong><span>碰撞=否；提前停止=是；高度变化=0 m；推进比例=0.36；风险=可见范围内无明显风险。</span></p>
+          <p><strong>粗 3D 参数</strong><span>动作序列=前进一步 → 前进一步 → 前进一步 → 前进一步 → 前进一步；米制范围=&lt;0.5m；身体宽度范围=小于 2 个身体宽度；可行性=incomplete；置信度=高；计划推进约 1.25 m。</span></p>
           <p><strong>动作轨迹</strong><span>1:前进一步；2:前进一步；3:前进一步；4:前进一步；5:前进一步</span></p>
-          <p><strong>场景合理性</strong><span>几何标签=open-or-passable；平地支持=是；适合普通前进=否；文本提示=无可靠语义类别。该问题来自真实 Habitat rollout，题型为 single_action_feasibility，GT 由动作执行后的 progress/collision/height 信号确定。</span></p>
+          <p><strong>场景合理性</strong><span>几何标签=开放或可通行；平地支持=是；适合普通前进=否；可见类别=无可靠语义类别。该问题来自真实 Habitat 动作执行，题型为 单动作可行性判断，真值 由动作执行后的 推进比例/碰撞/高度 信号确定。</span></p>
           <p><strong>评分规则</strong><span>离散标签精确匹配。</span></p>
           <p><strong>身体与动作</strong><span>机器人类型=standard indoor mobile base；半径=0.25 m；宽度=0.5 m；动作=前进一步 → 前进一步 → 前进一步 → 前进一步 → 前进一步。</span></p>
           <p><strong>位姿</strong><span>位置=[1.310624599456787, 0.12710899114608765, 7.792181015014648], 四元数=None, 水平视场=None</span></p>
           <p><strong>来源</strong><span>Habitat / MP3D / R2R-CE 起点状态 · 轨迹 2azQ1b91cZZ_sampled_00002</span></p>
-          <p><strong>备注</strong><span>模型输入只包含起始 RGB 与问题；rollout trace、深度和语义只用于离线 GT 与展示。</span></p>
+          <p><strong>备注</strong><span>模型输入只包含起始 RGB 与问题；动作执行轨迹、深度和语义只用于离线 GT 与展示。</span></p>
         </div>
       </div>
     </article>
     
     <article class="case-card">
-      <div class="media"><figure><img src="assets/action_horizon_collision-020_rollout_strip.jpg" alt="action_horizon_collision-020 起始 RGB 与 rollout 轨迹示意"><figcaption>起始 RGB 与 rollout 轨迹示意</figcaption></figure><figure><img src="assets/action_horizon_collision-020_topdown.jpg" alt="action_horizon_collision-020 局部动作轨迹草图"><figcaption>局部动作轨迹草图</figcaption></figure></div>
+      <div class="media"><figure><img src="assets/action_horizon_collision-020_rollout_strip.jpg" alt="action_horizon_collision-020 起始 RGB 与动作执行轨迹示意"><figcaption>起始 RGB 与动作执行轨迹示意</figcaption></figure><figure><img src="assets/action_horizon_collision-020_topdown.jpg" alt="action_horizon_collision-020 局部动作轨迹草图"><figcaption>局部动作轨迹草图</figcaption></figure></div>
       <div class="case-body">
         <div class="case-meta">
-          <span>action_horizon_collision-020</span>
-          <span>2azQ1b91cZZ · 帧 00003</span>
+          <span>动作时域碰撞案例 020</span>
+          <span>场景 2azQ1b91cZZ · 帧 00003</span>
         </div>
         <p><span class="badge">二值 / 短答</span></p>
         <h3>机器人半径约 0.25 米，宽约 0.5 米。只看当前图，如果它向前一步，然后向前一步，然后向前一步，然后向前一步，然后向前一步，然后向前一步，然后向前一步，然后向前一步，然后向前一步，然后向前一步，总共会尝试前进约 2.5 米（约 5.0 个自身宽度）。这个短动作大概能不能做完？请先回答：可以完成 / 不能完成；后面可补一句原因。</h3>
@@ -486,25 +486,25 @@
         </div>
         <div class="evidence">
           <p><strong>GT 推导</strong><span>在 Habitat 中从该起点真实执行动作序列，实际推进约 0.35 m，计划推进约 2.5 m，主要反馈为：可见范围内无明显风险。</span></p>
-          <p><strong>真实 rollout 反馈</strong><span>碰撞=否；提前停止=是；高度变化=0.04 m；推进比例=0.14；风险=可见范围内无明显风险。</span></p>
-          <p><strong>粗 3D 参数</strong><span>动作序列=前进一步 → 前进一步 → 前进一步 → 前进一步 → 前进一步 → 前进一步 → 前进一步 → 前进一步 → 前进一步 → 前进一步；米制范围=&lt;0.5m；身体宽度范围=小于 2 个身体宽度；可行性=incomplete；置信度=high；计划推进约 2.5 m。</span></p>
+          <p><strong>真实执行反馈</strong><span>碰撞=否；提前停止=是；高度变化=0.04 m；推进比例=0.14；风险=可见范围内无明显风险。</span></p>
+          <p><strong>粗 3D 参数</strong><span>动作序列=前进一步 → 前进一步 → 前进一步 → 前进一步 → 前进一步 → 前进一步 → 前进一步 → 前进一步 → 前进一步 → 前进一步；米制范围=&lt;0.5m；身体宽度范围=小于 2 个身体宽度；可行性=incomplete；置信度=高；计划推进约 2.5 m。</span></p>
           <p><strong>动作轨迹</strong><span>1:前进一步；2:前进一步；3:前进一步；4:前进一步；5:前进一步；6:前进一步；7:前进一步；8:前进一步；…</span></p>
-          <p><strong>场景合理性</strong><span>几何标签=open-or-passable；平地支持=是；适合普通前进=否；文本提示=ceiling、wall、counter、door、sofa、misc。该问题来自真实 Habitat rollout，题型为 single_action_feasibility，GT 由动作执行后的 progress/collision/height 信号确定。</span></p>
+          <p><strong>场景合理性</strong><span>几何标签=开放或可通行；平地支持=是；适合普通前进=否；可见类别=天花板、墙面、台面、门、沙发、其他物体。该问题来自真实 Habitat 动作执行，题型为 单动作可行性判断，真值 由动作执行后的 推进比例/碰撞/高度 信号确定。</span></p>
           <p><strong>评分规则</strong><span>离散标签精确匹配。</span></p>
           <p><strong>身体与动作</strong><span>机器人类型=standard indoor mobile base；半径=0.25 m；宽度=0.5 m；动作=前进一步 → 前进一步 → 前进一步 → 前进一步 → 前进一步 → 前进一步 → 前进一步 → 前进一步 → 前进一步 → 前进一步。</span></p>
           <p><strong>位姿</strong><span>位置=[7.864292621612549, 3.4845850467681885, 6.341444969177246], 四元数=None, 水平视场=None</span></p>
           <p><strong>来源</strong><span>Habitat / MP3D / R2R-CE 起点状态 · 轨迹 2azQ1b91cZZ_sampled_00003</span></p>
-          <p><strong>备注</strong><span>模型输入只包含起始 RGB 与问题；rollout trace、深度和语义只用于离线 GT 与展示。</span></p>
+          <p><strong>备注</strong><span>模型输入只包含起始 RGB 与问题；动作执行轨迹、深度和语义只用于离线 GT 与展示。</span></p>
         </div>
       </div>
     </article>
     
     <article class="case-card">
-      <div class="media"><figure><img src="assets/action_horizon_collision-024_rollout_strip.jpg" alt="action_horizon_collision-024 起始 RGB 与 rollout 轨迹示意"><figcaption>起始 RGB 与 rollout 轨迹示意</figcaption></figure><figure><img src="assets/action_horizon_collision-024_topdown.jpg" alt="action_horizon_collision-024 局部动作轨迹草图"><figcaption>局部动作轨迹草图</figcaption></figure></div>
+      <div class="media"><figure><img src="assets/action_horizon_collision-024_rollout_strip.jpg" alt="action_horizon_collision-024 起始 RGB 与动作执行轨迹示意"><figcaption>起始 RGB 与动作执行轨迹示意</figcaption></figure><figure><img src="assets/action_horizon_collision-024_topdown.jpg" alt="action_horizon_collision-024 局部动作轨迹草图"><figcaption>局部动作轨迹草图</figcaption></figure></div>
       <div class="case-body">
         <div class="case-meta">
-          <span>action_horizon_collision-024</span>
-          <span>2n8kARJN3HM · 帧 00003</span>
+          <span>动作时域碰撞案例 024</span>
+          <span>场景 2n8kARJN3HM · 帧 00003</span>
         </div>
         <p><span class="badge">二值 / 短答</span></p>
         <h3>机器人半径约 0.25 米，宽约 0.5 米。只看当前图，如果它向前一步，然后向前一步，然后向前一步，然后向前一步，然后向前一步，总共会尝试前进约 1.25 米（约 2.5 个自身宽度）。这个短动作大概能不能做完？请先回答：可以完成 / 不能完成；后面可补一句原因。</h3>
@@ -514,25 +514,25 @@
         </div>
         <div class="evidence">
           <p><strong>GT 推导</strong><span>在 Habitat 中从该起点真实执行动作序列，实际推进约 0.4 m，计划推进约 1.25 m，主要反馈为：可见范围内无明显风险。</span></p>
-          <p><strong>真实 rollout 反馈</strong><span>碰撞=否；提前停止=是；高度变化=0 m；推进比例=0.32；风险=可见范围内无明显风险。</span></p>
-          <p><strong>粗 3D 参数</strong><span>动作序列=前进一步 → 前进一步 → 前进一步 → 前进一步 → 前进一步；米制范围=&lt;0.5m；身体宽度范围=小于 2 个身体宽度；可行性=incomplete；置信度=high；计划推进约 1.25 m。</span></p>
+          <p><strong>真实执行反馈</strong><span>碰撞=否；提前停止=是；高度变化=0 m；推进比例=0.32；风险=可见范围内无明显风险。</span></p>
+          <p><strong>粗 3D 参数</strong><span>动作序列=前进一步 → 前进一步 → 前进一步 → 前进一步 → 前进一步；米制范围=&lt;0.5m；身体宽度范围=小于 2 个身体宽度；可行性=incomplete；置信度=高；计划推进约 1.25 m。</span></p>
           <p><strong>动作轨迹</strong><span>1:前进一步；2:前进一步；3:前进一步；4:前进一步；5:前进一步</span></p>
-          <p><strong>场景合理性</strong><span>几何标签=open-or-passable；平地支持=是；适合普通前进=否；文本提示=ceiling、wall、curtain、stairs、misc、table。该问题来自真实 Habitat rollout，题型为 single_action_feasibility，GT 由动作执行后的 progress/collision/height 信号确定。</span></p>
+          <p><strong>场景合理性</strong><span>几何标签=开放或可通行；平地支持=是；适合普通前进=否；可见类别=天花板、墙面、curtain、楼梯、其他物体、桌子。该问题来自真实 Habitat 动作执行，题型为 单动作可行性判断，真值 由动作执行后的 推进比例/碰撞/高度 信号确定。</span></p>
           <p><strong>评分规则</strong><span>离散标签精确匹配。</span></p>
           <p><strong>身体与动作</strong><span>机器人类型=standard indoor mobile base；半径=0.25 m；宽度=0.5 m；动作=前进一步 → 前进一步 → 前进一步 → 前进一步 → 前进一步。</span></p>
           <p><strong>位姿</strong><span>位置=[5.552735328674316, 0.13123726844787598, 12.688045501708984], 四元数=None, 水平视场=None</span></p>
           <p><strong>来源</strong><span>Habitat / MP3D / R2R-CE 起点状态 · 轨迹 2n8kARJN3HM_sampled_00003</span></p>
-          <p><strong>备注</strong><span>模型输入只包含起始 RGB 与问题；rollout trace、深度和语义只用于离线 GT 与展示。</span></p>
+          <p><strong>备注</strong><span>模型输入只包含起始 RGB 与问题；动作执行轨迹、深度和语义只用于离线 GT 与展示。</span></p>
         </div>
       </div>
     </article>
     
     <article class="case-card">
-      <div class="media"><figure><img src="assets/action_horizon_collision-025_rollout_strip.jpg" alt="action_horizon_collision-025 起始 RGB 与 rollout 轨迹示意"><figcaption>起始 RGB 与 rollout 轨迹示意</figcaption></figure><figure><img src="assets/action_horizon_collision-025_topdown.jpg" alt="action_horizon_collision-025 局部动作轨迹草图"><figcaption>局部动作轨迹草图</figcaption></figure></div>
+      <div class="media"><figure><img src="assets/action_horizon_collision-025_rollout_strip.jpg" alt="action_horizon_collision-025 起始 RGB 与动作执行轨迹示意"><figcaption>起始 RGB 与动作执行轨迹示意</figcaption></figure><figure><img src="assets/action_horizon_collision-025_topdown.jpg" alt="action_horizon_collision-025 局部动作轨迹草图"><figcaption>局部动作轨迹草图</figcaption></figure></div>
       <div class="case-body">
         <div class="case-meta">
-          <span>action_horizon_collision-025</span>
-          <span>2t7WUuJeko7 · 帧 00000</span>
+          <span>动作时域碰撞案例 025</span>
+          <span>场景 2t7WUuJeko7 · 帧 00000</span>
         </div>
         <p><span class="badge">二值 / 短答</span></p>
         <h3>机器人半径约 0.25 米，宽约 0.5 米。只看当前图，如果它向前一步，然后向前一步，然后向前一步，然后向前一步，然后向前一步，然后向前一步，然后向前一步，然后向前一步，然后向前一步，然后向前一步，总共会尝试前进约 2.5 米（约 5.0 个自身宽度）。这个短动作大概能不能做完？请先回答：可以完成 / 不能完成；后面可补一句原因。</h3>
@@ -542,25 +542,25 @@
         </div>
         <div class="evidence">
           <p><strong>GT 推导</strong><span>在 Habitat 中从该起点真实执行动作序列，实际推进约 2.12 m，计划推进约 2.5 m，主要反馈为：可见范围内无明显风险。</span></p>
-          <p><strong>真实 rollout 反馈</strong><span>碰撞=否；提前停止=否；高度变化=0 m；推进比例=0.85；风险=可见范围内无明显风险。</span></p>
-          <p><strong>粗 3D 参数</strong><span>动作序列=前进一步 → 前进一步 → 前进一步 → 前进一步 → 前进一步 → 前进一步 → 前进一步 → 前进一步 → 前进一步 → 前进一步；米制范围=&gt;2m；身体宽度范围=4 到 8 个身体宽度；可行性=feasible；置信度=high；计划推进约 2.5 m。</span></p>
+          <p><strong>真实执行反馈</strong><span>碰撞=否；提前停止=否；高度变化=0 m；推进比例=0.85；风险=可见范围内无明显风险。</span></p>
+          <p><strong>粗 3D 参数</strong><span>动作序列=前进一步 → 前进一步 → 前进一步 → 前进一步 → 前进一步 → 前进一步 → 前进一步 → 前进一步 → 前进一步 → 前进一步；米制范围=&gt;2m；身体宽度范围=4 到 8 个身体宽度；可行性=feasible；置信度=高；计划推进约 2.5 m。</span></p>
           <p><strong>动作轨迹</strong><span>1:前进一步；2:前进一步；3:前进一步；4:前进一步；5:前进一步；6:前进一步；7:前进一步；8:前进一步；…</span></p>
-          <p><strong>场景合理性</strong><span>几何标签=open-or-passable；平地支持=是；适合普通前进=是；文本提示=door、table、window、misc、chair、ceiling。该问题来自真实 Habitat rollout，题型为 single_action_feasibility，GT 由动作执行后的 progress/collision/height 信号确定。</span></p>
+          <p><strong>场景合理性</strong><span>几何标签=开放或可通行；平地支持=是；适合普通前进=是；可见类别=门、桌子、窗户、其他物体、椅子、天花板。该问题来自真实 Habitat 动作执行，题型为 单动作可行性判断，真值 由动作执行后的 推进比例/碰撞/高度 信号确定。</span></p>
           <p><strong>评分规则</strong><span>离散标签精确匹配。</span></p>
           <p><strong>身体与动作</strong><span>机器人类型=standard indoor mobile base；半径=0.25 m；宽度=0.5 m；动作=前进一步 → 前进一步 → 前进一步 → 前进一步 → 前进一步 → 前进一步 → 前进一步 → 前进一步 → 前进一步 → 前进一步。</span></p>
           <p><strong>位姿</strong><span>位置=[1.8653441667556763, 0.16325338184833527, 0.411659836769104], 四元数=None, 水平视场=None</span></p>
           <p><strong>来源</strong><span>Habitat / MP3D / R2R-CE 起点状态 · 轨迹 2t7WUuJeko7_sampled_00000</span></p>
-          <p><strong>备注</strong><span>模型输入只包含起始 RGB 与问题；rollout trace、深度和语义只用于离线 GT 与展示。</span></p>
+          <p><strong>备注</strong><span>模型输入只包含起始 RGB 与问题；动作执行轨迹、深度和语义只用于离线 GT 与展示。</span></p>
         </div>
       </div>
     </article>
     
     <article class="case-card">
-      <div class="media"><figure><img src="assets/action_horizon_collision-027_rollout_strip.jpg" alt="action_horizon_collision-027 起始 RGB 与 rollout 轨迹示意"><figcaption>起始 RGB 与 rollout 轨迹示意</figcaption></figure><figure><img src="assets/action_horizon_collision-027_topdown.jpg" alt="action_horizon_collision-027 局部动作轨迹草图"><figcaption>局部动作轨迹草图</figcaption></figure></div>
+      <div class="media"><figure><img src="assets/action_horizon_collision-027_rollout_strip.jpg" alt="action_horizon_collision-027 起始 RGB 与动作执行轨迹示意"><figcaption>起始 RGB 与动作执行轨迹示意</figcaption></figure><figure><img src="assets/action_horizon_collision-027_topdown.jpg" alt="action_horizon_collision-027 局部动作轨迹草图"><figcaption>局部动作轨迹草图</figcaption></figure></div>
       <div class="case-body">
         <div class="case-meta">
-          <span>action_horizon_collision-027</span>
-          <span>2t7WUuJeko7 · 帧 00002</span>
+          <span>动作时域碰撞案例 027</span>
+          <span>场景 2t7WUuJeko7 · 帧 00002</span>
         </div>
         <p><span class="badge">二值 / 短答</span></p>
         <h3>机器人半径约 0.25 米，宽约 0.5 米。只看当前图，如果它向前一步，然后向前一步，总共会尝试前进约 0.5 米（约 1.0 个自身宽度）。这个短动作大概能不能做完？请先回答：可以完成 / 不能完成；后面可补一句原因。</h3>
@@ -570,25 +570,25 @@
         </div>
         <div class="evidence">
           <p><strong>GT 推导</strong><span>在 Habitat 中从该起点真实执行动作序列，实际推进约 0.36 m，计划推进约 0.5 m，主要反馈为：可见范围内无明显风险。</span></p>
-          <p><strong>真实 rollout 反馈</strong><span>碰撞=否；提前停止=否；高度变化=0 m；推进比例=0.72；风险=可见范围内无明显风险。</span></p>
-          <p><strong>粗 3D 参数</strong><span>动作序列=前进一步 → 前进一步；米制范围=&lt;0.5m；身体宽度范围=小于 2 个身体宽度；可行性=feasible；置信度=high；计划推进约 0.5 m。</span></p>
+          <p><strong>真实执行反馈</strong><span>碰撞=否；提前停止=否；高度变化=0 m；推进比例=0.72；风险=可见范围内无明显风险。</span></p>
+          <p><strong>粗 3D 参数</strong><span>动作序列=前进一步 → 前进一步；米制范围=&lt;0.5m；身体宽度范围=小于 2 个身体宽度；可行性=feasible；置信度=高；计划推进约 0.5 m。</span></p>
           <p><strong>动作轨迹</strong><span>1:前进一步；2:前进一步</span></p>
-          <p><strong>场景合理性</strong><span>几何标签=open-or-passable；平地支持=是；适合普通前进=是；文本提示=无可靠语义类别。该问题来自真实 Habitat rollout，题型为 single_action_feasibility，GT 由动作执行后的 progress/collision/height 信号确定。</span></p>
+          <p><strong>场景合理性</strong><span>几何标签=开放或可通行；平地支持=是；适合普通前进=是；可见类别=无可靠语义类别。该问题来自真实 Habitat 动作执行，题型为 单动作可行性判断，真值 由动作执行后的 推进比例/碰撞/高度 信号确定。</span></p>
           <p><strong>评分规则</strong><span>离散标签精确匹配。</span></p>
           <p><strong>身体与动作</strong><span>机器人类型=standard indoor mobile base；半径=0.25 m；宽度=0.5 m；动作=前进一步 → 前进一步。</span></p>
           <p><strong>位姿</strong><span>位置=[7.289496898651123, 0.16325338184833527, 0.8993803858757019], 四元数=None, 水平视场=None</span></p>
           <p><strong>来源</strong><span>Habitat / MP3D / R2R-CE 起点状态 · 轨迹 2t7WUuJeko7_sampled_00002</span></p>
-          <p><strong>备注</strong><span>模型输入只包含起始 RGB 与问题；rollout trace、深度和语义只用于离线 GT 与展示。</span></p>
+          <p><strong>备注</strong><span>模型输入只包含起始 RGB 与问题；动作执行轨迹、深度和语义只用于离线 GT 与展示。</span></p>
         </div>
       </div>
     </article>
     
     <article class="case-card">
-      <div class="media"><figure><img src="assets/action_horizon_collision-030_rollout_strip.jpg" alt="action_horizon_collision-030 起始 RGB 与 rollout 轨迹示意"><figcaption>起始 RGB 与 rollout 轨迹示意</figcaption></figure><figure><img src="assets/action_horizon_collision-030_topdown.jpg" alt="action_horizon_collision-030 局部动作轨迹草图"><figcaption>局部动作轨迹草图</figcaption></figure></div>
+      <div class="media"><figure><img src="assets/action_horizon_collision-030_rollout_strip.jpg" alt="action_horizon_collision-030 起始 RGB 与动作执行轨迹示意"><figcaption>起始 RGB 与动作执行轨迹示意</figcaption></figure><figure><img src="assets/action_horizon_collision-030_topdown.jpg" alt="action_horizon_collision-030 局部动作轨迹草图"><figcaption>局部动作轨迹草图</figcaption></figure></div>
       <div class="case-body">
         <div class="case-meta">
-          <span>action_horizon_collision-030</span>
-          <span>5LpN3gDmAk7 · 帧 00001</span>
+          <span>动作时域碰撞案例 030</span>
+          <span>场景 5LpN3gDmAk7 · 帧 00001</span>
         </div>
         <p><span class="badge">二值 / 短答</span></p>
         <h3>机器人半径约 0.25 米，宽约 0.5 米。只看当前图，如果它向前一步，然后向前一步，然后向前一步，然后向前一步，然后向前一步，然后向前一步，然后向前一步，然后向前一步，然后向前一步，然后向前一步，总共会尝试前进约 2.5 米（约 5.0 个自身宽度）。这个短动作大概能不能做完？请先回答：可以完成 / 不能完成；后面可补一句原因。</h3>
@@ -598,25 +598,25 @@
         </div>
         <div class="evidence">
           <p><strong>GT 推导</strong><span>在 Habitat 中从该起点真实执行动作序列，实际推进约 1.81 m，计划推进约 2.5 m，主要反馈为：可见范围内无明显风险。</span></p>
-          <p><strong>真实 rollout 反馈</strong><span>碰撞=否；提前停止=否；高度变化=0 m；推进比例=0.72；风险=可见范围内无明显风险。</span></p>
-          <p><strong>粗 3D 参数</strong><span>动作序列=前进一步 → 前进一步 → 前进一步 → 前进一步 → 前进一步 → 前进一步 → 前进一步 → 前进一步 → 前进一步 → 前进一步；米制范围=1 到 2 米；身体宽度范围=2 到 4 个身体宽度；可行性=feasible；置信度=high；计划推进约 2.5 m。</span></p>
+          <p><strong>真实执行反馈</strong><span>碰撞=否；提前停止=否；高度变化=0 m；推进比例=0.72；风险=可见范围内无明显风险。</span></p>
+          <p><strong>粗 3D 参数</strong><span>动作序列=前进一步 → 前进一步 → 前进一步 → 前进一步 → 前进一步 → 前进一步 → 前进一步 → 前进一步 → 前进一步 → 前进一步；米制范围=1 到 2 米；身体宽度范围=2 到 4 个身体宽度；可行性=feasible；置信度=高；计划推进约 2.5 m。</span></p>
           <p><strong>动作轨迹</strong><span>1:前进一步；2:前进一步；3:前进一步；4:前进一步；5:前进一步；6:前进一步；7:前进一步；8:前进一步；…</span></p>
-          <p><strong>场景合理性</strong><span>几何标签=open-or-passable；平地支持=是；适合普通前进=是；文本提示=无可靠语义类别。该问题来自真实 Habitat rollout，题型为 single_action_feasibility，GT 由动作执行后的 progress/collision/height 信号确定。</span></p>
+          <p><strong>场景合理性</strong><span>几何标签=开放或可通行；平地支持=是；适合普通前进=是；可见类别=无可靠语义类别。该问题来自真实 Habitat 动作执行，题型为 单动作可行性判断，真值 由动作执行后的 推进比例/碰撞/高度 信号确定。</span></p>
           <p><strong>评分规则</strong><span>离散标签精确匹配。</span></p>
           <p><strong>身体与动作</strong><span>机器人类型=standard indoor mobile base；半径=0.25 m；宽度=0.5 m；动作=前进一步 → 前进一步 → 前进一步 → 前进一步 → 前进一步 → 前进一步 → 前进一步 → 前进一步 → 前进一步 → 前进一步。</span></p>
           <p><strong>位姿</strong><span>位置=[16.266510009765625, 2.915651798248291, 12.882905006408691], 四元数=None, 水平视场=None</span></p>
           <p><strong>来源</strong><span>Habitat / MP3D / R2R-CE 起点状态 · 轨迹 5LpN3gDmAk7_sampled_00001</span></p>
-          <p><strong>备注</strong><span>模型输入只包含起始 RGB 与问题；rollout trace、深度和语义只用于离线 GT 与展示。</span></p>
+          <p><strong>备注</strong><span>模型输入只包含起始 RGB 与问题；动作执行轨迹、深度和语义只用于离线 GT 与展示。</span></p>
         </div>
       </div>
     </article>
     
     <article class="case-card">
-      <div class="media"><figure><img src="assets/action_horizon_collision-033_rollout_strip.jpg" alt="action_horizon_collision-033 起始 RGB 与 rollout 轨迹示意"><figcaption>起始 RGB 与 rollout 轨迹示意</figcaption></figure><figure><img src="assets/action_horizon_collision-033_topdown.jpg" alt="action_horizon_collision-033 局部动作轨迹草图"><figcaption>局部动作轨迹草图</figcaption></figure></div>
+      <div class="media"><figure><img src="assets/action_horizon_collision-033_rollout_strip.jpg" alt="action_horizon_collision-033 起始 RGB 与动作执行轨迹示意"><figcaption>起始 RGB 与动作执行轨迹示意</figcaption></figure><figure><img src="assets/action_horizon_collision-033_topdown.jpg" alt="action_horizon_collision-033 局部动作轨迹草图"><figcaption>局部动作轨迹草图</figcaption></figure></div>
       <div class="case-body">
         <div class="case-meta">
-          <span>action_horizon_collision-033</span>
-          <span>5ZKStnWn8Zo · 帧 00000</span>
+          <span>动作时域碰撞案例 033</span>
+          <span>场景 5ZKStnWn8Zo · 帧 00000</span>
         </div>
         <p><span class="badge">二值 / 短答</span></p>
         <h3>机器人半径约 0.25 米，宽约 0.5 米。只看当前图，如果它向前一步，然后向前一步，然后向前一步，总共会尝试前进约 0.75 米（约 1.5 个自身宽度）。这个短动作大概能不能做完？请先回答：可以完成 / 不能完成；后面可补一句原因。</h3>
@@ -626,15 +626,15 @@
         </div>
         <div class="evidence">
           <p><strong>GT 推导</strong><span>在 Habitat 中从该起点真实执行动作序列，实际推进约 0.56 m，计划推进约 0.75 m，主要反馈为：可见范围内无明显风险。</span></p>
-          <p><strong>真实 rollout 反馈</strong><span>碰撞=否；提前停止=否；高度变化=0 m；推进比例=0.75；风险=可见范围内无明显风险。</span></p>
-          <p><strong>粗 3D 参数</strong><span>动作序列=前进一步 → 前进一步 → 前进一步；米制范围=0.5-1m；身体宽度范围=小于 2 个身体宽度；可行性=feasible；置信度=high；计划推进约 0.75 m。</span></p>
+          <p><strong>真实执行反馈</strong><span>碰撞=否；提前停止=否；高度变化=0 m；推进比例=0.75；风险=可见范围内无明显风险。</span></p>
+          <p><strong>粗 3D 参数</strong><span>动作序列=前进一步 → 前进一步 → 前进一步；米制范围=0.5-1m；身体宽度范围=小于 2 个身体宽度；可行性=feasible；置信度=高；计划推进约 0.75 m。</span></p>
           <p><strong>动作轨迹</strong><span>1:前进一步；2:前进一步；3:前进一步</span></p>
-          <p><strong>场景合理性</strong><span>几何标签=open-or-passable；平地支持=是；适合普通前进=是；文本提示=door、wall、ceiling、floor、railing、misc。该问题来自真实 Habitat rollout，题型为 single_action_feasibility，GT 由动作执行后的 progress/collision/height 信号确定。</span></p>
+          <p><strong>场景合理性</strong><span>几何标签=开放或可通行；平地支持=是；适合普通前进=是；可见类别=门、墙面、天花板、地面、栏杆、其他物体。该问题来自真实 Habitat 动作执行，题型为 单动作可行性判断，真值 由动作执行后的 推进比例/碰撞/高度 信号确定。</span></p>
           <p><strong>评分规则</strong><span>离散标签精确匹配。</span></p>
           <p><strong>身体与动作</strong><span>机器人类型=standard indoor mobile base；半径=0.25 m；宽度=0.5 m；动作=前进一步 → 前进一步 → 前进一步。</span></p>
           <p><strong>位姿</strong><span>位置=[9.383206367492676, 0.12089061737060547, -1.139229655265808], 四元数=None, 水平视场=None</span></p>
           <p><strong>来源</strong><span>Habitat / MP3D / R2R-CE 起点状态 · 轨迹 5ZKStnWn8Zo_sampled_00000</span></p>
-          <p><strong>备注</strong><span>模型输入只包含起始 RGB 与问题；rollout trace、深度和语义只用于离线 GT 与展示。</span></p>
+          <p><strong>备注</strong><span>模型输入只包含起始 RGB 与问题；动作执行轨迹、深度和语义只用于离线 GT 与展示。</span></p>
         </div>
       </div>
     </article>
@@ -642,17 +642,17 @@
             </section>
             
             <section class="case-group" id="directional_rollout_comparison">
-              <h2>directional_rollout_comparison</h2>
-              <p>R2R 真实数据支持的分类。</p>
+              <h2>方向动作后果比较</h2>
+              <p>检验模型是否把左前、正前、右前三个第一人称方向绑定到真实可通行的 3D 动作后果，而不是套用中心偏置。</p>
               <div class="case-grid">
     <article class="case-card">
-      <div class="media"><figure><img src="assets/directional_rollout_comparison-010_rollout_strip.jpg" alt="directional_rollout_comparison-010 起始 RGB 与 rollout 轨迹示意"><figcaption>起始 RGB 与 rollout 轨迹示意</figcaption></figure><figure><img src="assets/directional_rollout_comparison-010_topdown.jpg" alt="directional_rollout_comparison-010 局部动作轨迹草图"><figcaption>局部动作轨迹草图</figcaption></figure></div>
+      <div class="media"><figure><img src="assets/directional_rollout_comparison-010_rollout_strip.jpg" alt="directional_rollout_comparison-010 起始 RGB 与动作执行轨迹示意"><figcaption>起始 RGB 与动作执行轨迹示意</figcaption></figure><figure><img src="assets/directional_rollout_comparison-010_topdown.jpg" alt="directional_rollout_comparison-010 局部动作轨迹草图"><figcaption>局部动作轨迹草图</figcaption></figure></div>
       <div class="case-body">
         <div class="case-meta">
-          <span>directional_rollout_comparison-010</span>
-          <span>1pXnuDYAj8r · 帧 00001</span>
+          <span>方向动作后果比较案例 010</span>
+          <span>场景 1pXnuDYAj8r · 帧 00001</span>
         </div>
-        <p><span class="badge">directional_ranking</span></p>
+        <p><span class="badge">自然短答 / 方向选择</span></p>
         <h3>机器人半径约 0.25 米，宽约 0.5 米。从这个视角出发，比较三种走法：左转约 15 度后前进 4 步、直接前进 4 步、右转约 15 度后前进 4 步。每个方向都会尝试前进约 1.0 米（约 2.0 个自身宽度）。哪一种实际能推进得更远？请先回答：左边 / 直行 / 右边。</h3>
         <div class="qa-grid">
           <div><strong>选项</strong><ul><li>开放式答案</li></ul></div>
@@ -660,27 +660,27 @@
         </div>
         <div class="evidence">
           <p><strong>GT 推导</strong><span>在 Habitat 中从该起点真实执行动作序列，实际推进约 0.34 m，计划推进约 1 m，主要反馈为：可见范围内无明显风险。</span></p>
-          <p><strong>真实 rollout 反馈</strong><span>碰撞=否；提前停止=是；高度变化=0 m；推进比例=0.34；风险=可见范围内无明显风险。</span></p>
-          <p><strong>粗 3D 参数</strong><span>动作序列=右转 15 度 → 前进一步 → 前进一步 → 前进一步 → 前进一步；米制范围=&lt;0.5m；身体宽度范围=小于 2 个身体宽度；可行性=incomplete；置信度=high；计划推进约 1 m。</span></p>
+          <p><strong>真实执行反馈</strong><span>碰撞=否；提前停止=是；高度变化=0 m；推进比例=0.34；风险=可见范围内无明显风险。</span></p>
+          <p><strong>粗 3D 参数</strong><span>动作序列=右转 15 度 → 前进一步 → 前进一步 → 前进一步 → 前进一步；米制范围=&lt;0.5m；身体宽度范围=小于 2 个身体宽度；可行性=incomplete；置信度=高；计划推进约 1 m。</span></p>
           <p><strong>动作轨迹</strong><span>1:右转 15 度；2:前进一步；3:前进一步；4:前进一步；5:前进一步</span></p>
-          <p><strong>场景合理性</strong><span>几何标签=open-or-passable；平地支持=是；适合普通前进=否；文本提示=无可靠语义类别。该问题来自真实 Habitat rollout，题型为 directional_comparison，GT 由动作执行后的 progress/collision/height 信号确定。</span></p>
-          <p><strong>评分规则</strong><span>{&#x27;type&#x27;: &#x27;manual_short_answer&#x27;, &#x27;rubric&#x27;: &#x27;mentions the rollout direction with greatest actual progress&#x27;}</span></p>
+          <p><strong>场景合理性</strong><span>几何标签=开放或可通行；平地支持=是；适合普通前进=否；可见类别=无可靠语义类别。该问题来自真实 Habitat 动作执行，题型为 directional_comparison，真值 由动作执行后的 推进比例/碰撞/高度 信号确定。</span></p>
+          <p><strong>评分规则</strong><span>开放短答；答案需要指出真实推进距离最长的方向。</span></p>
           <p><strong>身体与动作</strong><span>机器人类型=standard indoor mobile base；半径=0.25 m；宽度=0.5 m；动作=右转 15 度 → 前进一步 → 前进一步 → 前进一步 → 前进一步。</span></p>
           <p><strong>位姿</strong><span>位置=[4.330360412597656, 0.11414670944213867, 2.519526481628418], 四元数=None, 水平视场=None</span></p>
           <p><strong>来源</strong><span>Habitat / MP3D / R2R-CE 起点状态 · 轨迹 1pXnuDYAj8r_sampled_00001</span></p>
-          <p><strong>备注</strong><span>模型输入只包含起始 RGB 与问题；rollout trace、深度和语义只用于离线 GT 与展示。</span></p>
+          <p><strong>备注</strong><span>模型输入只包含起始 RGB 与问题；动作执行轨迹、深度和语义只用于离线 GT 与展示。</span></p>
         </div>
       </div>
     </article>
     
     <article class="case-card">
-      <div class="media"><figure><img src="assets/directional_rollout_comparison-015_rollout_strip.jpg" alt="directional_rollout_comparison-015 起始 RGB 与 rollout 轨迹示意"><figcaption>起始 RGB 与 rollout 轨迹示意</figcaption></figure><figure><img src="assets/directional_rollout_comparison-015_topdown.jpg" alt="directional_rollout_comparison-015 局部动作轨迹草图"><figcaption>局部动作轨迹草图</figcaption></figure></div>
+      <div class="media"><figure><img src="assets/directional_rollout_comparison-015_rollout_strip.jpg" alt="directional_rollout_comparison-015 起始 RGB 与动作执行轨迹示意"><figcaption>起始 RGB 与动作执行轨迹示意</figcaption></figure><figure><img src="assets/directional_rollout_comparison-015_topdown.jpg" alt="directional_rollout_comparison-015 局部动作轨迹草图"><figcaption>局部动作轨迹草图</figcaption></figure></div>
       <div class="case-body">
         <div class="case-meta">
-          <span>directional_rollout_comparison-015</span>
-          <span>29hnd4uzFmX · 帧 00002</span>
+          <span>方向动作后果比较案例 015</span>
+          <span>场景 29hnd4uzFmX · 帧 00002</span>
         </div>
-        <p><span class="badge">directional_ranking</span></p>
+        <p><span class="badge">自然短答 / 方向选择</span></p>
         <h3>机器人半径约 0.25 米，宽约 0.5 米。从这个视角出发，比较三种走法：左转约 15 度后前进 4 步、直接前进 4 步、右转约 15 度后前进 4 步。每个方向都会尝试前进约 1.0 米（约 2.0 个自身宽度）。哪一种实际能推进得更远？请先回答：左边 / 直行 / 右边。</h3>
         <div class="qa-grid">
           <div><strong>选项</strong><ul><li>开放式答案</li></ul></div>
@@ -688,27 +688,27 @@
         </div>
         <div class="evidence">
           <p><strong>GT 推导</strong><span>在 Habitat 中从该起点真实执行动作序列，实际推进约 0.67 m，计划推进约 1 m，主要反馈为：可见范围内无明显风险。</span></p>
-          <p><strong>真实 rollout 反馈</strong><span>碰撞=否；提前停止=否；高度变化=0 m；推进比例=0.67；风险=可见范围内无明显风险。</span></p>
-          <p><strong>粗 3D 参数</strong><span>动作序列=左转 15 度 → 前进一步 → 前进一步 → 前进一步 → 前进一步；米制范围=0.5-1m；身体宽度范围=小于 2 个身体宽度；可行性=feasible；置信度=high；计划推进约 1 m。</span></p>
+          <p><strong>真实执行反馈</strong><span>碰撞=否；提前停止=否；高度变化=0 m；推进比例=0.67；风险=可见范围内无明显风险。</span></p>
+          <p><strong>粗 3D 参数</strong><span>动作序列=左转 15 度 → 前进一步 → 前进一步 → 前进一步 → 前进一步；米制范围=0.5-1m；身体宽度范围=小于 2 个身体宽度；可行性=feasible；置信度=高；计划推进约 1 m。</span></p>
           <p><strong>动作轨迹</strong><span>1:左转 15 度；2:前进一步；3:前进一步；4:前进一步；5:前进一步</span></p>
-          <p><strong>场景合理性</strong><span>几何标签=open-or-passable；平地支持=是；适合普通前进=是；文本提示=sofa、floor、window、wall、door、misc。该问题来自真实 Habitat rollout，题型为 directional_comparison，GT 由动作执行后的 progress/collision/height 信号确定。</span></p>
-          <p><strong>评分规则</strong><span>{&#x27;type&#x27;: &#x27;manual_short_answer&#x27;, &#x27;rubric&#x27;: &#x27;mentions the rollout direction with greatest actual progress&#x27;}</span></p>
+          <p><strong>场景合理性</strong><span>几何标签=开放或可通行；平地支持=是；适合普通前进=是；可见类别=沙发、地面、窗户、墙面、门、其他物体。该问题来自真实 Habitat 动作执行，题型为 directional_comparison，真值 由动作执行后的 推进比例/碰撞/高度 信号确定。</span></p>
+          <p><strong>评分规则</strong><span>开放短答；答案需要指出真实推进距离最长的方向。</span></p>
           <p><strong>身体与动作</strong><span>机器人类型=standard indoor mobile base；半径=0.25 m；宽度=0.5 m；动作=左转 15 度 → 前进一步 → 前进一步 → 前进一步 → 前进一步。</span></p>
           <p><strong>位姿</strong><span>位置=[-3.0955493450164795, 2.791041374206543, -5.286020755767822], 四元数=None, 水平视场=None</span></p>
           <p><strong>来源</strong><span>Habitat / MP3D / R2R-CE 起点状态 · 轨迹 29hnd4uzFmX_sampled_00002</span></p>
-          <p><strong>备注</strong><span>模型输入只包含起始 RGB 与问题；rollout trace、深度和语义只用于离线 GT 与展示。</span></p>
+          <p><strong>备注</strong><span>模型输入只包含起始 RGB 与问题；动作执行轨迹、深度和语义只用于离线 GT 与展示。</span></p>
         </div>
       </div>
     </article>
     
     <article class="case-card">
-      <div class="media"><figure><img src="assets/directional_rollout_comparison-024_rollout_strip.jpg" alt="directional_rollout_comparison-024 起始 RGB 与 rollout 轨迹示意"><figcaption>起始 RGB 与 rollout 轨迹示意</figcaption></figure><figure><img src="assets/directional_rollout_comparison-024_topdown.jpg" alt="directional_rollout_comparison-024 局部动作轨迹草图"><figcaption>局部动作轨迹草图</figcaption></figure></div>
+      <div class="media"><figure><img src="assets/directional_rollout_comparison-024_rollout_strip.jpg" alt="directional_rollout_comparison-024 起始 RGB 与动作执行轨迹示意"><figcaption>起始 RGB 与动作执行轨迹示意</figcaption></figure><figure><img src="assets/directional_rollout_comparison-024_topdown.jpg" alt="directional_rollout_comparison-024 局部动作轨迹草图"><figcaption>局部动作轨迹草图</figcaption></figure></div>
       <div class="case-body">
         <div class="case-meta">
-          <span>directional_rollout_comparison-024</span>
-          <span>2n8kARJN3HM · 帧 00003</span>
+          <span>方向动作后果比较案例 024</span>
+          <span>场景 2n8kARJN3HM · 帧 00003</span>
         </div>
-        <p><span class="badge">directional_ranking</span></p>
+        <p><span class="badge">自然短答 / 方向选择</span></p>
         <h3>机器人半径约 0.25 米，宽约 0.5 米。从这个视角出发，比较三种走法：左转约 15 度后前进 4 步、直接前进 4 步、右转约 15 度后前进 4 步。每个方向都会尝试前进约 1.0 米（约 2.0 个自身宽度）。哪一种实际能推进得更远？请先回答：左边 / 直行 / 右边。</h3>
         <div class="qa-grid">
           <div><strong>选项</strong><ul><li>开放式答案</li></ul></div>
@@ -716,27 +716,27 @@
         </div>
         <div class="evidence">
           <p><strong>GT 推导</strong><span>在 Habitat 中从该起点真实执行动作序列，实际推进约 0.55 m，计划推进约 1 m，主要反馈为：可见范围内无明显风险。</span></p>
-          <p><strong>真实 rollout 反馈</strong><span>碰撞=否；提前停止=否；高度变化=0 m；推进比例=0.55；风险=可见范围内无明显风险。</span></p>
-          <p><strong>粗 3D 参数</strong><span>动作序列=左转 15 度 → 前进一步 → 前进一步 → 前进一步 → 前进一步；米制范围=0.5-1m；身体宽度范围=小于 2 个身体宽度；可行性=feasible；置信度=high；计划推进约 1 m。</span></p>
+          <p><strong>真实执行反馈</strong><span>碰撞=否；提前停止=否；高度变化=0 m；推进比例=0.55；风险=可见范围内无明显风险。</span></p>
+          <p><strong>粗 3D 参数</strong><span>动作序列=左转 15 度 → 前进一步 → 前进一步 → 前进一步 → 前进一步；米制范围=0.5-1m；身体宽度范围=小于 2 个身体宽度；可行性=feasible；置信度=高；计划推进约 1 m。</span></p>
           <p><strong>动作轨迹</strong><span>1:左转 15 度；2:前进一步；3:前进一步；4:前进一步；5:前进一步</span></p>
-          <p><strong>场景合理性</strong><span>几何标签=open-or-passable；平地支持=是；适合普通前进=是；文本提示=ceiling、wall、curtain、stairs、misc、table。该问题来自真实 Habitat rollout，题型为 directional_comparison，GT 由动作执行后的 progress/collision/height 信号确定。</span></p>
-          <p><strong>评分规则</strong><span>{&#x27;type&#x27;: &#x27;manual_short_answer&#x27;, &#x27;rubric&#x27;: &#x27;mentions the rollout direction with greatest actual progress&#x27;}</span></p>
+          <p><strong>场景合理性</strong><span>几何标签=开放或可通行；平地支持=是；适合普通前进=是；可见类别=天花板、墙面、curtain、楼梯、其他物体、桌子。该问题来自真实 Habitat 动作执行，题型为 directional_comparison，真值 由动作执行后的 推进比例/碰撞/高度 信号确定。</span></p>
+          <p><strong>评分规则</strong><span>开放短答；答案需要指出真实推进距离最长的方向。</span></p>
           <p><strong>身体与动作</strong><span>机器人类型=standard indoor mobile base；半径=0.25 m；宽度=0.5 m；动作=左转 15 度 → 前进一步 → 前进一步 → 前进一步 → 前进一步。</span></p>
           <p><strong>位姿</strong><span>位置=[5.552735328674316, 0.13123726844787598, 12.688045501708984], 四元数=None, 水平视场=None</span></p>
           <p><strong>来源</strong><span>Habitat / MP3D / R2R-CE 起点状态 · 轨迹 2n8kARJN3HM_sampled_00003</span></p>
-          <p><strong>备注</strong><span>模型输入只包含起始 RGB 与问题；rollout trace、深度和语义只用于离线 GT 与展示。</span></p>
+          <p><strong>备注</strong><span>模型输入只包含起始 RGB 与问题；动作执行轨迹、深度和语义只用于离线 GT 与展示。</span></p>
         </div>
       </div>
     </article>
     
     <article class="case-card">
-      <div class="media"><figure><img src="assets/directional_rollout_comparison-033_rollout_strip.jpg" alt="directional_rollout_comparison-033 起始 RGB 与 rollout 轨迹示意"><figcaption>起始 RGB 与 rollout 轨迹示意</figcaption></figure><figure><img src="assets/directional_rollout_comparison-033_topdown.jpg" alt="directional_rollout_comparison-033 局部动作轨迹草图"><figcaption>局部动作轨迹草图</figcaption></figure></div>
+      <div class="media"><figure><img src="assets/directional_rollout_comparison-033_rollout_strip.jpg" alt="directional_rollout_comparison-033 起始 RGB 与动作执行轨迹示意"><figcaption>起始 RGB 与动作执行轨迹示意</figcaption></figure><figure><img src="assets/directional_rollout_comparison-033_topdown.jpg" alt="directional_rollout_comparison-033 局部动作轨迹草图"><figcaption>局部动作轨迹草图</figcaption></figure></div>
       <div class="case-body">
         <div class="case-meta">
-          <span>directional_rollout_comparison-033</span>
-          <span>5ZKStnWn8Zo · 帧 00000</span>
+          <span>方向动作后果比较案例 033</span>
+          <span>场景 5ZKStnWn8Zo · 帧 00000</span>
         </div>
-        <p><span class="badge">directional_ranking</span></p>
+        <p><span class="badge">自然短答 / 方向选择</span></p>
         <h3>机器人半径约 0.25 米，宽约 0.5 米。从这个视角出发，比较三种走法：左转约 15 度后前进 3 步、直接前进 3 步、右转约 15 度后前进 3 步。每个方向都会尝试前进约 0.75 米（约 1.5 个自身宽度）。哪一种实际能推进得更远？请先回答：左边 / 直行 / 右边。</h3>
         <div class="qa-grid">
           <div><strong>选项</strong><ul><li>开放式答案</li></ul></div>
@@ -744,27 +744,27 @@
         </div>
         <div class="evidence">
           <p><strong>GT 推导</strong><span>在 Habitat 中从该起点真实执行动作序列，实际推进约 0.74 m，计划推进约 0.75 m，主要反馈为：可见范围内无明显风险。</span></p>
-          <p><strong>真实 rollout 反馈</strong><span>碰撞=否；提前停止=否；高度变化=0 m；推进比例=0.99；风险=可见范围内无明显风险。</span></p>
-          <p><strong>粗 3D 参数</strong><span>动作序列=右转 15 度 → 前进一步 → 前进一步 → 前进一步；米制范围=0.5-1m；身体宽度范围=小于 2 个身体宽度；可行性=feasible；置信度=medium；计划推进约 0.75 m。</span></p>
+          <p><strong>真实执行反馈</strong><span>碰撞=否；提前停止=否；高度变化=0 m；推进比例=0.99；风险=可见范围内无明显风险。</span></p>
+          <p><strong>粗 3D 参数</strong><span>动作序列=右转 15 度 → 前进一步 → 前进一步 → 前进一步；米制范围=0.5-1m；身体宽度范围=小于 2 个身体宽度；可行性=feasible；置信度=中；计划推进约 0.75 m。</span></p>
           <p><strong>动作轨迹</strong><span>1:右转 15 度；2:前进一步；3:前进一步；4:前进一步</span></p>
-          <p><strong>场景合理性</strong><span>几何标签=open-or-passable；平地支持=是；适合普通前进=是；文本提示=door、wall、ceiling、floor、railing、misc。该问题来自真实 Habitat rollout，题型为 directional_comparison，GT 由动作执行后的 progress/collision/height 信号确定。</span></p>
-          <p><strong>评分规则</strong><span>{&#x27;type&#x27;: &#x27;manual_short_answer&#x27;, &#x27;rubric&#x27;: &#x27;mentions the rollout direction with greatest actual progress&#x27;}</span></p>
+          <p><strong>场景合理性</strong><span>几何标签=开放或可通行；平地支持=是；适合普通前进=是；可见类别=门、墙面、天花板、地面、栏杆、其他物体。该问题来自真实 Habitat 动作执行，题型为 directional_comparison，真值 由动作执行后的 推进比例/碰撞/高度 信号确定。</span></p>
+          <p><strong>评分规则</strong><span>开放短答；答案需要指出真实推进距离最长的方向。</span></p>
           <p><strong>身体与动作</strong><span>机器人类型=standard indoor mobile base；半径=0.25 m；宽度=0.5 m；动作=右转 15 度 → 前进一步 → 前进一步 → 前进一步。</span></p>
           <p><strong>位姿</strong><span>位置=[9.383206367492676, 0.12089061737060547, -1.139229655265808], 四元数=None, 水平视场=None</span></p>
           <p><strong>来源</strong><span>Habitat / MP3D / R2R-CE 起点状态 · 轨迹 5ZKStnWn8Zo_sampled_00000</span></p>
-          <p><strong>备注</strong><span>模型输入只包含起始 RGB 与问题；rollout trace、深度和语义只用于离线 GT 与展示。</span></p>
+          <p><strong>备注</strong><span>模型输入只包含起始 RGB 与问题；动作执行轨迹、深度和语义只用于离线 GT 与展示。</span></p>
         </div>
       </div>
     </article>
     
     <article class="case-card">
-      <div class="media"><figure><img src="assets/directional_rollout_comparison-034_rollout_strip.jpg" alt="directional_rollout_comparison-034 起始 RGB 与 rollout 轨迹示意"><figcaption>起始 RGB 与 rollout 轨迹示意</figcaption></figure><figure><img src="assets/directional_rollout_comparison-034_topdown.jpg" alt="directional_rollout_comparison-034 局部动作轨迹草图"><figcaption>局部动作轨迹草图</figcaption></figure></div>
+      <div class="media"><figure><img src="assets/directional_rollout_comparison-034_rollout_strip.jpg" alt="directional_rollout_comparison-034 起始 RGB 与动作执行轨迹示意"><figcaption>起始 RGB 与动作执行轨迹示意</figcaption></figure><figure><img src="assets/directional_rollout_comparison-034_topdown.jpg" alt="directional_rollout_comparison-034 局部动作轨迹草图"><figcaption>局部动作轨迹草图</figcaption></figure></div>
       <div class="case-body">
         <div class="case-meta">
-          <span>directional_rollout_comparison-034</span>
-          <span>5ZKStnWn8Zo · 帧 00001</span>
+          <span>方向动作后果比较案例 034</span>
+          <span>场景 5ZKStnWn8Zo · 帧 00001</span>
         </div>
-        <p><span class="badge">directional_ranking</span></p>
+        <p><span class="badge">自然短答 / 方向选择</span></p>
         <h3>机器人半径约 0.25 米，宽约 0.5 米。从这个视角出发，比较三种走法：左转约 15 度后前进 4 步、直接前进 4 步、右转约 15 度后前进 4 步。每个方向都会尝试前进约 1.0 米（约 2.0 个自身宽度）。哪一种实际能推进得更远？请先回答：左边 / 直行 / 右边。</h3>
         <div class="qa-grid">
           <div><strong>选项</strong><ul><li>开放式答案</li></ul></div>
@@ -772,27 +772,27 @@
         </div>
         <div class="evidence">
           <p><strong>GT 推导</strong><span>在 Habitat 中从该起点真实执行动作序列，实际推进约 0.53 m，计划推进约 1 m，主要反馈为：可见范围内无明显风险。</span></p>
-          <p><strong>真实 rollout 反馈</strong><span>碰撞=否；提前停止=否；高度变化=0 m；推进比例=0.53；风险=可见范围内无明显风险。</span></p>
-          <p><strong>粗 3D 参数</strong><span>动作序列=左转 15 度 → 前进一步 → 前进一步 → 前进一步 → 前进一步；米制范围=0.5-1m；身体宽度范围=小于 2 个身体宽度；可行性=feasible；置信度=high；计划推进约 1 m。</span></p>
+          <p><strong>真实执行反馈</strong><span>碰撞=否；提前停止=否；高度变化=0 m；推进比例=0.53；风险=可见范围内无明显风险。</span></p>
+          <p><strong>粗 3D 参数</strong><span>动作序列=左转 15 度 → 前进一步 → 前进一步 → 前进一步 → 前进一步；米制范围=0.5-1m；身体宽度范围=小于 2 个身体宽度；可行性=feasible；置信度=高；计划推进约 1 m。</span></p>
           <p><strong>动作轨迹</strong><span>1:左转 15 度；2:前进一步；3:前进一步；4:前进一步；5:前进一步</span></p>
-          <p><strong>场景合理性</strong><span>几何标签=open-or-passable；平地支持=是；适合普通前进=是；文本提示=ceiling、wall、door、cabinet、misc、chest_of_drawers。该问题来自真实 Habitat rollout，题型为 directional_comparison，GT 由动作执行后的 progress/collision/height 信号确定。</span></p>
-          <p><strong>评分规则</strong><span>{&#x27;type&#x27;: &#x27;manual_short_answer&#x27;, &#x27;rubric&#x27;: &#x27;mentions the rollout direction with greatest actual progress&#x27;}</span></p>
+          <p><strong>场景合理性</strong><span>几何标签=开放或可通行；平地支持=是；适合普通前进=是；可见类别=天花板、墙面、门、cabinet、其他物体、chest_of_drawers。该问题来自真实 Habitat 动作执行，题型为 directional_comparison，真值 由动作执行后的 推进比例/碰撞/高度 信号确定。</span></p>
+          <p><strong>评分规则</strong><span>开放短答；答案需要指出真实推进距离最长的方向。</span></p>
           <p><strong>身体与动作</strong><span>机器人类型=standard indoor mobile base；半径=0.25 m；宽度=0.5 m；动作=左转 15 度 → 前进一步 → 前进一步 → 前进一步 → 前进一步。</span></p>
           <p><strong>位姿</strong><span>位置=[8.170031547546387, 0.12089061737060547, 5.4155402183532715], 四元数=None, 水平视场=None</span></p>
           <p><strong>来源</strong><span>Habitat / MP3D / R2R-CE 起点状态 · 轨迹 5ZKStnWn8Zo_sampled_00001</span></p>
-          <p><strong>备注</strong><span>模型输入只包含起始 RGB 与问题；rollout trace、深度和语义只用于离线 GT 与展示。</span></p>
+          <p><strong>备注</strong><span>模型输入只包含起始 RGB 与问题；动作执行轨迹、深度和语义只用于离线 GT 与展示。</span></p>
         </div>
       </div>
     </article>
     
     <article class="case-card">
-      <div class="media"><figure><img src="assets/directional_rollout_comparison-045_rollout_strip.jpg" alt="directional_rollout_comparison-045 起始 RGB 与 rollout 轨迹示意"><figcaption>起始 RGB 与 rollout 轨迹示意</figcaption></figure><figure><img src="assets/directional_rollout_comparison-045_topdown.jpg" alt="directional_rollout_comparison-045 局部动作轨迹草图"><figcaption>局部动作轨迹草图</figcaption></figure></div>
+      <div class="media"><figure><img src="assets/directional_rollout_comparison-045_rollout_strip.jpg" alt="directional_rollout_comparison-045 起始 RGB 与动作执行轨迹示意"><figcaption>起始 RGB 与动作执行轨迹示意</figcaption></figure><figure><img src="assets/directional_rollout_comparison-045_topdown.jpg" alt="directional_rollout_comparison-045 局部动作轨迹草图"><figcaption>局部动作轨迹草图</figcaption></figure></div>
       <div class="case-body">
         <div class="case-meta">
-          <span>directional_rollout_comparison-045</span>
-          <span>7y3sRwLe3Va · 帧 00000</span>
+          <span>方向动作后果比较案例 045</span>
+          <span>场景 7y3sRwLe3Va · 帧 00000</span>
         </div>
-        <p><span class="badge">directional_ranking</span></p>
+        <p><span class="badge">自然短答 / 方向选择</span></p>
         <h3>机器人半径约 0.25 米，宽约 0.5 米。从这个视角出发，比较三种走法：左转约 15 度后前进 4 步、直接前进 4 步、右转约 15 度后前进 4 步。每个方向都会尝试前进约 1.0 米（约 2.0 个自身宽度）。哪一种实际能推进得更远？请先回答：左边 / 直行 / 右边。</h3>
         <div class="qa-grid">
           <div><strong>选项</strong><ul><li>开放式答案</li></ul></div>
@@ -800,27 +800,27 @@
         </div>
         <div class="evidence">
           <p><strong>GT 推导</strong><span>在 Habitat 中从该起点真实执行动作序列，实际推进约 0.98 m，计划推进约 1 m，主要反馈为：可见范围内无明显风险。</span></p>
-          <p><strong>真实 rollout 反馈</strong><span>碰撞=否；提前停止=否；高度变化=0 m；推进比例=0.98；风险=可见范围内无明显风险。</span></p>
-          <p><strong>粗 3D 参数</strong><span>动作序列=右转 15 度 → 前进一步 → 前进一步 → 前进一步 → 前进一步；米制范围=0.5-1m；身体宽度范围=小于 2 个身体宽度；可行性=feasible；置信度=medium；计划推进约 1 m。</span></p>
+          <p><strong>真实执行反馈</strong><span>碰撞=否；提前停止=否；高度变化=0 m；推进比例=0.98；风险=可见范围内无明显风险。</span></p>
+          <p><strong>粗 3D 参数</strong><span>动作序列=右转 15 度 → 前进一步 → 前进一步 → 前进一步 → 前进一步；米制范围=0.5-1m；身体宽度范围=小于 2 个身体宽度；可行性=feasible；置信度=中；计划推进约 1 m。</span></p>
           <p><strong>动作轨迹</strong><span>1:右转 15 度；2:前进一步；3:前进一步；4:前进一步；5:前进一步</span></p>
-          <p><strong>场景合理性</strong><span>几何标签=open-or-passable；平地支持=是；适合普通前进=是；文本提示=无可靠语义类别。该问题来自真实 Habitat rollout，题型为 directional_comparison，GT 由动作执行后的 progress/collision/height 信号确定。</span></p>
-          <p><strong>评分规则</strong><span>{&#x27;type&#x27;: &#x27;manual_short_answer&#x27;, &#x27;rubric&#x27;: &#x27;mentions the rollout direction with greatest actual progress&#x27;}</span></p>
+          <p><strong>场景合理性</strong><span>几何标签=开放或可通行；平地支持=是；适合普通前进=是；可见类别=无可靠语义类别。该问题来自真实 Habitat 动作执行，题型为 directional_comparison，真值 由动作执行后的 推进比例/碰撞/高度 信号确定。</span></p>
+          <p><strong>评分规则</strong><span>开放短答；答案需要指出真实推进距离最长的方向。</span></p>
           <p><strong>身体与动作</strong><span>机器人类型=standard indoor mobile base；半径=0.25 m；宽度=0.5 m；动作=右转 15 度 → 前进一步 → 前进一步 → 前进一步 → 前进一步。</span></p>
           <p><strong>位姿</strong><span>位置=[-4.761247634887695, 3.1518406867980957, 4.70113468170166], 四元数=None, 水平视场=None</span></p>
           <p><strong>来源</strong><span>Habitat / MP3D / R2R-CE 起点状态 · 轨迹 7y3sRwLe3Va_sampled_00000</span></p>
-          <p><strong>备注</strong><span>模型输入只包含起始 RGB 与问题；rollout trace、深度和语义只用于离线 GT 与展示。</span></p>
+          <p><strong>备注</strong><span>模型输入只包含起始 RGB 与问题；动作执行轨迹、深度和语义只用于离线 GT 与展示。</span></p>
         </div>
       </div>
     </article>
     
     <article class="case-card">
-      <div class="media"><figure><img src="assets/directional_rollout_comparison-049_rollout_strip.jpg" alt="directional_rollout_comparison-049 起始 RGB 与 rollout 轨迹示意"><figcaption>起始 RGB 与 rollout 轨迹示意</figcaption></figure><figure><img src="assets/directional_rollout_comparison-049_topdown.jpg" alt="directional_rollout_comparison-049 局部动作轨迹草图"><figcaption>局部动作轨迹草图</figcaption></figure></div>
+      <div class="media"><figure><img src="assets/directional_rollout_comparison-049_rollout_strip.jpg" alt="directional_rollout_comparison-049 起始 RGB 与动作执行轨迹示意"><figcaption>起始 RGB 与动作执行轨迹示意</figcaption></figure><figure><img src="assets/directional_rollout_comparison-049_topdown.jpg" alt="directional_rollout_comparison-049 局部动作轨迹草图"><figcaption>局部动作轨迹草图</figcaption></figure></div>
       <div class="case-body">
         <div class="case-meta">
-          <span>directional_rollout_comparison-049</span>
-          <span>8194nk5LbLH · 帧 00000</span>
+          <span>方向动作后果比较案例 049</span>
+          <span>场景 8194nk5LbLH · 帧 00000</span>
         </div>
-        <p><span class="badge">directional_ranking</span></p>
+        <p><span class="badge">自然短答 / 方向选择</span></p>
         <h3>机器人半径约 0.25 米，宽约 0.5 米。从这个视角出发，比较三种走法：左转约 15 度后前进 4 步、直接前进 4 步、右转约 15 度后前进 4 步。每个方向都会尝试前进约 1.0 米（约 2.0 个自身宽度）。哪一种实际能推进得更远？请先回答：左边 / 直行 / 右边。</h3>
         <div class="qa-grid">
           <div><strong>选项</strong><ul><li>开放式答案</li></ul></div>
@@ -828,27 +828,27 @@
         </div>
         <div class="evidence">
           <p><strong>GT 推导</strong><span>在 Habitat 中从该起点真实执行动作序列，实际推进约 0.96 m，计划推进约 1 m，主要反馈为：可见范围内无明显风险。</span></p>
-          <p><strong>真实 rollout 反馈</strong><span>碰撞=否；提前停止=否；高度变化=0 m；推进比例=0.96；风险=可见范围内无明显风险。</span></p>
-          <p><strong>粗 3D 参数</strong><span>动作序列=右转 15 度 → 前进一步 → 前进一步 → 前进一步 → 前进一步；米制范围=0.5-1m；身体宽度范围=小于 2 个身体宽度；可行性=feasible；置信度=medium；计划推进约 1 m。</span></p>
+          <p><strong>真实执行反馈</strong><span>碰撞=否；提前停止=否；高度变化=0 m；推进比例=0.96；风险=可见范围内无明显风险。</span></p>
+          <p><strong>粗 3D 参数</strong><span>动作序列=右转 15 度 → 前进一步 → 前进一步 → 前进一步 → 前进一步；米制范围=0.5-1m；身体宽度范围=小于 2 个身体宽度；可行性=feasible；置信度=中；计划推进约 1 m。</span></p>
           <p><strong>动作轨迹</strong><span>1:右转 15 度；2:前进一步；3:前进一步；4:前进一步；5:前进一步</span></p>
-          <p><strong>场景合理性</strong><span>几何标签=open-or-passable；平地支持=是；适合普通前进=是；文本提示=ceiling、wall、stairs、misc、window、gym_equipment。该问题来自真实 Habitat rollout，题型为 directional_comparison，GT 由动作执行后的 progress/collision/height 信号确定。</span></p>
-          <p><strong>评分规则</strong><span>{&#x27;type&#x27;: &#x27;manual_short_answer&#x27;, &#x27;rubric&#x27;: &#x27;mentions the rollout direction with greatest actual progress&#x27;}</span></p>
+          <p><strong>场景合理性</strong><span>几何标签=开放或可通行；平地支持=是；适合普通前进=是；可见类别=天花板、墙面、楼梯、其他物体、窗户、gym_equipment。该问题来自真实 Habitat 动作执行，题型为 directional_comparison，真值 由动作执行后的 推进比例/碰撞/高度 信号确定。</span></p>
+          <p><strong>评分规则</strong><span>开放短答；答案需要指出真实推进距离最长的方向。</span></p>
           <p><strong>身体与动作</strong><span>机器人类型=standard indoor mobile base；半径=0.25 m；宽度=0.5 m；动作=右转 15 度 → 前进一步 → 前进一步 → 前进一步 → 前进一步。</span></p>
           <p><strong>位姿</strong><span>位置=[8.21875286102295, 2.8985955715179443, 0.25078284740448], 四元数=None, 水平视场=None</span></p>
           <p><strong>来源</strong><span>Habitat / MP3D / R2R-CE 起点状态 · 轨迹 8194nk5LbLH_sampled_00000</span></p>
-          <p><strong>备注</strong><span>模型输入只包含起始 RGB 与问题；rollout trace、深度和语义只用于离线 GT 与展示。</span></p>
+          <p><strong>备注</strong><span>模型输入只包含起始 RGB 与问题；动作执行轨迹、深度和语义只用于离线 GT 与展示。</span></p>
         </div>
       </div>
     </article>
     
     <article class="case-card">
-      <div class="media"><figure><img src="assets/directional_rollout_comparison-058_rollout_strip.jpg" alt="directional_rollout_comparison-058 起始 RGB 与 rollout 轨迹示意"><figcaption>起始 RGB 与 rollout 轨迹示意</figcaption></figure><figure><img src="assets/directional_rollout_comparison-058_topdown.jpg" alt="directional_rollout_comparison-058 局部动作轨迹草图"><figcaption>局部动作轨迹草图</figcaption></figure></div>
+      <div class="media"><figure><img src="assets/directional_rollout_comparison-058_rollout_strip.jpg" alt="directional_rollout_comparison-058 起始 RGB 与动作执行轨迹示意"><figcaption>起始 RGB 与动作执行轨迹示意</figcaption></figure><figure><img src="assets/directional_rollout_comparison-058_topdown.jpg" alt="directional_rollout_comparison-058 局部动作轨迹草图"><figcaption>局部动作轨迹草图</figcaption></figure></div>
       <div class="case-body">
         <div class="case-meta">
-          <span>directional_rollout_comparison-058</span>
-          <span>8WUmhLawc2A · 帧 00001</span>
+          <span>方向动作后果比较案例 058</span>
+          <span>场景 8WUmhLawc2A · 帧 00001</span>
         </div>
-        <p><span class="badge">directional_ranking</span></p>
+        <p><span class="badge">自然短答 / 方向选择</span></p>
         <h3>机器人半径约 0.25 米，宽约 0.5 米。从这个视角出发，比较三种走法：左转约 15 度后前进 3 步、直接前进 3 步、右转约 15 度后前进 3 步。每个方向都会尝试前进约 0.75 米（约 1.5 个自身宽度）。哪一种实际能推进得更远？请先回答：左边 / 直行 / 右边。</h3>
         <div class="qa-grid">
           <div><strong>选项</strong><ul><li>开放式答案</li></ul></div>
@@ -856,27 +856,27 @@
         </div>
         <div class="evidence">
           <p><strong>GT 推导</strong><span>在 Habitat 中从该起点真实执行动作序列，实际推进约 0.49 m，计划推进约 0.75 m，主要反馈为：可见范围内无明显风险。</span></p>
-          <p><strong>真实 rollout 反馈</strong><span>碰撞=否；提前停止=否；高度变化=0 m；推进比例=0.65；风险=可见范围内无明显风险。</span></p>
-          <p><strong>粗 3D 参数</strong><span>动作序列=左转 15 度 → 前进一步 → 前进一步 → 前进一步；米制范围=&lt;0.5m；身体宽度范围=小于 2 个身体宽度；可行性=feasible；置信度=high；计划推进约 0.75 m。</span></p>
+          <p><strong>真实执行反馈</strong><span>碰撞=否；提前停止=否；高度变化=0 m；推进比例=0.65；风险=可见范围内无明显风险。</span></p>
+          <p><strong>粗 3D 参数</strong><span>动作序列=左转 15 度 → 前进一步 → 前进一步 → 前进一步；米制范围=&lt;0.5m；身体宽度范围=小于 2 个身体宽度；可行性=feasible；置信度=高；计划推进约 0.75 m。</span></p>
           <p><strong>动作轨迹</strong><span>1:左转 15 度；2:前进一步；3:前进一步；4:前进一步</span></p>
-          <p><strong>场景合理性</strong><span>几何标签=open-or-passable；平地支持=是；适合普通前进=是；文本提示=ceiling、window、wall、bed、sofa、mirror。该问题来自真实 Habitat rollout，题型为 directional_comparison，GT 由动作执行后的 progress/collision/height 信号确定。</span></p>
-          <p><strong>评分规则</strong><span>{&#x27;type&#x27;: &#x27;manual_short_answer&#x27;, &#x27;rubric&#x27;: &#x27;mentions the rollout direction with greatest actual progress&#x27;}</span></p>
+          <p><strong>场景合理性</strong><span>几何标签=开放或可通行；平地支持=是；适合普通前进=是；可见类别=天花板、窗户、墙面、bed、沙发、镜子。该问题来自真实 Habitat 动作执行，题型为 directional_comparison，真值 由动作执行后的 推进比例/碰撞/高度 信号确定。</span></p>
+          <p><strong>评分规则</strong><span>开放短答；答案需要指出真实推进距离最长的方向。</span></p>
           <p><strong>身体与动作</strong><span>机器人类型=standard indoor mobile base；半径=0.25 m；宽度=0.5 m；动作=左转 15 度 → 前进一步 → 前进一步 → 前进一步。</span></p>
           <p><strong>位姿</strong><span>位置=[-2.604057550430298, 0.10065580904483795, 3.336867094039917], 四元数=None, 水平视场=None</span></p>
           <p><strong>来源</strong><span>Habitat / MP3D / R2R-CE 起点状态 · 轨迹 8WUmhLawc2A_sampled_00001</span></p>
-          <p><strong>备注</strong><span>模型输入只包含起始 RGB 与问题；rollout trace、深度和语义只用于离线 GT 与展示。</span></p>
+          <p><strong>备注</strong><span>模型输入只包含起始 RGB 与问题；动作执行轨迹、深度和语义只用于离线 GT 与展示。</span></p>
         </div>
       </div>
     </article>
     
     <article class="case-card">
-      <div class="media"><figure><img src="assets/directional_rollout_comparison-068_rollout_strip.jpg" alt="directional_rollout_comparison-068 起始 RGB 与 rollout 轨迹示意"><figcaption>起始 RGB 与 rollout 轨迹示意</figcaption></figure><figure><img src="assets/directional_rollout_comparison-068_topdown.jpg" alt="directional_rollout_comparison-068 局部动作轨迹草图"><figcaption>局部动作轨迹草图</figcaption></figure></div>
+      <div class="media"><figure><img src="assets/directional_rollout_comparison-068_rollout_strip.jpg" alt="directional_rollout_comparison-068 起始 RGB 与动作执行轨迹示意"><figcaption>起始 RGB 与动作执行轨迹示意</figcaption></figure><figure><img src="assets/directional_rollout_comparison-068_topdown.jpg" alt="directional_rollout_comparison-068 局部动作轨迹草图"><figcaption>局部动作轨迹草图</figcaption></figure></div>
       <div class="case-body">
         <div class="case-meta">
-          <span>directional_rollout_comparison-068</span>
-          <span>B6ByNegPMKs · 帧 00003</span>
+          <span>方向动作后果比较案例 068</span>
+          <span>场景 B6ByNegPMKs · 帧 00003</span>
         </div>
-        <p><span class="badge">directional_ranking</span></p>
+        <p><span class="badge">自然短答 / 方向选择</span></p>
         <h3>机器人半径约 0.25 米，宽约 0.5 米。从这个视角出发，比较三种走法：左转约 15 度后前进 3 步、直接前进 3 步、右转约 15 度后前进 3 步。每个方向都会尝试前进约 0.75 米（约 1.5 个自身宽度）。哪一种实际能推进得更远？请先回答：左边 / 直行 / 右边。</h3>
         <div class="qa-grid">
           <div><strong>选项</strong><ul><li>开放式答案</li></ul></div>
@@ -884,27 +884,27 @@
         </div>
         <div class="evidence">
           <p><strong>GT 推导</strong><span>在 Habitat 中从该起点真实执行动作序列，实际推进约 0.49 m，计划推进约 0.75 m，主要反馈为：可见范围内无明显风险。</span></p>
-          <p><strong>真实 rollout 反馈</strong><span>碰撞=否；提前停止=否；高度变化=0 m；推进比例=0.65；风险=可见范围内无明显风险。</span></p>
-          <p><strong>粗 3D 参数</strong><span>动作序列=右转 15 度 → 前进一步 → 前进一步 → 前进一步；米制范围=&lt;0.5m；身体宽度范围=小于 2 个身体宽度；可行性=feasible；置信度=high；计划推进约 0.75 m。</span></p>
+          <p><strong>真实执行反馈</strong><span>碰撞=否；提前停止=否；高度变化=0 m；推进比例=0.65；风险=可见范围内无明显风险。</span></p>
+          <p><strong>粗 3D 参数</strong><span>动作序列=右转 15 度 → 前进一步 → 前进一步 → 前进一步；米制范围=&lt;0.5m；身体宽度范围=小于 2 个身体宽度；可行性=feasible；置信度=高；计划推进约 0.75 m。</span></p>
           <p><strong>动作轨迹</strong><span>1:右转 15 度；2:前进一步；3:前进一步；4:前进一步</span></p>
-          <p><strong>场景合理性</strong><span>几何标签=open-or-passable；平地支持=是；适合普通前进=是；文本提示=无可靠语义类别。该问题来自真实 Habitat rollout，题型为 directional_comparison，GT 由动作执行后的 progress/collision/height 信号确定。</span></p>
-          <p><strong>评分规则</strong><span>{&#x27;type&#x27;: &#x27;manual_short_answer&#x27;, &#x27;rubric&#x27;: &#x27;mentions the rollout direction with greatest actual progress&#x27;}</span></p>
+          <p><strong>场景合理性</strong><span>几何标签=开放或可通行；平地支持=是；适合普通前进=是；可见类别=无可靠语义类别。该问题来自真实 Habitat 动作执行，题型为 directional_comparison，真值 由动作执行后的 推进比例/碰撞/高度 信号确定。</span></p>
+          <p><strong>评分规则</strong><span>开放短答；答案需要指出真实推进距离最长的方向。</span></p>
           <p><strong>身体与动作</strong><span>机器人类型=standard indoor mobile base；半径=0.25 m；宽度=0.5 m；动作=右转 15 度 → 前进一步 → 前进一步 → 前进一步。</span></p>
           <p><strong>位姿</strong><span>位置=[55.13534927368164, 0.08020681142807007, 11.877467155456543], 四元数=None, 水平视场=None</span></p>
           <p><strong>来源</strong><span>Habitat / MP3D / R2R-CE 起点状态 · 轨迹 B6ByNegPMKs_sampled_00003</span></p>
-          <p><strong>备注</strong><span>模型输入只包含起始 RGB 与问题；rollout trace、深度和语义只用于离线 GT 与展示。</span></p>
+          <p><strong>备注</strong><span>模型输入只包含起始 RGB 与问题；动作执行轨迹、深度和语义只用于离线 GT 与展示。</span></p>
         </div>
       </div>
     </article>
     
     <article class="case-card">
-      <div class="media"><figure><img src="assets/directional_rollout_comparison-069_rollout_strip.jpg" alt="directional_rollout_comparison-069 起始 RGB 与 rollout 轨迹示意"><figcaption>起始 RGB 与 rollout 轨迹示意</figcaption></figure><figure><img src="assets/directional_rollout_comparison-069_topdown.jpg" alt="directional_rollout_comparison-069 局部动作轨迹草图"><figcaption>局部动作轨迹草图</figcaption></figure></div>
+      <div class="media"><figure><img src="assets/directional_rollout_comparison-069_rollout_strip.jpg" alt="directional_rollout_comparison-069 起始 RGB 与动作执行轨迹示意"><figcaption>起始 RGB 与动作执行轨迹示意</figcaption></figure><figure><img src="assets/directional_rollout_comparison-069_topdown.jpg" alt="directional_rollout_comparison-069 局部动作轨迹草图"><figcaption>局部动作轨迹草图</figcaption></figure></div>
       <div class="case-body">
         <div class="case-meta">
-          <span>directional_rollout_comparison-069</span>
-          <span>D7G3Y4RVNrH · 帧 00000</span>
+          <span>方向动作后果比较案例 069</span>
+          <span>场景 D7G3Y4RVNrH · 帧 00000</span>
         </div>
-        <p><span class="badge">directional_ranking</span></p>
+        <p><span class="badge">自然短答 / 方向选择</span></p>
         <h3>机器人半径约 0.25 米，宽约 0.5 米。从这个视角出发，比较三种走法：左转约 15 度后前进 4 步、直接前进 4 步、右转约 15 度后前进 4 步。每个方向都会尝试前进约 1.0 米（约 2.0 个自身宽度）。哪一种实际能推进得更远？请先回答：左边 / 直行 / 右边。</h3>
         <div class="qa-grid">
           <div><strong>选项</strong><ul><li>开放式答案</li></ul></div>
@@ -912,15 +912,15 @@
         </div>
         <div class="evidence">
           <p><strong>GT 推导</strong><span>在 Habitat 中从该起点真实执行动作序列，实际推进约 0.96 m，计划推进约 1 m，主要反馈为：可见范围内无明显风险。</span></p>
-          <p><strong>真实 rollout 反馈</strong><span>碰撞=否；提前停止=否；高度变化=0.01 m；推进比例=0.96；风险=可见范围内无明显风险。</span></p>
-          <p><strong>粗 3D 参数</strong><span>动作序列=左转 15 度 → 前进一步 → 前进一步 → 前进一步 → 前进一步；米制范围=0.5-1m；身体宽度范围=小于 2 个身体宽度；可行性=feasible；置信度=medium；计划推进约 1 m。</span></p>
+          <p><strong>真实执行反馈</strong><span>碰撞=否；提前停止=否；高度变化=0.01 m；推进比例=0.96；风险=可见范围内无明显风险。</span></p>
+          <p><strong>粗 3D 参数</strong><span>动作序列=左转 15 度 → 前进一步 → 前进一步 → 前进一步 → 前进一步；米制范围=0.5-1m；身体宽度范围=小于 2 个身体宽度；可行性=feasible；置信度=中；计划推进约 1 m。</span></p>
           <p><strong>动作轨迹</strong><span>1:左转 15 度；2:前进一步；3:前进一步；4:前进一步；5:前进一步</span></p>
-          <p><strong>场景合理性</strong><span>几何标签=open-or-passable；平地支持=是；适合普通前进=是；文本提示=wall、misc、floor、shelving、ceiling、seating。该问题来自真实 Habitat rollout，题型为 directional_comparison，GT 由动作执行后的 progress/collision/height 信号确定。</span></p>
-          <p><strong>评分规则</strong><span>{&#x27;type&#x27;: &#x27;manual_short_answer&#x27;, &#x27;rubric&#x27;: &#x27;mentions the rollout direction with greatest actual progress&#x27;}</span></p>
+          <p><strong>场景合理性</strong><span>几何标签=开放或可通行；平地支持=是；适合普通前进=是；可见类别=墙面、其他物体、地面、架子、天花板、seating。该问题来自真实 Habitat 动作执行，题型为 directional_comparison，真值 由动作执行后的 推进比例/碰撞/高度 信号确定。</span></p>
+          <p><strong>评分规则</strong><span>开放短答；答案需要指出真实推进距离最长的方向。</span></p>
           <p><strong>身体与动作</strong><span>机器人类型=standard indoor mobile base；半径=0.25 m；宽度=0.5 m；动作=左转 15 度 → 前进一步 → 前进一步 → 前进一步 → 前进一步。</span></p>
           <p><strong>位姿</strong><span>位置=[-0.26324501633644104, 0.8267432451248169, -3.023566484451294], 四元数=None, 水平视场=None</span></p>
           <p><strong>来源</strong><span>Habitat / MP3D / R2R-CE 起点状态 · 轨迹 D7G3Y4RVNrH_sampled_00000</span></p>
-          <p><strong>备注</strong><span>模型输入只包含起始 RGB 与问题；rollout trace、深度和语义只用于离线 GT 与展示。</span></p>
+          <p><strong>备注</strong><span>模型输入只包含起始 RGB 与问题；动作执行轨迹、深度和语义只用于离线 GT 与展示。</span></p>
         </div>
       </div>
     </article>
@@ -932,11 +932,11 @@
               <p>检验模型是否真正把身体半径作为碰撞算子；同一张图、同一动作下，换身体尺寸应改变结论。</p>
               <div class="case-grid">
     <article class="case-card">
-      <div class="media"><figure><img src="assets/body_counterfactual_flip-001_rollout_strip.jpg" alt="body_counterfactual_flip-001 起始 RGB 与 rollout 轨迹示意"><figcaption>起始 RGB 与 rollout 轨迹示意</figcaption></figure><figure><img src="assets/body_counterfactual_flip-001_topdown.jpg" alt="body_counterfactual_flip-001 局部动作轨迹草图"><figcaption>局部动作轨迹草图</figcaption></figure></div>
+      <div class="media"><figure><img src="assets/body_counterfactual_flip-001_rollout_strip.jpg" alt="body_counterfactual_flip-001 起始 RGB 与动作执行轨迹示意"><figcaption>起始 RGB 与动作执行轨迹示意</figcaption></figure><figure><img src="assets/body_counterfactual_flip-001_topdown.jpg" alt="body_counterfactual_flip-001 局部动作轨迹草图"><figcaption>局部动作轨迹草图</figcaption></figure></div>
       <div class="case-body">
         <div class="case-meta">
-          <span>body_counterfactual_flip-001</span>
-          <span>17DRP5sb8fy · 帧 00000</span>
+          <span>身体反事实翻转案例 001</span>
+          <span>场景 17DRP5sb8fy · 帧 00000</span>
         </div>
         <p><span class="badge">自然短答 / 三类标签</span></p>
         <h3>同一张图、同一个起点、同样的动作：向前一步，然后向前一步，总共尝试前进约 0.5 米。半径 0.1 米、宽约 0.2 米的小机器人，和半径 0.4 米、宽约 0.8 米的宽机器人相比，这段距离大约分别是 2.5 个小机器人身宽、0.625 个宽机器人身宽。哪个更可能完成这个动作？请先回答：两个都可以 / 只有小机器人可以 / 两个都不适合。</h3>
@@ -946,25 +946,25 @@
         </div>
         <div class="evidence">
           <p><strong>GT 推导</strong><span>在 Habitat 中从该起点真实执行动作序列，实际推进约 0.5 m，计划推进约 0.5 m，主要反馈为：可见范围内无明显风险。</span></p>
-          <p><strong>真实 rollout 反馈</strong><span>碰撞=否；提前停止=否；高度变化=0 m；推进比例=1；风险=可见范围内无明显风险。</span></p>
-          <p><strong>粗 3D 参数</strong><span>动作序列=前进一步 → 前进一步；米制范围=0.5-1m；身体宽度范围=2 到 4 个身体宽度；可行性=feasible；置信度=medium；计划推进约 0.5 m。</span></p>
+          <p><strong>真实执行反馈</strong><span>碰撞=否；提前停止=否；高度变化=0 m；推进比例=1；风险=可见范围内无明显风险。</span></p>
+          <p><strong>粗 3D 参数</strong><span>动作序列=前进一步 → 前进一步；米制范围=0.5-1m；身体宽度范围=2 到 4 个身体宽度；可行性=feasible；置信度=中；计划推进约 0.5 m。</span></p>
           <p><strong>动作轨迹</strong><span>1:前进一步；2:前进一步</span></p>
-          <p><strong>场景合理性</strong><span>几何标签=open-or-passable；平地支持=是；适合普通前进=是；文本提示=wall、misc、shower、counter、shelving、mirror。该问题来自真实 Habitat rollout，题型为 body_counterfactual，GT 由动作执行后的 progress/collision/height 信号确定。</span></p>
+          <p><strong>场景合理性</strong><span>几何标签=开放或可通行；平地支持=是；适合普通前进=是；可见类别=墙面、其他物体、淋浴区、台面、架子、镜子。该问题来自真实 Habitat 动作执行，题型为 身体反事实判断，真值 由动作执行后的 推进比例/碰撞/高度 信号确定。</span></p>
           <p><strong>评分规则</strong><span>离散标签精确匹配。</span></p>
           <p><strong>身体与动作</strong><span>机器人类型=small cylindrical mobile base；半径=0.1 m；宽度=0.2 m；动作=前进一步 → 前进一步；身体反事实组=17DRP5sb8fy-00000-body_counterfactual。</span></p>
           <p><strong>位姿</strong><span>位置=[-2.904015064239502, 0.07244661450386047, -1.2754919528961182], 四元数=None, 水平视场=None</span></p>
           <p><strong>来源</strong><span>Habitat / MP3D / R2R-CE 起点状态 · 轨迹 17DRP5sb8fy_sampled_00000</span></p>
-          <p><strong>备注</strong><span>模型输入只包含起始 RGB 与问题；rollout trace、深度和语义只用于离线 GT 与展示。</span></p>
+          <p><strong>备注</strong><span>模型输入只包含起始 RGB 与问题；动作执行轨迹、深度和语义只用于离线 GT 与展示。</span></p>
         </div>
       </div>
     </article>
     
     <article class="case-card">
-      <div class="media"><figure><img src="assets/body_counterfactual_flip-002_rollout_strip.jpg" alt="body_counterfactual_flip-002 起始 RGB 与 rollout 轨迹示意"><figcaption>起始 RGB 与 rollout 轨迹示意</figcaption></figure><figure><img src="assets/body_counterfactual_flip-002_topdown.jpg" alt="body_counterfactual_flip-002 局部动作轨迹草图"><figcaption>局部动作轨迹草图</figcaption></figure></div>
+      <div class="media"><figure><img src="assets/body_counterfactual_flip-002_rollout_strip.jpg" alt="body_counterfactual_flip-002 起始 RGB 与动作执行轨迹示意"><figcaption>起始 RGB 与动作执行轨迹示意</figcaption></figure><figure><img src="assets/body_counterfactual_flip-002_topdown.jpg" alt="body_counterfactual_flip-002 局部动作轨迹草图"><figcaption>局部动作轨迹草图</figcaption></figure></div>
       <div class="case-body">
         <div class="case-meta">
-          <span>body_counterfactual_flip-002</span>
-          <span>17DRP5sb8fy · 帧 00001</span>
+          <span>身体反事实翻转案例 002</span>
+          <span>场景 17DRP5sb8fy · 帧 00001</span>
         </div>
         <p><span class="badge">自然短答 / 三类标签</span></p>
         <h3>同一张图、同一个起点、同样的动作：向前一步，然后向前一步，总共尝试前进约 0.5 米。半径 0.1 米、宽约 0.2 米的小机器人，和半径 0.4 米、宽约 0.8 米的宽机器人相比，这段距离大约分别是 2.5 个小机器人身宽、0.625 个宽机器人身宽。哪个更可能完成这个动作？请先回答：两个都可以 / 只有小机器人可以 / 两个都不适合。</h3>
@@ -974,25 +974,25 @@
         </div>
         <div class="evidence">
           <p><strong>GT 推导</strong><span>在 Habitat 中从该起点真实执行动作序列，实际推进约 0.5 m，计划推进约 0.5 m，主要反馈为：可见范围内无明显风险。</span></p>
-          <p><strong>真实 rollout 反馈</strong><span>碰撞=否；提前停止=否；高度变化=0 m；推进比例=1；风险=可见范围内无明显风险。</span></p>
-          <p><strong>粗 3D 参数</strong><span>动作序列=前进一步 → 前进一步；米制范围=&lt;0.5m；身体宽度范围=2 到 4 个身体宽度；可行性=feasible；置信度=medium；计划推进约 0.5 m。</span></p>
+          <p><strong>真实执行反馈</strong><span>碰撞=否；提前停止=否；高度变化=0 m；推进比例=1；风险=可见范围内无明显风险。</span></p>
+          <p><strong>粗 3D 参数</strong><span>动作序列=前进一步 → 前进一步；米制范围=&lt;0.5m；身体宽度范围=2 到 4 个身体宽度；可行性=feasible；置信度=中；计划推进约 0.5 m。</span></p>
           <p><strong>动作轨迹</strong><span>1:前进一步；2:前进一步</span></p>
-          <p><strong>场景合理性</strong><span>几何标签=open-or-passable；平地支持=是；适合普通前进=是；文本提示=shower、wall、mirror、floor、clothes。该问题来自真实 Habitat rollout，题型为 body_counterfactual，GT 由动作执行后的 progress/collision/height 信号确定。</span></p>
+          <p><strong>场景合理性</strong><span>几何标签=开放或可通行；平地支持=是；适合普通前进=是；可见类别=淋浴区、墙面、镜子、地面、衣物。该问题来自真实 Habitat 动作执行，题型为 身体反事实判断，真值 由动作执行后的 推进比例/碰撞/高度 信号确定。</span></p>
           <p><strong>评分规则</strong><span>离散标签精确匹配。</span></p>
           <p><strong>身体与动作</strong><span>机器人类型=small cylindrical mobile base；半径=0.1 m；宽度=0.2 m；动作=前进一步 → 前进一步；身体反事实组=17DRP5sb8fy-00001-body_counterfactual。</span></p>
           <p><strong>位姿</strong><span>位置=[-7.034534931182861, 0.07244661450386047, -1.4064828157424927], 四元数=None, 水平视场=None</span></p>
           <p><strong>来源</strong><span>Habitat / MP3D / R2R-CE 起点状态 · 轨迹 17DRP5sb8fy_sampled_00001</span></p>
-          <p><strong>备注</strong><span>模型输入只包含起始 RGB 与问题；rollout trace、深度和语义只用于离线 GT 与展示。</span></p>
+          <p><strong>备注</strong><span>模型输入只包含起始 RGB 与问题；动作执行轨迹、深度和语义只用于离线 GT 与展示。</span></p>
         </div>
       </div>
     </article>
     
     <article class="case-card">
-      <div class="media"><figure><img src="assets/body_counterfactual_flip-004_rollout_strip.jpg" alt="body_counterfactual_flip-004 起始 RGB 与 rollout 轨迹示意"><figcaption>起始 RGB 与 rollout 轨迹示意</figcaption></figure><figure><img src="assets/body_counterfactual_flip-004_topdown.jpg" alt="body_counterfactual_flip-004 局部动作轨迹草图"><figcaption>局部动作轨迹草图</figcaption></figure></div>
+      <div class="media"><figure><img src="assets/body_counterfactual_flip-004_rollout_strip.jpg" alt="body_counterfactual_flip-004 起始 RGB 与动作执行轨迹示意"><figcaption>起始 RGB 与动作执行轨迹示意</figcaption></figure><figure><img src="assets/body_counterfactual_flip-004_topdown.jpg" alt="body_counterfactual_flip-004 局部动作轨迹草图"><figcaption>局部动作轨迹草图</figcaption></figure></div>
       <div class="case-body">
         <div class="case-meta">
-          <span>body_counterfactual_flip-004</span>
-          <span>17DRP5sb8fy · 帧 00003</span>
+          <span>身体反事实翻转案例 004</span>
+          <span>场景 17DRP5sb8fy · 帧 00003</span>
         </div>
         <p><span class="badge">自然短答 / 三类标签</span></p>
         <h3>同一张图、同一个起点、同样的动作：向前一步，然后向前一步，然后向前一步，然后向前一步，然后向前一步，总共尝试前进约 1.25 米。半径 0.1 米、宽约 0.2 米的小机器人，和半径 0.4 米、宽约 0.8 米的宽机器人相比，这段距离大约分别是 6.25 个小机器人身宽、1.5625 个宽机器人身宽。哪个更可能完成这个动作？请先回答：两个都可以 / 只有小机器人可以 / 两个都不适合。</h3>
@@ -1002,25 +1002,25 @@
         </div>
         <div class="evidence">
           <p><strong>GT 推导</strong><span>在 Habitat 中从该起点真实执行动作序列，实际推进约 1.25 m，计划推进约 1.25 m，主要反馈为：可见范围内无明显风险。</span></p>
-          <p><strong>真实 rollout 反馈</strong><span>碰撞=否；提前停止=否；高度变化=0 m；推进比例=1；风险=可见范围内无明显风险。</span></p>
-          <p><strong>粗 3D 参数</strong><span>动作序列=前进一步 → 前进一步 → 前进一步 → 前进一步 → 前进一步；米制范围=1 到 2 米；身体宽度范围=4 到 8 个身体宽度；可行性=feasible；置信度=medium；计划推进约 1.25 m。</span></p>
+          <p><strong>真实执行反馈</strong><span>碰撞=否；提前停止=否；高度变化=0 m；推进比例=1；风险=可见范围内无明显风险。</span></p>
+          <p><strong>粗 3D 参数</strong><span>动作序列=前进一步 → 前进一步 → 前进一步 → 前进一步 → 前进一步；米制范围=1 到 2 米；身体宽度范围=4 到 8 个身体宽度；可行性=feasible；置信度=中；计划推进约 1.25 m。</span></p>
           <p><strong>动作轨迹</strong><span>1:前进一步；2:前进一步；3:前进一步；4:前进一步；5:前进一步</span></p>
-          <p><strong>场景合理性</strong><span>几何标签=open-or-passable；平地支持=是；适合普通前进=是；文本提示=shower。该问题来自真实 Habitat rollout，题型为 body_counterfactual，GT 由动作执行后的 progress/collision/height 信号确定。</span></p>
+          <p><strong>场景合理性</strong><span>几何标签=开放或可通行；平地支持=是；适合普通前进=是；可见类别=淋浴区。该问题来自真实 Habitat 动作执行，题型为 身体反事实判断，真值 由动作执行后的 推进比例/碰撞/高度 信号确定。</span></p>
           <p><strong>评分规则</strong><span>离散标签精确匹配。</span></p>
           <p><strong>身体与动作</strong><span>机器人类型=small cylindrical mobile base；半径=0.1 m；宽度=0.2 m；动作=前进一步 → 前进一步 → 前进一步 → 前进一步 → 前进一步；身体反事实组=17DRP5sb8fy-00003-body_counterfactual。</span></p>
           <p><strong>位姿</strong><span>位置=[-7.291738510131836, 0.07244661450386047, -1.2422606945037842], 四元数=None, 水平视场=None</span></p>
           <p><strong>来源</strong><span>Habitat / MP3D / R2R-CE 起点状态 · 轨迹 17DRP5sb8fy_sampled_00003</span></p>
-          <p><strong>备注</strong><span>模型输入只包含起始 RGB 与问题；rollout trace、深度和语义只用于离线 GT 与展示。</span></p>
+          <p><strong>备注</strong><span>模型输入只包含起始 RGB 与问题；动作执行轨迹、深度和语义只用于离线 GT 与展示。</span></p>
         </div>
       </div>
     </article>
     
     <article class="case-card">
-      <div class="media"><figure><img src="assets/body_counterfactual_flip-005_rollout_strip.jpg" alt="body_counterfactual_flip-005 起始 RGB 与 rollout 轨迹示意"><figcaption>起始 RGB 与 rollout 轨迹示意</figcaption></figure><figure><img src="assets/body_counterfactual_flip-005_topdown.jpg" alt="body_counterfactual_flip-005 局部动作轨迹草图"><figcaption>局部动作轨迹草图</figcaption></figure></div>
+      <div class="media"><figure><img src="assets/body_counterfactual_flip-005_rollout_strip.jpg" alt="body_counterfactual_flip-005 起始 RGB 与动作执行轨迹示意"><figcaption>起始 RGB 与动作执行轨迹示意</figcaption></figure><figure><img src="assets/body_counterfactual_flip-005_topdown.jpg" alt="body_counterfactual_flip-005 局部动作轨迹草图"><figcaption>局部动作轨迹草图</figcaption></figure></div>
       <div class="case-body">
         <div class="case-meta">
-          <span>body_counterfactual_flip-005</span>
-          <span>1LXtFkjw3qL · 帧 00000</span>
+          <span>身体反事实翻转案例 005</span>
+          <span>场景 1LXtFkjw3qL · 帧 00000</span>
         </div>
         <p><span class="badge">自然短答 / 三类标签</span></p>
         <h3>同一张图、同一个起点、同样的动作：向前一步，然后向前一步，然后向前一步，然后向前一步，然后向前一步，总共尝试前进约 1.25 米。半径 0.1 米、宽约 0.2 米的小机器人，和半径 0.4 米、宽约 0.8 米的宽机器人相比，这段距离大约分别是 6.25 个小机器人身宽、1.5625 个宽机器人身宽。哪个更可能完成这个动作？请先回答：两个都可以 / 只有小机器人可以 / 两个都不适合。</h3>
@@ -1030,25 +1030,25 @@
         </div>
         <div class="evidence">
           <p><strong>GT 推导</strong><span>在 Habitat 中从该起点真实执行动作序列，实际推进约 1.25 m，计划推进约 1.25 m，主要反馈为：可见范围内无明显风险。</span></p>
-          <p><strong>真实 rollout 反馈</strong><span>碰撞=否；提前停止=否；高度变化=0 m；推进比例=1；风险=可见范围内无明显风险。</span></p>
-          <p><strong>粗 3D 参数</strong><span>动作序列=前进一步 → 前进一步 → 前进一步 → 前进一步 → 前进一步；米制范围=1 到 2 米；身体宽度范围=4 到 8 个身体宽度；可行性=feasible；置信度=medium；计划推进约 1.25 m。</span></p>
+          <p><strong>真实执行反馈</strong><span>碰撞=否；提前停止=否；高度变化=0 m；推进比例=1；风险=可见范围内无明显风险。</span></p>
+          <p><strong>粗 3D 参数</strong><span>动作序列=前进一步 → 前进一步 → 前进一步 → 前进一步 → 前进一步；米制范围=1 到 2 米；身体宽度范围=4 到 8 个身体宽度；可行性=feasible；置信度=中；计划推进约 1.25 m。</span></p>
           <p><strong>动作轨迹</strong><span>1:前进一步；2:前进一步；3:前进一步；4:前进一步；5:前进一步</span></p>
-          <p><strong>场景合理性</strong><span>几何标签=open-or-passable；平地支持=是；适合普通前进=是；文本提示=无可靠语义类别。该问题来自真实 Habitat rollout，题型为 body_counterfactual，GT 由动作执行后的 progress/collision/height 信号确定。</span></p>
+          <p><strong>场景合理性</strong><span>几何标签=开放或可通行；平地支持=是；适合普通前进=是；可见类别=无可靠语义类别。该问题来自真实 Habitat 动作执行，题型为 身体反事实判断，真值 由动作执行后的 推进比例/碰撞/高度 信号确定。</span></p>
           <p><strong>评分规则</strong><span>离散标签精确匹配。</span></p>
           <p><strong>身体与动作</strong><span>机器人类型=small cylindrical mobile base；半径=0.1 m；宽度=0.2 m；动作=前进一步 → 前进一步 → 前进一步 → 前进一步 → 前进一步；身体反事实组=1LXtFkjw3qL-00000-body_counterfactual。</span></p>
           <p><strong>位姿</strong><span>位置=[-1.0728425979614258, -2.9155871868133545, 8.507789611816406], 四元数=None, 水平视场=None</span></p>
           <p><strong>来源</strong><span>Habitat / MP3D / R2R-CE 起点状态 · 轨迹 1LXtFkjw3qL_sampled_00000</span></p>
-          <p><strong>备注</strong><span>模型输入只包含起始 RGB 与问题；rollout trace、深度和语义只用于离线 GT 与展示。</span></p>
+          <p><strong>备注</strong><span>模型输入只包含起始 RGB 与问题；动作执行轨迹、深度和语义只用于离线 GT 与展示。</span></p>
         </div>
       </div>
     </article>
     
     <article class="case-card">
-      <div class="media"><figure><img src="assets/body_counterfactual_flip-007_rollout_strip.jpg" alt="body_counterfactual_flip-007 起始 RGB 与 rollout 轨迹示意"><figcaption>起始 RGB 与 rollout 轨迹示意</figcaption></figure><figure><img src="assets/body_counterfactual_flip-007_topdown.jpg" alt="body_counterfactual_flip-007 局部动作轨迹草图"><figcaption>局部动作轨迹草图</figcaption></figure></div>
+      <div class="media"><figure><img src="assets/body_counterfactual_flip-007_rollout_strip.jpg" alt="body_counterfactual_flip-007 起始 RGB 与动作执行轨迹示意"><figcaption>起始 RGB 与动作执行轨迹示意</figcaption></figure><figure><img src="assets/body_counterfactual_flip-007_topdown.jpg" alt="body_counterfactual_flip-007 局部动作轨迹草图"><figcaption>局部动作轨迹草图</figcaption></figure></div>
       <div class="case-body">
         <div class="case-meta">
-          <span>body_counterfactual_flip-007</span>
-          <span>1LXtFkjw3qL · 帧 00002</span>
+          <span>身体反事实翻转案例 007</span>
+          <span>场景 1LXtFkjw3qL · 帧 00002</span>
         </div>
         <p><span class="badge">自然短答 / 三类标签</span></p>
         <h3>同一张图、同一个起点、同样的动作：向前一步，然后向前一步，总共尝试前进约 0.5 米。半径 0.1 米、宽约 0.2 米的小机器人，和半径 0.4 米、宽约 0.8 米的宽机器人相比，这段距离大约分别是 2.5 个小机器人身宽、0.625 个宽机器人身宽。哪个更可能完成这个动作？请先回答：两个都可以 / 只有小机器人可以 / 两个都不适合。</h3>
@@ -1058,25 +1058,25 @@
         </div>
         <div class="evidence">
           <p><strong>GT 推导</strong><span>在 Habitat 中从该起点真实执行动作序列，实际推进约 0.5 m，计划推进约 0.5 m，主要反馈为：可见范围内无明显风险。</span></p>
-          <p><strong>真实 rollout 反馈</strong><span>碰撞=否；提前停止=否；高度变化=0 m；推进比例=1；风险=可见范围内无明显风险。</span></p>
-          <p><strong>粗 3D 参数</strong><span>动作序列=前进一步 → 前进一步；米制范围=&lt;0.5m；身体宽度范围=2 到 4 个身体宽度；可行性=feasible；置信度=medium；计划推进约 0.5 m。</span></p>
+          <p><strong>真实执行反馈</strong><span>碰撞=否；提前停止=否；高度变化=0 m；推进比例=1；风险=可见范围内无明显风险。</span></p>
+          <p><strong>粗 3D 参数</strong><span>动作序列=前进一步 → 前进一步；米制范围=&lt;0.5m；身体宽度范围=2 到 4 个身体宽度；可行性=feasible；置信度=中；计划推进约 0.5 m。</span></p>
           <p><strong>动作轨迹</strong><span>1:前进一步；2:前进一步</span></p>
-          <p><strong>场景合理性</strong><span>几何标签=open-or-passable；平地支持=是；适合普通前进=是；文本提示=wall、ceiling、railing、beam、picture、misc。该问题来自真实 Habitat rollout，题型为 body_counterfactual，GT 由动作执行后的 progress/collision/height 信号确定。</span></p>
+          <p><strong>场景合理性</strong><span>几何标签=开放或可通行；平地支持=是；适合普通前进=是；可见类别=墙面、天花板、栏杆、梁、画框、其他物体。该问题来自真实 Habitat 动作执行，题型为 身体反事实判断，真值 由动作执行后的 推进比例/碰撞/高度 信号确定。</span></p>
           <p><strong>评分规则</strong><span>离散标签精确匹配。</span></p>
           <p><strong>身体与动作</strong><span>机器人类型=small cylindrical mobile base；半径=0.1 m；宽度=0.2 m；动作=前进一步 → 前进一步；身体反事实组=1LXtFkjw3qL-00002-body_counterfactual。</span></p>
           <p><strong>位姿</strong><span>位置=[1.2366777658462524, 0.6844127178192139, -2.781653881072998], 四元数=None, 水平视场=None</span></p>
           <p><strong>来源</strong><span>Habitat / MP3D / R2R-CE 起点状态 · 轨迹 1LXtFkjw3qL_sampled_00002</span></p>
-          <p><strong>备注</strong><span>模型输入只包含起始 RGB 与问题；rollout trace、深度和语义只用于离线 GT 与展示。</span></p>
+          <p><strong>备注</strong><span>模型输入只包含起始 RGB 与问题；动作执行轨迹、深度和语义只用于离线 GT 与展示。</span></p>
         </div>
       </div>
     </article>
     
     <article class="case-card">
-      <div class="media"><figure><img src="assets/body_counterfactual_flip-008_rollout_strip.jpg" alt="body_counterfactual_flip-008 起始 RGB 与 rollout 轨迹示意"><figcaption>起始 RGB 与 rollout 轨迹示意</figcaption></figure><figure><img src="assets/body_counterfactual_flip-008_topdown.jpg" alt="body_counterfactual_flip-008 局部动作轨迹草图"><figcaption>局部动作轨迹草图</figcaption></figure></div>
+      <div class="media"><figure><img src="assets/body_counterfactual_flip-008_rollout_strip.jpg" alt="body_counterfactual_flip-008 起始 RGB 与动作执行轨迹示意"><figcaption>起始 RGB 与动作执行轨迹示意</figcaption></figure><figure><img src="assets/body_counterfactual_flip-008_topdown.jpg" alt="body_counterfactual_flip-008 局部动作轨迹草图"><figcaption>局部动作轨迹草图</figcaption></figure></div>
       <div class="case-body">
         <div class="case-meta">
-          <span>body_counterfactual_flip-008</span>
-          <span>1LXtFkjw3qL · 帧 00003</span>
+          <span>身体反事实翻转案例 008</span>
+          <span>场景 1LXtFkjw3qL · 帧 00003</span>
         </div>
         <p><span class="badge">自然短答 / 三类标签</span></p>
         <h3>同一张图、同一个起点、同样的动作：向前一步，然后向前一步，然后向前一步，总共尝试前进约 0.75 米。半径 0.1 米、宽约 0.2 米的小机器人，和半径 0.4 米、宽约 0.8 米的宽机器人相比，这段距离大约分别是 3.75 个小机器人身宽、0.9375 个宽机器人身宽。哪个更可能完成这个动作？请先回答：两个都可以 / 只有小机器人可以 / 两个都不适合。</h3>
@@ -1086,25 +1086,25 @@
         </div>
         <div class="evidence">
           <p><strong>GT 推导</strong><span>在 Habitat 中从该起点真实执行动作序列，实际推进约 0.75 m，计划推进约 0.75 m，主要反馈为：可见范围内无明显风险。</span></p>
-          <p><strong>真实 rollout 反馈</strong><span>碰撞=否；提前停止=否；高度变化=0 m；推进比例=1；风险=可见范围内无明显风险。</span></p>
-          <p><strong>粗 3D 参数</strong><span>动作序列=前进一步 → 前进一步 → 前进一步；米制范围=0.5-1m；身体宽度范围=2 到 4 个身体宽度；可行性=feasible；置信度=medium；计划推进约 0.75 m。</span></p>
+          <p><strong>真实执行反馈</strong><span>碰撞=否；提前停止=否；高度变化=0 m；推进比例=1；风险=可见范围内无明显风险。</span></p>
+          <p><strong>粗 3D 参数</strong><span>动作序列=前进一步 → 前进一步 → 前进一步；米制范围=0.5-1m；身体宽度范围=2 到 4 个身体宽度；可行性=feasible；置信度=中；计划推进约 0.75 m。</span></p>
           <p><strong>动作轨迹</strong><span>1:前进一步；2:前进一步；3:前进一步</span></p>
-          <p><strong>场景合理性</strong><span>几何标签=open-or-passable；平地支持=是；适合普通前进=是；文本提示=无可靠语义类别。该问题来自真实 Habitat rollout，题型为 body_counterfactual，GT 由动作执行后的 progress/collision/height 信号确定。</span></p>
+          <p><strong>场景合理性</strong><span>几何标签=开放或可通行；平地支持=是；适合普通前进=是；可见类别=无可靠语义类别。该问题来自真实 Habitat 动作执行，题型为 身体反事实判断，真值 由动作执行后的 推进比例/碰撞/高度 信号确定。</span></p>
           <p><strong>评分规则</strong><span>离散标签精确匹配。</span></p>
           <p><strong>身体与动作</strong><span>机器人类型=small cylindrical mobile base；半径=0.1 m；宽度=0.2 m；动作=前进一步 → 前进一步 → 前进一步；身体反事实组=1LXtFkjw3qL-00003-body_counterfactual。</span></p>
           <p><strong>位姿</strong><span>位置=[-0.7629624009132385, -2.9155871868133545, 12.627571105957031], 四元数=None, 水平视场=None</span></p>
           <p><strong>来源</strong><span>Habitat / MP3D / R2R-CE 起点状态 · 轨迹 1LXtFkjw3qL_sampled_00003</span></p>
-          <p><strong>备注</strong><span>模型输入只包含起始 RGB 与问题；rollout trace、深度和语义只用于离线 GT 与展示。</span></p>
+          <p><strong>备注</strong><span>模型输入只包含起始 RGB 与问题；动作执行轨迹、深度和语义只用于离线 GT 与展示。</span></p>
         </div>
       </div>
     </article>
     
     <article class="case-card">
-      <div class="media"><figure><img src="assets/body_counterfactual_flip-009_rollout_strip.jpg" alt="body_counterfactual_flip-009 起始 RGB 与 rollout 轨迹示意"><figcaption>起始 RGB 与 rollout 轨迹示意</figcaption></figure><figure><img src="assets/body_counterfactual_flip-009_topdown.jpg" alt="body_counterfactual_flip-009 局部动作轨迹草图"><figcaption>局部动作轨迹草图</figcaption></figure></div>
+      <div class="media"><figure><img src="assets/body_counterfactual_flip-009_rollout_strip.jpg" alt="body_counterfactual_flip-009 起始 RGB 与动作执行轨迹示意"><figcaption>起始 RGB 与动作执行轨迹示意</figcaption></figure><figure><img src="assets/body_counterfactual_flip-009_topdown.jpg" alt="body_counterfactual_flip-009 局部动作轨迹草图"><figcaption>局部动作轨迹草图</figcaption></figure></div>
       <div class="case-body">
         <div class="case-meta">
-          <span>body_counterfactual_flip-009</span>
-          <span>1pXnuDYAj8r · 帧 00000</span>
+          <span>身体反事实翻转案例 009</span>
+          <span>场景 1pXnuDYAj8r · 帧 00000</span>
         </div>
         <p><span class="badge">自然短答 / 三类标签</span></p>
         <h3>同一张图、同一个起点、同样的动作：向前一步，然后向前一步，然后向前一步，然后向前一步，然后向前一步，总共尝试前进约 1.25 米。半径 0.1 米、宽约 0.2 米的小机器人，和半径 0.4 米、宽约 0.8 米的宽机器人相比，这段距离大约分别是 6.25 个小机器人身宽、1.5625 个宽机器人身宽。哪个更可能完成这个动作？请先回答：两个都可以 / 只有小机器人可以 / 两个都不适合。</h3>
@@ -1114,25 +1114,25 @@
         </div>
         <div class="evidence">
           <p><strong>GT 推导</strong><span>在 Habitat 中从该起点真实执行动作序列，实际推进约 1.25 m，计划推进约 1.25 m，主要反馈为：可见范围内无明显风险。</span></p>
-          <p><strong>真实 rollout 反馈</strong><span>碰撞=否；提前停止=否；高度变化=0 m；推进比例=1；风险=可见范围内无明显风险。</span></p>
-          <p><strong>粗 3D 参数</strong><span>动作序列=前进一步 → 前进一步 → 前进一步 → 前进一步 → 前进一步；米制范围=1 到 2 米；身体宽度范围=4 到 8 个身体宽度；可行性=feasible；置信度=medium；计划推进约 1.25 m。</span></p>
+          <p><strong>真实执行反馈</strong><span>碰撞=否；提前停止=否；高度变化=0 m；推进比例=1；风险=可见范围内无明显风险。</span></p>
+          <p><strong>粗 3D 参数</strong><span>动作序列=前进一步 → 前进一步 → 前进一步 → 前进一步 → 前进一步；米制范围=1 到 2 米；身体宽度范围=4 到 8 个身体宽度；可行性=feasible；置信度=中；计划推进约 1.25 m。</span></p>
           <p><strong>动作轨迹</strong><span>1:前进一步；2:前进一步；3:前进一步；4:前进一步；5:前进一步</span></p>
-          <p><strong>场景合理性</strong><span>几何标签=open-or-passable；平地支持=是；适合普通前进=是；文本提示=无可靠语义类别。该问题来自真实 Habitat rollout，题型为 body_counterfactual，GT 由动作执行后的 progress/collision/height 信号确定。</span></p>
+          <p><strong>场景合理性</strong><span>几何标签=开放或可通行；平地支持=是；适合普通前进=是；可见类别=无可靠语义类别。该问题来自真实 Habitat 动作执行，题型为 身体反事实判断，真值 由动作执行后的 推进比例/碰撞/高度 信号确定。</span></p>
           <p><strong>评分规则</strong><span>离散标签精确匹配。</span></p>
           <p><strong>身体与动作</strong><span>机器人类型=small cylindrical mobile base；半径=0.1 m；宽度=0.2 m；动作=前进一步 → 前进一步 → 前进一步 → 前进一步 → 前进一步；身体反事实组=1pXnuDYAj8r-00000-body_counterfactual。</span></p>
           <p><strong>位姿</strong><span>位置=[8.368339538574219, 0.11414670944213867, 3.283545732498169], 四元数=None, 水平视场=None</span></p>
           <p><strong>来源</strong><span>Habitat / MP3D / R2R-CE 起点状态 · 轨迹 1pXnuDYAj8r_sampled_00000</span></p>
-          <p><strong>备注</strong><span>模型输入只包含起始 RGB 与问题；rollout trace、深度和语义只用于离线 GT 与展示。</span></p>
+          <p><strong>备注</strong><span>模型输入只包含起始 RGB 与问题；动作执行轨迹、深度和语义只用于离线 GT 与展示。</span></p>
         </div>
       </div>
     </article>
     
     <article class="case-card">
-      <div class="media"><figure><img src="assets/body_counterfactual_flip-010_rollout_strip.jpg" alt="body_counterfactual_flip-010 起始 RGB 与 rollout 轨迹示意"><figcaption>起始 RGB 与 rollout 轨迹示意</figcaption></figure><figure><img src="assets/body_counterfactual_flip-010_topdown.jpg" alt="body_counterfactual_flip-010 局部动作轨迹草图"><figcaption>局部动作轨迹草图</figcaption></figure></div>
+      <div class="media"><figure><img src="assets/body_counterfactual_flip-010_rollout_strip.jpg" alt="body_counterfactual_flip-010 起始 RGB 与动作执行轨迹示意"><figcaption>起始 RGB 与动作执行轨迹示意</figcaption></figure><figure><img src="assets/body_counterfactual_flip-010_topdown.jpg" alt="body_counterfactual_flip-010 局部动作轨迹草图"><figcaption>局部动作轨迹草图</figcaption></figure></div>
       <div class="case-body">
         <div class="case-meta">
-          <span>body_counterfactual_flip-010</span>
-          <span>1pXnuDYAj8r · 帧 00001</span>
+          <span>身体反事实翻转案例 010</span>
+          <span>场景 1pXnuDYAj8r · 帧 00001</span>
         </div>
         <p><span class="badge">自然短答 / 三类标签</span></p>
         <h3>同一张图、同一个起点、同样的动作：向前一步，然后向前一步，然后向前一步，然后向前一步，然后向前一步，总共尝试前进约 1.25 米。半径 0.1 米、宽约 0.2 米的小机器人，和半径 0.4 米、宽约 0.8 米的宽机器人相比，这段距离大约分别是 6.25 个小机器人身宽、1.5625 个宽机器人身宽。哪个更可能完成这个动作？请先回答：两个都可以 / 只有小机器人可以 / 两个都不适合。</h3>
@@ -1142,25 +1142,25 @@
         </div>
         <div class="evidence">
           <p><strong>GT 推导</strong><span>在 Habitat 中从该起点真实执行动作序列，实际推进约 0.4 m，计划推进约 1.25 m，主要反馈为：可见范围内无明显风险。</span></p>
-          <p><strong>真实 rollout 反馈</strong><span>碰撞=否；提前停止=是；高度变化=0 m；推进比例=0.32；风险=可见范围内无明显风险。</span></p>
-          <p><strong>粗 3D 参数</strong><span>动作序列=前进一步 → 前进一步 → 前进一步 → 前进一步 → 前进一步；米制范围=&lt;0.5m；身体宽度范围=小于 2 个身体宽度；可行性=incomplete；置信度=high；计划推进约 1.25 m。</span></p>
+          <p><strong>真实执行反馈</strong><span>碰撞=否；提前停止=是；高度变化=0 m；推进比例=0.32；风险=可见范围内无明显风险。</span></p>
+          <p><strong>粗 3D 参数</strong><span>动作序列=前进一步 → 前进一步 → 前进一步 → 前进一步 → 前进一步；米制范围=&lt;0.5m；身体宽度范围=小于 2 个身体宽度；可行性=incomplete；置信度=高；计划推进约 1.25 m。</span></p>
           <p><strong>动作轨迹</strong><span>1:前进一步；2:前进一步；3:前进一步；4:前进一步；5:前进一步</span></p>
-          <p><strong>场景合理性</strong><span>几何标签=open-or-passable；平地支持=是；适合普通前进=否；文本提示=无可靠语义类别。该问题来自真实 Habitat rollout，题型为 body_counterfactual，GT 由动作执行后的 progress/collision/height 信号确定。</span></p>
+          <p><strong>场景合理性</strong><span>几何标签=开放或可通行；平地支持=是；适合普通前进=否；可见类别=无可靠语义类别。该问题来自真实 Habitat 动作执行，题型为 身体反事实判断，真值 由动作执行后的 推进比例/碰撞/高度 信号确定。</span></p>
           <p><strong>评分规则</strong><span>离散标签精确匹配。</span></p>
           <p><strong>身体与动作</strong><span>机器人类型=small cylindrical mobile base；半径=0.1 m；宽度=0.2 m；动作=前进一步 → 前进一步 → 前进一步 → 前进一步 → 前进一步；身体反事实组=1pXnuDYAj8r-00001-body_counterfactual。</span></p>
           <p><strong>位姿</strong><span>位置=[4.330360412597656, 0.11414670944213867, 2.519526481628418], 四元数=None, 水平视场=None</span></p>
           <p><strong>来源</strong><span>Habitat / MP3D / R2R-CE 起点状态 · 轨迹 1pXnuDYAj8r_sampled_00001</span></p>
-          <p><strong>备注</strong><span>模型输入只包含起始 RGB 与问题；rollout trace、深度和语义只用于离线 GT 与展示。</span></p>
+          <p><strong>备注</strong><span>模型输入只包含起始 RGB 与问题；动作执行轨迹、深度和语义只用于离线 GT 与展示。</span></p>
         </div>
       </div>
     </article>
     
     <article class="case-card">
-      <div class="media"><figure><img src="assets/body_counterfactual_flip-012_rollout_strip.jpg" alt="body_counterfactual_flip-012 起始 RGB 与 rollout 轨迹示意"><figcaption>起始 RGB 与 rollout 轨迹示意</figcaption></figure><figure><img src="assets/body_counterfactual_flip-012_topdown.jpg" alt="body_counterfactual_flip-012 局部动作轨迹草图"><figcaption>局部动作轨迹草图</figcaption></figure></div>
+      <div class="media"><figure><img src="assets/body_counterfactual_flip-012_rollout_strip.jpg" alt="body_counterfactual_flip-012 起始 RGB 与动作执行轨迹示意"><figcaption>起始 RGB 与动作执行轨迹示意</figcaption></figure><figure><img src="assets/body_counterfactual_flip-012_topdown.jpg" alt="body_counterfactual_flip-012 局部动作轨迹草图"><figcaption>局部动作轨迹草图</figcaption></figure></div>
       <div class="case-body">
         <div class="case-meta">
-          <span>body_counterfactual_flip-012</span>
-          <span>1pXnuDYAj8r · 帧 00003</span>
+          <span>身体反事实翻转案例 012</span>
+          <span>场景 1pXnuDYAj8r · 帧 00003</span>
         </div>
         <p><span class="badge">自然短答 / 三类标签</span></p>
         <h3>同一张图、同一个起点、同样的动作：向前一步，然后向前一步，总共尝试前进约 0.5 米。半径 0.1 米、宽约 0.2 米的小机器人，和半径 0.4 米、宽约 0.8 米的宽机器人相比，这段距离大约分别是 2.5 个小机器人身宽、0.625 个宽机器人身宽。哪个更可能完成这个动作？请先回答：两个都可以 / 只有小机器人可以 / 两个都不适合。</h3>
@@ -1170,25 +1170,25 @@
         </div>
         <div class="evidence">
           <p><strong>GT 推导</strong><span>在 Habitat 中从该起点真实执行动作序列，实际推进约 0.5 m，计划推进约 0.5 m，主要反馈为：可见范围内无明显风险。</span></p>
-          <p><strong>真实 rollout 反馈</strong><span>碰撞=否；提前停止=否；高度变化=0 m；推进比例=1；风险=可见范围内无明显风险。</span></p>
-          <p><strong>粗 3D 参数</strong><span>动作序列=前进一步 → 前进一步；米制范围=&lt;0.5m；身体宽度范围=2 到 4 个身体宽度；可行性=feasible；置信度=medium；计划推进约 0.5 m。</span></p>
+          <p><strong>真实执行反馈</strong><span>碰撞=否；提前停止=否；高度变化=0 m；推进比例=1；风险=可见范围内无明显风险。</span></p>
+          <p><strong>粗 3D 参数</strong><span>动作序列=前进一步 → 前进一步；米制范围=&lt;0.5m；身体宽度范围=2 到 4 个身体宽度；可行性=feasible；置信度=中；计划推进约 0.5 m。</span></p>
           <p><strong>动作轨迹</strong><span>1:前进一步；2:前进一步</span></p>
-          <p><strong>场景合理性</strong><span>几何标签=open-or-passable；平地支持=是；适合普通前进=是；文本提示=无可靠语义类别。该问题来自真实 Habitat rollout，题型为 body_counterfactual，GT 由动作执行后的 progress/collision/height 信号确定。</span></p>
+          <p><strong>场景合理性</strong><span>几何标签=开放或可通行；平地支持=是；适合普通前进=是；可见类别=无可靠语义类别。该问题来自真实 Habitat 动作执行，题型为 身体反事实判断，真值 由动作执行后的 推进比例/碰撞/高度 信号确定。</span></p>
           <p><strong>评分规则</strong><span>离散标签精确匹配。</span></p>
           <p><strong>身体与动作</strong><span>机器人类型=small cylindrical mobile base；半径=0.1 m；宽度=0.2 m；动作=前进一步 → 前进一步；身体反事实组=1pXnuDYAj8r-00003-body_counterfactual。</span></p>
           <p><strong>位姿</strong><span>位置=[14.198974609375, 0.11414670944213867, 7.609550476074219], 四元数=None, 水平视场=None</span></p>
           <p><strong>来源</strong><span>Habitat / MP3D / R2R-CE 起点状态 · 轨迹 1pXnuDYAj8r_sampled_00003</span></p>
-          <p><strong>备注</strong><span>模型输入只包含起始 RGB 与问题；rollout trace、深度和语义只用于离线 GT 与展示。</span></p>
+          <p><strong>备注</strong><span>模型输入只包含起始 RGB 与问题；动作执行轨迹、深度和语义只用于离线 GT 与展示。</span></p>
         </div>
       </div>
     </article>
     
     <article class="case-card">
-      <div class="media"><figure><img src="assets/body_counterfactual_flip-013_rollout_strip.jpg" alt="body_counterfactual_flip-013 起始 RGB 与 rollout 轨迹示意"><figcaption>起始 RGB 与 rollout 轨迹示意</figcaption></figure><figure><img src="assets/body_counterfactual_flip-013_topdown.jpg" alt="body_counterfactual_flip-013 局部动作轨迹草图"><figcaption>局部动作轨迹草图</figcaption></figure></div>
+      <div class="media"><figure><img src="assets/body_counterfactual_flip-013_rollout_strip.jpg" alt="body_counterfactual_flip-013 起始 RGB 与动作执行轨迹示意"><figcaption>起始 RGB 与动作执行轨迹示意</figcaption></figure><figure><img src="assets/body_counterfactual_flip-013_topdown.jpg" alt="body_counterfactual_flip-013 局部动作轨迹草图"><figcaption>局部动作轨迹草图</figcaption></figure></div>
       <div class="case-body">
         <div class="case-meta">
-          <span>body_counterfactual_flip-013</span>
-          <span>29hnd4uzFmX · 帧 00000</span>
+          <span>身体反事实翻转案例 013</span>
+          <span>场景 29hnd4uzFmX · 帧 00000</span>
         </div>
         <p><span class="badge">自然短答 / 三类标签</span></p>
         <h3>同一张图、同一个起点、同样的动作：向前一步，然后向前一步，然后向前一步，总共尝试前进约 0.75 米。半径 0.1 米、宽约 0.2 米的小机器人，和半径 0.4 米、宽约 0.8 米的宽机器人相比，这段距离大约分别是 3.75 个小机器人身宽、0.9375 个宽机器人身宽。哪个更可能完成这个动作？请先回答：两个都可以 / 只有小机器人可以 / 两个都不适合。</h3>
@@ -1198,15 +1198,15 @@
         </div>
         <div class="evidence">
           <p><strong>GT 推导</strong><span>在 Habitat 中从该起点真实执行动作序列，实际推进约 0.75 m，计划推进约 0.75 m，主要反馈为：可见范围内无明显风险。</span></p>
-          <p><strong>真实 rollout 反馈</strong><span>碰撞=否；提前停止=否；高度变化=0 m；推进比例=1；风险=可见范围内无明显风险。</span></p>
-          <p><strong>粗 3D 参数</strong><span>动作序列=前进一步 → 前进一步 → 前进一步；米制范围=0.5-1m；身体宽度范围=2 到 4 个身体宽度；可行性=feasible；置信度=medium；计划推进约 0.75 m。</span></p>
+          <p><strong>真实执行反馈</strong><span>碰撞=否；提前停止=否；高度变化=0 m；推进比例=1；风险=可见范围内无明显风险。</span></p>
+          <p><strong>粗 3D 参数</strong><span>动作序列=前进一步 → 前进一步 → 前进一步；米制范围=0.5-1m；身体宽度范围=2 到 4 个身体宽度；可行性=feasible；置信度=中；计划推进约 0.75 m。</span></p>
           <p><strong>动作轨迹</strong><span>1:前进一步；2:前进一步；3:前进一步</span></p>
-          <p><strong>场景合理性</strong><span>几何标签=open-or-passable；平地支持=是；适合普通前进=是；文本提示=bed、floor、stairs、misc、wall、chair。该问题来自真实 Habitat rollout，题型为 body_counterfactual，GT 由动作执行后的 progress/collision/height 信号确定。</span></p>
+          <p><strong>场景合理性</strong><span>几何标签=开放或可通行；平地支持=是；适合普通前进=是；可见类别=bed、地面、楼梯、其他物体、墙面、椅子。该问题来自真实 Habitat 动作执行，题型为 身体反事实判断，真值 由动作执行后的 推进比例/碰撞/高度 信号确定。</span></p>
           <p><strong>评分规则</strong><span>离散标签精确匹配。</span></p>
           <p><strong>身体与动作</strong><span>机器人类型=small cylindrical mobile base；半径=0.1 m；宽度=0.2 m；动作=前进一步 → 前进一步 → 前进一步；身体反事实组=29hnd4uzFmX-00000-body_counterfactual。</span></p>
           <p><strong>位姿</strong><span>位置=[-3.1977267265319824, 2.791041374206543, -3.081432819366455], 四元数=None, 水平视场=None</span></p>
           <p><strong>来源</strong><span>Habitat / MP3D / R2R-CE 起点状态 · 轨迹 29hnd4uzFmX_sampled_00000</span></p>
-          <p><strong>备注</strong><span>模型输入只包含起始 RGB 与问题；rollout trace、深度和语义只用于离线 GT 与展示。</span></p>
+          <p><strong>备注</strong><span>模型输入只包含起始 RGB 与问题；动作执行轨迹、深度和语义只用于离线 GT 与展示。</span></p>
         </div>
       </div>
     </article>
@@ -1214,17 +1214,17 @@
             </section>
             
             <section class="case-group" id="local_hazard_explanation">
-              <h2>local_hazard_explanation</h2>
-              <p>R2R 真实数据支持的分类。</p>
+              <h2>局部风险解释</h2>
+              <p>诊断模型是否能把失败判断落到真实执行反馈中的碰撞、提前停止、高度变化或局部支撑风险，而不是只回答安全/不安全。</p>
               <div class="case-grid">
     <article class="case-card">
-      <div class="media"><figure><img src="assets/local_hazard_explanation-001_rollout_strip.jpg" alt="local_hazard_explanation-001 起始 RGB 与 rollout 轨迹示意"><figcaption>起始 RGB 与 rollout 轨迹示意</figcaption></figure><figure><img src="assets/local_hazard_explanation-001_topdown.jpg" alt="local_hazard_explanation-001 局部动作轨迹草图"><figcaption>局部动作轨迹草图</figcaption></figure></div>
+      <div class="media"><figure><img src="assets/local_hazard_explanation-001_rollout_strip.jpg" alt="local_hazard_explanation-001 起始 RGB 与动作执行轨迹示意"><figcaption>起始 RGB 与动作执行轨迹示意</figcaption></figure><figure><img src="assets/local_hazard_explanation-001_topdown.jpg" alt="local_hazard_explanation-001 局部动作轨迹草图"><figcaption>局部动作轨迹草图</figcaption></figure></div>
       <div class="case-body">
         <div class="case-meta">
-          <span>local_hazard_explanation-001</span>
-          <span>17DRP5sb8fy · 帧 00000</span>
+          <span>局部风险解释案例 001</span>
+          <span>场景 17DRP5sb8fy · 帧 00000</span>
         </div>
-        <p><span class="badge">local_hazard_explanation</span></p>
+        <p><span class="badge">开放短答 / 风险类型</span></p>
         <h3>机器人半径约 0.25 米，宽约 0.5 米。只看当前图，如果它向前一步，然后向前一步，然后向前一步，总共会尝试前进约 0.75 米（约 1.5 个自身宽度），这一小段里最需要担心哪类局部后果？请先从固定选项中选一个：碰撞 / 下台阶或落差 / 没有明显风险。</h3>
         <div class="qa-grid">
           <div><strong>选项</strong><ul><li>开放式答案</li></ul></div>
@@ -1232,27 +1232,27 @@
         </div>
         <div class="evidence">
           <p><strong>GT 推导</strong><span>在 Habitat 中从该起点真实执行动作序列，实际推进约 0.64 m，计划推进约 0.75 m，主要反馈为：可见范围内无明显风险。</span></p>
-          <p><strong>真实 rollout 反馈</strong><span>碰撞=否；提前停止=否；高度变化=0 m；推进比例=0.85；风险=可见范围内无明显风险。</span></p>
-          <p><strong>粗 3D 参数</strong><span>动作序列=前进一步 → 前进一步 → 前进一步；米制范围=0.5-1m；身体宽度范围=小于 2 个身体宽度；可行性=feasible；置信度=high；计划推进约 0.75 m。</span></p>
+          <p><strong>真实执行反馈</strong><span>碰撞=否；提前停止=否；高度变化=0 m；推进比例=0.85；风险=可见范围内无明显风险。</span></p>
+          <p><strong>粗 3D 参数</strong><span>动作序列=前进一步 → 前进一步 → 前进一步；米制范围=0.5-1m；身体宽度范围=小于 2 个身体宽度；可行性=feasible；置信度=高；计划推进约 0.75 m。</span></p>
           <p><strong>动作轨迹</strong><span>1:前进一步；2:前进一步；3:前进一步</span></p>
-          <p><strong>场景合理性</strong><span>几何标签=open-or-passable；平地支持=是；适合普通前进=是；文本提示=wall、misc、shower、counter、shelving、mirror。该问题来自真实 Habitat rollout，题型为 local_hazard_explanation，GT 由动作执行后的 progress/collision/height 信号确定。</span></p>
-          <p><strong>评分规则</strong><span>{&#x27;type&#x27;: &#x27;manual_short_answer&#x27;, &#x27;rubric&#x27;: &#x27;answer must identify the main rollout hazard&#x27;}</span></p>
+          <p><strong>场景合理性</strong><span>几何标签=开放或可通行；平地支持=是；适合普通前进=是；可见类别=墙面、其他物体、淋浴区、台面、架子、镜子。该问题来自真实 Habitat 动作执行，题型为 local_hazard_explanation，真值 由动作执行后的 推进比例/碰撞/高度 信号确定。</span></p>
+          <p><strong>评分规则</strong><span>开放短答；答案需要指出主要局部风险类型。</span></p>
           <p><strong>身体与动作</strong><span>机器人类型=standard indoor mobile base；半径=0.25 m；宽度=0.5 m；动作=前进一步 → 前进一步 → 前进一步。</span></p>
           <p><strong>位姿</strong><span>位置=[-2.904015064239502, 0.07244661450386047, -1.2754919528961182], 四元数=None, 水平视场=None</span></p>
           <p><strong>来源</strong><span>Habitat / MP3D / R2R-CE 起点状态 · 轨迹 17DRP5sb8fy_sampled_00000</span></p>
-          <p><strong>备注</strong><span>模型输入只包含起始 RGB 与问题；rollout trace、深度和语义只用于离线 GT 与展示。</span></p>
+          <p><strong>备注</strong><span>模型输入只包含起始 RGB 与问题；动作执行轨迹、深度和语义只用于离线 GT 与展示。</span></p>
         </div>
       </div>
     </article>
     
     <article class="case-card">
-      <div class="media"><figure><img src="assets/local_hazard_explanation-002_rollout_strip.jpg" alt="local_hazard_explanation-002 起始 RGB 与 rollout 轨迹示意"><figcaption>起始 RGB 与 rollout 轨迹示意</figcaption></figure><figure><img src="assets/local_hazard_explanation-002_topdown.jpg" alt="local_hazard_explanation-002 局部动作轨迹草图"><figcaption>局部动作轨迹草图</figcaption></figure></div>
+      <div class="media"><figure><img src="assets/local_hazard_explanation-002_rollout_strip.jpg" alt="local_hazard_explanation-002 起始 RGB 与动作执行轨迹示意"><figcaption>起始 RGB 与动作执行轨迹示意</figcaption></figure><figure><img src="assets/local_hazard_explanation-002_topdown.jpg" alt="local_hazard_explanation-002 局部动作轨迹草图"><figcaption>局部动作轨迹草图</figcaption></figure></div>
       <div class="case-body">
         <div class="case-meta">
-          <span>local_hazard_explanation-002</span>
-          <span>17DRP5sb8fy · 帧 00001</span>
+          <span>局部风险解释案例 002</span>
+          <span>场景 17DRP5sb8fy · 帧 00001</span>
         </div>
-        <p><span class="badge">local_hazard_explanation</span></p>
+        <p><span class="badge">开放短答 / 风险类型</span></p>
         <h3>机器人半径约 0.25 米，宽约 0.5 米。只看当前图，如果它向前一步，然后向前一步，然后向前一步，总共会尝试前进约 0.75 米（约 1.5 个自身宽度），这一小段里最需要担心哪类局部后果？请先从固定选项中选一个：碰撞 / 下台阶或落差 / 没有明显风险。</h3>
         <div class="qa-grid">
           <div><strong>选项</strong><ul><li>开放式答案</li></ul></div>
@@ -1260,27 +1260,27 @@
         </div>
         <div class="evidence">
           <p><strong>GT 推导</strong><span>在 Habitat 中从该起点真实执行动作序列，实际推进约 0.75 m，计划推进约 0.75 m，主要反馈为：可见范围内无明显风险。</span></p>
-          <p><strong>真实 rollout 反馈</strong><span>碰撞=否；提前停止=否；高度变化=0 m；推进比例=1；风险=可见范围内无明显风险。</span></p>
-          <p><strong>粗 3D 参数</strong><span>动作序列=前进一步 → 前进一步 → 前进一步；米制范围=0.5-1m；身体宽度范围=小于 2 个身体宽度；可行性=feasible；置信度=medium；计划推进约 0.75 m。</span></p>
+          <p><strong>真实执行反馈</strong><span>碰撞=否；提前停止=否；高度变化=0 m；推进比例=1；风险=可见范围内无明显风险。</span></p>
+          <p><strong>粗 3D 参数</strong><span>动作序列=前进一步 → 前进一步 → 前进一步；米制范围=0.5-1m；身体宽度范围=小于 2 个身体宽度；可行性=feasible；置信度=中；计划推进约 0.75 m。</span></p>
           <p><strong>动作轨迹</strong><span>1:前进一步；2:前进一步；3:前进一步</span></p>
-          <p><strong>场景合理性</strong><span>几何标签=open-or-passable；平地支持=是；适合普通前进=是；文本提示=shower、wall、mirror、floor、clothes。该问题来自真实 Habitat rollout，题型为 local_hazard_explanation，GT 由动作执行后的 progress/collision/height 信号确定。</span></p>
-          <p><strong>评分规则</strong><span>{&#x27;type&#x27;: &#x27;manual_short_answer&#x27;, &#x27;rubric&#x27;: &#x27;answer must identify the main rollout hazard&#x27;}</span></p>
+          <p><strong>场景合理性</strong><span>几何标签=开放或可通行；平地支持=是；适合普通前进=是；可见类别=淋浴区、墙面、镜子、地面、衣物。该问题来自真实 Habitat 动作执行，题型为 local_hazard_explanation，真值 由动作执行后的 推进比例/碰撞/高度 信号确定。</span></p>
+          <p><strong>评分规则</strong><span>开放短答；答案需要指出主要局部风险类型。</span></p>
           <p><strong>身体与动作</strong><span>机器人类型=standard indoor mobile base；半径=0.25 m；宽度=0.5 m；动作=前进一步 → 前进一步 → 前进一步。</span></p>
           <p><strong>位姿</strong><span>位置=[-7.034534931182861, 0.07244661450386047, -1.4064828157424927], 四元数=None, 水平视场=None</span></p>
           <p><strong>来源</strong><span>Habitat / MP3D / R2R-CE 起点状态 · 轨迹 17DRP5sb8fy_sampled_00001</span></p>
-          <p><strong>备注</strong><span>模型输入只包含起始 RGB 与问题；rollout trace、深度和语义只用于离线 GT 与展示。</span></p>
+          <p><strong>备注</strong><span>模型输入只包含起始 RGB 与问题；动作执行轨迹、深度和语义只用于离线 GT 与展示。</span></p>
         </div>
       </div>
     </article>
     
     <article class="case-card">
-      <div class="media"><figure><img src="assets/local_hazard_explanation-003_rollout_strip.jpg" alt="local_hazard_explanation-003 起始 RGB 与 rollout 轨迹示意"><figcaption>起始 RGB 与 rollout 轨迹示意</figcaption></figure><figure><img src="assets/local_hazard_explanation-003_topdown.jpg" alt="local_hazard_explanation-003 局部动作轨迹草图"><figcaption>局部动作轨迹草图</figcaption></figure></div>
+      <div class="media"><figure><img src="assets/local_hazard_explanation-003_rollout_strip.jpg" alt="local_hazard_explanation-003 起始 RGB 与动作执行轨迹示意"><figcaption>起始 RGB 与动作执行轨迹示意</figcaption></figure><figure><img src="assets/local_hazard_explanation-003_topdown.jpg" alt="local_hazard_explanation-003 局部动作轨迹草图"><figcaption>局部动作轨迹草图</figcaption></figure></div>
       <div class="case-body">
         <div class="case-meta">
-          <span>local_hazard_explanation-003</span>
-          <span>17DRP5sb8fy · 帧 00002</span>
+          <span>局部风险解释案例 003</span>
+          <span>场景 17DRP5sb8fy · 帧 00002</span>
         </div>
-        <p><span class="badge">local_hazard_explanation</span></p>
+        <p><span class="badge">开放短答 / 风险类型</span></p>
         <h3>机器人半径约 0.25 米，宽约 0.5 米。只看当前图，如果它向前一步，然后向前一步，然后向前一步，总共会尝试前进约 0.75 米（约 1.5 个自身宽度），这一小段里最需要担心哪类局部后果？请先从固定选项中选一个：碰撞 / 下台阶或落差 / 没有明显风险。</h3>
         <div class="qa-grid">
           <div><strong>选项</strong><ul><li>开放式答案</li></ul></div>
@@ -1288,27 +1288,27 @@
         </div>
         <div class="evidence">
           <p><strong>GT 推导</strong><span>在 Habitat 中从该起点真实执行动作序列，实际推进约 0.68 m，计划推进约 0.75 m，主要反馈为：可见范围内无明显风险。</span></p>
-          <p><strong>真实 rollout 反馈</strong><span>碰撞=否；提前停止=否；高度变化=0 m；推进比例=0.9；风险=可见范围内无明显风险。</span></p>
-          <p><strong>粗 3D 参数</strong><span>动作序列=前进一步 → 前进一步 → 前进一步；米制范围=0.5-1m；身体宽度范围=小于 2 个身体宽度；可行性=feasible；置信度=medium；计划推进约 0.75 m。</span></p>
+          <p><strong>真实执行反馈</strong><span>碰撞=否；提前停止=否；高度变化=0 m；推进比例=0.9；风险=可见范围内无明显风险。</span></p>
+          <p><strong>粗 3D 参数</strong><span>动作序列=前进一步 → 前进一步 → 前进一步；米制范围=0.5-1m；身体宽度范围=小于 2 个身体宽度；可行性=feasible；置信度=中；计划推进约 0.75 m。</span></p>
           <p><strong>动作轨迹</strong><span>1:前进一步；2:前进一步；3:前进一步</span></p>
-          <p><strong>场景合理性</strong><span>几何标签=open-or-passable；平地支持=是；适合普通前进=是；文本提示=floor、wall、door、sofa、shower、counter。该问题来自真实 Habitat rollout，题型为 local_hazard_explanation，GT 由动作执行后的 progress/collision/height 信号确定。</span></p>
-          <p><strong>评分规则</strong><span>{&#x27;type&#x27;: &#x27;manual_short_answer&#x27;, &#x27;rubric&#x27;: &#x27;answer must identify the main rollout hazard&#x27;}</span></p>
+          <p><strong>场景合理性</strong><span>几何标签=开放或可通行；平地支持=是；适合普通前进=是；可见类别=地面、墙面、门、沙发、淋浴区、台面。该问题来自真实 Habitat 动作执行，题型为 local_hazard_explanation，真值 由动作执行后的 推进比例/碰撞/高度 信号确定。</span></p>
+          <p><strong>评分规则</strong><span>开放短答；答案需要指出主要局部风险类型。</span></p>
           <p><strong>身体与动作</strong><span>机器人类型=standard indoor mobile base；半径=0.25 m；宽度=0.5 m；动作=前进一步 → 前进一步 → 前进一步。</span></p>
           <p><strong>位姿</strong><span>位置=[2.532283067703247, 0.07244661450386047, -4.216582298278809], 四元数=None, 水平视场=None</span></p>
           <p><strong>来源</strong><span>Habitat / MP3D / R2R-CE 起点状态 · 轨迹 17DRP5sb8fy_sampled_00002</span></p>
-          <p><strong>备注</strong><span>模型输入只包含起始 RGB 与问题；rollout trace、深度和语义只用于离线 GT 与展示。</span></p>
+          <p><strong>备注</strong><span>模型输入只包含起始 RGB 与问题；动作执行轨迹、深度和语义只用于离线 GT 与展示。</span></p>
         </div>
       </div>
     </article>
     
     <article class="case-card">
-      <div class="media"><figure><img src="assets/local_hazard_explanation-004_rollout_strip.jpg" alt="local_hazard_explanation-004 起始 RGB 与 rollout 轨迹示意"><figcaption>起始 RGB 与 rollout 轨迹示意</figcaption></figure><figure><img src="assets/local_hazard_explanation-004_topdown.jpg" alt="local_hazard_explanation-004 局部动作轨迹草图"><figcaption>局部动作轨迹草图</figcaption></figure></div>
+      <div class="media"><figure><img src="assets/local_hazard_explanation-004_rollout_strip.jpg" alt="local_hazard_explanation-004 起始 RGB 与动作执行轨迹示意"><figcaption>起始 RGB 与动作执行轨迹示意</figcaption></figure><figure><img src="assets/local_hazard_explanation-004_topdown.jpg" alt="local_hazard_explanation-004 局部动作轨迹草图"><figcaption>局部动作轨迹草图</figcaption></figure></div>
       <div class="case-body">
         <div class="case-meta">
-          <span>local_hazard_explanation-004</span>
-          <span>17DRP5sb8fy · 帧 00003</span>
+          <span>局部风险解释案例 004</span>
+          <span>场景 17DRP5sb8fy · 帧 00003</span>
         </div>
-        <p><span class="badge">local_hazard_explanation</span></p>
+        <p><span class="badge">开放短答 / 风险类型</span></p>
         <h3>机器人半径约 0.25 米，宽约 0.5 米。只看当前图，如果它向前一步，然后向前一步，然后向前一步，然后向前一步，然后向前一步，总共会尝试前进约 1.25 米（约 2.5 个自身宽度），这一小段里最需要担心哪类局部后果？请先从固定选项中选一个：碰撞 / 下台阶或落差 / 没有明显风险。</h3>
         <div class="qa-grid">
           <div><strong>选项</strong><ul><li>开放式答案</li></ul></div>
@@ -1316,27 +1316,27 @@
         </div>
         <div class="evidence">
           <p><strong>GT 推导</strong><span>在 Habitat 中从该起点真实执行动作序列，实际推进约 1.25 m，计划推进约 1.25 m，主要反馈为：可见范围内无明显风险。</span></p>
-          <p><strong>真实 rollout 反馈</strong><span>碰撞=否；提前停止=否；高度变化=0 m；推进比例=1；风险=可见范围内无明显风险。</span></p>
-          <p><strong>粗 3D 参数</strong><span>动作序列=前进一步 → 前进一步 → 前进一步 → 前进一步 → 前进一步；米制范围=1 到 2 米；身体宽度范围=2 到 4 个身体宽度；可行性=feasible；置信度=medium；计划推进约 1.25 m。</span></p>
+          <p><strong>真实执行反馈</strong><span>碰撞=否；提前停止=否；高度变化=0 m；推进比例=1；风险=可见范围内无明显风险。</span></p>
+          <p><strong>粗 3D 参数</strong><span>动作序列=前进一步 → 前进一步 → 前进一步 → 前进一步 → 前进一步；米制范围=1 到 2 米；身体宽度范围=2 到 4 个身体宽度；可行性=feasible；置信度=中；计划推进约 1.25 m。</span></p>
           <p><strong>动作轨迹</strong><span>1:前进一步；2:前进一步；3:前进一步；4:前进一步；5:前进一步</span></p>
-          <p><strong>场景合理性</strong><span>几何标签=open-or-passable；平地支持=是；适合普通前进=是；文本提示=shower。该问题来自真实 Habitat rollout，题型为 local_hazard_explanation，GT 由动作执行后的 progress/collision/height 信号确定。</span></p>
-          <p><strong>评分规则</strong><span>{&#x27;type&#x27;: &#x27;manual_short_answer&#x27;, &#x27;rubric&#x27;: &#x27;answer must identify the main rollout hazard&#x27;}</span></p>
+          <p><strong>场景合理性</strong><span>几何标签=开放或可通行；平地支持=是；适合普通前进=是；可见类别=淋浴区。该问题来自真实 Habitat 动作执行，题型为 local_hazard_explanation，真值 由动作执行后的 推进比例/碰撞/高度 信号确定。</span></p>
+          <p><strong>评分规则</strong><span>开放短答；答案需要指出主要局部风险类型。</span></p>
           <p><strong>身体与动作</strong><span>机器人类型=standard indoor mobile base；半径=0.25 m；宽度=0.5 m；动作=前进一步 → 前进一步 → 前进一步 → 前进一步 → 前进一步。</span></p>
           <p><strong>位姿</strong><span>位置=[-7.291738510131836, 0.07244661450386047, -1.2422606945037842], 四元数=None, 水平视场=None</span></p>
           <p><strong>来源</strong><span>Habitat / MP3D / R2R-CE 起点状态 · 轨迹 17DRP5sb8fy_sampled_00003</span></p>
-          <p><strong>备注</strong><span>模型输入只包含起始 RGB 与问题；rollout trace、深度和语义只用于离线 GT 与展示。</span></p>
+          <p><strong>备注</strong><span>模型输入只包含起始 RGB 与问题；动作执行轨迹、深度和语义只用于离线 GT 与展示。</span></p>
         </div>
       </div>
     </article>
     
     <article class="case-card">
-      <div class="media"><figure><img src="assets/local_hazard_explanation-005_rollout_strip.jpg" alt="local_hazard_explanation-005 起始 RGB 与 rollout 轨迹示意"><figcaption>起始 RGB 与 rollout 轨迹示意</figcaption></figure><figure><img src="assets/local_hazard_explanation-005_topdown.jpg" alt="local_hazard_explanation-005 局部动作轨迹草图"><figcaption>局部动作轨迹草图</figcaption></figure></div>
+      <div class="media"><figure><img src="assets/local_hazard_explanation-005_rollout_strip.jpg" alt="local_hazard_explanation-005 起始 RGB 与动作执行轨迹示意"><figcaption>起始 RGB 与动作执行轨迹示意</figcaption></figure><figure><img src="assets/local_hazard_explanation-005_topdown.jpg" alt="local_hazard_explanation-005 局部动作轨迹草图"><figcaption>局部动作轨迹草图</figcaption></figure></div>
       <div class="case-body">
         <div class="case-meta">
-          <span>local_hazard_explanation-005</span>
-          <span>1LXtFkjw3qL · 帧 00000</span>
+          <span>局部风险解释案例 005</span>
+          <span>场景 1LXtFkjw3qL · 帧 00000</span>
         </div>
-        <p><span class="badge">local_hazard_explanation</span></p>
+        <p><span class="badge">开放短答 / 风险类型</span></p>
         <h3>机器人半径约 0.25 米，宽约 0.5 米。只看当前图，如果它向前一步，然后向前一步，然后向前一步，然后向前一步，然后向前一步，然后向前一步，然后向前一步，然后向前一步，然后向前一步，然后向前一步，总共会尝试前进约 2.5 米（约 5.0 个自身宽度），这一小段里最需要担心哪类局部后果？请先从固定选项中选一个：碰撞 / 下台阶或落差 / 没有明显风险。</h3>
         <div class="qa-grid">
           <div><strong>选项</strong><ul><li>开放式答案</li></ul></div>
@@ -1344,27 +1344,27 @@
         </div>
         <div class="evidence">
           <p><strong>GT 推导</strong><span>在 Habitat 中从该起点真实执行动作序列，实际推进约 2.41 m，计划推进约 2.5 m，主要反馈为：可见范围内无明显风险。</span></p>
-          <p><strong>真实 rollout 反馈</strong><span>碰撞=否；提前停止=否；高度变化=0 m；推进比例=0.96；风险=可见范围内无明显风险。</span></p>
-          <p><strong>粗 3D 参数</strong><span>动作序列=前进一步 → 前进一步 → 前进一步 → 前进一步 → 前进一步 → 前进一步 → 前进一步 → 前进一步 → 前进一步 → 前进一步；米制范围=&gt;2m；身体宽度范围=4 到 8 个身体宽度；可行性=feasible；置信度=medium；计划推进约 2.5 m。</span></p>
+          <p><strong>真实执行反馈</strong><span>碰撞=否；提前停止=否；高度变化=0 m；推进比例=0.96；风险=可见范围内无明显风险。</span></p>
+          <p><strong>粗 3D 参数</strong><span>动作序列=前进一步 → 前进一步 → 前进一步 → 前进一步 → 前进一步 → 前进一步 → 前进一步 → 前进一步 → 前进一步 → 前进一步；米制范围=&gt;2m；身体宽度范围=4 到 8 个身体宽度；可行性=feasible；置信度=中；计划推进约 2.5 m。</span></p>
           <p><strong>动作轨迹</strong><span>1:前进一步；2:前进一步；3:前进一步；4:前进一步；5:前进一步；6:前进一步；7:前进一步；8:前进一步；…</span></p>
-          <p><strong>场景合理性</strong><span>几何标签=open-or-passable；平地支持=是；适合普通前进=是；文本提示=无可靠语义类别。该问题来自真实 Habitat rollout，题型为 local_hazard_explanation，GT 由动作执行后的 progress/collision/height 信号确定。</span></p>
-          <p><strong>评分规则</strong><span>{&#x27;type&#x27;: &#x27;manual_short_answer&#x27;, &#x27;rubric&#x27;: &#x27;answer must identify the main rollout hazard&#x27;}</span></p>
+          <p><strong>场景合理性</strong><span>几何标签=开放或可通行；平地支持=是；适合普通前进=是；可见类别=无可靠语义类别。该问题来自真实 Habitat 动作执行，题型为 local_hazard_explanation，真值 由动作执行后的 推进比例/碰撞/高度 信号确定。</span></p>
+          <p><strong>评分规则</strong><span>开放短答；答案需要指出主要局部风险类型。</span></p>
           <p><strong>身体与动作</strong><span>机器人类型=standard indoor mobile base；半径=0.25 m；宽度=0.5 m；动作=前进一步 → 前进一步 → 前进一步 → 前进一步 → 前进一步 → 前进一步 → 前进一步 → 前进一步 → 前进一步 → 前进一步。</span></p>
           <p><strong>位姿</strong><span>位置=[-1.0728425979614258, -2.9155871868133545, 8.507789611816406], 四元数=None, 水平视场=None</span></p>
           <p><strong>来源</strong><span>Habitat / MP3D / R2R-CE 起点状态 · 轨迹 1LXtFkjw3qL_sampled_00000</span></p>
-          <p><strong>备注</strong><span>模型输入只包含起始 RGB 与问题；rollout trace、深度和语义只用于离线 GT 与展示。</span></p>
+          <p><strong>备注</strong><span>模型输入只包含起始 RGB 与问题；动作执行轨迹、深度和语义只用于离线 GT 与展示。</span></p>
         </div>
       </div>
     </article>
     
     <article class="case-card">
-      <div class="media"><figure><img src="assets/local_hazard_explanation-006_rollout_strip.jpg" alt="local_hazard_explanation-006 起始 RGB 与 rollout 轨迹示意"><figcaption>起始 RGB 与 rollout 轨迹示意</figcaption></figure><figure><img src="assets/local_hazard_explanation-006_topdown.jpg" alt="local_hazard_explanation-006 局部动作轨迹草图"><figcaption>局部动作轨迹草图</figcaption></figure></div>
+      <div class="media"><figure><img src="assets/local_hazard_explanation-006_rollout_strip.jpg" alt="local_hazard_explanation-006 起始 RGB 与动作执行轨迹示意"><figcaption>起始 RGB 与动作执行轨迹示意</figcaption></figure><figure><img src="assets/local_hazard_explanation-006_topdown.jpg" alt="local_hazard_explanation-006 局部动作轨迹草图"><figcaption>局部动作轨迹草图</figcaption></figure></div>
       <div class="case-body">
         <div class="case-meta">
-          <span>local_hazard_explanation-006</span>
-          <span>1LXtFkjw3qL · 帧 00001</span>
+          <span>局部风险解释案例 006</span>
+          <span>场景 1LXtFkjw3qL · 帧 00001</span>
         </div>
-        <p><span class="badge">local_hazard_explanation</span></p>
+        <p><span class="badge">开放短答 / 风险类型</span></p>
         <h3>机器人半径约 0.25 米，宽约 0.5 米。只看当前图，如果它向前一步，然后向前一步，然后向前一步，总共会尝试前进约 0.75 米（约 1.5 个自身宽度），这一小段里最需要担心哪类局部后果？请先从固定选项中选一个：碰撞 / 下台阶或落差 / 没有明显风险。</h3>
         <div class="qa-grid">
           <div><strong>选项</strong><ul><li>开放式答案</li></ul></div>
@@ -1372,27 +1372,27 @@
         </div>
         <div class="evidence">
           <p><strong>GT 推导</strong><span>在 Habitat 中从该起点真实执行动作序列，实际推进约 0.74 m，计划推进约 0.75 m，主要反馈为：可见范围内无明显风险。</span></p>
-          <p><strong>真实 rollout 反馈</strong><span>碰撞=否；提前停止=否；高度变化=0 m；推进比例=0.98；风险=可见范围内无明显风险。</span></p>
-          <p><strong>粗 3D 参数</strong><span>动作序列=前进一步 → 前进一步 → 前进一步；米制范围=0.5-1m；身体宽度范围=小于 2 个身体宽度；可行性=feasible；置信度=medium；计划推进约 0.75 m。</span></p>
+          <p><strong>真实执行反馈</strong><span>碰撞=否；提前停止=否；高度变化=0 m；推进比例=0.98；风险=可见范围内无明显风险。</span></p>
+          <p><strong>粗 3D 参数</strong><span>动作序列=前进一步 → 前进一步 → 前进一步；米制范围=0.5-1m；身体宽度范围=小于 2 个身体宽度；可行性=feasible；置信度=中；计划推进约 0.75 m。</span></p>
           <p><strong>动作轨迹</strong><span>1:前进一步；2:前进一步；3:前进一步</span></p>
-          <p><strong>场景合理性</strong><span>几何标签=open-or-passable；平地支持=是；适合普通前进=是；文本提示=无可靠语义类别。该问题来自真实 Habitat rollout，题型为 local_hazard_explanation，GT 由动作执行后的 progress/collision/height 信号确定。</span></p>
-          <p><strong>评分规则</strong><span>{&#x27;type&#x27;: &#x27;manual_short_answer&#x27;, &#x27;rubric&#x27;: &#x27;answer must identify the main rollout hazard&#x27;}</span></p>
+          <p><strong>场景合理性</strong><span>几何标签=开放或可通行；平地支持=是；适合普通前进=是；可见类别=无可靠语义类别。该问题来自真实 Habitat 动作执行，题型为 local_hazard_explanation，真值 由动作执行后的 推进比例/碰撞/高度 信号确定。</span></p>
+          <p><strong>评分规则</strong><span>开放短答；答案需要指出主要局部风险类型。</span></p>
           <p><strong>身体与动作</strong><span>机器人类型=standard indoor mobile base；半径=0.25 m；宽度=0.5 m；动作=前进一步 → 前进一步 → 前进一步。</span></p>
           <p><strong>位姿</strong><span>位置=[-2.622478485107422, -2.9155871868133545, 8.927088737487793], 四元数=None, 水平视场=None</span></p>
           <p><strong>来源</strong><span>Habitat / MP3D / R2R-CE 起点状态 · 轨迹 1LXtFkjw3qL_sampled_00001</span></p>
-          <p><strong>备注</strong><span>模型输入只包含起始 RGB 与问题；rollout trace、深度和语义只用于离线 GT 与展示。</span></p>
+          <p><strong>备注</strong><span>模型输入只包含起始 RGB 与问题；动作执行轨迹、深度和语义只用于离线 GT 与展示。</span></p>
         </div>
       </div>
     </article>
     
     <article class="case-card">
-      <div class="media"><figure><img src="assets/local_hazard_explanation-007_rollout_strip.jpg" alt="local_hazard_explanation-007 起始 RGB 与 rollout 轨迹示意"><figcaption>起始 RGB 与 rollout 轨迹示意</figcaption></figure><figure><img src="assets/local_hazard_explanation-007_topdown.jpg" alt="local_hazard_explanation-007 局部动作轨迹草图"><figcaption>局部动作轨迹草图</figcaption></figure></div>
+      <div class="media"><figure><img src="assets/local_hazard_explanation-007_rollout_strip.jpg" alt="local_hazard_explanation-007 起始 RGB 与动作执行轨迹示意"><figcaption>起始 RGB 与动作执行轨迹示意</figcaption></figure><figure><img src="assets/local_hazard_explanation-007_topdown.jpg" alt="local_hazard_explanation-007 局部动作轨迹草图"><figcaption>局部动作轨迹草图</figcaption></figure></div>
       <div class="case-body">
         <div class="case-meta">
-          <span>local_hazard_explanation-007</span>
-          <span>1LXtFkjw3qL · 帧 00002</span>
+          <span>局部风险解释案例 007</span>
+          <span>场景 1LXtFkjw3qL · 帧 00002</span>
         </div>
-        <p><span class="badge">local_hazard_explanation</span></p>
+        <p><span class="badge">开放短答 / 风险类型</span></p>
         <h3>机器人半径约 0.25 米，宽约 0.5 米。只看当前图，如果它向前一步，然后向前一步，然后向前一步，总共会尝试前进约 0.75 米（约 1.5 个自身宽度），这一小段里最需要担心哪类局部后果？请先从固定选项中选一个：碰撞 / 下台阶或落差 / 没有明显风险。</h3>
         <div class="qa-grid">
           <div><strong>选项</strong><ul><li>开放式答案</li></ul></div>
@@ -1400,27 +1400,27 @@
         </div>
         <div class="evidence">
           <p><strong>GT 推导</strong><span>在 Habitat 中从该起点真实执行动作序列，实际推进约 0.62 m，计划推进约 0.75 m，主要反馈为：可见范围内无明显风险。</span></p>
-          <p><strong>真实 rollout 反馈</strong><span>碰撞=否；提前停止=否；高度变化=0 m；推进比例=0.83；风险=可见范围内无明显风险。</span></p>
-          <p><strong>粗 3D 参数</strong><span>动作序列=前进一步 → 前进一步 → 前进一步；米制范围=0.5-1m；身体宽度范围=小于 2 个身体宽度；可行性=feasible；置信度=high；计划推进约 0.75 m。</span></p>
+          <p><strong>真实执行反馈</strong><span>碰撞=否；提前停止=否；高度变化=0 m；推进比例=0.83；风险=可见范围内无明显风险。</span></p>
+          <p><strong>粗 3D 参数</strong><span>动作序列=前进一步 → 前进一步 → 前进一步；米制范围=0.5-1m；身体宽度范围=小于 2 个身体宽度；可行性=feasible；置信度=高；计划推进约 0.75 m。</span></p>
           <p><strong>动作轨迹</strong><span>1:前进一步；2:前进一步；3:前进一步</span></p>
-          <p><strong>场景合理性</strong><span>几何标签=open-or-passable；平地支持=是；适合普通前进=是；文本提示=wall、ceiling、railing、beam、picture、misc。该问题来自真实 Habitat rollout，题型为 local_hazard_explanation，GT 由动作执行后的 progress/collision/height 信号确定。</span></p>
-          <p><strong>评分规则</strong><span>{&#x27;type&#x27;: &#x27;manual_short_answer&#x27;, &#x27;rubric&#x27;: &#x27;answer must identify the main rollout hazard&#x27;}</span></p>
+          <p><strong>场景合理性</strong><span>几何标签=开放或可通行；平地支持=是；适合普通前进=是；可见类别=墙面、天花板、栏杆、梁、画框、其他物体。该问题来自真实 Habitat 动作执行，题型为 local_hazard_explanation，真值 由动作执行后的 推进比例/碰撞/高度 信号确定。</span></p>
+          <p><strong>评分规则</strong><span>开放短答；答案需要指出主要局部风险类型。</span></p>
           <p><strong>身体与动作</strong><span>机器人类型=standard indoor mobile base；半径=0.25 m；宽度=0.5 m；动作=前进一步 → 前进一步 → 前进一步。</span></p>
           <p><strong>位姿</strong><span>位置=[1.2366777658462524, 0.6844127178192139, -2.781653881072998], 四元数=None, 水平视场=None</span></p>
           <p><strong>来源</strong><span>Habitat / MP3D / R2R-CE 起点状态 · 轨迹 1LXtFkjw3qL_sampled_00002</span></p>
-          <p><strong>备注</strong><span>模型输入只包含起始 RGB 与问题；rollout trace、深度和语义只用于离线 GT 与展示。</span></p>
+          <p><strong>备注</strong><span>模型输入只包含起始 RGB 与问题；动作执行轨迹、深度和语义只用于离线 GT 与展示。</span></p>
         </div>
       </div>
     </article>
     
     <article class="case-card">
-      <div class="media"><figure><img src="assets/local_hazard_explanation-008_rollout_strip.jpg" alt="local_hazard_explanation-008 起始 RGB 与 rollout 轨迹示意"><figcaption>起始 RGB 与 rollout 轨迹示意</figcaption></figure><figure><img src="assets/local_hazard_explanation-008_topdown.jpg" alt="local_hazard_explanation-008 局部动作轨迹草图"><figcaption>局部动作轨迹草图</figcaption></figure></div>
+      <div class="media"><figure><img src="assets/local_hazard_explanation-008_rollout_strip.jpg" alt="local_hazard_explanation-008 起始 RGB 与动作执行轨迹示意"><figcaption>起始 RGB 与动作执行轨迹示意</figcaption></figure><figure><img src="assets/local_hazard_explanation-008_topdown.jpg" alt="local_hazard_explanation-008 局部动作轨迹草图"><figcaption>局部动作轨迹草图</figcaption></figure></div>
       <div class="case-body">
         <div class="case-meta">
-          <span>local_hazard_explanation-008</span>
-          <span>1LXtFkjw3qL · 帧 00003</span>
+          <span>局部风险解释案例 008</span>
+          <span>场景 1LXtFkjw3qL · 帧 00003</span>
         </div>
-        <p><span class="badge">local_hazard_explanation</span></p>
+        <p><span class="badge">开放短答 / 风险类型</span></p>
         <h3>机器人半径约 0.25 米，宽约 0.5 米。只看当前图，如果它向前一步，然后向前一步，然后向前一步，总共会尝试前进约 0.75 米（约 1.5 个自身宽度），这一小段里最需要担心哪类局部后果？请先从固定选项中选一个：碰撞 / 下台阶或落差 / 没有明显风险。</h3>
         <div class="qa-grid">
           <div><strong>选项</strong><ul><li>开放式答案</li></ul></div>
@@ -1428,27 +1428,27 @@
         </div>
         <div class="evidence">
           <p><strong>GT 推导</strong><span>在 Habitat 中从该起点真实执行动作序列，实际推进约 0.75 m，计划推进约 0.75 m，主要反馈为：可见范围内无明显风险。</span></p>
-          <p><strong>真实 rollout 反馈</strong><span>碰撞=否；提前停止=否；高度变化=0 m；推进比例=1；风险=可见范围内无明显风险。</span></p>
-          <p><strong>粗 3D 参数</strong><span>动作序列=前进一步 → 前进一步 → 前进一步；米制范围=0.5-1m；身体宽度范围=小于 2 个身体宽度；可行性=feasible；置信度=medium；计划推进约 0.75 m。</span></p>
+          <p><strong>真实执行反馈</strong><span>碰撞=否；提前停止=否；高度变化=0 m；推进比例=1；风险=可见范围内无明显风险。</span></p>
+          <p><strong>粗 3D 参数</strong><span>动作序列=前进一步 → 前进一步 → 前进一步；米制范围=0.5-1m；身体宽度范围=小于 2 个身体宽度；可行性=feasible；置信度=中；计划推进约 0.75 m。</span></p>
           <p><strong>动作轨迹</strong><span>1:前进一步；2:前进一步；3:前进一步</span></p>
-          <p><strong>场景合理性</strong><span>几何标签=open-or-passable；平地支持=是；适合普通前进=是；文本提示=无可靠语义类别。该问题来自真实 Habitat rollout，题型为 local_hazard_explanation，GT 由动作执行后的 progress/collision/height 信号确定。</span></p>
-          <p><strong>评分规则</strong><span>{&#x27;type&#x27;: &#x27;manual_short_answer&#x27;, &#x27;rubric&#x27;: &#x27;answer must identify the main rollout hazard&#x27;}</span></p>
+          <p><strong>场景合理性</strong><span>几何标签=开放或可通行；平地支持=是；适合普通前进=是；可见类别=无可靠语义类别。该问题来自真实 Habitat 动作执行，题型为 local_hazard_explanation，真值 由动作执行后的 推进比例/碰撞/高度 信号确定。</span></p>
+          <p><strong>评分规则</strong><span>开放短答；答案需要指出主要局部风险类型。</span></p>
           <p><strong>身体与动作</strong><span>机器人类型=standard indoor mobile base；半径=0.25 m；宽度=0.5 m；动作=前进一步 → 前进一步 → 前进一步。</span></p>
           <p><strong>位姿</strong><span>位置=[-0.7629624009132385, -2.9155871868133545, 12.627571105957031], 四元数=None, 水平视场=None</span></p>
           <p><strong>来源</strong><span>Habitat / MP3D / R2R-CE 起点状态 · 轨迹 1LXtFkjw3qL_sampled_00003</span></p>
-          <p><strong>备注</strong><span>模型输入只包含起始 RGB 与问题；rollout trace、深度和语义只用于离线 GT 与展示。</span></p>
+          <p><strong>备注</strong><span>模型输入只包含起始 RGB 与问题；动作执行轨迹、深度和语义只用于离线 GT 与展示。</span></p>
         </div>
       </div>
     </article>
     
     <article class="case-card">
-      <div class="media"><figure><img src="assets/local_hazard_explanation-009_rollout_strip.jpg" alt="local_hazard_explanation-009 起始 RGB 与 rollout 轨迹示意"><figcaption>起始 RGB 与 rollout 轨迹示意</figcaption></figure><figure><img src="assets/local_hazard_explanation-009_topdown.jpg" alt="local_hazard_explanation-009 局部动作轨迹草图"><figcaption>局部动作轨迹草图</figcaption></figure></div>
+      <div class="media"><figure><img src="assets/local_hazard_explanation-009_rollout_strip.jpg" alt="local_hazard_explanation-009 起始 RGB 与动作执行轨迹示意"><figcaption>起始 RGB 与动作执行轨迹示意</figcaption></figure><figure><img src="assets/local_hazard_explanation-009_topdown.jpg" alt="local_hazard_explanation-009 局部动作轨迹草图"><figcaption>局部动作轨迹草图</figcaption></figure></div>
       <div class="case-body">
         <div class="case-meta">
-          <span>local_hazard_explanation-009</span>
-          <span>1pXnuDYAj8r · 帧 00000</span>
+          <span>局部风险解释案例 009</span>
+          <span>场景 1pXnuDYAj8r · 帧 00000</span>
         </div>
-        <p><span class="badge">local_hazard_explanation</span></p>
+        <p><span class="badge">开放短答 / 风险类型</span></p>
         <h3>机器人半径约 0.25 米，宽约 0.5 米。只看当前图，如果它向前一步，然后向前一步，然后向前一步，然后向前一步，然后向前一步，总共会尝试前进约 1.25 米（约 2.5 个自身宽度），这一小段里最需要担心哪类局部后果？请先从固定选项中选一个：碰撞 / 下台阶或落差 / 没有明显风险。</h3>
         <div class="qa-grid">
           <div><strong>选项</strong><ul><li>开放式答案</li></ul></div>
@@ -1456,27 +1456,27 @@
         </div>
         <div class="evidence">
           <p><strong>GT 推导</strong><span>在 Habitat 中从该起点真实执行动作序列，实际推进约 1.25 m，计划推进约 1.25 m，主要反馈为：可见范围内无明显风险。</span></p>
-          <p><strong>真实 rollout 反馈</strong><span>碰撞=否；提前停止=否；高度变化=0 m；推进比例=1；风险=可见范围内无明显风险。</span></p>
-          <p><strong>粗 3D 参数</strong><span>动作序列=前进一步 → 前进一步 → 前进一步 → 前进一步 → 前进一步；米制范围=1 到 2 米；身体宽度范围=2 到 4 个身体宽度；可行性=feasible；置信度=medium；计划推进约 1.25 m。</span></p>
+          <p><strong>真实执行反馈</strong><span>碰撞=否；提前停止=否；高度变化=0 m；推进比例=1；风险=可见范围内无明显风险。</span></p>
+          <p><strong>粗 3D 参数</strong><span>动作序列=前进一步 → 前进一步 → 前进一步 → 前进一步 → 前进一步；米制范围=1 到 2 米；身体宽度范围=2 到 4 个身体宽度；可行性=feasible；置信度=中；计划推进约 1.25 m。</span></p>
           <p><strong>动作轨迹</strong><span>1:前进一步；2:前进一步；3:前进一步；4:前进一步；5:前进一步</span></p>
-          <p><strong>场景合理性</strong><span>几何标签=open-or-passable；平地支持=是；适合普通前进=是；文本提示=无可靠语义类别。该问题来自真实 Habitat rollout，题型为 local_hazard_explanation，GT 由动作执行后的 progress/collision/height 信号确定。</span></p>
-          <p><strong>评分规则</strong><span>{&#x27;type&#x27;: &#x27;manual_short_answer&#x27;, &#x27;rubric&#x27;: &#x27;answer must identify the main rollout hazard&#x27;}</span></p>
+          <p><strong>场景合理性</strong><span>几何标签=开放或可通行；平地支持=是；适合普通前进=是；可见类别=无可靠语义类别。该问题来自真实 Habitat 动作执行，题型为 local_hazard_explanation，真值 由动作执行后的 推进比例/碰撞/高度 信号确定。</span></p>
+          <p><strong>评分规则</strong><span>开放短答；答案需要指出主要局部风险类型。</span></p>
           <p><strong>身体与动作</strong><span>机器人类型=standard indoor mobile base；半径=0.25 m；宽度=0.5 m；动作=前进一步 → 前进一步 → 前进一步 → 前进一步 → 前进一步。</span></p>
           <p><strong>位姿</strong><span>位置=[8.368339538574219, 0.11414670944213867, 3.283545732498169], 四元数=None, 水平视场=None</span></p>
           <p><strong>来源</strong><span>Habitat / MP3D / R2R-CE 起点状态 · 轨迹 1pXnuDYAj8r_sampled_00000</span></p>
-          <p><strong>备注</strong><span>模型输入只包含起始 RGB 与问题；rollout trace、深度和语义只用于离线 GT 与展示。</span></p>
+          <p><strong>备注</strong><span>模型输入只包含起始 RGB 与问题；动作执行轨迹、深度和语义只用于离线 GT 与展示。</span></p>
         </div>
       </div>
     </article>
     
     <article class="case-card">
-      <div class="media"><figure><img src="assets/local_hazard_explanation-010_rollout_strip.jpg" alt="local_hazard_explanation-010 起始 RGB 与 rollout 轨迹示意"><figcaption>起始 RGB 与 rollout 轨迹示意</figcaption></figure><figure><img src="assets/local_hazard_explanation-010_topdown.jpg" alt="local_hazard_explanation-010 局部动作轨迹草图"><figcaption>局部动作轨迹草图</figcaption></figure></div>
+      <div class="media"><figure><img src="assets/local_hazard_explanation-010_rollout_strip.jpg" alt="local_hazard_explanation-010 起始 RGB 与动作执行轨迹示意"><figcaption>起始 RGB 与动作执行轨迹示意</figcaption></figure><figure><img src="assets/local_hazard_explanation-010_topdown.jpg" alt="local_hazard_explanation-010 局部动作轨迹草图"><figcaption>局部动作轨迹草图</figcaption></figure></div>
       <div class="case-body">
         <div class="case-meta">
-          <span>local_hazard_explanation-010</span>
-          <span>1pXnuDYAj8r · 帧 00001</span>
+          <span>局部风险解释案例 010</span>
+          <span>场景 1pXnuDYAj8r · 帧 00001</span>
         </div>
-        <p><span class="badge">local_hazard_explanation</span></p>
+        <p><span class="badge">开放短答 / 风险类型</span></p>
         <h3>机器人半径约 0.25 米，宽约 0.5 米。只看当前图，如果它向前一步，然后向前一步，然后向前一步，然后向前一步，然后向前一步，然后向前一步，然后向前一步，然后向前一步，然后向前一步，然后向前一步，总共会尝试前进约 2.5 米（约 5.0 个自身宽度），这一小段里最需要担心哪类局部后果？请先从固定选项中选一个：碰撞 / 下台阶或落差 / 没有明显风险。</h3>
         <div class="qa-grid">
           <div><strong>选项</strong><ul><li>开放式答案</li></ul></div>
@@ -1484,15 +1484,15 @@
         </div>
         <div class="evidence">
           <p><strong>GT 推导</strong><span>在 Habitat 中从该起点真实执行动作序列，实际推进约 0.2 m，计划推进约 2.5 m，主要反馈为：可见范围内无明显风险。</span></p>
-          <p><strong>真实 rollout 反馈</strong><span>碰撞=否；提前停止=是；高度变化=0 m；推进比例=0.08；风险=可见范围内无明显风险。</span></p>
-          <p><strong>粗 3D 参数</strong><span>动作序列=前进一步 → 前进一步 → 前进一步 → 前进一步 → 前进一步 → 前进一步 → 前进一步 → 前进一步 → 前进一步 → 前进一步；米制范围=&lt;0.5m；身体宽度范围=小于 2 个身体宽度；可行性=incomplete；置信度=high；计划推进约 2.5 m。</span></p>
+          <p><strong>真实执行反馈</strong><span>碰撞=否；提前停止=是；高度变化=0 m；推进比例=0.08；风险=可见范围内无明显风险。</span></p>
+          <p><strong>粗 3D 参数</strong><span>动作序列=前进一步 → 前进一步 → 前进一步 → 前进一步 → 前进一步 → 前进一步 → 前进一步 → 前进一步 → 前进一步 → 前进一步；米制范围=&lt;0.5m；身体宽度范围=小于 2 个身体宽度；可行性=incomplete；置信度=高；计划推进约 2.5 m。</span></p>
           <p><strong>动作轨迹</strong><span>1:前进一步；2:前进一步；3:前进一步；4:前进一步；5:前进一步；6:前进一步；7:前进一步；8:前进一步；…</span></p>
-          <p><strong>场景合理性</strong><span>几何标签=open-or-passable；平地支持=是；适合普通前进=否；文本提示=无可靠语义类别。该问题来自真实 Habitat rollout，题型为 local_hazard_explanation，GT 由动作执行后的 progress/collision/height 信号确定。</span></p>
-          <p><strong>评分规则</strong><span>{&#x27;type&#x27;: &#x27;manual_short_answer&#x27;, &#x27;rubric&#x27;: &#x27;answer must identify the main rollout hazard&#x27;}</span></p>
+          <p><strong>场景合理性</strong><span>几何标签=开放或可通行；平地支持=是；适合普通前进=否；可见类别=无可靠语义类别。该问题来自真实 Habitat 动作执行，题型为 local_hazard_explanation，真值 由动作执行后的 推进比例/碰撞/高度 信号确定。</span></p>
+          <p><strong>评分规则</strong><span>开放短答；答案需要指出主要局部风险类型。</span></p>
           <p><strong>身体与动作</strong><span>机器人类型=standard indoor mobile base；半径=0.25 m；宽度=0.5 m；动作=前进一步 → 前进一步 → 前进一步 → 前进一步 → 前进一步 → 前进一步 → 前进一步 → 前进一步 → 前进一步 → 前进一步。</span></p>
           <p><strong>位姿</strong><span>位置=[4.330360412597656, 0.11414670944213867, 2.519526481628418], 四元数=None, 水平视场=None</span></p>
           <p><strong>来源</strong><span>Habitat / MP3D / R2R-CE 起点状态 · 轨迹 1pXnuDYAj8r_sampled_00001</span></p>
-          <p><strong>备注</strong><span>模型输入只包含起始 RGB 与问题；rollout trace、深度和语义只用于离线 GT 与展示。</span></p>
+          <p><strong>备注</strong><span>模型输入只包含起始 RGB 与问题；动作执行轨迹、深度和语义只用于离线 GT 与展示。</span></p>
         </div>
       </div>
     </article>
