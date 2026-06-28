@@ -1,0 +1,261 @@
+{
+  "round_index": 3,
+  "round_status": "ok",
+  "phases": [
+    "phase_1_isolated",
+    "phase_2_cross_exam"
+  ],
+  "agents": [
+    "benchmark_methodologist",
+    "sim_rollout_grounder",
+    "qa_humanizer",
+    "shortcut_reviewer",
+    "arbiter"
+  ],
+  "status_by_agent": {
+    "benchmark_methodologist": "ok",
+    "sim_rollout_grounder": "ok",
+    "qa_humanizer": "ok",
+    "shortcut_reviewer": "ok",
+    "arbiter": "ok"
+  },
+  "failed_agents": [],
+  "open_risks": [
+    {
+      "agent": "benchmark_methodologist",
+      "risk": "A weak implementation of the visible-local filter could admit hidden-space or body-envelope-hidden cases.",
+      "severity": "high",
+      "mitigation": "In instantiation, validate projected swept-volume boundary and interior samples, not only centerline samples; for counterfactual pairs, run this check for both radii."
+    },
+    {
+      "agent": "benchmark_methodologist",
+      "risk": "Action-Horizon Collision could become a failure-subtype prior task if rendered as multi-class without subtype balance.",
+      "severity": "high",
+      "mitigation": "Keep core scoring binary feasibility, or enforce full rendered-choice balance and report subtype accuracy only as diagnostic."
+    },
+    {
+      "agent": "benchmark_methodologist",
+      "risk": "Body counterfactual cases can still be solved by radius priors if no-flip controls are underspecified.",
+      "severity": "critical",
+      "mitigation": "Require explicit quotas for true small-only flips plus both-safe, neither-safe, and large-shorter-same-bin controls, and report radius-only baseline performance."
+    },
+    {
+      "agent": "benchmark_methodologist",
+      "risk": "Local Hazard Explanation may drift into semantic scene recognition rather than rollout-grounded consequence QA.",
+      "severity": "medium",
+      "mitigation": "Keep it diagnostic; derive labels from rollout fields first, and emit insufficient-support only with support_loss or navmesh_support_violation evidence."
+    },
+    {
+      "agent": "sim_rollout_grounder",
+      "risk": "The stronger visible swept-envelope gate may reduce yield, especially for 10-action horizons and side-grazing contacts.",
+      "severity": "medium",
+      "mitigation": "Oversample by scan_id, episode_id, action horizon, action motif, geometry tag, body profile, and preliminary label bin before applying validity and balance gates."
+    },
+    {
+      "agent": "sim_rollout_grounder",
+      "risk": "Insufficient-support labels are invalid if the backend lacks concrete support signals.",
+      "severity": "medium",
+      "mitigation": "Emit insufficient_support only when support_loss=true or navmesh_support_violation=true; otherwise render the hazard category without that answer option."
+    },
+    {
+      "agent": "sim_rollout_grounder",
+      "risk": "Simulator body-profile configuration may silently break radius monotonicity.",
+      "severity": "critical",
+      "mitigation": "Reject and audit any paired counterfactual rollout where the smaller radius has lower actual distance or progress than the larger radius beyond tolerance."
+    },
+    {
+      "agent": "sim_rollout_grounder",
+      "risk": "Binary Action-Horizon loses failure-reason supervision in the core score.",
+      "severity": "low",
+      "mitigation": "Keep failure_subtype_metadata for HTML and diagnostics, and use Local Hazard Explanation for model-facing hazard-type scoring."
+    },
+    {
+      "agent": "qa_humanizer",
+      "risk": "Visible-local filtering may reduce yield after adding swept-envelope visibility checks.",
+      "severity": "medium",
+      "mitigation": "Oversample scan_id, episode_id, action motif, horizon, body profile, geometry tag, and tentative label before downsampling accepted items."
+    },
+    {
+      "agent": "qa_humanizer",
+      "risk": "Free-form Chinese answers may be inconsistently scored.",
+      "severity": "medium",
+      "mitigation": "Use explicit canonical labels and accepted aliases; unmatched text is invalid unless manually audited."
+    },
+    {
+      "agent": "qa_humanizer",
+      "risk": "Support-risk labels may be invalid in Habitat builds without support-loss signals.",
+      "severity": "medium",
+      "mitigation": "Emit `insufficient_support` only with `support_loss=true` or `navmesh_support_violation=true`; otherwise render the three-way hazard variant."
+    },
+    {
+      "agent": "qa_humanizer",
+      "risk": "Body counterfactual can still invite radius-prior shortcuts if controls are weak.",
+      "severity": "high",
+      "mitigation": "Require true flips plus both-safe, neither-safe, and large-shorter-same-bin no-flip controls, and report radius-only baselines."
+    },
+    {
+      "agent": "shortcut_reviewer",
+      "risk": "Models may solve Local Progress by recognizing stair/drop semantics instead of estimating body-conditioned progress through visible free space.",
+      "severity": "high",
+      "mitigation": "Reject height/drop/support-risk candidates from Local Progress and route them only to Action-Horizon feasibility or Local Hazard Explanation."
+    },
+    {
+      "agent": "shortcut_reviewer",
+      "risk": "Blind, action-only, or subtype-majority baselines may perform well on Action-Horizon because failure reasons are imbalanced.",
+      "severity": "high",
+      "mitigation": "Make the core Action-Horizon question binary-only, or enforce full multiclass balance across every rendered subtype choice."
+    },
+    {
+      "agent": "shortcut_reviewer",
+      "risk": "A case can pass visibility while the decisive body-boundary collision is hidden or outside the initial RGB.",
+      "severity": "high",
+      "mitigation": "Project sampled swept-footprint boundary and interior points for the tested radius, and for both radii in counterfactual pairs, into the initial view with depth/occlusion checks."
+    },
+    {
+      "agent": "shortcut_reviewer",
+      "risk": "Body Counterfactual can still be partially solved from radius priors if no-flip controls are too sparse.",
+      "severity": "high",
+      "mitigation": "Set explicit minimum accepted-pair quotas for true flips and each no-flip control subtype, then report radius-only baseline performance."
+    },
+    {
+      "agent": "shortcut_reviewer",
+      "risk": "Prompt distances may not match executed simulator movement if step size is not a single frozen metadata field.",
+      "severity": "medium",
+      "mitigation": "Freeze forward_step_size_m and turn_step_deg in the generator config and render all meters/body-widths/angles from serialized action sequences."
+    },
+    {
+      "agent": "arbiter",
+      "risk": "Accepted cases may depend on hidden future geometry rather than visible single-RGB evidence.",
+      "severity": "critical",
+      "mitigation": "Strengthen visible_gate_pass to project sampled swept-footprint boundary and interior points, plus decisive contact/hazard samples, into the initial camera with valid non-occluded depth."
+    },
+    {
+      "agent": "arbiter",
+      "risk": "Prompt distances and simulator execution may diverge.",
+      "severity": "high",
+      "mitigation": "Freeze forward_step_size_m=0.25, turn_step_deg=15, serialized action_sequence, intended_distance_m, and render all prompt horizons only from those metadata fields."
+    },
+    {
+      "agent": "arbiter",
+      "risk": "Action-Horizon subtype priors may inflate scores.",
+      "severity": "high",
+      "mitigation": "Make the core Action-Horizon prompt binary only; keep failure subtype as metadata or a separately balanced diagnostic."
+    },
+    {
+      "agent": "arbiter",
+      "risk": "Body Counterfactual may remain solvable from radius priors if no-flip controls are weak.",
+      "severity": "critical",
+      "mitigation": "Enforce explicit quotas for small_only flips, both_safe, neither_safe, and large_shorter_same_bin controls, plus monotonicity rejection and radius-only baseline reporting."
+    }
+  ],
+  "critique_items": [
+    {
+      "agent": "qa_humanizer",
+      "issue": "`action_horizon_collision` uses five rendered choices while only enforcing binary balance, which creates subtype-prior shortcuts.",
+      "severity": "major",
+      "proposed_fix": "Render core Action-Horizon as `能完成 / 不能完成`; derive binary labels from rollout completion. Store failure_subtype offline for diagnostics, or if a subtype variant is rendered, enforce multiclass answer caps separately."
+    },
+    {
+      "agent": "qa_humanizer",
+      "issue": "`local_progress_estimation` currently allows height/support hazards to become ordinary progress labels.",
+      "severity": "major",
+      "proposed_fix": "Reject `abs(height_delta_m)>=0.20`, stair/drop hazard, `support_loss=true`, or `navmesh_support_violation=true` from Local Progress and route them to Action-Horizon or Local Hazard."
+    },
+    {
+      "agent": "qa_humanizer",
+      "issue": "The visibility gate can pass centerline-visible cases where the decisive body-margin contact is not visible.",
+      "severity": "major",
+      "proposed_fix": "Sample swept-footprint boundary and interior points across rollout time and require decisive samples to project into the initial RGB with valid, non-occluded depth; apply this to both radii in counterfactual pairs."
+    },
+    {
+      "agent": "qa_humanizer",
+      "issue": "Body Counterfactual has tags for no-flip controls but not enough explicit quotas.",
+      "severity": "minor",
+      "proposed_fix": "For each 30 accepted pairs, require at least 8 true `small_only` flips, 6 `both_safe`, 6 `neither_safe`, and 4 `large_shorter_same_bin` controls, with no label above the balance cap."
+    },
+    {
+      "agent": "qa_humanizer",
+      "issue": "The design draft still contains an ENACT-style anchor in one category.",
+      "severity": "minor",
+      "proposed_fix": "Replace it with SpatialBench causality/planning-level and A4Bench action-conditioned-vs-static affordance wording."
+    },
+    {
+      "agent": "shortcut_reviewer",
+      "issue": "`local_progress_estimation` currently allows stair/drop/support failures to become a Local Progress label.",
+      "severity": "major",
+      "proposed_fix": "Change the Local Progress labeling rule so any `abs(height_delta_m)>=0.20`, `support_loss=true`, `navmesh_support_violation=true`, stair/drop hazard, or support-risk hazard is rejected from this category and routed to `action_horizon_collision` or `local_hazard_explanation`."
+    },
+    {
+      "agent": "shortcut_reviewer",
+      "issue": "`action_horizon_collision` asks for failure subtypes but only enforces binary answer balance.",
+      "severity": "major",
+      "proposed_fix": "For the core category, render only `能完成 / 不能完成`. If subtype QA is retained, enforce single-choice share <=0.40 across `能完成`, `不能完成-碰撞`, `不能完成-台阶或落差`, `不能完成-地面支撑不足`, and `不能完成-其他`, and report subtype accuracy separately."
+    },
+    {
+      "agent": "shortcut_reviewer",
+      "issue": "The visibility gate can pass centerline-visible cases where the radius-conditioned swept envelope is not visible.",
+      "severity": "major",
+      "proposed_fix": "For every accepted case, sample swept-cylinder footprint boundary and interior points over rollout time for the queried radius; require decisive samples and first contact/hazard points to project into the initial camera with valid depth and no nearer occluder. For counterfactual pairs, apply this to both small and large radii."
+    },
+    {
+      "agent": "shortcut_reviewer",
+      "issue": "Body Counterfactual no-flip controls are tagged but not quota-protected.",
+      "severity": "major",
+      "proposed_fix": "For each 30 accepted counterfactual pairs, require at least 8 `small_only` true flips, at least 6 `both_safe`, at least 6 `neither_safe`, at least 4 `large_shorter_same_bin` controls, and at least 4 radius-stable direction-ranking controls, with no canonical label above the existing cap."
+    },
+    {
+      "agent": "shortcut_reviewer",
+      "issue": "The public draft has action primitive drift between `move_forward:0.20m` and the simulator-grounding revision using `0.25m`.",
+      "severity": "minor",
+      "proposed_fix": "Freeze one value in the generator config, preferably `forward_step_size_m=0.25` if matching the simulator-grounding contract, and compute `intended_distance_m`, `horizon_m`, and `horizon_body_widths` only from serialized rollout metadata."
+    },
+    {
+      "agent": "shortcut_reviewer",
+      "issue": "The Action-Horizon literature anchor still names ENACT in one public projection, which is weaker than anchoring to the agreed benchmark-design methodology list.",
+      "severity": "minor",
+      "proposed_fix": "Rewrite the anchor as SpatialBench causality/planning-level methodology plus A4Bench static-vs-action-conditioned affordance split, localized to short ego-body rollouts."
+    },
+    {
+      "agent": "arbiter",
+      "issue": "The current Action-Horizon literature anchor still names ENACT in the public blackboard design, while the consensus wording should use the approved benchmark-methodology anchors only.",
+      "severity": "minor",
+      "proposed_fix": "Rewrite the anchor as: SpatialBench causality/planning-level design principle and A4Bench static-vs-action-conditioned split, localized to short ego-body rollout feasibility."
+    },
+    {
+      "agent": "arbiter",
+      "issue": "The instantiation spec has prompt/GT drift because the blackboard still uses move_forward:0.20m while the simulator-grounding proposal requires a frozen 0.25m step.",
+      "severity": "major",
+      "proposed_fix": "Set action_primitives to move_forward:forward_step_size_m=0.25, turn_left:turn_step_deg=15, turn_right:turn_step_deg=15; compute intended_distance_m from serialized forward steps and render prompt meters only from that value."
+    },
+    {
+      "agent": "arbiter",
+      "issue": "Local Progress currently allows height/drop/support hazards to become a progress label, which can turn the category into semantic hazard recognition.",
+      "severity": "major",
+      "proposed_fix": "Reject any Local Progress candidate with abs(height_delta_m)>=0.20, support_loss=true, navmesh_support_violation=true, or rollout-confirmed stair/drop hazard; route those candidates to Action-Horizon Collision or Local Hazard Explanation."
+    },
+    {
+      "agent": "arbiter",
+      "issue": "Action-Horizon Collision renders five answer choices but only enforces binary balance, leaving a subtype-prior shortcut.",
+      "severity": "major",
+      "proposed_fix": "For the core category, render only '能完成 / 不能完成'. Store failure_reason from rollout metadata for diagnostics, or add a separate subtype variant only with full multiclass answer-balance caps."
+    },
+    {
+      "agent": "arbiter",
+      "issue": "The visibility gate is still too centerline-oriented for radius-conditioned swept-volume consequences.",
+      "severity": "major",
+      "proposed_fix": "Sample swept-footprint boundary and interior points at multiple rollout times for the tested radius; require decisive boundary/contact/hazard samples to be visible and non-occluded. For body counterfactual pairs, run this check for both radii."
+    },
+    {
+      "agent": "arbiter",
+      "issue": "Body Counterfactual no-flip controls are tagged but not quota-protected enough.",
+      "severity": "minor",
+      "proposed_fix": "For each first 30 accepted counterfactual pairs, require at least 8 small_only true flips, at least 6 both_safe, at least 6 neither_safe, and at least 4 large_shorter_same_bin controls, with no canonical label above the existing cap."
+    },
+    {
+      "agent": "arbiter",
+      "issue": "The Local Hazard template has annotation-like wording.",
+      "severity": "minor",
+      "proposed_fix": "Use: '机器人半径约 {radius_m} 米、宽约 {body_width_m} 米。如果它{action_phrase}、总共约 {horizon_m} 米，结果更可能是哪一种？请只答：碰撞 / 台阶或落差 / 地面支撑不足 / 没有明显问题。' If support fields are unavailable, remove the support option."
+    }
+  ]
+}

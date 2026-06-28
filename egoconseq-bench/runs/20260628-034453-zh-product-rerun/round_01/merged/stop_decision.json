@@ -1,6 +1,0 @@
-{
-  "should_stop": true,
-  "terminal_state": "ready_for_showcase_review",
-  "reason": "Product-layer rerun completed.",
-  "round_index": 1
-}

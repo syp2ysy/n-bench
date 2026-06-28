@@ -1,0 +1,291 @@
+{
+  "round_index": 1,
+  "round_status": "ok",
+  "phases": [
+    "phase_1_isolated",
+    "phase_2_cross_exam"
+  ],
+  "agents": [
+    "benchmark_methodologist",
+    "sim_rollout_grounder",
+    "qa_humanizer",
+    "shortcut_reviewer",
+    "arbiter"
+  ],
+  "status_by_agent": {
+    "benchmark_methodologist": "ok",
+    "sim_rollout_grounder": "ok",
+    "qa_humanizer": "ok",
+    "shortcut_reviewer": "ok",
+    "arbiter": "ok"
+  },
+  "failed_agents": [],
+  "open_risks": [
+    {
+      "agent": "benchmark_methodologist",
+      "risk": "Blind, radius-only, or action-only baselines may exploit answer imbalance or prompt leakage.",
+      "severity": "high",
+      "mitigation": "Require category-level answer-balance gates and prompt linting against answer-revealing scene adjectives before accepting generated cases."
+    },
+    {
+      "agent": "benchmark_methodologist",
+      "risk": "Body counterfactual claims can be invalidated by radius priors or non-monotonic simulator behavior.",
+      "severity": "critical",
+      "mitigation": "Require same-RGB paired rollouts, no-flip controls, and radius monotonicity checks where smaller radius is no worse than larger radius within tolerance."
+    },
+    {
+      "agent": "benchmark_methodologist",
+      "risk": "Some rollout outcomes may depend on hidden future evidence not visible in the start image.",
+      "severity": "high",
+      "mitigation": "Reject ambiguous, threshold-near, occluded, depth-hole, glass/mirror, overhang, or hidden-space-dependent cases; keep questions local and coarse."
+    },
+    {
+      "agent": "benchmark_methodologist",
+      "risk": "Hazard and first-contact labels can become noisy or semantic rather than physical.",
+      "severity": "medium",
+      "mitigation": "Keep hazard grounding diagnostic, score only coarse rollout-derived hazard types, and use semantic context only for offline filtering/display."
+    },
+    {
+      "agent": "sim_rollout_grounder",
+      "risk": "Habitat body-radius or navmesh configuration errors could produce non-monotonic counterfactual labels where a smaller body performs worse than a larger one.",
+      "severity": "critical",
+      "mitigation": "Reject or mark oracle_error for any pair with progress_small + tolerance < progress_large; verify body profile configuration before accepting counterfactual samples."
+    },
+    {
+      "agent": "sim_rollout_grounder",
+      "risk": "Blind, radius-only, action-only, or majority baselines could exploit answer imbalance or prompt leakage.",
+      "severity": "high",
+      "mitigation": "Enforce per-category answer-balance caps, lint prompts for answer-revealing words, and require shortcut baselines before release."
+    },
+    {
+      "agent": "sim_rollout_grounder",
+      "risk": "Some rollout outcomes may depend on hidden geometry outside the initial visible local space.",
+      "severity": "high",
+      "mitigation": "Require ambiguous=false, visible-local evidence checks, replayable traces, repeat stability, and rejection of occlusion/depth-hole/glass/overhang cases."
+    },
+    {
+      "agent": "sim_rollout_grounder",
+      "risk": "Threshold-near binary, progress, ranking, and flip labels may be unstable.",
+      "severity": "high",
+      "mitigation": "Use coarse labels only, repeat rollouts, margin gates, and discard near-threshold samples."
+    },
+    {
+      "agent": "sim_rollout_grounder",
+      "risk": "First-contact region labels can be noisy because contact may occur at a swept side edge rather than a visually obvious image point.",
+      "severity": "medium",
+      "mitigation": "Keep hazard/first-contact as diagnostic; use first-contact region only when projection is stable, and exclude it from the core go/no-go gate."
+    },
+    {
+      "agent": "qa_humanizer",
+      "risk": "Chinese prompt wording may leak answers through scene adjectives or safety adjectives.",
+      "severity": "high",
+      "mitigation": "Add a template lint gate banning answer-leaking scene words in prompts; keep explanatory scene wording only in offline HTML metadata."
+    },
+    {
+      "agent": "qa_humanizer",
+      "risk": "Hazard answers may become subjective if synonyms are not normalized before scoring.",
+      "severity": "medium",
+      "mitigation": "Use a fixed hazard ontology and deterministic synonym mapping to collision, drop/step, insufficient support, and no-obvious-risk."
+    },
+    {
+      "agent": "qa_humanizer",
+      "risk": "Directional and feasibility samples near thresholds can be noisy.",
+      "severity": "high",
+      "mitigation": "Reject near-ties and threshold-near samples unless repeated rollouts preserve the same coarse label."
+    },
+    {
+      "agent": "qa_humanizer",
+      "risk": "Counterfactual questions can be solved from radius priors if flip cases dominate.",
+      "severity": "critical",
+      "mitigation": "Balance both-can, small-only, and neither-can labels, include no-flip controls, and run radius-only baselines."
+    },
+    {
+      "agent": "shortcut_reviewer",
+      "risk": "Blind text-only, radius-only, or majority baselines could solve the benchmark if answer balance and prompt leakage are not enforced.",
+      "severity": "high",
+      "mitigation": "Add per-category answer caps, banned label-leaking wording, and shortcut baseline gates before accepting a manifest."
+    },
+    {
+      "agent": "shortcut_reviewer",
+      "risk": "Body counterfactual results could collapse into a trivial large-body-means-blocked prior.",
+      "severity": "critical",
+      "mitigation": "Require same-image flip pairs plus no-flip controls and reject radius monotonicity violations."
+    },
+    {
+      "agent": "shortcut_reviewer",
+      "risk": "Rollout labels could depend on hidden future geometry rather than visible local evidence.",
+      "severity": "high",
+      "mitigation": "Require visible-local evidence checks, ambiguous=false, replayable traces, repeat stability, and coarse margins."
+    },
+    {
+      "agent": "shortcut_reviewer",
+      "risk": "Stairs, drops, or unsupported ground could be mislabeled as ordinary forward clearance.",
+      "severity": "high",
+      "mitigation": "Route height-change, stair, drop, and support-risk outcomes to action feasibility or hazard labels, not ordinary progress clearance."
+    },
+    {
+      "agent": "arbiter",
+      "risk": "Freezing the empty bootstrap design would leave downstream rollout generation without auditable category definitions or labeling rules.",
+      "severity": "critical",
+      "mitigation": "Populate benchmark_design.categories with non-legacy, goal-derived categories and simulator rollout labeling rules before re-review."
+    },
+    {
+      "agent": "arbiter",
+      "risk": "Shortcut baselines may exploit answer imbalance or body/action priors if controls are deferred.",
+      "severity": "high",
+      "mitigation": "Make answer-balance, no-leak prompt policy, radius monotonicity, no-flip controls, and margin gates explicit before instantiation freeze."
+    },
+    {
+      "agent": "arbiter",
+      "risk": "Body counterfactual claims could be invalid if same-image radius-only controls are underspecified.",
+      "severity": "high",
+      "mitigation": "Require identical RGB/start/action, valid start for all radii, small-body no-worse-than-large monotonicity, true flip cases, and no-flip controls."
+    },
+    {
+      "agent": "arbiter",
+      "risk": "Hazard/first-contact questions may become noisy or semantic rather than rollout-grounded.",
+      "severity": "medium",
+      "mitigation": "Keep hazard grounding diagnostic, use coarse rollout-derived hazard labels, and exclude unstable first-contact region bins from core gates."
+    }
+  ],
+  "critique_items": [
+    {
+      "agent": "benchmark_methodologist",
+      "issue": "The bootstrap benchmark_design has no categories, so it cannot map the thesis to auditable QA families.",
+      "severity": "major",
+      "proposed_fix": "Replace the empty category list with the five proposed ability-axis categories in this output, each with rollout labeling rules and acceptance criteria."
+    },
+    {
+      "agent": "benchmark_methodologist",
+      "issue": "Visible drafts use slightly inconsistent naming for the action and hazard categories.",
+      "severity": "minor",
+      "proposed_fix": "Use public titles Action-Horizon Collision and Local Hazard Grounding, with ids action_horizon_collision and local_hazard_grounding, while keeping binary feasibility and hazard explanation as their QA formats."
+    },
+    {
+      "agent": "benchmark_methodologist",
+      "issue": "The design must explicitly guard against turning First-Contact into a core survival criterion.",
+      "severity": "minor",
+      "proposed_fix": "Define Local Hazard Grounding as a diagnostic category and state in its acceptance criteria that it does not control the v1 go/no-go gate."
+    },
+    {
+      "agent": "sim_rollout_grounder",
+      "issue": "The public bootstrap benchmark_design has no concrete categories, so it cannot be audited for H1/H3 coverage or rollout labelability.",
+      "severity": "major",
+      "proposed_fix": "Populate benchmark_design.categories with the five goal-derived categories in this output: local_progress_estimation, action_horizon_collision, directional_rollout_comparison, body_counterfactual_flip, and local_hazard_explanation."
+    },
+    {
+      "agent": "sim_rollout_grounder",
+      "issue": "The public bootstrap instantiation_spec lacks per-category templates, rollout GT rules, coarse label conversion, and margin gates.",
+      "severity": "major",
+      "proposed_fix": "Replace the empty instantiation categories with the proposed category templates, gt_rule fields, coarse_labeling_rule fields, and metric_parameters below."
+    },
+    {
+      "agent": "sim_rollout_grounder",
+      "issue": "The bootstrap spec does not fully protect Body Counterfactual Flip from radius-prior shortcuts or simulator oracle bugs.",
+      "severity": "major",
+      "proposed_fix": "Require identical RGB/start/action for all radii, valid starts for all radii, both flip and no-flip controls, no only-large label, and a radius monotonicity rejection check."
+    },
+    {
+      "agent": "sim_rollout_grounder",
+      "issue": "The bootstrap spec does not define dataset-level answer-balance gates.",
+      "severity": "major",
+      "proposed_fix": "Apply max single-answer shares: 4-way progress/hazard <=0.40, binary feasibility <=0.65, 3-way directional/body counterfactual <=0.48, with resampling or downsampling before release."
+    },
+    {
+      "agent": "sim_rollout_grounder",
+      "issue": "The bootstrap body profiles omit an explicit v1 fixed-camera-height interpretation.",
+      "severity": "minor",
+      "proposed_fix": "Use fixed 1.5 m camera/body height for all profiles and vary only the cylindrical ground-plane footprint radius/width in v1."
+    },
+    {
+      "agent": "qa_humanizer",
+      "issue": "The bootstrap blackboard has empty category lists, so it cannot support design or instantiation consensus.",
+      "severity": "major",
+      "proposed_fix": "Populate benchmark_design and instantiation_spec with the five proposed categories and rollout-derived QA/scoring rules below."
+    },
+    {
+      "agent": "qa_humanizer",
+      "issue": "Visible drafts use inconsistent IDs for the action category, alternating between action_horizon_collision and action_horizon_feasibility.",
+      "severity": "minor",
+      "proposed_fix": "Standardize the public category ID as action_horizon_collision while using binary_action_feasibility as its answer_format."
+    },
+    {
+      "agent": "qa_humanizer",
+      "issue": "Some peer templates are English or benchmark-like rather than natural Chinese user questions.",
+      "severity": "minor",
+      "proposed_fix": "Use the revised Chinese templates below, each with explicit body size, action horizon, and constrained answer format."
+    },
+    {
+      "agent": "qa_humanizer",
+      "issue": "Hazard scoring may over-rely on semantic context if not constrained.",
+      "severity": "major",
+      "proposed_fix": "Allow semantic context only for filtering/display; the GT label must be triggered by collision, stopped_early, height_delta_m, support proxy, progress_ratio, or stable contact metadata."
+    },
+    {
+      "agent": "shortcut_reviewer",
+      "issue": "No final category ids or titles are present in the public blackboard.",
+      "severity": "major",
+      "proposed_fix": "Populate benchmark_design.categories with non-T-style categories: local_progress_estimation, action_horizon_collision, directional_rollout_comparison, body_counterfactual_flip, and local_hazard_explanation."
+    },
+    {
+      "agent": "shortcut_reviewer",
+      "issue": "The instantiation spec has no per-category executable GT route.",
+      "severity": "major",
+      "proposed_fix": "For each category, define Habitat start state, body radius, action sequence, rollout fields, coarse label conversion, replayability, and margin gates."
+    },
+    {
+      "agent": "shortcut_reviewer",
+      "issue": "The current draft has no visibility or ambiguity gate.",
+      "severity": "major",
+      "proposed_fix": "Require valid start pose, visible-local evidence, ambiguous=false, replayable rollout_trace_path, repeat-stable labels, and rejection of depth holes, glass, overhangs, hidden hazards, and threshold-near cases."
+    },
+    {
+      "agent": "shortcut_reviewer",
+      "issue": "Body counterfactual validity is unprotected.",
+      "severity": "major",
+      "proposed_fix": "Require identical RGB/start/action for small and large radii, true flip pairs, no-flip controls, saved paired traces, and small-body progress no worse than large-body progress within tolerance."
+    },
+    {
+      "agent": "shortcut_reviewer",
+      "issue": "Answer balance and prompt leakage are not machine-enforced.",
+      "severity": "major",
+      "proposed_fix": "Apply caps of binary <=0.65, 3-way <=0.48, and 4-way <=0.40, and lint prompts for label-leaking terms such as clear, blocked, wider, narrower, open corridor, and safe."
+    },
+    {
+      "agent": "shortcut_reviewer",
+      "issue": "Hazard contexts can contaminate ordinary progress labels.",
+      "severity": "major",
+      "proposed_fix": "If rollout metadata or semantic context indicates stairs, steps, drops, height change, or unsupported ground, route the case to action_horizon_collision or local_hazard_explanation, or reject it."
+    },
+    {
+      "agent": "arbiter",
+      "issue": "benchmark_design.categories is empty, so the public artifact does not encode the goal-derived taxonomy.",
+      "severity": "major",
+      "proposed_fix": "Populate categories with the five converged capability families and avoid legacy T1/T2/T3/T4/T5 labels."
+    },
+    {
+      "agent": "arbiter",
+      "issue": "The current design lacks per-category simulator rollout labeling rules.",
+      "severity": "major",
+      "proposed_fix": "For every category, state start state, body radius/profile, action sequence, rollout outcome fields, coarse scoring target, and acceptance criteria."
+    },
+    {
+      "agent": "arbiter",
+      "issue": "The public draft lacks required validity controls for shortcuts and label stability.",
+      "severity": "major",
+      "proposed_fix": "Add answer-balance caps, repeat-rollout stability, margin gates, ambiguity/visibility filtering, prompt anti-leak rules, and multi-scan coverage requirements."
+    },
+    {
+      "agent": "arbiter",
+      "issue": "Body counterfactual validity is not specified in the public design.",
+      "severity": "major",
+      "proposed_fix": "Add same-RGB/start/action radius-only pairing, no-flip controls, balanced both-safe/small-only/neither-safe labels, and radius monotonicity rejection."
+    },
+    {
+      "agent": "arbiter",
+      "issue": "Required review votes are absent and visible peer verdicts are not unanimous accept.",
+      "severity": "major",
+      "proposed_fix": "Re-review the revised public design and record votes from benchmark_methodologist, sim_rollout_grounder, qa_humanizer, shortcut_reviewer, and arbiter."
+    }
+  ]
+}

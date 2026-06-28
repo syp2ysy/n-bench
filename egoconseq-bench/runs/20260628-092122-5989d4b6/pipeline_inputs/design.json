@@ -1,0 +1,75 @@
+{
+  "status": "frozen",
+  "source_dataset": "Habitat MP3D / R2R-CE simulator rollouts",
+  "objective": "Evaluate whether MLLMs can predict the local physical consequence of an ego action from a single egocentric RGB image plus question by binding visible local geometry, the agent body footprint, and the action-induced swept volume.",
+  "reference_policy": "Use VSI-Bench / Thinking in Space, SpatialBench, A4Bench, CapNav, and TouchSafeBench only as methodology anchors. Do not copy their taxonomies, do not use legacy T1/T2/T3/T4/T5 category IDs, do not ask centimeter-level metric geometry questions, and do not expose depth, pose, navmesh, semantic maps, or rollout traces to the tested model. Every QA family must expose coarse 3D action/body parameters in the question.",
+  "categories": [
+    {
+      "id": "local_progress_estimation",
+      "title": "Local Progress Estimation",
+      "qa_type": "coarse_progress_estimation",
+      "literature_anchor": "VSI-Bench / Thinking in Space measurement-style design adapted to coarse rollout-derived local progress bins.",
+      "motivation_link": "Tests H1: whether the model estimates body-relative progress from visible egocentric geometry rather than merely describing apparent free space.",
+      "r2r_labeling_rule": "From a valid Habitat/R2R-CE start state, render the initial RGB for the model-facing item, then offline execute N direct move_forward actions for body radius r. Label from actual_distance_m, intended_distance_m, progress_ratio, collision, stopped_early, height_delta_m, hazard_type, and replayable rollout trace; score a coarse progress range rather than exact distance.",
+      "case_acceptance_criteria": "Question states body radius or width, forward step count, approximate meter horizon, and approximate body-width horizon. Accept only visible-local, repeat-stable, margin-separated, non-ambiguous progress cases; route stair/drop/support-risk outcomes to feasibility or hazard categories; enforce answer balance."
+    },
+    {
+      "id": "action_horizon_collision",
+      "title": "Action-Horizon Collision",
+      "qa_type": "binary_action_feasibility",
+      "literature_anchor": "SpatialBench causality/planning-level design and A4Bench static-vs-action-conditioned split, localized to short ego-body rollout feasibility.",
+      "motivation_link": "Tests H1: whether the model binds a concrete turn/forward action sequence to completion or failure in currently visible local space.",
+      "r2r_labeling_rule": "Execute the specified move_forward / turn_left / turn_right sequence for radius r over a 1/2/3/5/10-action horizon. Label feasible only if rollout completes with adequate progress and no collision, stopped_early event, unsafe height change, or support violation; score binary action feasibility.",
+      "case_acceptance_criteria": "Question states body size, action phrase, action count, turn angle when present, approximate meter horizon, and approximate body-width horizon. Trace must be replayable and stable; hidden-space, threshold-near, and visually ambiguous cases are rejected. Failure subtype remains metadata or a separately balanced diagnostic; binary answer balance is required."
+    },
+    {
+      "id": "directional_rollout_comparison",
+      "title": "Directional Rollout Comparison",
+      "qa_type": "directional_ranking",
+      "literature_anchor": "VSI-Bench / Thinking in Space configurational and relative-direction design adapted to comparing simulated action outcomes.",
+      "motivation_link": "Tests H1: whether the model binds left/straight/right egocentric directions to traversable swept-volume progress instead of using a center prior.",
+      "r2r_labeling_rule": "From the same start RGB, pose, yaw, and body radius, roll out left-turn-then-forward, straight-forward, and right-turn-then-forward candidates. Label the direction with the largest actual_distance_m only when the winner is margin-separated and repeat-stable; score top-direction selection.",
+      "case_acceptance_criteria": "Question states body size, left/right turn angle, matched forward step count, approximate meter horizon, and approximate body-width horizon. Reject near ties unless routed to a separate about-same diagnostic outside core scoring; enforce direction answer balance."
+    },
+    {
+      "id": "body_counterfactual_flip",
+      "title": "Body Counterfactual Flip",
+      "qa_type": "body_counterfactual",
+      "literature_anchor": "CapNav capability-conditioned evaluation localized to same-image ground-plane body-radius swept-volume feasibility.",
+      "motivation_link": "Tests H3: whether changing only footprint radius changes the predicted consequence when simulator GT flips.",
+      "r2r_labeling_rule": "For identical RGB, start pose, yaw, camera height, and action sequence, execute paired rollouts for small and large cylindrical ground-plane radii. Label both-safe, small-only, or neither-safe; reject only-large as oracle_error under radius monotonicity; score body-conditioned feasibility.",
+      "case_acceptance_criteria": "Question states both body radii or widths and the same action horizon in steps, meters, and body-widths. Start pose is legal for all radii; paired traces are saved; true flips and no-flip controls are included; smaller body is no worse than larger within tolerance; three-way answer balance and radius-only baseline reporting are required."
+    },
+    {
+      "id": "local_hazard_explanation",
+      "title": "Local Hazard Explanation and First-Contact Grounding",
+      "qa_type": "local_hazard_explanation",
+      "literature_anchor": "TouchSafeBench collision-grounding principle adapted to coarse local hazard type and optional first-contact grounding from a single RGB image plus hypothetical ego action.",
+      "motivation_link": "Diagnostic for H1: checks whether failure judgments are grounded in rollout-derived collision, step/drop, support risk, or stable first-contact evidence rather than yes/no priors.",
+      "r2r_labeling_rule": "Execute the specified short rollout and derive dominant hazard_type from collision, stopped_early, height_delta_m, support/fall indicators when available, progress_ratio, rollout trace, and offline semantic context. Optional first-contact region may be labeled only when stable and visible, with a no-visible-contact option. Semantic context can support filtering/display but cannot override rollout evidence.",
+      "case_acceptance_criteria": "Question states body size, action direction or turn angle when present, approximate meter horizon, and approximate body-width horizon. Hazard or first contact must be visible or locally inferable; mixed, hidden, unstable, or purely semantic cases are rejected. This category remains diagnostic and outside the core death gate."
+    }
+  ],
+  "review_votes": [
+    {
+      "agent": "benchmark_methodologist",
+      "decision": "approve"
+    },
+    {
+      "agent": "sim_rollout_grounder",
+      "decision": "approve"
+    },
+    {
+      "agent": "qa_humanizer",
+      "decision": "approve"
+    },
+    {
+      "agent": "shortcut_reviewer",
+      "decision": "approve"
+    },
+    {
+      "agent": "arbiter",
+      "decision": "approve"
+    }
+  ]
+}

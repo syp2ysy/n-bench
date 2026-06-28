@@ -1,0 +1,213 @@
+{
+  "round_index": 2,
+  "round_status": "ok",
+  "phases": [
+    "phase_1_isolated",
+    "phase_2_cross_exam"
+  ],
+  "agents": [
+    "benchmark_methodologist",
+    "sim_rollout_grounder",
+    "qa_humanizer",
+    "shortcut_reviewer",
+    "arbiter"
+  ],
+  "status_by_agent": {
+    "benchmark_methodologist": "ok",
+    "sim_rollout_grounder": "ok",
+    "qa_humanizer": "ok",
+    "shortcut_reviewer": "ok",
+    "arbiter": "ok"
+  },
+  "failed_agents": [],
+  "open_risks": [
+    {
+      "agent": "benchmark_methodologist",
+      "risk": "Rollout labels may depend on geometry not visible in the initial RGB.",
+      "severity": "high",
+      "mitigation": "Require a visible-local gate for every category: relevant swept path or failure evidence must be visible or locally inferable, ambiguous=false, repeat-stable, and not caused by occluded/depth-hole/glass/overhang cases."
+    },
+    {
+      "agent": "benchmark_methodologist",
+      "risk": "Blind, radius-only, action-only, or majority baselines may exploit answer imbalance or prompt leakage.",
+      "severity": "high",
+      "mitigation": "Enforce per-category answer caps, prompt linting for answer-leaking words, and shortcut baselines before accepting generated manifests."
+    },
+    {
+      "agent": "benchmark_methodologist",
+      "risk": "Body counterfactual results may collapse into a radius prior instead of testing body-conditioned geometry.",
+      "severity": "critical",
+      "mitigation": "Require identical RGB/start/action, true flip pairs, no-flip controls, radius monotonicity checks, and radius-only baseline reporting."
+    },
+    {
+      "agent": "benchmark_methodologist",
+      "risk": "Hazard labels may drift into semantic guessing rather than physical rollout consequences.",
+      "severity": "medium",
+      "mitigation": "Keep hazard explanation diagnostic, derive labels from rollout evidence first, and score insufficient-support only when a concrete support-loss backend signal exists."
+    },
+    {
+      "agent": "sim_rollout_grounder",
+      "risk": "The visible-local projection gate may reduce yield, especially for contact cases near image borders or behind partial occlusions.",
+      "severity": "medium",
+      "mitigation": "Oversample scans/episodes/action motifs before downsampling; keep visible_gate_pass=false candidates for audit only, not scoring."
+    },
+    {
+      "agent": "sim_rollout_grounder",
+      "risk": "Habitat config drift could make prompt meters/angles mismatch executed actions.",
+      "severity": "high",
+      "mitigation": "Freeze move_forward=0.25 m and turn_left/right=15 degrees in the generator config; render all prompt horizons from serialized action_sequence metadata."
+    },
+    {
+      "agent": "sim_rollout_grounder",
+      "risk": "Body-radius counterfactual labels can be invalid if simulator radius settings or navmesh handling violate monotonicity.",
+      "severity": "critical",
+      "mitigation": "Reject any pair where progress_small + tolerance < progress_large; mark as oracle_error and audit simulator body profile configuration."
+    },
+    {
+      "agent": "sim_rollout_grounder",
+      "risk": "Insufficient-support hazard may be unavailable in some Habitat builds.",
+      "severity": "medium",
+      "mitigation": "Require support_loss/navmesh_support_violation fields to emit insufficient_support; otherwise exclude that label from accepted v1 scoring and report reduced hazard ontology."
+    },
+    {
+      "agent": "qa_humanizer",
+      "risk": "Rendered prompts may still leak labels if generation bypasses linting.",
+      "severity": "high",
+      "mitigation": "Run prompt lint on every final Chinese question and reject scene/safety adjectives including 畅通, 堵住, 更宽, 更窄, 开阔走廊, 安全, 危险 and their English equivalents."
+    },
+    {
+      "agent": "qa_humanizer",
+      "risk": "The visible-local gate may reject many candidates.",
+      "severity": "medium",
+      "mitigation": "Oversample MP3D/R2R-CE starts and downsample after visibility, stability, margin, and answer-balance gates."
+    },
+    {
+      "agent": "qa_humanizer",
+      "risk": "Insufficient-ground-support labels are invalid without a concrete backend field.",
+      "severity": "medium",
+      "mitigation": "Only assign insufficient_support when support_loss or navmesh_support_violation is present; otherwise use the three-way hazard variant."
+    },
+    {
+      "agent": "shortcut_reviewer",
+      "risk": "Cases may test hidden future geometry rather than consequence reasoning from the initial single RGB.",
+      "severity": "critical",
+      "mitigation": "Add an executable visible-local gate that projects the rollout centerline/swept samples and first contact or hazard point into the initial camera, checks valid depth and non-occlusion, and rejects failures."
+    },
+    {
+      "agent": "shortcut_reviewer",
+      "risk": "Prompts may describe horizons or angles that do not match simulator actions.",
+      "severity": "high",
+      "mitigation": "Freeze forward step size, turn increment, action sequence serialization, intended distance computation, and generate all prompt meters/body-widths/angles from those values."
+    },
+    {
+      "agent": "shortcut_reviewer",
+      "risk": "Body counterfactual accuracy may be solvable by radius priors if true flips and no-flip controls are undersampled.",
+      "severity": "high",
+      "mitigation": "Require explicit accepted-pair quotas by canonical label and control type, plus radius-only baseline reporting before accepting a generated manifest."
+    },
+    {
+      "agent": "shortcut_reviewer",
+      "risk": "Hazard questions may become semantic-label QA instead of rollout-grounded physical consequence QA.",
+      "severity": "medium",
+      "mitigation": "Require a concrete support-loss backend signal or remove insufficient_ground_support from v1 scoring."
+    },
+    {
+      "agent": "arbiter",
+      "risk": "Cases may test hidden future geometry rather than visible local RGB evidence.",
+      "severity": "critical",
+      "mitigation": "Require visible_gate_pass by projecting rollout samples and first contact/hazard points into the start camera; reject occluded, depth-hole, glass/mirror, overhang, and hidden-space cases."
+    },
+    {
+      "agent": "arbiter",
+      "risk": "Prompt horizons may not match simulator execution.",
+      "severity": "high",
+      "mitigation": "Freeze forward_step_size_m, turn_step_deg, serialized action_sequence, and intended_distance_m computation; render prompts only from these fields."
+    },
+    {
+      "agent": "arbiter",
+      "risk": "Body Counterfactual can collapse into a radius prior shortcut.",
+      "severity": "critical",
+      "mitigation": "Enforce balanced both_safe, small_only, and neither_safe labels, explicit no-flip controls, monotonicity checks, and radius-only baseline reporting."
+    },
+    {
+      "agent": "arbiter",
+      "risk": "Natural-language answers may be scored inconsistently or leak labels.",
+      "severity": "high",
+      "mitigation": "Use Chinese templates with canonical labels, accepted aliases, unmatched-answer policy, and prompt linting against label-leaking scene/safety words."
+    },
+    {
+      "agent": "arbiter",
+      "risk": "The insufficient-ground-support hazard label may become semantic rather than rollout-grounded.",
+      "severity": "medium",
+      "mitigation": "Require an explicit support_loss/navmesh_support_violation backend field or remove/merge this label in v1 scoring."
+    }
+  ],
+  "critique_items": [
+    {
+      "agent": "shortcut_reviewer",
+      "issue": "No deterministic visibility gate is specified; prose says cases must be visible, but the generator has no concrete rule for whether the relevant swept path or failure point is visible in the initial RGB.",
+      "severity": "major",
+      "proposed_fix": "Add per-case visible_gate_pass. Accept only when the rollout centerline/swept-volume samples up to the queried horizon and the first contact/hazard point project into the initial camera, have valid depth coverage, are not behind nearer observed geometry, and are not in depth-hole/glass/mirror/overhang cases."
+    },
+    {
+      "agent": "shortcut_reviewer",
+      "issue": "Action primitives are not fully specified, so 15-degree and 30-degree prompt claims may not be reproducible from simulator actions.",
+      "severity": "major",
+      "proposed_fix": "Freeze forward_step_size_m, turn_step_deg, collision/body radius per profile, and serialized action_sequence for every case. Use only prompt angles realizable by the configured primitive, for example turn_step_deg=15 and 30 degrees as two turn actions."
+    },
+    {
+      "agent": "shortcut_reviewer",
+      "issue": "Body Counterfactual requires real flip pairs and no-flip controls but lacks enforceable quotas.",
+      "severity": "major",
+      "proposed_fix": "For the first 30 accepted paired cases, require at least 8 both_safe, 8 small_only true flips, and 8 neither_safe, with no label count above 14. Tag no_flip_both_safe, no_flip_neither_safe, large_shorter_same_bin, and direction_ranking_no_flip controls; reject monotonicity violations."
+    },
+    {
+      "agent": "shortcut_reviewer",
+      "issue": "The local hazard insufficient_ground_support label has no required backend signal.",
+      "severity": "minor",
+      "proposed_fix": "Require a concrete field such as support_loss=true or navmesh_support_violation=true, or remove insufficient_ground_support from v1 scoring and map only rollout-confirmed height/drop failures to step_or_drop."
+    },
+    {
+      "agent": "shortcut_reviewer",
+      "issue": "Natural prompt policy bans English leakage words but does not explicitly lint Chinese equivalents or canonical answer aliases in the blackboard draft.",
+      "severity": "minor",
+      "proposed_fix": "Adopt the QA humanizer's Chinese prompt lint and alias mapping: store canonical_answer, accepted_aliases, and score unmatched short answers as invalid/incorrect rather than semantically correct by default."
+    },
+    {
+      "agent": "arbiter",
+      "issue": "Freeze is blocked by visible major verdicts and missing unanimous required review votes.",
+      "severity": "major",
+      "proposed_fix": "Integrate the qa_humanizer and shortcut_reviewer fixes, then collect explicit approve review_votes from benchmark_methodologist, sim_rollout_grounder, qa_humanizer, shortcut_reviewer, and arbiter."
+    },
+    {
+      "agent": "arbiter",
+      "issue": "The visibility requirement is still prose, not an executable accept/reject gate.",
+      "severity": "major",
+      "proposed_fix": "Add visible_gate_pass and accept only cases where projected rollout path/contact or hazard evidence is in the initial FOV with valid depth and no nearer occluder; reject ambiguous hidden-space cases."
+    },
+    {
+      "agent": "arbiter",
+      "issue": "Action primitives are underspecified for deterministic rollout and prompt generation.",
+      "severity": "major",
+      "proposed_fix": "Add forward_step_size_m, turn_step_deg, collision/body radius binding, serialized per-case action_sequence, and derive horizon_m/body_widths/turn_text directly from those values."
+    },
+    {
+      "agent": "arbiter",
+      "issue": "Body Counterfactual has balance language but no enforceable flip/control quotas.",
+      "severity": "major",
+      "proposed_fix": "For the first 30 accepted pairs require at least 8 both_safe, 8 small_only, and 8 neither_safe, no label above 14, tagged no-flip controls, and rejection of any monotonicity violation."
+    },
+    {
+      "agent": "arbiter",
+      "issue": "Prompt templates and scoring are not fully canonicalized for natural Chinese QA.",
+      "severity": "major",
+      "proposed_fix": "Adopt Chinese templates with stored canonical_answer and accepted_aliases per category; score unmatched text as invalid/incorrect and lint rendered prompts for answer-leaking words."
+    },
+    {
+      "agent": "arbiter",
+      "issue": "The insufficient_ground_support hazard label lacks a required backend signal.",
+      "severity": "minor",
+      "proposed_fix": "Either require support_loss=true or navmesh_support_violation=true from rollout/geometry, or remove this label from v1 scoring and map confirmed height/support failures to step_or_drop."
+    }
+  ]
+}

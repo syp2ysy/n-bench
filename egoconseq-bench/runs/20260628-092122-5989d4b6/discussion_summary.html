@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>讨论摘要</title>
+  <style>
+
+    :root { color-scheme: light; font-family: Inter, Arial, sans-serif; }
+    body { margin: 0; background: #f7f8fa; color: #16181d; }
+    header, section { max-width: 1180px; margin: 0 auto; padding: 28px 24px; }
+    header { border-bottom: 1px solid #d9dde5; }
+    h1 { margin: 4px 0 10px; font-size: 32px; line-height: 1.1; }
+    h2 { margin: 0 0 16px; font-size: 22px; }
+    p { line-height: 1.5; color: #53606f; }
+    .eyebrow { margin: 0; color: #53606f; font-size: 13px; text-transform: uppercase; letter-spacing: 0; }
+    table { border-collapse: collapse; width: 100%; background: #fff; }
+    th, td { border: 1px solid #d9dde5; padding: 10px 12px; text-align: left; vertical-align: top; }
+    th { background: #eef1f5; }
+    li { margin: 8px 0; }
+  </style>
+</head>
+<body>
+
+            <header>
+              <p class="eyebrow">EgoConseq-Bench</p>
+              <h1>讨论摘要</h1>
+              <p>这里汇总跨轮公开输出、裁决结果、已接收 R2R 案例和黑板状态更新；不会展示任何隐藏思考过程。</p>
+            </header>
+            <section>
+              <h2>轮次</h2>
+              <table>
+                <tr><th>轮次</th><th>智能体</th><th>裁决</th><th>工作流阶段</th><th>已接收案例</th><th>开放风险数</th></tr>
+                <tr><td>第 1 轮</td><td>方法设计者, 模拟器落地者, 问题设计者, 捷径审查者, 裁决者</td><td>needs_design</td><td>设计共识阶段</td><td>0</td><td>21</td></tr><tr><td>第 2 轮</td><td>方法设计者, 模拟器落地者, 问题设计者, 捷径审查者, 裁决者</td><td>needs_design</td><td>设计共识阶段</td><td>0</td><td>20</td></tr><tr><td>第 3 轮</td><td>方法设计者, 模拟器落地者, 问题设计者, 捷径审查者, 裁决者</td><td>needs_design</td><td>设计共识阶段</td><td>0</td><td>21</td></tr><tr><td>第 4 轮</td><td>方法设计者, 模拟器落地者, 问题设计者, 捷径审查者, 裁决者</td><td>needs_instantiation</td><td>数据实例化共识阶段</td><td>0</td><td>19</td></tr><tr><td>第 5 轮</td><td>方法设计者, 模拟器落地者, 问题设计者, 捷径审查者, 裁决者</td><td>needs_instantiation</td><td>数据实例化共识阶段</td><td>0</td><td>17</td></tr><tr><td>第 6 轮</td><td>方法设计者, 模拟器落地者, 问题设计者, 捷径审查者, 裁决者</td><td>needs_instantiation</td><td>数据实例化共识阶段</td><td>0</td><td>17</td></tr><tr><td>第 7 轮</td><td>方法设计者, 模拟器落地者, 问题设计者, 捷径审查者, 裁决者</td><td>needs_instantiation</td><td>数据实例化共识阶段</td><td>0</td><td>23</td></tr><tr><td>第 8 轮</td><td>方法设计者, 模拟器落地者, 问题设计者, 捷径审查者, 裁决者</td><td>需要重新生成案例</td><td>案例生成阶段</td><td>0</td><td>20</td></tr><tr><td>第 9 轮</td><td>有效性审计者</td><td>needs_validity_audit</td><td>有效性审计阶段</td><td>action_horizon_collision:10, body_counterfactual_flip:10, directional_rollout_comparison:10, local_hazard_explanation:10, local_progress_estimation:10</td><td>0</td></tr>
+              </table>
+            </section>
+            <section>
+              <h2>设计文档历史</h2>
+              <ul><li>第 1 轮 · benchmark_methodologist · benchmark_design</li><li>第 1 轮 · sim_rollout_grounder · benchmark_design</li><li>第 1 轮 · qa_humanizer · benchmark_design</li><li>第 1 轮 · shortcut_reviewer · benchmark_design</li><li>第 1 轮 · sim_rollout_grounder · instantiation_spec</li><li>第 1 轮 · shortcut_reviewer · instantiation_spec</li><li>第 1 轮 · qa_humanizer · instantiation_spec</li><li>第 2 轮 · benchmark_methodologist · benchmark_design</li><li>第 2 轮 · sim_rollout_grounder · benchmark_design</li><li>第 2 轮 · sim_rollout_grounder · instantiation_spec</li><li>第 2 轮 · qa_humanizer · instantiation_spec</li><li>第 3 轮 · benchmark_methodologist · benchmark_design</li><li>第 3 轮 · sim_rollout_grounder · benchmark_design</li><li>第 3 轮 · qa_humanizer · benchmark_design</li><li>第 3 轮 · sim_rollout_grounder · instantiation_spec</li><li>第 3 轮 · qa_humanizer · instantiation_spec</li><li>第 3 轮 · shortcut_reviewer · instantiation_spec</li><li>第 4 轮 · benchmark_methodologist · benchmark_design</li><li>第 4 轮 · sim_rollout_grounder · benchmark_design</li><li>第 4 轮 · arbiter · benchmark_design</li><li>第 4 轮 · sim_rollout_grounder · instantiation_spec</li><li>第 4 轮 · qa_humanizer · instantiation_spec</li><li>第 4 轮 · shortcut_reviewer · instantiation_spec</li><li>第 5 轮 · sim_rollout_grounder · instantiation_spec</li><li>第 5 轮 · qa_humanizer · instantiation_spec</li><li>第 5 轮 · benchmark_methodologist · instantiation_spec</li><li>第 6 轮 · sim_rollout_grounder · instantiation_spec</li><li>第 6 轮 · qa_humanizer · instantiation_spec</li><li>第 6 轮 · benchmark_methodologist · instantiation_spec</li><li>第 6 轮 · shortcut_reviewer · instantiation_spec</li><li>第 7 轮 · benchmark_methodologist · instantiation_spec</li><li>第 7 轮 · sim_rollout_grounder · instantiation_spec</li><li>第 7 轮 · qa_humanizer · instantiation_spec</li><li>第 7 轮 · shortcut_reviewer · instantiation_spec</li><li>第 8 轮 · sim_rollout_grounder · instantiation_spec</li><li>第 8 轮 · qa_humanizer · instantiation_spec</li><li>第 8 轮 · benchmark_methodologist · instantiation_spec</li><li>第 8 轮 · shortcut_reviewer · instantiation_spec</li><li>第 8 轮 · arbiter · instantiation_spec</li></ul>
+            </section>
+            <section>
+              <h2>黑板轮次日志</h2>
+              <ul><li>第 1 轮运行 benchmark_methodologist, sim_rollout_grounder, qa_humanizer, shortcut_reviewer, arbiter; 已接收案例数 {}</li><li>第 2 轮运行 benchmark_methodologist, sim_rollout_grounder, qa_humanizer, shortcut_reviewer, arbiter; 已接收案例数 {}</li><li>第 3 轮运行 benchmark_methodologist, sim_rollout_grounder, qa_humanizer, shortcut_reviewer, arbiter; 已接收案例数 {}</li><li>第 4 轮运行 benchmark_methodologist, sim_rollout_grounder, qa_humanizer, shortcut_reviewer, arbiter; 已接收案例数 {}</li><li>第 5 轮运行 benchmark_methodologist, sim_rollout_grounder, qa_humanizer, shortcut_reviewer, arbiter; 已接收案例数 {}</li><li>第 6 轮运行 benchmark_methodologist, sim_rollout_grounder, qa_humanizer, shortcut_reviewer, arbiter; 已接收案例数 {}</li><li>第 7 轮运行 benchmark_methodologist, sim_rollout_grounder, qa_humanizer, shortcut_reviewer, arbiter; 已接收案例数 {}</li><li>第 8 轮运行 benchmark_methodologist, sim_rollout_grounder, qa_humanizer, shortcut_reviewer, arbiter; 已接收案例数 {}</li><li>第 9 轮运行 habitat_rollout_generator; 已接收案例数 {&#x27;local_progress_estimation&#x27;: 10, &#x27;action_horizon_collision&#x27;: 10, &#x27;directional_rollout_comparison&#x27;: 10, &#x27;body_counterfactual_flip&#x27;: 10, &#x27;local_hazard_explanation&#x27;: 10}</li><li>第 9 轮运行 validity_auditor; 已接收案例数 {&#x27;local_progress_estimation&#x27;: 10, &#x27;action_horizon_collision&#x27;: 10, &#x27;directional_rollout_comparison&#x27;: 10, &#x27;body_counterfactual_flip&#x27;: 10, &#x27;local_hazard_explanation&#x27;: 10}</li></ul>
+            </section>
+            
+</body>
+</html>

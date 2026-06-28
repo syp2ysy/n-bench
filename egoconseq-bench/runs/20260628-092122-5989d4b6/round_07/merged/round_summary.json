@@ -1,0 +1,255 @@
+{
+  "round_index": 7,
+  "round_status": "ok",
+  "phases": [
+    "phase_1_isolated",
+    "phase_2_cross_exam"
+  ],
+  "agents": [
+    "benchmark_methodologist",
+    "sim_rollout_grounder",
+    "qa_humanizer",
+    "shortcut_reviewer",
+    "arbiter"
+  ],
+  "status_by_agent": {
+    "benchmark_methodologist": "ok",
+    "sim_rollout_grounder": "ok",
+    "qa_humanizer": "ok",
+    "shortcut_reviewer": "ok",
+    "arbiter": "ok"
+  },
+  "failed_agents": [],
+  "open_risks": [
+    {
+      "agent": "benchmark_methodologist",
+      "risk": "Strict visibility, stability, balance, and coverage gates may reduce accepted-case yield.",
+      "severity": "medium",
+      "mitigation": "Oversample by scan, episode, geometry tag, action motif, horizon, radius, and tentative label before downsampling to the release set."
+    },
+    {
+      "agent": "benchmark_methodologist",
+      "risk": "Support-risk hazard labels are invalid if support_loss or navmesh_support_violation is unavailable.",
+      "severity": "medium",
+      "mitigation": "Use a fixed release-level hazard option set; include ground-support-risk only when support fields are serialized and audited for the entire split."
+    },
+    {
+      "agent": "benchmark_methodologist",
+      "risk": "Prompt/render drift can leak or corrupt labels.",
+      "severity": "high",
+      "mitigation": "Require prompt_render_audit_pass=true and reject any case whose rendered body, action, turn, horizon, or option values do not match serialized rollout metadata."
+    },
+    {
+      "agent": "benchmark_methodologist",
+      "risk": "Body Counterfactual can be solved by radius priors if controls are weak.",
+      "severity": "high",
+      "mitigation": "Require same RGB/start/action/camera height, all-radii start validity, monotonicity, true flips, no-flip controls, three-way balance, and radius-only baseline reporting."
+    },
+    {
+      "agent": "sim_rollout_grounder",
+      "risk": "Strict stability, visibility, balance, and coverage gates may reduce accepted-case yield.",
+      "severity": "medium",
+      "mitigation": "Oversample stratified candidates by scan, episode, geometry tag, action motif, horizon, body profile, and tentative label before downsampling."
+    },
+    {
+      "agent": "sim_rollout_grounder",
+      "risk": "Support-risk hazard labels are invalid if support_loss or navmesh_support_violation is unavailable in the backend.",
+      "severity": "medium",
+      "mitigation": "Use the fixed three-way hazard split without ground-support-risk unless support fields are serialized and audited for the whole release split."
+    },
+    {
+      "agent": "sim_rollout_grounder",
+      "risk": "Prompt text can drift from executed rollout metadata in downstream generation.",
+      "severity": "high",
+      "mitigation": "Render all body sizes, action steps, turn angles, meter horizons, and body-width horizons from serialized metadata and reject any case with prompt_render_audit_pass=false."
+    },
+    {
+      "agent": "sim_rollout_grounder",
+      "risk": "Safe labels can still depend on hidden simulator geometry if positive visibility is computed too loosely.",
+      "severity": "high",
+      "mitigation": "Require safe_path_visible_fraction, floor/support visibility, terminal free-space/support evidence, and visible-local decisive evidence before accepting complete, feasible, both-safe, or no-risk labels."
+    },
+    {
+      "agent": "sim_rollout_grounder",
+      "risk": "Body Counterfactual can be contaminated by radius priors if subtype quotas are not enforced.",
+      "severity": "high",
+      "mitigation": "Require small-only flips plus both-safe, neither-safe, and large-shorter-same-label controls, then report radius-only baseline accuracy by subtype."
+    },
+    {
+      "agent": "qa_humanizer",
+      "risk": "Strict visibility, stability, balance, and coverage gates may reduce accepted-case yield.",
+      "severity": "medium",
+      "mitigation": "Oversample candidates by scan, episode, geometry tag, action motif, horizon, radius, and tentative label before downsampling."
+    },
+    {
+      "agent": "qa_humanizer",
+      "risk": "Free-form Chinese explanations may be hard to score automatically.",
+      "severity": "medium",
+      "mitigation": "Primary scoring uses only the leading canonical label or registered aliases; explanations are stored for audit or secondary analysis."
+    },
+    {
+      "agent": "qa_humanizer",
+      "risk": "Hazard option sets can leak labels if support-related options vary per case.",
+      "severity": "medium",
+      "mitigation": "Fix hazard options for the whole release split based on backend field availability, never on case GT."
+    },
+    {
+      "agent": "qa_humanizer",
+      "risk": "Safe or no-risk answers may depend on simulator-only hidden geometry.",
+      "severity": "high",
+      "mitigation": "Require safe_path_visible_fraction, visible floor/support samples, terminal free-space/support evidence, and prompt_render_audit_pass for all feasible, complete, both-safe, and no-risk labels."
+    },
+    {
+      "agent": "shortcut_reviewer",
+      "risk": "A generator may silently fall back to stale defaults for underspecified categories.",
+      "severity": "high",
+      "mitigation": "Adopt a complete all-category instantiation spec with explicit templates, GT rules, coarse labels, thresholds, and rejection gates."
+    },
+    {
+      "agent": "shortcut_reviewer",
+      "risk": "Feasible or no-risk answers may be solvable only from hidden simulator geometry.",
+      "severity": "high",
+      "mitigation": "Require safe_path_visible_fraction, floor/support visibility, terminal free-space evidence, and visible/local decisive-event evidence as hard per-case fields."
+    },
+    {
+      "agent": "shortcut_reviewer",
+      "risk": "Body counterfactual can be gamed by a radius-only prior.",
+      "severity": "high",
+      "mitigation": "Enforce paired identical RGB/start/action, all-radii start validity, monotonicity, three-way balance, flip/no-flip quotas, and radius-only baseline audit by subtype."
+    },
+    {
+      "agent": "shortcut_reviewer",
+      "risk": "Hazard options can leak backend or label information if they vary per case.",
+      "severity": "medium",
+      "mitigation": "Fix hazard option sets at release-split level based only on audited backend field availability, never per case."
+    },
+    {
+      "agent": "shortcut_reviewer",
+      "risk": "Answer balance can pass while coverage is too narrow.",
+      "severity": "medium",
+      "mitigation": "Require release audit tables and dominance caps by scan, episode, body radius, action horizon, action motif, direction, geometry tag, and label."
+    },
+    {
+      "agent": "arbiter",
+      "risk": "Case generation may implement only Local Progress or fall back to stale defaults for the other four categories.",
+      "severity": "high",
+      "mitigation": "Replace the patch-style draft with a complete self-contained instantiation for all five frozen categories before generation."
+    },
+    {
+      "agent": "arbiter",
+      "risk": "Safe, feasible, both-safe, or no-risk labels may rely on hidden simulator geometry rather than visible RGB evidence.",
+      "severity": "high",
+      "mitigation": "Require positive visibility gates for all safe/completion labels: safe_path_visible_fraction, floor/support visibility, and terminal free-space evidence."
+    },
+    {
+      "agent": "arbiter",
+      "risk": "Body Counterfactual results may be explainable by radius priors instead of same-image body-conditioned reasoning.",
+      "severity": "high",
+      "mitigation": "Require true flips, no-flip controls, all-radii start validity, identical RGB/action/camera height, monotonicity checks, and subtype balance."
+    },
+    {
+      "agent": "arbiter",
+      "risk": "Hazard option sets may leak labels if support-risk options vary per case.",
+      "severity": "medium",
+      "mitigation": "Fix hazard options by backend capability or release split; include support-risk only when support fields are serialized and audited split-wide."
+    },
+    {
+      "agent": "arbiter",
+      "risk": "Strict gates may reduce accepted-case yield.",
+      "severity": "medium",
+      "mitigation": "Oversample by scan, episode, geometry tag, action motif, horizon, body radius, and tentative label before downsampling."
+    }
+  ],
+  "critique_items": [
+    {
+      "agent": "qa_humanizer",
+      "issue": "The public instantiation draft only defines one category.",
+      "severity": "major",
+      "proposed_fix": "Replace it with the complete five-category spec below, covering templates, answer formats, rollout GT rules, coarse bins, and margin gates."
+    },
+    {
+      "agent": "qa_humanizer",
+      "issue": "The public draft does not fully propagate positive visibility gates.",
+      "severity": "major",
+      "proposed_fix": "Apply positive visibility gates to every feasible, near-complete, both-safe, and no-obvious-risk label."
+    },
+    {
+      "agent": "qa_humanizer",
+      "issue": "Body Counterfactual controls are not executable in the public draft.",
+      "severity": "major",
+      "proposed_fix": "Require paired same-RGB rollouts, all-radii start validity, monotonicity checks, true flip cases, both-safe controls, neither-safe controls, and large-shorter-same-label controls."
+    },
+    {
+      "agent": "qa_humanizer",
+      "issue": "Hazard support labels can be invalid if support fields are unavailable.",
+      "severity": "minor",
+      "proposed_fix": "Use 地面支撑不足 only when support_loss or navmesh_support_violation is available and audited for the whole release split; otherwise use a fixed three-option split."
+    },
+    {
+      "agent": "shortcut_reviewer",
+      "issue": "The public instantiation draft only defines local_progress_estimation and leaves four frozen categories without executable templates or GT rules.",
+      "severity": "major",
+      "proposed_fix": "Replace the one-category patch with the five-category instantiation_spec below."
+    },
+    {
+      "agent": "shortcut_reviewer",
+      "issue": "The current local_progress entry references unspecified existing templates and bins.",
+      "severity": "major",
+      "proposed_fix": "Use explicit canonical labels, progress-ratio thresholds, hazard routing, rejection margins, and prompt text."
+    },
+    {
+      "agent": "shortcut_reviewer",
+      "issue": "Positive visibility gates are not uniformly required for feasible, complete, both-safe, and no-risk labels.",
+      "severity": "major",
+      "proposed_fix": "Require safe_path_visible_fraction >= 0.60, visible floor/support samples, terminal free-space/support evidence, and visible/local decisive evidence across all relevant categories."
+    },
+    {
+      "agent": "shortcut_reviewer",
+      "issue": "Body Counterfactual controls are not executable in the current blackboard draft.",
+      "severity": "major",
+      "proposed_fix": "Require same RGB/start/yaw/camera/action paired rollouts, reject only-large outcomes and monotonicity violations, and enforce flip/no-flip control quotas."
+    },
+    {
+      "agent": "shortcut_reviewer",
+      "issue": "Hazard support-risk options can leak labels or become invalid if support fields are unavailable.",
+      "severity": "minor",
+      "proposed_fix": "Enable ground-support-risk only for a release split where support_loss or navmesh_support_violation is serialized and audited for every case; otherwise use a fixed option set without it."
+    },
+    {
+      "agent": "arbiter",
+      "issue": "The blackboard instantiation defines only local_progress_estimation, leaving four frozen categories without executable templates, GT rules, or coarse labeling rules.",
+      "severity": "major",
+      "proposed_fix": "Add complete entries for action_horizon_collision, directional_rollout_comparison, body_counterfactual_flip, and local_hazard_explanation with templates, answer formats, rollout GT rules, margin gates, and balance gates."
+    },
+    {
+      "agent": "arbiter",
+      "issue": "The local_progress_estimation entry is patch-style and references unspecified existing behavior.",
+      "severity": "major",
+      "proposed_fix": "Replace placeholder text such as unchanged template and existing bins with explicit prompt text, canonical labels, progress-ratio thresholds, hazard routing, and rejection margins."
+    },
+    {
+      "agent": "arbiter",
+      "issue": "Positive visibility gates are not applied category-wide to feasible, safe, complete, both-safe, and no-risk labels.",
+      "severity": "major",
+      "proposed_fix": "For every relevant category, require safe_path_visible_fraction >= 0.60, visible swept-footprint floor/support samples, and visible terminal free-space margin; reject cases where decisive evidence is hidden."
+    },
+    {
+      "agent": "arbiter",
+      "issue": "Body Counterfactual controls are not fully encoded in the current blackboard draft.",
+      "severity": "major",
+      "proposed_fix": "Specify paired rollouts with identical RGB/start/action/camera height, reject only-large and monotonicity violations, and enforce quotas for small-only flips, both-safe controls, neither-safe controls, and large-shorter-same-label controls."
+    },
+    {
+      "agent": "arbiter",
+      "issue": "Dataset-level shortcut and coverage gates are not yet explicit in the blackboard instantiation.",
+      "severity": "major",
+      "proposed_fix": "Add release gates for per-category answer balance, scan/episode dominance caps, radius/action/horizon/action-motif coverage, prompt_render_audit_pass, and blind/radius-only/action-only audit fields."
+    },
+    {
+      "agent": "arbiter",
+      "issue": "Support-risk hazard labels may be invalid if support_loss or navmesh_support_violation fields are unavailable.",
+      "severity": "minor",
+      "proposed_fix": "Use a fixed hazard option set per release split and include ground-support-risk only if the required support fields are present and audited for the whole split."
+    }
+  ]
+}

@@ -1,0 +1,6 @@
+{
+  "should_stop": false,
+  "terminal_state": "continue",
+  "reason": "Bounded consensus workflow has not reached a terminal phase.",
+  "round_index": 5
+}

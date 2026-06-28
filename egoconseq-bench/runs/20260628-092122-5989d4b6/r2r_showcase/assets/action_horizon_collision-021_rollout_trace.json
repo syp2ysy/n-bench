@@ -1,0 +1,35 @@
+{
+  "action_sequence": [
+    "move_forward"
+  ],
+  "rollout_outcome": {
+    "start_pose_valid": true,
+    "collision": false,
+    "actual_distance_m": 0.24999982863658754,
+    "intended_distance_m": 0.25,
+    "progress_ratio": 0.9999993145463502,
+    "height_delta_m": 0.0,
+    "stopped_early": false,
+    "hazard_type": "no_visible_hazard",
+    "semantic_changes": [],
+    "final_pose": {
+      "position_xyz": [
+        6.274508953094482,
+        0.13123726844787598,
+        12.531017303466797
+      ]
+    },
+    "trace": [
+      {
+        "action": "move_forward",
+        "position_xyz": [
+          6.274508953094482,
+          0.13123726844787598,
+          12.531017303466797
+        ],
+        "collided": false
+      }
+    ],
+    "body_radius_m": 0.25
+  }
+}

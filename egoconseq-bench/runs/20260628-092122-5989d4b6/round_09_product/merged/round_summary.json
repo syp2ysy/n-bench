@@ -1,0 +1,26 @@
+{
+  "round_index": 9,
+  "round_status": "ok",
+  "phases": [
+    "product_layer",
+    "validity_audit"
+  ],
+  "agents": [
+    "validity_auditor"
+  ],
+  "status_by_agent": {
+    "validity_auditor": "ok"
+  },
+  "failed_agents": [],
+  "open_risks": [],
+  "critique_items": [],
+  "tool_events": [
+    {
+      "tool": "habitat_rollout_generator",
+      "status": "ok",
+      "case_count": 50,
+      "candidate_count": 132,
+      "rejected_count": 82
+    }
+  ]
+}
