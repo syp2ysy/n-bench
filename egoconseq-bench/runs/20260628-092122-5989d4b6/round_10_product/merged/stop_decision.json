@@ -1,0 +1,6 @@
+{
+  "should_stop": true,
+  "terminal_state": "ready_for_showcase_review",
+  "reason": "Accepted balanced Habitat simulator-rollout cases and Chinese HTML artifacts are ready for human review.",
+  "round_index": 10
+}

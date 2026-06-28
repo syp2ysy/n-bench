@@ -1,0 +1,125 @@
+{
+  "action_sequence": [
+    "move_forward",
+    "move_forward",
+    "move_forward",
+    "move_forward",
+    "move_forward",
+    "move_forward",
+    "move_forward",
+    "move_forward",
+    "move_forward",
+    "move_forward"
+  ],
+  "rollout_outcome": {
+    "start_pose_valid": true,
+    "collision": false,
+    "actual_distance_m": 1.9791220275128,
+    "intended_distance_m": 2.5,
+    "progress_ratio": 0.7916488110051201,
+    "height_delta_m": 0.0,
+    "stopped_early": false,
+    "hazard_type": "no_visible_hazard",
+    "semantic_changes": [],
+    "final_pose": {
+      "position_xyz": [
+        -1.2243989706039429,
+        0.040711402893066406,
+        -9.672636032104492
+      ]
+    },
+    "trace": [
+      {
+        "action": "move_forward",
+        "position_xyz": [
+          0.20259520411491394,
+          0.040711402893066406,
+          -8.693558692932129
+        ],
+        "collided": false
+      },
+      {
+        "action": "move_forward",
+        "position_xyz": [
+          0.014132887125015259,
+          0.040711402893066406,
+          -8.857820510864258
+        ],
+        "collided": false
+      },
+      {
+        "action": "move_forward",
+        "position_xyz": [
+          -0.17432942986488342,
+          0.040711402893066406,
+          -9.022082328796387
+        ],
+        "collided": false
+      },
+      {
+        "action": "move_forward",
+        "position_xyz": [
+          -0.3627917468547821,
+          0.040711402893066406,
+          -9.186344146728516
+        ],
+        "collided": false
+      },
+      {
+        "action": "move_forward",
+        "position_xyz": [
+          -0.5564690828323364,
+          0.040711402893066406,
+          -9.209798812866211
+        ],
+        "collided": false
+      },
+      {
+        "action": "move_forward",
+        "position_xyz": [
+          -0.7507487535476685,
+          0.040711402893066406,
+          -9.216994285583496
+        ],
+        "collided": false
+      },
+      {
+        "action": "move_forward",
+        "position_xyz": [
+          -0.9450284242630005,
+          0.040711402893066406,
+          -9.224189758300781
+        ],
+        "collided": false
+      },
+      {
+        "action": "move_forward",
+        "position_xyz": [
+          -1.1600909233093262,
+          0.040711402893066406,
+          -9.370718002319336
+        ],
+        "collided": false
+      },
+      {
+        "action": "move_forward",
+        "position_xyz": [
+          -1.2369229793548584,
+          0.040711402893066406,
+          -9.525479316711426
+        ],
+        "collided": false
+      },
+      {
+        "action": "move_forward",
+        "position_xyz": [
+          -1.2243989706039429,
+          0.040711402893066406,
+          -9.672636032104492
+        ],
+        "collided": false
+      }
+    ],
+    "body_radius_m": 0.25
+  }
+}

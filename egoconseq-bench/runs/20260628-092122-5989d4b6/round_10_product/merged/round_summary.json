@@ -1,0 +1,13 @@
+{
+  "round_index": 10,
+  "failed_agents": [],
+  "open_risks": [],
+  "tool_events": [
+    {
+      "tool": "habitat_rollout_generator",
+      "status": "ok",
+      "case_count": 50,
+      "source": "agent_loop/runs/20260628-092122-5989d4b6/r2r_showcase/habitat_rollout_manifest.json"
+    }
+  ]
+}

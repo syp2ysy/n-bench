@@ -1,0 +1,223 @@
+{
+  "action_sequence": [
+    "move_forward",
+    "move_forward",
+    "move_forward",
+    "move_forward",
+    "move_forward"
+  ],
+  "rollout_outcome": {
+    "start_pose_valid": true,
+    "collision": false,
+    "actual_distance_m": 0.7056538352784778,
+    "intended_distance_m": 1.25,
+    "progress_ratio": 0.5645230682227822,
+    "height_delta_m": 0.20000028610229492,
+    "stopped_early": false,
+    "hazard_type": "step_up",
+    "semantic_changes": [],
+    "final_pose": {
+      "position_xyz": [
+        2.532525062561035,
+        0.20342516899108887,
+        0.12202262878417969
+      ]
+    },
+    "trace": [
+      {
+        "action": "move_forward",
+        "position_xyz": [
+          2.339723825454712,
+          0.01667584478855133,
+          -0.28807559609413147
+        ],
+        "collided": false
+      },
+      {
+        "action": "move_forward",
+        "position_xyz": [
+          2.5128562450408936,
+          0.12474952638149261,
+          -0.1533416509628296
+        ],
+        "collided": false
+      },
+      {
+        "action": "move_forward",
+        "position_xyz": [
+          2.5233099460601807,
+          0.1665649712085724,
+          -0.006987854838371277
+        ],
+        "collided": false
+      },
+      {
+        "action": "move_forward",
+        "position_xyz": [
+          2.532525062561035,
+          0.20342516899108887,
+          0.12202262878417969
+        ],
+        "collided": false
+      },
+      {
+        "action": "move_forward",
+        "position_xyz": [
+          2.532525062561035,
+          0.20342516899108887,
+          0.12202262878417969
+        ],
+        "collided": false
+      }
+    ],
+    "body_radius_m": 0.1,
+    "small_body_outcome": {
+      "start_pose_valid": true,
+      "collision": false,
+      "actual_distance_m": 0.7056538352784778,
+      "intended_distance_m": 1.25,
+      "progress_ratio": 0.5645230682227822,
+      "height_delta_m": 0.20000028610229492,
+      "stopped_early": false,
+      "hazard_type": "step_up",
+      "semantic_changes": [],
+      "final_pose": {
+        "position_xyz": [
+          2.532525062561035,
+          0.20342516899108887,
+          0.12202262878417969
+        ]
+      },
+      "trace": [
+        {
+          "action": "move_forward",
+          "position_xyz": [
+            2.339723825454712,
+            0.01667584478855133,
+            -0.28807559609413147
+          ],
+          "collided": false
+        },
+        {
+          "action": "move_forward",
+          "position_xyz": [
+            2.5128562450408936,
+            0.12474952638149261,
+            -0.1533416509628296
+          ],
+          "collided": false
+        },
+        {
+          "action": "move_forward",
+          "position_xyz": [
+            2.5233099460601807,
+            0.1665649712085724,
+            -0.006987854838371277
+          ],
+          "collided": false
+        },
+        {
+          "action": "move_forward",
+          "position_xyz": [
+            2.532525062561035,
+            0.20342516899108887,
+            0.12202262878417969
+          ],
+          "collided": false
+        },
+        {
+          "action": "move_forward",
+          "position_xyz": [
+            2.532525062561035,
+            0.20342516899108887,
+            0.12202262878417969
+          ],
+          "collided": false
+        }
+      ],
+      "body_radius_m": 0.1,
+      "body_profile": {
+        "id": "small_probe",
+        "name": "small cylindrical mobile base",
+        "radius_m": 0.1,
+        "width_m": 0.2,
+        "height_m": 1.5,
+        "reference_robot": "v1 fixed-height cylindrical ground-plane footprint; camera height fixed across profiles"
+      }
+    },
+    "large_body_outcome": {
+      "start_pose_valid": true,
+      "collision": false,
+      "actual_distance_m": 0.0693438955226401,
+      "intended_distance_m": 1.25,
+      "progress_ratio": 0.05547511641811208,
+      "height_delta_m": 0.0,
+      "stopped_early": true,
+      "hazard_type": "no_visible_hazard",
+      "semantic_changes": [],
+      "final_pose": {
+        "position_xyz": [
+          2.182525157928467,
+          0.0034248828887939453,
+          -0.3779773712158203
+        ]
+      },
+      "trace": [
+        {
+          "action": "move_forward",
+          "position_xyz": [
+            2.182525157928467,
+            0.0034248828887939453,
+            -0.3779773712158203
+          ],
+          "collided": false
+        },
+        {
+          "action": "move_forward",
+          "position_xyz": [
+            2.182525157928467,
+            0.0034248828887939453,
+            -0.3779773712158203
+          ],
+          "collided": false
+        },
+        {
+          "action": "move_forward",
+          "position_xyz": [
+            2.182525157928467,
+            0.0034248828887939453,
+            -0.3779773712158203
+          ],
+          "collided": false
+        },
+        {
+          "action": "move_forward",
+          "position_xyz": [
+            2.182525157928467,
+            0.0034248828887939453,
+            -0.3779773712158203
+          ],
+          "collided": false
+        },
+        {
+          "action": "move_forward",
+          "position_xyz": [
+            2.182525157928467,
+            0.0034248828887939453,
+            -0.3779773712158203
+          ],
+          "collided": false
+        }
+      ],
+      "body_radius_m": 0.4,
+      "body_profile": {
+        "id": "wide_platform",
+        "name": "wide cylindrical mobile platform",
+        "radius_m": 0.4,
+        "width_m": 0.8,
+        "height_m": 1.5,
+        "reference_robot": "v1 fixed-height cylindrical ground-plane footprint; camera height fixed across profiles"
+      }
+    }
+  }
+}

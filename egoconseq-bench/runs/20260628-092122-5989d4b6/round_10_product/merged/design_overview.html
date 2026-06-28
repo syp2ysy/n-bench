@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>基准设计方案</title>
+  <style>
+
+    :root { color-scheme: light; font-family: Inter, Arial, sans-serif; }
+    body { margin: 0; background: #f5f6f8; color: #17191f; }
+    header, section { max-width: 1220px; margin: 0 auto; padding: 28px 24px; }
+    header { border-bottom: 1px solid #d7dce3; }
+    h1 { margin: 4px 0 10px; font-size: 32px; line-height: 1.1; }
+    h2 { margin: 0 0 14px; font-size: 22px; }
+    h3 { margin: 10px 0; font-size: 17px; line-height: 1.35; }
+    p { line-height: 1.5; }
+    .eyebrow { margin: 0; color: #657386; font-size: 12px; text-transform: uppercase; letter-spacing: .02em; }
+    .lead { max-width: 900px; color: #465261; }
+    .metrics { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 10px; margin-top: 16px; }
+    .metric { background: #fff; border: 1px solid #d7dce3; border-radius: 8px; padding: 14px; }
+    .metric strong { display: block; font-size: 26px; color: #102033; }
+    .metric span { color: #657386; font-size: 13px; }
+    .status-pass { color: #146b3a; font-weight: 700; }
+    .status-fail { color: #9a3412; font-weight: 700; }
+    .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 10px; margin: 12px 0 16px; }
+    .stat-card { background: #fff; border: 1px solid #d7dce3; border-radius: 8px; padding: 12px; }
+    .stat-card strong { display: block; color: #102033; font-size: 22px; overflow-wrap: anywhere; }
+    .stat-card span { color: #657386; font-size: 12px; }
+    .violation-list { display: grid; gap: 8px; margin: 10px 0 0; padding: 0; list-style: none; }
+    .violation-list li { border: 1px solid #f2c6a0; background: #fff7ed; color: #7c2d12; border-radius: 8px; padding: 10px 12px; }
+    table { border-collapse: collapse; width: 100%; background: #fff; border: 1px solid #d7dce3; }
+    th, td { border-bottom: 1px solid #d7dce3; padding: 10px 12px; text-align: left; vertical-align: top; }
+    th { width: 240px; background: #eef1f4; }
+    .category-table th { width: auto; }
+    .category-table td:first-child { font-weight: 700; color: #173f65; }
+    .two-col { display: grid; grid-template-columns: minmax(260px, 380px) 1fr; gap: 16px; align-items: start; }
+    .note { color: #465261; }
+    .case-group > p { color: #465261; max-width: 940px; }
+    .case-grid { display: grid; grid-template-columns: 1fr; gap: 16px; }
+    .case-card { display: grid; grid-template-columns: minmax(300px, 44%) 1fr; gap: 16px; padding: 14px; background: #fff; border: 1px solid #d7dce3; border-radius: 8px; }
+    .media { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; align-content: start; }
+    .media figure { margin: 0; }
+    .media img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; border: 1px solid #d7dce3; border-radius: 6px 6px 0 0; background: #111827; display: block; }
+    .media figcaption { padding: 7px 8px; border: 1px solid #d7dce3; border-top: 0; border-radius: 0 0 6px 6px; color: #465261; background: #f8fafc; font-size: 12px; }
+    .case-body { min-width: 0; }
+    .case-meta { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px; color: #657386; font-size: 12px; }
+    .badge { display: inline-flex; align-items: center; min-height: 24px; padding: 0 8px; border-radius: 999px; background: #e8eef8; color: #29466f; font-size: 12px; }
+    .qa-grid { display: grid; grid-template-columns: minmax(180px, .8fr) 1fr; gap: 12px; }
+    .answer-box { border: 1px solid #b8c7d9; border-radius: 8px; padding: 10px 12px; background: #f2f7fd; }
+    .answer-box p { margin: 8px 0 0; font-size: 24px; line-height: 1.15; color: #173f65; font-weight: 700; overflow-wrap: anywhere; }
+    .evidence { margin-top: 10px; border-top: 1px solid #e0e5eb; }
+    .evidence p { display: grid; grid-template-columns: 132px 1fr; gap: 12px; margin: 0; padding: 9px 0; border-bottom: 1px solid #e8edf2; }
+    .evidence strong { color: #263445; }
+    .evidence span { color: #303b49; overflow-wrap: anywhere; }
+    ul { margin: 6px 0 0; padding-left: 18px; }
+    .empty { background: #fff; border: 1px solid #d7dce3; border-left: 5px solid #c08428; border-radius: 8px; padding: 16px; color: #6b4511; }
+    @media (max-width: 820px) {
+      h1 { font-size: 28px; }
+      .two-col, .case-card, .qa-grid, .evidence p { grid-template-columns: 1fr; }
+      .media { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+        <header>
+          <p class="eyebrow">EgoConseq-Bench</p>
+          <h1>EgoConseq-Bench 中文展示</h1>
+          <p class="lead">这个 benchmark 在 Habitat / MP3D / R2R-CE 中选取第一人称起点图像，并离线真实执行短动作序列得到 GT，评测 MLLM 是否能从起始 RGB 与自然问题理解自身身体、姿态、3D 空间和动作后果。</p>
+          <div class="metrics">
+            <div class="metric"><strong>展示就绪</strong><span>工作流阶段</span></div>
+            <div class="metric"><strong>5</strong><span>设计分类数</span></div>
+            <div class="metric"><strong>50</strong><span>已接收 R2R 案例</span></div>
+          </div>
+        </header>
+        <section>
+          <div class="two-col">
+            <div>
+              <h2>设计原则</h2>
+              <p class="note">分类必须从目标出发：揭示 MLLM 是否能把第一人称视角、机器人身体 footprint、动作轨迹和可见深度几何绑定成局部物理后果判断；最终分类不能直接复用 T1-T5 作为名字。</p>
+            </div>
+            <table>
+              <tr><th>状态</th><td>已冻结</td></tr>
+              <tr><th>数据来源</th><td>Habitat / MP3D / R2R-CE 模拟器动作执行</td></tr>
+              <tr><th>参考原则</th><td>参考空间智能 benchmark 的“动机到 QA”设计方法，但不照搬其 taxonomy；本 benchmark 聚焦单帧可见局部空间中的身体扫掠后果。</td></tr>
+            </table>
+          </div>
+        </section>
+        <section>
+          <h2>冻结后的分类设计</h2>
+          <table class="category-table">
+            <tr><th>分类</th><th>QA 类型</th><th>对应动机</th><th>R2R 标注规则</th><th>接收标准</th><th>案例数</th></tr>
+            <tr><td>局部推进范围估计</td><td>自然短答 / 粗范围</td><td>检验模型能否从起始第一人称图像估计机器人在可见局部空间中实际能推进多远，而不是只描述看起来空不空。</td><td>从合法 Habitat / R2R-CE 起点渲染初始 RGB，然后离线执行 N 次前进一步；标签来自实际推进距离、计划推进距离、推进比例、碰撞、提前停止、高度变化和可复放的执行轨迹。</td><td>问题说明身体尺寸、前进步数、近似米制距离和身体宽度距离；只接收起点合法、反馈完整、边界间隔足够、非歧义、答案分布可控的样本。</td><td>10</td></tr><tr><td>动作时域碰撞</td><td>二值 / 短答</td><td>检验模型能否在给定短动作序列时预测会撞、停住、下落还是正常推进。</td><td>真实执行 1、2、3、5、10 步动作序列，读取碰撞、提前停止、高度变化和主要风险类型。</td><td>动作序列与问题文字一致，执行反馈完整，起点合法。</td><td>10</td></tr><tr><td>方向动作后果比较</td><td>自然短答 / 方向选择</td><td>检验模型是否把左前、正前、右前三个第一人称方向绑定到真实可通行的 3D 动作后果，而不是套用中心偏置。</td><td>在同一初始 RGB、位姿和身体半径下，分别执行左转后前进、直行、右转后前进三条候选序列；只在最优方向与次优方向距离差足够大时保留。</td><td>问题说明身体尺寸、左右转角、匹配的前进步数、近似米制距离和身体宽度距离；拒绝近似平局样本，并约束方向答案分布。</td><td>10</td></tr><tr><td>身体反事实翻转</td><td>自然短答 / 三类标签</td><td>检验模型是否真正把身体半径作为碰撞算子；同一张图、同一动作下，换身体尺寸应改变结论。</td><td>同一起点同一动作，分别用紧凑型、标准型或宽体机器人半径执行动作序列，比较是否完成、是否碰撞和实际推进比例。</td><td>必须满足半径单调性；只保留“两个都可以 / 只有小身体可以 / 两个都不适合”三种物理可行标签。</td><td>10</td></tr><tr><td>局部风险解释</td><td>开放短答 / 风险类型</td><td>诊断模型是否能把失败判断落到真实执行反馈中的碰撞、提前停止、高度变化或局部支撑风险，而不是只回答安全/不安全。</td><td>执行指定短动作序列，并从碰撞、提前停止、高度变化、推进比例、逐步轨迹和离线语义上下文中派生主要风险类型。</td><td>问题说明身体尺寸、动作方向或转角、近似米制距离和身体宽度距离；风险必须在当前可见局部空间内有证据，隐藏或混合风险样本拒绝。</td><td>10</td></tr>
+          </table>
+        </section>
+        
+    <section>
+      <h2>有效性与统计</h2>
+      <p class="note">这些数字来自确定性 Habitat 动作执行清单和硬有效性闸门。只有这个闸门通过时，展示页才被视为可发布。</p>
+      <div class="stat-grid">
+        <div class="stat-card"><strong><span class="status-pass">通过</span></strong><span>硬有效性闸门</span></div>
+        <div class="stat-card"><strong>50</strong><span>已接收案例</span></div>
+        <div class="stat-card"><strong>11</strong><span>场景覆盖数</span></div>
+        <div class="stat-card"><strong>27</strong><span>轨迹覆盖数</span></div>
+        <div class="stat-card"><strong>0</strong><span>碰撞案例数</span></div>
+        <div class="stat-card"><strong>12</strong><span>提前停止案例数</span></div>
+        <div class="stat-card"><strong>0</strong><span>非法起点案例数</span></div>
+        <div class="stat-card"><strong>0</strong><span>歧义案例数</span></div>
+        <div class="stat-card"><strong>0</strong><span>半径单调性违例数</span></div>
+      </div>
+      <h3>答案分布</h3>
+      <table class="category-table"><tr><th>分类</th><th>总数</th><th>答案</th></tr><tr><td>动作时域碰撞</td><td>10</td><td>不能安全完成: 6, 可以完成: 4</td></tr><tr><td>身体反事实翻转</td><td>10</td><td>两个都不适合: 2, 两个都可以: 4, 只有小机器人可以: 4</td></tr><tr><td>方向动作后果比较</td><td>10</td><td>右前方: 2, 左前方: 4, 差不多: 4</td></tr><tr><td>局部风险解释</td><td>10</td><td>下行台阶或落差风险: 1, 上行台阶或高度上升: 4, 可见范围内无明显局部风险: 5</td></tr><tr><td>局部推进范围估计</td><td>10</td><td>0.5-1m: 2, 1 到 2 米: 3, &lt;0.5m: 4, &gt;2m: 1</td></tr></table>
+      <h3>闸门违例</h3>
+      <p class="note">没有 hard gate 违例。</p>
+    </section>
+    
+        <section>
+          <h2>共识投票</h2>
+          <ul><li>方法设计者: 通过</li><li>模拟器落地者: 通过</li><li>问题设计者: 通过</li><li>捷径审查者: 通过</li><li>裁决者: 通过</li></ul>
+        </section>
+        <section>
+          <h2>公开发现摘要</h2>
+          <ul><li>本页展示冻结后的结构化设计与确定性产物；原始智能体输出保留在 run 目录的 JSON 文件中。</li></ul>
+        </section>
+        <section>
+          <h2>后续建议</h2>
+          <ul><li>当前展示包含确定性生成的 R2R 真实案例，并在设计页显式报告硬有效性闸门是否通过；后续如修改 goal.md，应重新运行设计共识阶段。</li></ul>
+        </section>
+        
+</body>
+</html>
