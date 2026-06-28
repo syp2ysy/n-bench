@@ -1,0 +1,81 @@
+{
+  "oracle": {
+    "body_radius_m": 0.25,
+    "body_width_m": 0.5,
+    "max_safe_distance_m": 1.6819324019338482,
+    "max_safe_distance_body_widths": 3.3638648038676964,
+    "collision_point_3d": [
+      1.0544636582836782,
+      -0.5392534017932816,
+      1.3333333730697632
+    ],
+    "collision_point_pixel": [
+      627,
+      397
+    ],
+    "visible_sweep_ratio": 1.0,
+    "collision_point_visible": true,
+    "requires_hidden_geometry": false,
+    "bin_margin_body_widths": 0.6361351961323036,
+    "directional_records": {
+      "left-forward": {
+        "body_radius_m": 0.25,
+        "body_width_m": 0.5,
+        "max_safe_distance_m": 0.9770675181277795,
+        "max_safe_distance_body_widths": 1.954135036255559,
+        "collision_point_3d": [
+          -0.4089355038490569,
+          -0.1835562772958835,
+          0.9019607901573181
+        ],
+        "collision_point_pixel": [
+          144,
+          319
+        ],
+        "visible_sweep_ratio": 1.0,
+        "collision_point_visible": true,
+        "requires_hidden_geometry": false,
+        "bin_margin_body_widths": 0.045864963744441045
+      },
+      "straight": {
+        "body_radius_m": 0.25,
+        "body_width_m": 0.5,
+        "max_safe_distance_m": 1.215686321258545,
+        "max_safe_distance_body_widths": 2.43137264251709,
+        "collision_point_3d": [
+          -0.2474019468749026,
+          0.06889674469933996,
+          1.215686321258545
+        ],
+        "collision_point_pixel": [
+          241,
+          218
+        ],
+        "visible_sweep_ratio": 1.0,
+        "collision_point_visible": true,
+        "requires_hidden_geometry": false,
+        "bin_margin_body_widths": 0.43137264251708984
+      },
+      "right-forward": {
+        "body_radius_m": 0.25,
+        "body_width_m": 0.5,
+        "max_safe_distance_m": 1.6819324019338482,
+        "max_safe_distance_body_widths": 3.3638648038676964,
+        "collision_point_3d": [
+          1.0544636582836782,
+          -0.5392534017932816,
+          1.3333333730697632
+        ],
+        "collision_point_pixel": [
+          627,
+          397
+        ],
+        "visible_sweep_ratio": 1.0,
+        "collision_point_visible": true,
+        "requires_hidden_geometry": false,
+        "bin_margin_body_widths": 0.6361351961323036
+      }
+    },
+    "direction_margin_body_widths": 0.9324921613506065
+  }
+}

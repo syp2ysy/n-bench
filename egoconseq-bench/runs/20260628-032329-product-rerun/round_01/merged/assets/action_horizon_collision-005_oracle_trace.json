@@ -1,0 +1,23 @@
+{
+  "oracle": {
+    "body_radius_m": 0.25,
+    "body_width_m": 0.5,
+    "max_safe_distance_m": 1.058823585510254,
+    "max_safe_distance_body_widths": 2.117647171020508,
+    "collision_point_3d": [
+      -0.038186172836780705,
+      0.34640313930508215,
+      1.058823585510254
+    ],
+    "collision_point_pixel": [
+      306,
+      113
+    ],
+    "visible_sweep_ratio": 1.0,
+    "collision_point_visible": true,
+    "requires_hidden_geometry": false,
+    "bin_margin_body_widths": 0.11764717102050781,
+    "horizon_body_widths": 4.0,
+    "horizon_margin_body_widths": 1.8823528289794922
+  }
+}

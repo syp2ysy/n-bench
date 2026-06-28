@@ -1,0 +1,61 @@
+{
+  "oracle": {
+    "body_radius_m": 0.4,
+    "body_width_m": 0.8,
+    "max_safe_distance_m": 0.5882353186607361,
+    "max_safe_distance_body_widths": 0.7352941483259201,
+    "collision_point_3d": [
+      0.3985302913890107,
+      0.06818959358367103,
+      0.5882353186607361
+    ],
+    "collision_point_pixel": [
+      583,
+      195
+    ],
+    "visible_sweep_ratio": 1.0,
+    "collision_point_visible": true,
+    "requires_hidden_geometry": false,
+    "bin_margin_body_widths": 1.26470585167408,
+    "flip_pair_id": "1pXnuDYAj8r_r2r_000184-001-no-flip",
+    "small_body_oracle": {
+      "body_radius_m": 0.1,
+      "body_width_m": 0.2,
+      "max_safe_distance_m": 0.5882353186607361,
+      "max_safe_distance_body_widths": 2.9411765933036804,
+      "collision_point_3d": [
+        0.013637918716734207,
+        -0.23184461818448152,
+        0.5882353186607361
+      ],
+      "collision_point_pixel": [
+        329,
+        393
+      ],
+      "visible_sweep_ratio": 0.7976888020833333,
+      "collision_point_visible": true,
+      "requires_hidden_geometry": false,
+      "bin_margin_body_widths": 0.9411765933036804
+    },
+    "large_body_oracle": {
+      "body_radius_m": 0.4,
+      "body_width_m": 0.8,
+      "max_safe_distance_m": 0.5882353186607361,
+      "max_safe_distance_body_widths": 0.7352941483259201,
+      "collision_point_3d": [
+        0.3985302913890107,
+        0.06818959358367103,
+        0.5882353186607361
+      ],
+      "collision_point_pixel": [
+        583,
+        195
+      ],
+      "visible_sweep_ratio": 1.0,
+      "collision_point_visible": true,
+      "requires_hidden_geometry": false,
+      "bin_margin_body_widths": 1.26470585167408
+    },
+    "control_type": "noflip_neither_complete"
+  }
+}

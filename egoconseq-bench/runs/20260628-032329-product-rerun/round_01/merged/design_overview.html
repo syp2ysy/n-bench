@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Benchmark Design</title>
+  <style>
+
+    :root { color-scheme: light; font-family: Inter, Arial, sans-serif; }
+    body { margin: 0; background: #f5f6f8; color: #17191f; }
+    header, section { max-width: 1220px; margin: 0 auto; padding: 28px 24px; }
+    header { border-bottom: 1px solid #d7dce3; }
+    h1 { margin: 4px 0 10px; font-size: 32px; line-height: 1.1; }
+    h2 { margin: 0 0 14px; font-size: 22px; }
+    h3 { margin: 10px 0; font-size: 17px; line-height: 1.35; }
+    p { line-height: 1.5; }
+    .eyebrow { margin: 0; color: #657386; font-size: 12px; text-transform: uppercase; letter-spacing: .02em; }
+    .lead { max-width: 900px; color: #465261; }
+    .metrics { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 10px; margin-top: 16px; }
+    .metric { background: #fff; border: 1px solid #d7dce3; border-radius: 8px; padding: 14px; }
+    .metric strong { display: block; font-size: 26px; color: #102033; }
+    .metric span { color: #657386; font-size: 13px; }
+    .status-pass { color: #146b3a; font-weight: 700; }
+    .status-fail { color: #9a3412; font-weight: 700; }
+    .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 10px; margin: 12px 0 16px; }
+    .stat-card { background: #fff; border: 1px solid #d7dce3; border-radius: 8px; padding: 12px; }
+    .stat-card strong { display: block; color: #102033; font-size: 22px; overflow-wrap: anywhere; }
+    .stat-card span { color: #657386; font-size: 12px; }
+    .violation-list { display: grid; gap: 8px; margin: 10px 0 0; padding: 0; list-style: none; }
+    .violation-list li { border: 1px solid #f2c6a0; background: #fff7ed; color: #7c2d12; border-radius: 8px; padding: 10px 12px; }
+    table { border-collapse: collapse; width: 100%; background: #fff; border: 1px solid #d7dce3; }
+    th, td { border-bottom: 1px solid #d7dce3; padding: 10px 12px; text-align: left; vertical-align: top; }
+    th { width: 240px; background: #eef1f4; }
+    .category-table th { width: auto; }
+    .category-table td:first-child { font-weight: 700; color: #173f65; }
+    .two-col { display: grid; grid-template-columns: minmax(260px, 380px) 1fr; gap: 16px; align-items: start; }
+    .note { color: #465261; }
+    .case-group > p { color: #465261; max-width: 940px; }
+    .case-grid { display: grid; grid-template-columns: 1fr; gap: 16px; }
+    .case-card { display: grid; grid-template-columns: minmax(300px, 44%) 1fr; gap: 16px; padding: 14px; background: #fff; border: 1px solid #d7dce3; border-radius: 8px; }
+    .media { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; align-content: start; }
+    .media figure { margin: 0; }
+    .media img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; border: 1px solid #d7dce3; border-radius: 6px 6px 0 0; background: #111827; display: block; }
+    .media figcaption { padding: 7px 8px; border: 1px solid #d7dce3; border-top: 0; border-radius: 0 0 6px 6px; color: #465261; background: #f8fafc; font-size: 12px; }
+    .case-body { min-width: 0; }
+    .case-meta { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px; color: #657386; font-size: 12px; }
+    .badge { display: inline-flex; align-items: center; min-height: 24px; padding: 0 8px; border-radius: 999px; background: #e8eef8; color: #29466f; font-size: 12px; }
+    .qa-grid { display: grid; grid-template-columns: minmax(180px, .8fr) 1fr; gap: 12px; }
+    .answer-box { border: 1px solid #b8c7d9; border-radius: 8px; padding: 10px 12px; background: #f2f7fd; }
+    .answer-box p { margin: 8px 0 0; font-size: 24px; line-height: 1.15; color: #173f65; font-weight: 700; overflow-wrap: anywhere; }
+    .evidence { margin-top: 10px; border-top: 1px solid #e0e5eb; }
+    .evidence p { display: grid; grid-template-columns: 132px 1fr; gap: 12px; margin: 0; padding: 9px 0; border-bottom: 1px solid #e8edf2; }
+    .evidence strong { color: #263445; }
+    .evidence span { color: #303b49; overflow-wrap: anywhere; }
+    ul { margin: 6px 0 0; padding-left: 18px; }
+    .empty { background: #fff; border: 1px solid #d7dce3; border-left: 5px solid #c08428; border-radius: 8px; padding: 16px; color: #6b4511; }
+    @media (max-width: 820px) {
+      h1 { font-size: 28px; }
+      .two-col, .case-card, .qa-grid, .evidence p { grid-template-columns: 1fr; }
+      .media { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+        <header>
+          <p class="eyebrow">EgoConseq-Bench</p>
+          <h1>GOAL: EgoConseq-Bench</h1>
+          <p class="lead">Evaluate whether MLLMs can bind visible egocentric geometry, ego body footprint, and a hypothetical local action into body-conditioned swept-volume consequences from RGB plus question only, within the currently visible local space.</p>
+          <div class="metrics">
+            <div class="metric"><strong>showcase</strong><span>workflow phase</span></div>
+            <div class="metric"><strong>5</strong><span>designed categories</span></div>
+            <div class="metric"><strong>50</strong><span>accepted R2R cases</span></div>
+          </div>
+        </header>
+        <section>
+          <div class="two-col">
+            <div>
+              <h2>Design Rule</h2>
+              <p class="note">The taxonomy must be derived from the goal: test whether an MLLM grounds ego pose, body footprint, action, and visible depth in navigation scenes. It must not reuse T1-T5 as the final taxonomy.</p>
+            </div>
+            <table>
+              <tr><th>Status</th><td>frozen</td></tr>
+              <tr><th>Source Dataset</th><td>R2R</td></tr>
+              <tr><th>Reference Policy</th><td>Use prior spatial, affordance, navigation, and collision benchmarks only as methodology motivation; do not copy their taxonomies, do not keep legacy T1/T2/T3/T4/T5 ids or titles, and do not expose depth, pose, overlays, or navmesh to the evaluated model. Every category must avoid scene-answer leakage, use finite visible-evidence horizons where needed, enforce answer and conditional balance, and report scan/episode coverage to reduce majority, radius-only, action-only, and scene-prior shortcuts.</td></tr>
+            </table>
+          </div>
+        </section>
+        <section>
+          <h2>Frozen Category Design</h2>
+          <table class="category-table">
+            <tr><th>Category</th><th>QA Type</th><th>Motivation Link</th><th>R2R Labeling Rule</th><th>Acceptance Criteria</th><th>Cases</th></tr>
+            <tr><td>Forward Body Clearance</td><td>4-way body-width distance bin</td><td>H1: tests body-relative clearance estimation before first contact for straight ego motion.</td><td>Compute metric d_safe_m(r,0) by intersecting a radius-r ground-plane swept corridor with R2R depth/pose-derived visible obstacles; convert to d_safe_bw=d_safe_m/(2r) and bin as &lt;2, 2-4, 4-8, or &gt;8 body-widths.</td><td>Accept only visible-local-space cases with visible_sweep_ratio&gt;=0.7, requires_hidden_geometry=false, ambiguous=false, bin_margin_body_widths&gt;=0.5, stable labels under small oracle perturbations, no fixed image-box depth-quantile GT, no answer-revealing prompt adjectives, category max answer share&lt;=0.40, and scan/episode coverage reported.</td><td>10</td></tr><tr><td>Action-Horizon Collision</td><td>yes/no collision within a specified turn-and-forward horizon</td><td>H1: tests action-conditioned swept-volume projection rather than central free-space priors.</td><td>For theta in {-30,-15,15,30} degrees and H in {2,4} body-widths, label collision iff d_safe_bw(r,theta)&lt;H using the radius-r swept-corridor oracle.</td><td>Require abs(d_safe_bw-H)&gt;=0.5 body-widths, visible_sweep_ratio&gt;=0.7, collision_point_visible=true for collision labels, requires_hidden_geometry=false for no-collision labels, ambiguous=false, no answer-revealing prompt wording, max yes/no answer share&lt;=0.65, conditional balance by theta/H/radius checked, and scan/episode coverage reported.</td><td>10</td></tr><tr><td>Directional Sweep Ranking</td><td>3-way longest visible swept-distance choice</td><td>H1: tests multi-action comparison and direction binding by comparing left-front, straight, and right-front swept corridors in the same image.</td><td>Compute d_safe_bw(r,-30), d_safe_bw(r,0), and d_safe_bw(r,30) up to a shared finite visible_eval_horizon_bw; cap no-contact distances at that validated visible horizon and label the unique largest capped visible distance.</td><td>All three corridors must satisfy visibility and ambiguity filters; top1-top2&gt;=0.5 body-widths; capped ties are rejected unless a separate tie option is explicitly used; requires_hidden_geometry=false; max answer share&lt;=0.48; direction-conditioned balance checked; and cases spanning multiple scans/episodes reported.</td><td>10</td></tr><tr><td>Body Counterfactual Flip</td><td>same-image 3-way body comparison over the same metric action distance</td><td>H3: tests whether body radius is used as the collision operator while same RGB, pose, action, and metric movement distance are held fixed.</td><td>For the same RGB/depth/pose/action and same distance_m, compute d_safe_m for r_small and r_large. Label as both-safe, small-only, or neither-safe according to whether each body can complete distance_m without contact. Exclude only-large-safe as physically impossible under radius monotonicity.</td><td>Require legal start poses for all radii, metric monotonicity d_safe_m(r_small)&gt;=d_safe_m(r_large) within tolerance, real flip cases where small passes and large fails, no-flip controls where both pass or neither passes, visible large collision for flip cases, sufficient visible small-body corridor evidence, requires_hidden_geometry=false, no body-wording leakage beyond stated radii, max answer share&lt;=0.48 across the three physical labels, and balance across scans/episodes.</td><td>10</td></tr><tr><td>First-Contact Region</td><td>optional 4-way diagnostic region choice</td><td>H1 diagnostic: checks whether collision judgments are grounded to visible first-contact evidence rather than only to a yes/no language prior. It is not part of the v1 survival gate.</td><td>For straight motion up to a finite diagnostic horizon, project the corridor oracle&#x27;s visible collision_point_3d into the RGB image and bucket it as lower-left, lower-center, or lower-right; use no visible contact only when no visible contact occurs within that horizon.</td><td>Optional diagnostic only; require collision_point_visible for contact labels, projected pixel sufficiently far from region boundaries, perturbation-stable region assignment, no forced-contact wording, requires_hidden_geometry=false, max answer share&lt;=0.40, and exclusion from core survival-gate counts.</td><td>10</td></tr>
+          </table>
+        </section>
+        
+    <section>
+      <h2>Validity & Statistics</h2>
+      <p class="note">These numbers come from the deterministic R2R manifest and hard validity gate. The showcase is not considered ready unless this gate passes.</p>
+      <div class="stat-grid">
+        <div class="stat-card"><strong><span class="status-pass">passed</span></strong><span>hard validity gate</span></div>
+        <div class="stat-card"><strong>50</strong><span>accepted cases</span></div>
+        <div class="stat-card"><strong>24</strong><span>scan coverage</span></div>
+        <div class="stat-card"><strong>24</strong><span>episode coverage</span></div>
+        <div class="stat-card"><strong>0.76328125</strong><span>visible_sweep_ratio_min</span></div>
+        <div class="stat-card"><strong>0</strong><span>hidden geometry cases</span></div>
+        <div class="stat-card"><strong>0</strong><span>ambiguous cases</span></div>
+        <div class="stat-card"><strong>0</strong><span>radius monotonicity violations</span></div>
+      </div>
+      <h3>Answer Distribution</h3>
+      <table class="category-table"><tr><th>Category</th><th>Total</th><th>Answers</th></tr><tr><td>action_horizon_collision</td><td>10</td><td>no: 4, yes: 6</td></tr><tr><td>body_counterfactual_flip</td><td>10</td><td>both: 2, neither: 4, small-only: 4</td></tr><tr><td>directional_sweep_ranking</td><td>10</td><td>left-forward: 2, right-forward: 4, straight: 4</td></tr><tr><td>first_contact_region</td><td>10</td><td>center: 4, lower-left: 4, right: 2</td></tr><tr><td>forward_body_clearance</td><td>10</td><td>2-4: 2, 4-8: 2, &lt;2: 4, &gt;8: 2</td></tr></table>
+      <h3>Gate Violations</h3>
+      <p class="note">No hard-gate violations recorded.</p>
+    </section>
+    
+        <section>
+          <h2>Consensus Votes</h2>
+          <ul><li>benchmark_methodologist: approve</li><li>r2r_grounder: approve</li><li>shortcut_reviewer: approve</li><li>arbiter: approve</li></ul>
+        </section>
+        <section>
+          <h2>Agent Findings</h2>
+          <ul><li>No agent findings generated yet.</li></ul>
+        </section>
+        <section>
+          <h2>Agent Recommendations</h2>
+          <ul><li>No recommendations generated yet.</li></ul>
+        </section>
+        
+</body>
+</html>
