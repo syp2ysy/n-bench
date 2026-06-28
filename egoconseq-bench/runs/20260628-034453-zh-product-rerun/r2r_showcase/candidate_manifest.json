@@ -1,8 +1,8 @@
 {
   "generator": "pipeline.make_r2r_showcase",
   "source": "/home/zhangshan/syp/datasets/StreamVLN-Trajectory-Data/R2R",
-  "design_path": "agent_loop/runs/20260628-032329-product-rerun/pipeline_inputs/design.json",
-  "instantiation_spec_path": "agent_loop/runs/20260628-032329-product-rerun/pipeline_inputs/instantiation_spec.json",
+  "design_path": "agent_loop/runs/20260628-034453-zh-product-rerun/pipeline_inputs/design.json",
+  "instantiation_spec_path": "agent_loop/runs/20260628-034453-zh-product-rerun/pipeline_inputs/instantiation_spec.json",
   "gt_method": "R2R depth+pose swept-corridor first contact",
   "target_per_category": 10,
   "categories": [

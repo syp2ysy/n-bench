@@ -1,0 +1,1354 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>R2R 案例展示</title>
+  <style>
+
+    :root { color-scheme: light; font-family: Inter, Arial, sans-serif; }
+    body { margin: 0; background: #f5f6f8; color: #17191f; }
+    header, section { max-width: 1220px; margin: 0 auto; padding: 28px 24px; }
+    header { border-bottom: 1px solid #d7dce3; }
+    h1 { margin: 4px 0 10px; font-size: 32px; line-height: 1.1; }
+    h2 { margin: 0 0 14px; font-size: 22px; }
+    h3 { margin: 10px 0; font-size: 17px; line-height: 1.35; }
+    p { line-height: 1.5; }
+    .eyebrow { margin: 0; color: #657386; font-size: 12px; text-transform: uppercase; letter-spacing: .02em; }
+    .lead { max-width: 900px; color: #465261; }
+    .metrics { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 10px; margin-top: 16px; }
+    .metric { background: #fff; border: 1px solid #d7dce3; border-radius: 8px; padding: 14px; }
+    .metric strong { display: block; font-size: 26px; color: #102033; }
+    .metric span { color: #657386; font-size: 13px; }
+    .status-pass { color: #146b3a; font-weight: 700; }
+    .status-fail { color: #9a3412; font-weight: 700; }
+    .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 10px; margin: 12px 0 16px; }
+    .stat-card { background: #fff; border: 1px solid #d7dce3; border-radius: 8px; padding: 12px; }
+    .stat-card strong { display: block; color: #102033; font-size: 22px; overflow-wrap: anywhere; }
+    .stat-card span { color: #657386; font-size: 12px; }
+    .violation-list { display: grid; gap: 8px; margin: 10px 0 0; padding: 0; list-style: none; }
+    .violation-list li { border: 1px solid #f2c6a0; background: #fff7ed; color: #7c2d12; border-radius: 8px; padding: 10px 12px; }
+    table { border-collapse: collapse; width: 100%; background: #fff; border: 1px solid #d7dce3; }
+    th, td { border-bottom: 1px solid #d7dce3; padding: 10px 12px; text-align: left; vertical-align: top; }
+    th { width: 240px; background: #eef1f4; }
+    .category-table th { width: auto; }
+    .category-table td:first-child { font-weight: 700; color: #173f65; }
+    .two-col { display: grid; grid-template-columns: minmax(260px, 380px) 1fr; gap: 16px; align-items: start; }
+    .note { color: #465261; }
+    .case-group > p { color: #465261; max-width: 940px; }
+    .case-grid { display: grid; grid-template-columns: 1fr; gap: 16px; }
+    .case-card { display: grid; grid-template-columns: minmax(300px, 44%) 1fr; gap: 16px; padding: 14px; background: #fff; border: 1px solid #d7dce3; border-radius: 8px; }
+    .media { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; align-content: start; }
+    .media figure { margin: 0; }
+    .media img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; border: 1px solid #d7dce3; border-radius: 6px 6px 0 0; background: #111827; display: block; }
+    .media figcaption { padding: 7px 8px; border: 1px solid #d7dce3; border-top: 0; border-radius: 0 0 6px 6px; color: #465261; background: #f8fafc; font-size: 12px; }
+    .case-body { min-width: 0; }
+    .case-meta { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px; color: #657386; font-size: 12px; }
+    .badge { display: inline-flex; align-items: center; min-height: 24px; padding: 0 8px; border-radius: 999px; background: #e8eef8; color: #29466f; font-size: 12px; }
+    .qa-grid { display: grid; grid-template-columns: minmax(180px, .8fr) 1fr; gap: 12px; }
+    .answer-box { border: 1px solid #b8c7d9; border-radius: 8px; padding: 10px 12px; background: #f2f7fd; }
+    .answer-box p { margin: 8px 0 0; font-size: 24px; line-height: 1.15; color: #173f65; font-weight: 700; overflow-wrap: anywhere; }
+    .evidence { margin-top: 10px; border-top: 1px solid #e0e5eb; }
+    .evidence p { display: grid; grid-template-columns: 132px 1fr; gap: 12px; margin: 0; padding: 9px 0; border-bottom: 1px solid #e8edf2; }
+    .evidence strong { color: #263445; }
+    .evidence span { color: #303b49; overflow-wrap: anywhere; }
+    ul { margin: 6px 0 0; padding-left: 18px; }
+    .empty { background: #fff; border: 1px solid #d7dce3; border-left: 5px solid #c08428; border-radius: 8px; padding: 16px; color: #6b4511; }
+    @media (max-width: 820px) {
+      h1 { font-size: 28px; }
+      .two-col, .case-card, .qa-grid, .evidence p { grid-template-columns: 1fr; }
+      .media { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+        <header>
+          <p class="eyebrow">EgoConseq-Bench</p>
+          <h1>R2R 案例展示</h1>
+          <p class="lead">下面每张卡片都来自真实 R2R RGB、提取深度和相机位姿；GT 答案由深度/位姿字段确定性计算得到，不是 LLM 编写的占位样例。</p>
+        </header>
+        
+            <section class="case-group" id="forward_body_clearance">
+              <h2>前向身体净空</h2>
+              <p>检验模型能否把第一人称图像中的可见几何、机器人身体宽度和直行动作绑定起来，判断首次接触前还能前进多远。</p>
+              <div class="case-grid">
+    <article class="case-card">
+      <div class="media"><figure><img src="assets/forward_body_clearance-001_sweep_overlay.jpg" alt="forward_body_clearance-001 R2R RGB 与身体扫掠走廊叠加图"><figcaption>R2R RGB 与身体扫掠走廊叠加图</figcaption></figure><figure><img src="assets/forward_body_clearance-001_depth.jpg" alt="forward_body_clearance-001 提取深度预览"><figcaption>提取深度预览</figcaption></figure></div>
+      <div class="case-body">
+        <div class="case-meta">
+          <span>forward_body_clearance-001</span>
+          <span>1LXtFkjw3qL · 帧 001</span>
+        </div>
+        <p><span class="badge">单选题</span></p>
+        <h3>机器人为圆柱体，半径 0.25 m、宽 0.5 m。只看当前第一人称图像中的可见局部空间，若它正前方直行，首次物理接触前大约能前进几个身体宽度？</h3>
+        <div class="qa-grid">
+          <div><strong>选项</strong><ul><li>小于 2 个身体宽度</li><li>2 到 4 个身体宽度</li><li>4 到 8 个身体宽度</li><li>大于 8 个身体宽度</li></ul></div>
+          <div class="answer-box"><strong>GT 答案</strong><p>4 到 8 个身体宽度</p></div>
+        </div>
+        <div class="evidence">
+          <p><strong>GT 推导</strong><span>由深度、相机位姿和身体扫掠走廊求交得到：扫掠走廊首次接触距离约为 4.71 个身体宽度。</span></p>
+          <p><strong>几何 oracle</strong><span>安全距离=4.71 个身体宽度；首次接触像素=[321, 142]。</span></p>
+          <p><strong>可见性</strong><span>可见扫掠比例=1；接触点可见=是；依赖隐藏几何=否。</span></p>
+          <p><strong>身体与动作</strong><span>半径=0.25 m；宽度=0.5 m；动作方向=正前方。</span></p>
+          <p><strong>位姿</strong><span>位置=[-0.3167470097541809, 4.734411239624023, 14.130499839782715], 四元数=[-0.7071067690849304, 0.0, 0.7071067690849304, -0.0], 水平视场=79.0</span></p>
+          <p><strong>来源</strong><span>R2R 提取的 RGB/深度/位姿 · 轨迹 1LXtFkjw3qL_r2r_000085</span></p>
+          <p><strong>备注</strong><span>原始英文导航指令仅用于数据溯源，不作为被测模型输入展示。</span></p>
+        </div>
+      </div>
+    </article>
+    
+    <article class="case-card">
+      <div class="media"><figure><img src="assets/forward_body_clearance-002_sweep_overlay.jpg" alt="forward_body_clearance-002 R2R RGB 与身体扫掠走廊叠加图"><figcaption>R2R RGB 与身体扫掠走廊叠加图</figcaption></figure><figure><img src="assets/forward_body_clearance-002_depth.jpg" alt="forward_body_clearance-002 提取深度预览"><figcaption>提取深度预览</figcaption></figure></div>
+      <div class="case-body">
+        <div class="case-meta">
+          <span>forward_body_clearance-002</span>
+          <span>1pXnuDYAj8r · 帧 001</span>
+        </div>
+        <p><span class="badge">单选题</span></p>
+        <h3>机器人为圆柱体，半径 0.25 m、宽 0.5 m。只看当前第一人称图像中的可见局部空间，若它正前方直行，首次物理接触前大约能前进几个身体宽度？</h3>
+        <div class="qa-grid">
+          <div><strong>选项</strong><ul><li>小于 2 个身体宽度</li><li>2 到 4 个身体宽度</li><li>4 到 8 个身体宽度</li><li>大于 8 个身体宽度</li></ul></div>
+          <div class="answer-box"><strong>GT 答案</strong><p>小于 2 个身体宽度</p></div>
+        </div>
+        <div class="evidence">
+          <p><strong>GT 推导</strong><span>由深度、相机位姿和身体扫掠走廊求交得到：扫掠走廊首次接触距离约为 1.18 个身体宽度。</span></p>
+          <p><strong>几何 oracle</strong><span>安全距离=1.18 个身体宽度；首次接触像素=[329, 393]。</span></p>
+          <p><strong>可见性</strong><span>可见扫掠比例=0.91；接触点可见=是；依赖隐藏几何=否。</span></p>
+          <p><strong>身体与动作</strong><span>半径=0.25 m；宽度=0.5 m；动作方向=正前方。</span></p>
+          <p><strong>位姿</strong><span>位置=[9.927780151367188, 3.8800408840179443, -3.7776501178741455], 四元数=[6.123234262925839e-17, 0.0, 1.0, 0.0], 水平视场=79.0</span></p>
+          <p><strong>来源</strong><span>R2R 提取的 RGB/深度/位姿 · 轨迹 1pXnuDYAj8r_r2r_000184</span></p>
+          <p><strong>备注</strong><span>原始英文导航指令仅用于数据溯源，不作为被测模型输入展示。</span></p>
+        </div>
+      </div>
+    </article>
+    
+    <article class="case-card">
+      <div class="media"><figure><img src="assets/forward_body_clearance-003_sweep_overlay.jpg" alt="forward_body_clearance-003 R2R RGB 与身体扫掠走廊叠加图"><figcaption>R2R RGB 与身体扫掠走廊叠加图</figcaption></figure><figure><img src="assets/forward_body_clearance-003_depth.jpg" alt="forward_body_clearance-003 提取深度预览"><figcaption>提取深度预览</figcaption></figure></div>
+      <div class="case-body">
+        <div class="case-meta">
+          <span>forward_body_clearance-003</span>
+          <span>7y3sRwLe3Va · 帧 001</span>
+        </div>
+        <p><span class="badge">单选题</span></p>
+        <h3>机器人为圆柱体，半径 0.25 m、宽 0.5 m。只看当前第一人称图像中的可见局部空间，若它正前方直行，首次物理接触前大约能前进几个身体宽度？</h3>
+        <div class="qa-grid">
+          <div><strong>选项</strong><ul><li>小于 2 个身体宽度</li><li>2 到 4 个身体宽度</li><li>4 到 8 个身体宽度</li><li>大于 8 个身体宽度</li></ul></div>
+          <div class="answer-box"><strong>GT 答案</strong><p>大于 8 个身体宽度</p></div>
+        </div>
+        <div class="evidence">
+          <p><strong>GT 推导</strong><span>由深度、相机位姿和身体扫掠走廊求交得到：扫掠走廊首次接触距离约为 10.12 个身体宽度。</span></p>
+          <p><strong>几何 oracle</strong><span>安全距离=10.12 个身体宽度；首次接触像素=[335, 194]。</span></p>
+          <p><strong>可见性</strong><span>可见扫掠比例=0.81；接触点可见=是；依赖隐藏几何=否。</span></p>
+          <p><strong>身体与动作</strong><span>半径=0.25 m；宽度=0.5 m；动作方向=正前方。</span></p>
+          <p><strong>位姿</strong><span>位置=[-16.267200469970703, 1.4018409252166748, 0.7207760214805603], 四元数=[-0.7071067690849304, 0.0, 0.7071067690849304, -0.0], 水平视场=79.0</span></p>
+          <p><strong>来源</strong><span>R2R 提取的 RGB/深度/位姿 · 轨迹 7y3sRwLe3Va_r2r_000001</span></p>
+          <p><strong>备注</strong><span>原始英文导航指令仅用于数据溯源，不作为被测模型输入展示。</span></p>
+        </div>
+      </div>
+    </article>
+    
+    <article class="case-card">
+      <div class="media"><figure><img src="assets/forward_body_clearance-004_sweep_overlay.jpg" alt="forward_body_clearance-004 R2R RGB 与身体扫掠走廊叠加图"><figcaption>R2R RGB 与身体扫掠走廊叠加图</figcaption></figure><figure><img src="assets/forward_body_clearance-004_depth.jpg" alt="forward_body_clearance-004 提取深度预览"><figcaption>提取深度预览</figcaption></figure></div>
+      <div class="case-body">
+        <div class="case-meta">
+          <span>forward_body_clearance-004</span>
+          <span>82sE5b5pLXE · 帧 001</span>
+        </div>
+        <p><span class="badge">单选题</span></p>
+        <h3>机器人为圆柱体，半径 0.25 m、宽 0.5 m。只看当前第一人称图像中的可见局部空间，若它正前方直行，首次物理接触前大约能前进几个身体宽度？</h3>
+        <div class="qa-grid">
+          <div><strong>选项</strong><ul><li>小于 2 个身体宽度</li><li>2 到 4 个身体宽度</li><li>4 到 8 个身体宽度</li><li>大于 8 个身体宽度</li></ul></div>
+          <div class="answer-box"><strong>GT 答案</strong><p>小于 2 个身体宽度</p></div>
+        </div>
+        <div class="evidence">
+          <p><strong>GT 推导</strong><span>由深度、相机位姿和身体扫掠走廊求交得到：扫掠走廊首次接触距离约为 0.63 个身体宽度。</span></p>
+          <p><strong>几何 oracle</strong><span>安全距离=0.63 个身体宽度；首次接触像素=[11, 249]。</span></p>
+          <p><strong>可见性</strong><span>可见扫掠比例=1；接触点可见=是；依赖隐藏几何=否。</span></p>
+          <p><strong>身体与动作</strong><span>半径=0.25 m；宽度=0.5 m；动作方向=正前方。</span></p>
+          <p><strong>位姿</strong><span>位置=[-9.088859558105469, 0.8798840045928955, -8.641449928283691], 四元数=[0.5, 0.0, 0.8660253882408142, 0.0], 水平视场=79.0</span></p>
+          <p><strong>来源</strong><span>R2R 提取的 RGB/深度/位姿 · 轨迹 82sE5b5pLXE_r2r_000022</span></p>
+          <p><strong>备注</strong><span>原始英文导航指令仅用于数据溯源，不作为被测模型输入展示。</span></p>
+        </div>
+      </div>
+    </article>
+    
+    <article class="case-card">
+      <div class="media"><figure><img src="assets/forward_body_clearance-005_sweep_overlay.jpg" alt="forward_body_clearance-005 R2R RGB 与身体扫掠走廊叠加图"><figcaption>R2R RGB 与身体扫掠走廊叠加图</figcaption></figure><figure><img src="assets/forward_body_clearance-005_depth.jpg" alt="forward_body_clearance-005 提取深度预览"><figcaption>提取深度预览</figcaption></figure></div>
+      <div class="case-body">
+        <div class="case-meta">
+          <span>forward_body_clearance-005</span>
+          <span>D7N2EKCX4Sj · 帧 001</span>
+        </div>
+        <p><span class="badge">单选题</span></p>
+        <h3>机器人为圆柱体，半径 0.25 m、宽 0.5 m。只看当前第一人称图像中的可见局部空间，若它正前方直行，首次物理接触前大约能前进几个身体宽度？</h3>
+        <div class="qa-grid">
+          <div><strong>选项</strong><ul><li>小于 2 个身体宽度</li><li>2 到 4 个身体宽度</li><li>4 到 8 个身体宽度</li><li>大于 8 个身体宽度</li></ul></div>
+          <div class="answer-box"><strong>GT 答案</strong><p>2 到 4 个身体宽度</p></div>
+        </div>
+        <div class="evidence">
+          <p><strong>GT 推导</strong><span>由深度、相机位姿和身体扫掠走廊求交得到：扫掠走廊首次接触距离约为 3.45 个身体宽度。</span></p>
+          <p><strong>几何 oracle</strong><span>安全距离=3.45 个身体宽度；首次接触像素=[273, 470]。</span></p>
+          <p><strong>可见性</strong><span>可见扫掠比例=1；接触点可见=是；依赖隐藏几何=否。</span></p>
+          <p><strong>身体与动作</strong><span>半径=0.25 m；宽度=0.5 m；动作方向=正前方。</span></p>
+          <p><strong>位姿</strong><span>位置=[-5.212649822235107, -1.942077875137329, -2.9409799575805664], 四元数=[0.7071067690849304, 0.0, 0.7071067690849304, 0.0], 水平视场=79.0</span></p>
+          <p><strong>来源</strong><span>R2R 提取的 RGB/深度/位姿 · 轨迹 D7N2EKCX4Sj_r2r_000205</span></p>
+          <p><strong>备注</strong><span>原始英文导航指令仅用于数据溯源，不作为被测模型输入展示。</span></p>
+        </div>
+      </div>
+    </article>
+    
+    <article class="case-card">
+      <div class="media"><figure><img src="assets/forward_body_clearance-006_sweep_overlay.jpg" alt="forward_body_clearance-006 R2R RGB 与身体扫掠走廊叠加图"><figcaption>R2R RGB 与身体扫掠走廊叠加图</figcaption></figure><figure><img src="assets/forward_body_clearance-006_depth.jpg" alt="forward_body_clearance-006 提取深度预览"><figcaption>提取深度预览</figcaption></figure></div>
+      <div class="case-body">
+        <div class="case-meta">
+          <span>forward_body_clearance-006</span>
+          <span>HxpKQynjfin · 帧 001</span>
+        </div>
+        <p><span class="badge">单选题</span></p>
+        <h3>机器人为圆柱体，半径 0.25 m、宽 0.5 m。只看当前第一人称图像中的可见局部空间，若它正前方直行，首次物理接触前大约能前进几个身体宽度？</h3>
+        <div class="qa-grid">
+          <div><strong>选项</strong><ul><li>小于 2 个身体宽度</li><li>2 到 4 个身体宽度</li><li>4 到 8 个身体宽度</li><li>大于 8 个身体宽度</li></ul></div>
+          <div class="answer-box"><strong>GT 答案</strong><p>小于 2 个身体宽度</p></div>
+        </div>
+        <div class="evidence">
+          <p><strong>GT 推导</strong><span>由深度、相机位姿和身体扫掠走廊求交得到：扫掠走廊首次接触距离约为 0.78 个身体宽度。</span></p>
+          <p><strong>几何 oracle</strong><span>安全距离=0.78 个身体宽度；首次接触像素=[345, 405]。</span></p>
+          <p><strong>可见性</strong><span>可见扫掠比例=1；接触点可见=是；依赖隐藏几何=否。</span></p>
+          <p><strong>身体与动作</strong><span>半径=0.25 m；宽度=0.5 m；动作方向=正前方。</span></p>
+          <p><strong>位姿</strong><span>位置=[1.0473899841308594, 1.2598249912261963, 5.510900020599365], 四元数=[0.8660253882408142, 0.0, 0.5, 0.0], 水平视场=79.0</span></p>
+          <p><strong>来源</strong><span>R2R 提取的 RGB/深度/位姿 · 轨迹 HxpKQynjfin_r2r_002954</span></p>
+          <p><strong>备注</strong><span>原始英文导航指令仅用于数据溯源，不作为被测模型输入展示。</span></p>
+        </div>
+      </div>
+    </article>
+    
+    <article class="case-card">
+      <div class="media"><figure><img src="assets/forward_body_clearance-007_sweep_overlay.jpg" alt="forward_body_clearance-007 R2R RGB 与身体扫掠走廊叠加图"><figcaption>R2R RGB 与身体扫掠走廊叠加图</figcaption></figure><figure><img src="assets/forward_body_clearance-007_depth.jpg" alt="forward_body_clearance-007 提取深度预览"><figcaption>提取深度预览</figcaption></figure></div>
+      <div class="case-body">
+        <div class="case-meta">
+          <span>forward_body_clearance-007</span>
+          <span>JF19kD82Mey · 帧 001</span>
+        </div>
+        <p><span class="badge">单选题</span></p>
+        <h3>机器人为圆柱体，半径 0.25 m、宽 0.5 m。只看当前第一人称图像中的可见局部空间，若它正前方直行，首次物理接触前大约能前进几个身体宽度？</h3>
+        <div class="qa-grid">
+          <div><strong>选项</strong><ul><li>小于 2 个身体宽度</li><li>2 到 4 个身体宽度</li><li>4 到 8 个身体宽度</li><li>大于 8 个身体宽度</li></ul></div>
+          <div class="answer-box"><strong>GT 答案</strong><p>小于 2 个身体宽度</p></div>
+        </div>
+        <div class="evidence">
+          <p><strong>GT 推导</strong><span>由深度、相机位姿和身体扫掠走廊求交得到：扫掠走廊首次接触距离约为 0.55 个身体宽度。</span></p>
+          <p><strong>几何 oracle</strong><span>安全距离=0.55 个身体宽度；首次接触像素=[23, 0]。</span></p>
+          <p><strong>可见性</strong><span>可见扫掠比例=1；接触点可见=是；依赖隐藏几何=否。</span></p>
+          <p><strong>身体与动作</strong><span>半径=0.25 m；宽度=0.5 m；动作方向=正前方。</span></p>
+          <p><strong>位姿</strong><span>位置=[-2.3408799171447754, 4.568902015686035, 3.6762900352478027], 四元数=[1.0, 0.0, 0.0, 0.0], 水平视场=79.0</span></p>
+          <p><strong>来源</strong><span>R2R 提取的 RGB/深度/位姿 · 轨迹 JF19kD82Mey_r2r_000130</span></p>
+          <p><strong>备注</strong><span>原始英文导航指令仅用于数据溯源，不作为被测模型输入展示。</span></p>
+        </div>
+      </div>
+    </article>
+    
+    <article class="case-card">
+      <div class="media"><figure><img src="assets/forward_body_clearance-008_sweep_overlay.jpg" alt="forward_body_clearance-008 R2R RGB 与身体扫掠走廊叠加图"><figcaption>R2R RGB 与身体扫掠走廊叠加图</figcaption></figure><figure><img src="assets/forward_body_clearance-008_depth.jpg" alt="forward_body_clearance-008 提取深度预览"><figcaption>提取深度预览</figcaption></figure></div>
+      <div class="case-body">
+        <div class="case-meta">
+          <span>forward_body_clearance-008</span>
+          <span>JeFG25nYj2p · 帧 001</span>
+        </div>
+        <p><span class="badge">单选题</span></p>
+        <h3>机器人为圆柱体，半径 0.25 m、宽 0.5 m。只看当前第一人称图像中的可见局部空间，若它正前方直行，首次物理接触前大约能前进几个身体宽度？</h3>
+        <div class="qa-grid">
+          <div><strong>选项</strong><ul><li>小于 2 个身体宽度</li><li>2 到 4 个身体宽度</li><li>4 到 8 个身体宽度</li><li>大于 8 个身体宽度</li></ul></div>
+          <div class="answer-box"><strong>GT 答案</strong><p>2 到 4 个身体宽度</p></div>
+        </div>
+        <div class="evidence">
+          <p><strong>GT 推导</strong><span>由深度、相机位姿和身体扫掠走廊求交得到：扫掠走廊首次接触距离约为 3.06 个身体宽度。</span></p>
+          <p><strong>几何 oracle</strong><span>安全距离=3.06 个身体宽度；首次接触像素=[257, 88]。</span></p>
+          <p><strong>可见性</strong><span>可见扫掠比例=1；接触点可见=是；依赖隐藏几何=否。</span></p>
+          <p><strong>身体与动作</strong><span>半径=0.25 m；宽度=0.5 m；动作方向=正前方。</span></p>
+          <p><strong>位姿</strong><span>位置=[0.7765120267868042, 1.3435840606689453, 3.553100109100342], 四元数=[1.0, 0.0, 0.0, 0.0], 水平视场=79.0</span></p>
+          <p><strong>来源</strong><span>R2R 提取的 RGB/深度/位姿 · 轨迹 JeFG25nYj2p_r2r_000052</span></p>
+          <p><strong>备注</strong><span>原始英文导航指令仅用于数据溯源，不作为被测模型输入展示。</span></p>
+        </div>
+      </div>
+    </article>
+    
+    <article class="case-card">
+      <div class="media"><figure><img src="assets/forward_body_clearance-009_sweep_overlay.jpg" alt="forward_body_clearance-009 R2R RGB 与身体扫掠走廊叠加图"><figcaption>R2R RGB 与身体扫掠走廊叠加图</figcaption></figure><figure><img src="assets/forward_body_clearance-009_depth.jpg" alt="forward_body_clearance-009 提取深度预览"><figcaption>提取深度预览</figcaption></figure></div>
+      <div class="case-body">
+        <div class="case-meta">
+          <span>forward_body_clearance-009</span>
+          <span>XcA2TqTSSAj · 帧 001</span>
+        </div>
+        <p><span class="badge">单选题</span></p>
+        <h3>机器人为圆柱体，半径 0.25 m、宽 0.5 m。只看当前第一人称图像中的可见局部空间，若它正前方直行，首次物理接触前大约能前进几个身体宽度？</h3>
+        <div class="qa-grid">
+          <div><strong>选项</strong><ul><li>小于 2 个身体宽度</li><li>2 到 4 个身体宽度</li><li>4 到 8 个身体宽度</li><li>大于 8 个身体宽度</li></ul></div>
+          <div class="answer-box"><strong>GT 答案</strong><p>大于 8 个身体宽度</p></div>
+        </div>
+        <div class="evidence">
+          <p><strong>GT 推导</strong><span>由深度、相机位姿和身体扫掠走廊求交得到：扫掠走廊首次接触距离约为 8.86 个身体宽度。</span></p>
+          <p><strong>几何 oracle</strong><span>安全距离=8.86 个身体宽度；首次接触像素=[323, 209]。</span></p>
+          <p><strong>可见性</strong><span>可见扫掠比例=0.76；接触点可见=是；依赖隐藏几何=否。</span></p>
+          <p><strong>身体与动作</strong><span>半径=0.25 m；宽度=0.5 m；动作方向=正前方。</span></p>
+          <p><strong>位姿</strong><span>位置=[1.9565399885177612, 3.386237144470215, 3.0863399505615234], 四元数=[0.9659258127212524, 0.0, 0.258819043636322, 0.0], 水平视场=79.0</span></p>
+          <p><strong>来源</strong><span>R2R 提取的 RGB/深度/位姿 · 轨迹 XcA2TqTSSAj_r2r_001763</span></p>
+          <p><strong>备注</strong><span>原始英文导航指令仅用于数据溯源，不作为被测模型输入展示。</span></p>
+        </div>
+      </div>
+    </article>
+    
+    <article class="case-card">
+      <div class="media"><figure><img src="assets/forward_body_clearance-010_sweep_overlay.jpg" alt="forward_body_clearance-010 R2R RGB 与身体扫掠走廊叠加图"><figcaption>R2R RGB 与身体扫掠走廊叠加图</figcaption></figure><figure><img src="assets/forward_body_clearance-010_depth.jpg" alt="forward_body_clearance-010 提取深度预览"><figcaption>提取深度预览</figcaption></figure></div>
+      <div class="case-body">
+        <div class="case-meta">
+          <span>forward_body_clearance-010</span>
+          <span>aayBHfsNo7d · 帧 001</span>
+        </div>
+        <p><span class="badge">单选题</span></p>
+        <h3>机器人为圆柱体，半径 0.25 m、宽 0.5 m。只看当前第一人称图像中的可见局部空间，若它正前方直行，首次物理接触前大约能前进几个身体宽度？</h3>
+        <div class="qa-grid">
+          <div><strong>选项</strong><ul><li>小于 2 个身体宽度</li><li>2 到 4 个身体宽度</li><li>4 到 8 个身体宽度</li><li>大于 8 个身体宽度</li></ul></div>
+          <div class="answer-box"><strong>GT 答案</strong><p>4 到 8 个身体宽度</p></div>
+        </div>
+        <div class="evidence">
+          <p><strong>GT 推导</strong><span>由深度、相机位姿和身体扫掠走廊求交得到：扫掠走廊首次接触距离约为 4.55 个身体宽度。</span></p>
+          <p><strong>几何 oracle</strong><span>安全距离=4.55 个身体宽度；首次接触像素=[300, 407]。</span></p>
+          <p><strong>可见性</strong><span>可见扫掠比例=0.79；接触点可见=是；依赖隐藏几何=否。</span></p>
+          <p><strong>身体与动作</strong><span>半径=0.25 m；宽度=0.5 m；动作方向=正前方。</span></p>
+          <p><strong>位姿</strong><span>位置=[15.147299766540527, 1.2782559394836426, 8.61886978149414], 四元数=[0.7071067690849304, 0.0, 0.7071067690849304, 0.0], 水平视场=79.0</span></p>
+          <p><strong>来源</strong><span>R2R 提取的 RGB/深度/位姿 · 轨迹 aayBHfsNo7d_r2r_000076</span></p>
+          <p><strong>备注</strong><span>原始英文导航指令仅用于数据溯源，不作为被测模型输入展示。</span></p>
+        </div>
+      </div>
+    </article>
+    </div>
+            </section>
+            
+            <section class="case-group" id="action_horizon_collision">
+              <h2>动作时域碰撞</h2>
+              <p>检验模型能否在给定动作方向和动作长度时，预测身体扫过区域内是否会发生物理接触。</p>
+              <div class="case-grid">
+    <article class="case-card">
+      <div class="media"><figure><img src="assets/action_horizon_collision-001_sweep_overlay.jpg" alt="action_horizon_collision-001 R2R RGB 与身体扫掠走廊叠加图"><figcaption>R2R RGB 与身体扫掠走廊叠加图</figcaption></figure><figure><img src="assets/action_horizon_collision-001_depth.jpg" alt="action_horizon_collision-001 提取深度预览"><figcaption>提取深度预览</figcaption></figure></div>
+      <div class="case-body">
+        <div class="case-meta">
+          <span>action_horizon_collision-001</span>
+          <span>17DRP5sb8fy · 帧 001</span>
+        </div>
+        <p><span class="badge">是/否题</span></p>
+        <h3>机器人半径 0.25 m。如果它向正前方运动 4 个身体宽度，在当前可见局部空间内身体是否会发生物理接触？</h3>
+        <div class="qa-grid">
+          <div><strong>选项</strong><ul><li>是，会发生接触</li><li>否，不会发生接触</li></ul></div>
+          <div class="answer-box"><strong>GT 答案</strong><p>否，不会发生接触</p></div>
+        </div>
+        <div class="evidence">
+          <p><strong>GT 推导</strong><span>由深度、相机位姿和身体扫掠走廊求交得到：扫掠走廊首次接触距离约为 7.92 个身体宽度。</span></p>
+          <p><strong>几何 oracle</strong><span>安全距离=7.92 个身体宽度；首次接触像素=[296, 308]。</span></p>
+          <p><strong>可见性</strong><span>可见扫掠比例=0.78；接触点可见=是；依赖隐藏几何=否。</span></p>
+          <p><strong>身体与动作</strong><span>半径=0.25 m；宽度=0.5 m；动作方向=正前方；动作长度=4 个身体宽度。</span></p>
+          <p><strong>位姿</strong><span>位置=[-10.293439865112305, 1.3224470615386963, 1.9079790115356445], 四元数=[-0.9659258127212524, 0.0, 0.258819043636322, -0.0], 水平视场=79.0</span></p>
+          <p><strong>来源</strong><span>R2R 提取的 RGB/深度/位姿 · 轨迹 17DRP5sb8fy_r2r_000515</span></p>
+          <p><strong>备注</strong><span>原始英文导航指令仅用于数据溯源，不作为被测模型输入展示。</span></p>
+        </div>
+      </div>
+    </article>
+    
+    <article class="case-card">
+      <div class="media"><figure><img src="assets/action_horizon_collision-002_sweep_overlay.jpg" alt="action_horizon_collision-002 R2R RGB 与身体扫掠走廊叠加图"><figcaption>R2R RGB 与身体扫掠走廊叠加图</figcaption></figure><figure><img src="assets/action_horizon_collision-002_depth.jpg" alt="action_horizon_collision-002 提取深度预览"><figcaption>提取深度预览</figcaption></figure></div>
+      <div class="case-body">
+        <div class="case-meta">
+          <span>action_horizon_collision-002</span>
+          <span>1LXtFkjw3qL · 帧 001</span>
+        </div>
+        <p><span class="badge">是/否题</span></p>
+        <h3>机器人半径 0.25 m。如果它向正前方运动 4 个身体宽度，在当前可见局部空间内身体是否会发生物理接触？</h3>
+        <div class="qa-grid">
+          <div><strong>选项</strong><ul><li>是，会发生接触</li><li>否，不会发生接触</li></ul></div>
+          <div class="answer-box"><strong>GT 答案</strong><p>否，不会发生接触</p></div>
+        </div>
+        <div class="evidence">
+          <p><strong>GT 推导</strong><span>由深度、相机位姿和身体扫掠走廊求交得到：扫掠走廊首次接触距离约为 4.71 个身体宽度。</span></p>
+          <p><strong>几何 oracle</strong><span>安全距离=4.71 个身体宽度；首次接触像素=[321, 142]。</span></p>
+          <p><strong>可见性</strong><span>可见扫掠比例=1；接触点可见=是；依赖隐藏几何=否。</span></p>
+          <p><strong>身体与动作</strong><span>半径=0.25 m；宽度=0.5 m；动作方向=正前方；动作长度=4 个身体宽度。</span></p>
+          <p><strong>位姿</strong><span>位置=[-0.3167470097541809, 4.734411239624023, 14.130499839782715], 四元数=[-0.7071067690849304, 0.0, 0.7071067690849304, -0.0], 水平视场=79.0</span></p>
+          <p><strong>来源</strong><span>R2R 提取的 RGB/深度/位姿 · 轨迹 1LXtFkjw3qL_r2r_000085</span></p>
+          <p><strong>备注</strong><span>原始英文导航指令仅用于数据溯源，不作为被测模型输入展示。</span></p>
+        </div>
+      </div>
+    </article>
+    
+    <article class="case-card">
+      <div class="media"><figure><img src="assets/action_horizon_collision-003_sweep_overlay.jpg" alt="action_horizon_collision-003 R2R RGB 与身体扫掠走廊叠加图"><figcaption>R2R RGB 与身体扫掠走廊叠加图</figcaption></figure><figure><img src="assets/action_horizon_collision-003_depth.jpg" alt="action_horizon_collision-003 提取深度预览"><figcaption>提取深度预览</figcaption></figure></div>
+      <div class="case-body">
+        <div class="case-meta">
+          <span>action_horizon_collision-003</span>
+          <span>1pXnuDYAj8r · 帧 001</span>
+        </div>
+        <p><span class="badge">是/否题</span></p>
+        <h3>机器人半径 0.25 m。如果它向正前方运动 4 个身体宽度，在当前可见局部空间内身体是否会发生物理接触？</h3>
+        <div class="qa-grid">
+          <div><strong>选项</strong><ul><li>是，会发生接触</li><li>否，不会发生接触</li></ul></div>
+          <div class="answer-box"><strong>GT 答案</strong><p>是，会发生接触</p></div>
+        </div>
+        <div class="evidence">
+          <p><strong>GT 推导</strong><span>由深度、相机位姿和身体扫掠走廊求交得到：扫掠走廊首次接触距离约为 1.18 个身体宽度。</span></p>
+          <p><strong>几何 oracle</strong><span>安全距离=1.18 个身体宽度；首次接触像素=[329, 393]。</span></p>
+          <p><strong>可见性</strong><span>可见扫掠比例=0.91；接触点可见=是；依赖隐藏几何=否。</span></p>
+          <p><strong>身体与动作</strong><span>半径=0.25 m；宽度=0.5 m；动作方向=正前方；动作长度=4 个身体宽度。</span></p>
+          <p><strong>位姿</strong><span>位置=[9.927780151367188, 3.8800408840179443, -3.7776501178741455], 四元数=[6.123234262925839e-17, 0.0, 1.0, 0.0], 水平视场=79.0</span></p>
+          <p><strong>来源</strong><span>R2R 提取的 RGB/深度/位姿 · 轨迹 1pXnuDYAj8r_r2r_000184</span></p>
+          <p><strong>备注</strong><span>原始英文导航指令仅用于数据溯源，不作为被测模型输入展示。</span></p>
+        </div>
+      </div>
+    </article>
+    
+    <article class="case-card">
+      <div class="media"><figure><img src="assets/action_horizon_collision-004_sweep_overlay.jpg" alt="action_horizon_collision-004 R2R RGB 与身体扫掠走廊叠加图"><figcaption>R2R RGB 与身体扫掠走廊叠加图</figcaption></figure><figure><img src="assets/action_horizon_collision-004_depth.jpg" alt="action_horizon_collision-004 提取深度预览"><figcaption>提取深度预览</figcaption></figure></div>
+      <div class="case-body">
+        <div class="case-meta">
+          <span>action_horizon_collision-004</span>
+          <span>29hnd4uzFmX · 帧 001</span>
+        </div>
+        <p><span class="badge">是/否题</span></p>
+        <h3>机器人半径 0.25 m。如果它向正前方运动 4 个身体宽度，在当前可见局部空间内身体是否会发生物理接触？</h3>
+        <div class="qa-grid">
+          <div><strong>选项</strong><ul><li>是，会发生接触</li><li>否，不会发生接触</li></ul></div>
+          <div class="answer-box"><strong>GT 答案</strong><p>是，会发生接触</p></div>
+        </div>
+        <div class="evidence">
+          <p><strong>GT 推导</strong><span>由深度、相机位姿和身体扫掠走廊求交得到：扫掠走廊首次接触距离约为 2.43 个身体宽度。</span></p>
+          <p><strong>几何 oracle</strong><span>安全距离=2.43 个身体宽度；首次接触像素=[241, 218]。</span></p>
+          <p><strong>可见性</strong><span>可见扫掠比例=1；接触点可见=是；依赖隐藏几何=否。</span></p>
+          <p><strong>身体与动作</strong><span>半径=0.25 m；宽度=0.5 m；动作方向=正前方；动作长度=4 个身体宽度。</span></p>
+          <p><strong>位姿</strong><span>位置=[-4.775169849395752, 1.0410419702529907, -8.342399597167969], 四元数=[-0.258819043636322, 0.0, 0.9659258127212524, -0.0], 水平视场=79.0</span></p>
+          <p><strong>来源</strong><span>R2R 提取的 RGB/深度/位姿 · 轨迹 29hnd4uzFmX_r2r_000160</span></p>
+          <p><strong>备注</strong><span>原始英文导航指令仅用于数据溯源，不作为被测模型输入展示。</span></p>
+        </div>
+      </div>
+    </article>
+    
+    <article class="case-card">
+      <div class="media"><figure><img src="assets/action_horizon_collision-005_sweep_overlay.jpg" alt="action_horizon_collision-005 R2R RGB 与身体扫掠走廊叠加图"><figcaption>R2R RGB 与身体扫掠走廊叠加图</figcaption></figure><figure><img src="assets/action_horizon_collision-005_depth.jpg" alt="action_horizon_collision-005 提取深度预览"><figcaption>提取深度预览</figcaption></figure></div>
+      <div class="case-body">
+        <div class="case-meta">
+          <span>action_horizon_collision-005</span>
+          <span>5LpN3gDmAk7 · 帧 001</span>
+        </div>
+        <p><span class="badge">是/否题</span></p>
+        <h3>机器人半径 0.25 m。如果它向正前方运动 4 个身体宽度，在当前可见局部空间内身体是否会发生物理接触？</h3>
+        <div class="qa-grid">
+          <div><strong>选项</strong><ul><li>是，会发生接触</li><li>否，不会发生接触</li></ul></div>
+          <div class="answer-box"><strong>GT 答案</strong><p>是，会发生接触</p></div>
+        </div>
+        <div class="evidence">
+          <p><strong>GT 推导</strong><span>由深度、相机位姿和身体扫掠走廊求交得到：扫掠走廊首次接触距离约为 2.12 个身体宽度。</span></p>
+          <p><strong>几何 oracle</strong><span>安全距离=2.12 个身体宽度；首次接触像素=[306, 113]。</span></p>
+          <p><strong>可见性</strong><span>可见扫掠比例=1；接触点可见=是；依赖隐藏几何=否。</span></p>
+          <p><strong>身体与动作</strong><span>半径=0.25 m；宽度=0.5 m；动作方向=正前方；动作长度=4 个身体宽度。</span></p>
+          <p><strong>位姿</strong><span>位置=[6.036600112915039, 4.365650177001953, 3.1862399578094482], 四元数=[0.7071067690849304, 0.0, 0.7071067690849304, 0.0], 水平视场=79.0</span></p>
+          <p><strong>来源</strong><span>R2R 提取的 RGB/深度/位姿 · 轨迹 5LpN3gDmAk7_r2r_000004</span></p>
+          <p><strong>备注</strong><span>原始英文导航指令仅用于数据溯源，不作为被测模型输入展示。</span></p>
+        </div>
+      </div>
+    </article>
+    
+    <article class="case-card">
+      <div class="media"><figure><img src="assets/action_horizon_collision-006_sweep_overlay.jpg" alt="action_horizon_collision-006 R2R RGB 与身体扫掠走廊叠加图"><figcaption>R2R RGB 与身体扫掠走廊叠加图</figcaption></figure><figure><img src="assets/action_horizon_collision-006_depth.jpg" alt="action_horizon_collision-006 提取深度预览"><figcaption>提取深度预览</figcaption></figure></div>
+      <div class="case-body">
+        <div class="case-meta">
+          <span>action_horizon_collision-006</span>
+          <span>5q7pvUzZiYa · 帧 001</span>
+        </div>
+        <p><span class="badge">是/否题</span></p>
+        <h3>机器人半径 0.25 m。如果它向正前方运动 4 个身体宽度，在当前可见局部空间内身体是否会发生物理接触？</h3>
+        <div class="qa-grid">
+          <div><strong>选项</strong><ul><li>是，会发生接触</li><li>否，不会发生接触</li></ul></div>
+          <div class="answer-box"><strong>GT 答案</strong><p>否，不会发生接触</p></div>
+        </div>
+        <div class="evidence">
+          <p><strong>GT 推导</strong><span>由深度、相机位姿和身体扫掠走廊求交得到：扫掠走廊首次接触距离约为 8.31 个身体宽度。</span></p>
+          <p><strong>几何 oracle</strong><span>安全距离=8.31 个身体宽度；首次接触像素=[343, 198]。</span></p>
+          <p><strong>可见性</strong><span>可见扫掠比例=0.87；接触点可见=是；依赖隐藏几何=否。</span></p>
+          <p><strong>身体与动作</strong><span>半径=0.25 m；宽度=0.5 m；动作方向=正前方；动作长度=4 个身体宽度。</span></p>
+          <p><strong>位姿</strong><span>位置=[25.59830093383789, 1.253425121307373, -3.1763598918914795], 四元数=[0.9659258127212524, 0.0, 0.258819043636322, 0.0], 水平视场=79.0</span></p>
+          <p><strong>来源</strong><span>R2R 提取的 RGB/深度/位姿 · 轨迹 5q7pvUzZiYa_r2r_000169</span></p>
+          <p><strong>备注</strong><span>原始英文导航指令仅用于数据溯源，不作为被测模型输入展示。</span></p>
+        </div>
+      </div>
+    </article>
+    
+    <article class="case-card">
+      <div class="media"><figure><img src="assets/action_horizon_collision-007_sweep_overlay.jpg" alt="action_horizon_collision-007 R2R RGB 与身体扫掠走廊叠加图"><figcaption>R2R RGB 与身体扫掠走廊叠加图</figcaption></figure><figure><img src="assets/action_horizon_collision-007_depth.jpg" alt="action_horizon_collision-007 提取深度预览"><figcaption>提取深度预览</figcaption></figure></div>
+      <div class="case-body">
+        <div class="case-meta">
+          <span>action_horizon_collision-007</span>
+          <span>759xd9YjKW5 · 帧 001</span>
+        </div>
+        <p><span class="badge">是/否题</span></p>
+        <h3>机器人半径 0.25 m。如果它向正前方运动 4 个身体宽度，在当前可见局部空间内身体是否会发生物理接触？</h3>
+        <div class="qa-grid">
+          <div><strong>选项</strong><ul><li>是，会发生接触</li><li>否，不会发生接触</li></ul></div>
+          <div class="answer-box"><strong>GT 答案</strong><p>是，会发生接触</p></div>
+        </div>
+        <div class="evidence">
+          <p><strong>GT 推导</strong><span>由深度、相机位姿和身体扫掠走廊求交得到：扫掠走廊首次接触距离约为 1.96 个身体宽度。</span></p>
+          <p><strong>几何 oracle</strong><span>安全距离=1.96 个身体宽度；首次接触像素=[299, 452]。</span></p>
+          <p><strong>可见性</strong><span>可见扫掠比例=1；接触点可见=是；依赖隐藏几何=否。</span></p>
+          <p><strong>身体与动作</strong><span>半径=0.25 m；宽度=0.5 m；动作方向=正前方；动作长度=4 个身体宽度。</span></p>
+          <p><strong>位姿</strong><span>位置=[-7.055910110473633, 1.3466650247573853, 4.947279930114746], 四元数=[-0.7071067690849304, 0.0, 0.7071067690849304, -0.0], 水平视场=79.0</span></p>
+          <p><strong>来源</strong><span>R2R 提取的 RGB/深度/位姿 · 轨迹 759xd9YjKW5_r2r_000139</span></p>
+          <p><strong>备注</strong><span>原始英文导航指令仅用于数据溯源，不作为被测模型输入展示。</span></p>
+        </div>
+      </div>
+    </article>
+    
+    <article class="case-card">
+      <div class="media"><figure><img src="assets/action_horizon_collision-008_sweep_overlay.jpg" alt="action_horizon_collision-008 R2R RGB 与身体扫掠走廊叠加图"><figcaption>R2R RGB 与身体扫掠走廊叠加图</figcaption></figure><figure><img src="assets/action_horizon_collision-008_depth.jpg" alt="action_horizon_collision-008 提取深度预览"><figcaption>提取深度预览</figcaption></figure></div>
+      <div class="case-body">
+        <div class="case-meta">
+          <span>action_horizon_collision-008</span>
+          <span>7y3sRwLe3Va · 帧 001</span>
+        </div>
+        <p><span class="badge">是/否题</span></p>
+        <h3>机器人半径 0.25 m。如果它向正前方运动 4 个身体宽度，在当前可见局部空间内身体是否会发生物理接触？</h3>
+        <div class="qa-grid">
+          <div><strong>选项</strong><ul><li>是，会发生接触</li><li>否，不会发生接触</li></ul></div>
+          <div class="answer-box"><strong>GT 答案</strong><p>否，不会发生接触</p></div>
+        </div>
+        <div class="evidence">
+          <p><strong>GT 推导</strong><span>由深度、相机位姿和身体扫掠走廊求交得到：扫掠走廊首次接触距离约为 10.12 个身体宽度。</span></p>
+          <p><strong>几何 oracle</strong><span>安全距离=10.12 个身体宽度；首次接触像素=[335, 194]。</span></p>
+          <p><strong>可见性</strong><span>可见扫掠比例=0.81；接触点可见=是；依赖隐藏几何=否。</span></p>
+          <p><strong>身体与动作</strong><span>半径=0.25 m；宽度=0.5 m；动作方向=正前方；动作长度=4 个身体宽度。</span></p>
+          <p><strong>位姿</strong><span>位置=[-16.267200469970703, 1.4018409252166748, 0.7207760214805603], 四元数=[-0.7071067690849304, 0.0, 0.7071067690849304, -0.0], 水平视场=79.0</span></p>
+          <p><strong>来源</strong><span>R2R 提取的 RGB/深度/位姿 · 轨迹 7y3sRwLe3Va_r2r_000001</span></p>
+          <p><strong>备注</strong><span>原始英文导航指令仅用于数据溯源，不作为被测模型输入展示。</span></p>
+        </div>
+      </div>
+    </article>
+    
+    <article class="case-card">
+      <div class="media"><figure><img src="assets/action_horizon_collision-009_sweep_overlay.jpg" alt="action_horizon_collision-009 R2R RGB 与身体扫掠走廊叠加图"><figcaption>R2R RGB 与身体扫掠走廊叠加图</figcaption></figure><figure><img src="assets/action_horizon_collision-009_depth.jpg" alt="action_horizon_collision-009 提取深度预览"><figcaption>提取深度预览</figcaption></figure></div>
+      <div class="case-body">
+        <div class="case-meta">
+          <span>action_horizon_collision-009</span>
+          <span>82sE5b5pLXE · 帧 001</span>
+        </div>
+        <p><span class="badge">是/否题</span></p>
+        <h3>机器人半径 0.25 m。如果它向正前方运动 4 个身体宽度，在当前可见局部空间内身体是否会发生物理接触？</h3>
+        <div class="qa-grid">
+          <div><strong>选项</strong><ul><li>是，会发生接触</li><li>否，不会发生接触</li></ul></div>
+          <div class="answer-box"><strong>GT 答案</strong><p>是，会发生接触</p></div>
+        </div>
+        <div class="evidence">
+          <p><strong>GT 推导</strong><span>由深度、相机位姿和身体扫掠走廊求交得到：扫掠走廊首次接触距离约为 0.63 个身体宽度。</span></p>
+          <p><strong>几何 oracle</strong><span>安全距离=0.63 个身体宽度；首次接触像素=[11, 249]。</span></p>
+          <p><strong>可见性</strong><span>可见扫掠比例=1；接触点可见=是；依赖隐藏几何=否。</span></p>
+          <p><strong>身体与动作</strong><span>半径=0.25 m；宽度=0.5 m；动作方向=正前方；动作长度=4 个身体宽度。</span></p>
+          <p><strong>位姿</strong><span>位置=[-9.088859558105469, 0.8798840045928955, -8.641449928283691], 四元数=[0.5, 0.0, 0.8660253882408142, 0.0], 水平视场=79.0</span></p>
+          <p><strong>来源</strong><span>R2R 提取的 RGB/深度/位姿 · 轨迹 82sE5b5pLXE_r2r_000022</span></p>
+          <p><strong>备注</strong><span>原始英文导航指令仅用于数据溯源，不作为被测模型输入展示。</span></p>
+        </div>
+      </div>
+    </article>
+    
+    <article class="case-card">
+      <div class="media"><figure><img src="assets/action_horizon_collision-010_sweep_overlay.jpg" alt="action_horizon_collision-010 R2R RGB 与身体扫掠走廊叠加图"><figcaption>R2R RGB 与身体扫掠走廊叠加图</figcaption></figure><figure><img src="assets/action_horizon_collision-010_depth.jpg" alt="action_horizon_collision-010 提取深度预览"><figcaption>提取深度预览</figcaption></figure></div>
+      <div class="case-body">
+        <div class="case-meta">
+          <span>action_horizon_collision-010</span>
+          <span>8WUmhLawc2A · 帧 001</span>
+        </div>
+        <p><span class="badge">是/否题</span></p>
+        <h3>机器人半径 0.25 m。如果它向正前方运动 4 个身体宽度，在当前可见局部空间内身体是否会发生物理接触？</h3>
+        <div class="qa-grid">
+          <div><strong>选项</strong><ul><li>是，会发生接触</li><li>否，不会发生接触</li></ul></div>
+          <div class="answer-box"><strong>GT 答案</strong><p>是，会发生接触</p></div>
+        </div>
+        <div class="evidence">
+          <p><strong>GT 推导</strong><span>由深度、相机位姿和身体扫掠走廊求交得到：扫掠走廊首次接触距离约为 2.12 个身体宽度。</span></p>
+          <p><strong>几何 oracle</strong><span>安全距离=2.12 个身体宽度；首次接触像素=[268, 398]。</span></p>
+          <p><strong>可见性</strong><span>可见扫掠比例=1；接触点可见=是；依赖隐藏几何=否。</span></p>
+          <p><strong>身体与动作</strong><span>半径=0.25 m；宽度=0.5 m；动作方向=正前方；动作长度=4 个身体宽度。</span></p>
+          <p><strong>位姿</strong><span>位置=[-6.804830074310303, 1.3506569862365723, 3.362260103225708], 四元数=[-0.7071067690849304, 0.0, 0.7071067690849304, -0.0], 水平视场=79.0</span></p>
+          <p><strong>来源</strong><span>R2R 提取的 RGB/深度/位姿 · 轨迹 8WUmhLawc2A_r2r_000046</span></p>
+          <p><strong>备注</strong><span>原始英文导航指令仅用于数据溯源，不作为被测模型输入展示。</span></p>
+        </div>
+      </div>
+    </article>
+    </div>
+            </section>
+            
+            <section class="case-group" id="directional_sweep_ranking">
+              <h2>方向扫掠比较</h2>
+              <p>检验模型是否理解同一身体在不同动作方向下会扫过不同空间，而不是只描述画面中心障碍。</p>
+              <div class="case-grid">
+    <article class="case-card">
+      <div class="media"><figure><img src="assets/directional_sweep_ranking-001_sweep_overlay.jpg" alt="directional_sweep_ranking-001 R2R RGB 与身体扫掠走廊叠加图"><figcaption>R2R RGB 与身体扫掠走廊叠加图</figcaption></figure><figure><img src="assets/directional_sweep_ranking-001_depth.jpg" alt="directional_sweep_ranking-001 提取深度预览"><figcaption>提取深度预览</figcaption></figure></div>
+      <div class="case-body">
+        <div class="case-meta">
+          <span>directional_sweep_ranking-001</span>
+          <span>17DRP5sb8fy · 帧 001</span>
+        </div>
+        <p><span class="badge">三选一</span></p>
+        <h3>机器人半径 0.25 m。比较左前方、正前方、右前方三个可能动作，哪个方向在首次物理接触前允许最长的移动距离？</h3>
+        <div class="qa-grid">
+          <div><strong>选项</strong><ul><li>左前方</li><li>正前方</li><li>右前方</li></ul></div>
+          <div class="answer-box"><strong>GT 答案</strong><p>正前方</p></div>
+        </div>
+        <div class="evidence">
+          <p><strong>GT 推导</strong><span>由深度、相机位姿和身体扫掠走廊求交得到：扫掠走廊首次接触距离约为 7.92 个身体宽度。</span></p>
+          <p><strong>几何 oracle</strong><span>安全距离=7.92 个身体宽度；首次接触像素=[296, 308]。</span></p>
+          <p><strong>可见性</strong><span>可见扫掠比例=0.78；接触点可见=是；依赖隐藏几何=否。</span></p>
+          <p><strong>身体与动作</strong><span>半径=0.25 m；宽度=0.5 m；动作方向=正前方；比较方向=左前方/正前方/右前方。</span></p>
+          <p><strong>位姿</strong><span>位置=[-10.293439865112305, 1.3224470615386963, 1.9079790115356445], 四元数=[-0.9659258127212524, 0.0, 0.258819043636322, -0.0], 水平视场=79.0</span></p>
+          <p><strong>来源</strong><span>R2R 提取的 RGB/深度/位姿 · 轨迹 17DRP5sb8fy_r2r_000515</span></p>
+          <p><strong>备注</strong><span>原始英文导航指令仅用于数据溯源，不作为被测模型输入展示。</span></p>
+        </div>
+      </div>
+    </article>
+    
+    <article class="case-card">
+      <div class="media"><figure><img src="assets/directional_sweep_ranking-002_sweep_overlay.jpg" alt="directional_sweep_ranking-002 R2R RGB 与身体扫掠走廊叠加图"><figcaption>R2R RGB 与身体扫掠走廊叠加图</figcaption></figure><figure><img src="assets/directional_sweep_ranking-002_depth.jpg" alt="directional_sweep_ranking-002 提取深度预览"><figcaption>提取深度预览</figcaption></figure></div>
+      <div class="case-body">
+        <div class="case-meta">
+          <span>directional_sweep_ranking-002</span>
+          <span>29hnd4uzFmX · 帧 001</span>
+        </div>
+        <p><span class="badge">三选一</span></p>
+        <h3>机器人半径 0.25 m。比较左前方、正前方、右前方三个可能动作，哪个方向在首次物理接触前允许最长的移动距离？</h3>
+        <div class="qa-grid">
+          <div><strong>选项</strong><ul><li>右前方</li><li>左前方</li><li>正前方</li></ul></div>
+          <div class="answer-box"><strong>GT 答案</strong><p>右前方</p></div>
+        </div>
+        <div class="evidence">
+          <p><strong>GT 推导</strong><span>由深度、相机位姿和身体扫掠走廊求交得到：扫掠走廊首次接触距离约为 3.36 个身体宽度。</span></p>
+          <p><strong>几何 oracle</strong><span>安全距离=3.36 个身体宽度；首次接触像素=[627, 397]。</span></p>
+          <p><strong>可见性</strong><span>可见扫掠比例=1；接触点可见=是；依赖隐藏几何=否。</span></p>
+          <p><strong>身体与动作</strong><span>半径=0.25 m；宽度=0.5 m；动作方向=正前方；比较方向=左前方/正前方/右前方。</span></p>
+          <p><strong>位姿</strong><span>位置=[-4.775169849395752, 1.0410419702529907, -8.342399597167969], 四元数=[-0.258819043636322, 0.0, 0.9659258127212524, -0.0], 水平视场=79.0</span></p>
+          <p><strong>来源</strong><span>R2R 提取的 RGB/深度/位姿 · 轨迹 29hnd4uzFmX_r2r_000160</span></p>
+          <p><strong>备注</strong><span>原始英文导航指令仅用于数据溯源，不作为被测模型输入展示。</span></p>
+        </div>
+      </div>
+    </article>
+    
+    <article class="case-card">
+      <div class="media"><figure><img src="assets/directional_sweep_ranking-003_sweep_overlay.jpg" alt="directional_sweep_ranking-003 R2R RGB 与身体扫掠走廊叠加图"><figcaption>R2R RGB 与身体扫掠走廊叠加图</figcaption></figure><figure><img src="assets/directional_sweep_ranking-003_depth.jpg" alt="directional_sweep_ranking-003 提取深度预览"><figcaption>提取深度预览</figcaption></figure></div>
+      <div class="case-body">
+        <div class="case-meta">
+          <span>directional_sweep_ranking-003</span>
+          <span>2n8kARJN3HM · 帧 001</span>
+        </div>
+        <p><span class="badge">三选一</span></p>
+        <h3>机器人半径 0.25 m。比较左前方、正前方、右前方三个可能动作，哪个方向在首次物理接触前允许最长的移动距离？</h3>
+        <div class="qa-grid">
+          <div><strong>选项</strong><ul><li>右前方</li><li>正前方</li><li>左前方</li></ul></div>
+          <div class="answer-box"><strong>GT 答案</strong><p>右前方</p></div>
+        </div>
+        <div class="evidence">
+          <p><strong>GT 推导</strong><span>由深度、相机位姿和身体扫掠走廊求交得到：扫掠走廊首次接触距离约为 6.16 个身体宽度。</span></p>
+          <p><strong>几何 oracle</strong><span>安全距离=6.16 个身体宽度；首次接触像素=[519, 278]。</span></p>
+          <p><strong>可见性</strong><span>可见扫掠比例=1；接触点可见=是；依赖隐藏几何=否。</span></p>
+          <p><strong>身体与动作</strong><span>半径=0.25 m；宽度=0.5 m；动作方向=正前方；比较方向=左前方/正前方/右前方。</span></p>
+          <p><strong>位姿</strong><span>位置=[11.75100040435791, 1.3812379837036133, 10.995499610900879], 四元数=[-0.8660253882408142, 0.0, 0.5, -0.0], 水平视场=79.0</span></p>
+          <p><strong>来源</strong><span>R2R 提取的 RGB/深度/位姿 · 轨迹 2n8kARJN3HM_r2r_000121</span></p>
+          <p><strong>备注</strong><span>原始英文导航指令仅用于数据溯源，不作为被测模型输入展示。</span></p>
+        </div>
+      </div>
+    </article>
+    
+    <article class="case-card">
+      <div class="media"><figure><img src="assets/directional_sweep_ranking-004_sweep_overlay.jpg" alt="directional_sweep_ranking-004 R2R RGB 与身体扫掠走廊叠加图"><figcaption>R2R RGB 与身体扫掠走廊叠加图</figcaption></figure><figure><img src="assets/directional_sweep_ranking-004_depth.jpg" alt="directional_sweep_ranking-004 提取深度预览"><figcaption>提取深度预览</figcaption></figure></div>
+      <div class="case-body">
+        <div class="case-meta">
+          <span>directional_sweep_ranking-004</span>
+          <span>5q7pvUzZiYa · 帧 001</span>
+        </div>
+        <p><span class="badge">三选一</span></p>
+        <h3>机器人半径 0.25 m。比较左前方、正前方、右前方三个可能动作，哪个方向在首次物理接触前允许最长的移动距离？</h3>
+        <div class="qa-grid">
+          <div><strong>选项</strong><ul><li>正前方</li><li>左前方</li><li>右前方</li></ul></div>
+          <div class="answer-box"><strong>GT 答案</strong><p>正前方</p></div>
+        </div>
+        <div class="evidence">
+          <p><strong>GT 推导</strong><span>由深度、相机位姿和身体扫掠走廊求交得到：扫掠走廊首次接触距离约为 8.31 个身体宽度。</span></p>
+          <p><strong>几何 oracle</strong><span>安全距离=8.31 个身体宽度；首次接触像素=[343, 198]。</span></p>
+          <p><strong>可见性</strong><span>可见扫掠比例=0.87；接触点可见=是；依赖隐藏几何=否。</span></p>
+          <p><strong>身体与动作</strong><span>半径=0.25 m；宽度=0.5 m；动作方向=正前方；比较方向=左前方/正前方/右前方。</span></p>
+          <p><strong>位姿</strong><span>位置=[25.59830093383789, 1.253425121307373, -3.1763598918914795], 四元数=[0.9659258127212524, 0.0, 0.258819043636322, 0.0], 水平视场=79.0</span></p>
+          <p><strong>来源</strong><span>R2R 提取的 RGB/深度/位姿 · 轨迹 5q7pvUzZiYa_r2r_000169</span></p>
+          <p><strong>备注</strong><span>原始英文导航指令仅用于数据溯源，不作为被测模型输入展示。</span></p>
+        </div>
+      </div>
+    </article>
+    
+    <article class="case-card">
+      <div class="media"><figure><img src="assets/directional_sweep_ranking-005_sweep_overlay.jpg" alt="directional_sweep_ranking-005 R2R RGB 与身体扫掠走廊叠加图"><figcaption>R2R RGB 与身体扫掠走廊叠加图</figcaption></figure><figure><img src="assets/directional_sweep_ranking-005_depth.jpg" alt="directional_sweep_ranking-005 提取深度预览"><figcaption>提取深度预览</figcaption></figure></div>
+      <div class="case-body">
+        <div class="case-meta">
+          <span>directional_sweep_ranking-005</span>
+          <span>759xd9YjKW5 · 帧 001</span>
+        </div>
+        <p><span class="badge">三选一</span></p>
+        <h3>机器人半径 0.25 m。比较左前方、正前方、右前方三个可能动作，哪个方向在首次物理接触前允许最长的移动距离？</h3>
+        <div class="qa-grid">
+          <div><strong>选项</strong><ul><li>左前方</li><li>正前方</li><li>右前方</li></ul></div>
+          <div class="answer-box"><strong>GT 答案</strong><p>右前方</p></div>
+        </div>
+        <div class="evidence">
+          <p><strong>GT 推导</strong><span>由深度、相机位姿和身体扫掠走廊求交得到：扫掠走廊首次接触距离约为 3.15 个身体宽度。</span></p>
+          <p><strong>几何 oracle</strong><span>安全距离=3.15 个身体宽度；首次接触像素=[469, 84]。</span></p>
+          <p><strong>可见性</strong><span>可见扫掠比例=1；接触点可见=是；依赖隐藏几何=否。</span></p>
+          <p><strong>身体与动作</strong><span>半径=0.25 m；宽度=0.5 m；动作方向=正前方；比较方向=左前方/正前方/右前方。</span></p>
+          <p><strong>位姿</strong><span>位置=[-7.055910110473633, 1.3466650247573853, 4.947279930114746], 四元数=[-0.7071067690849304, 0.0, 0.7071067690849304, -0.0], 水平视场=79.0</span></p>
+          <p><strong>来源</strong><span>R2R 提取的 RGB/深度/位姿 · 轨迹 759xd9YjKW5_r2r_000139</span></p>
+          <p><strong>备注</strong><span>原始英文导航指令仅用于数据溯源，不作为被测模型输入展示。</span></p>
+        </div>
+      </div>
+    </article>
+    
+    <article class="case-card">
+      <div class="media"><figure><img src="assets/directional_sweep_ranking-006_sweep_overlay.jpg" alt="directional_sweep_ranking-006 R2R RGB 与身体扫掠走廊叠加图"><figcaption>R2R RGB 与身体扫掠走廊叠加图</figcaption></figure><figure><img src="assets/directional_sweep_ranking-006_depth.jpg" alt="directional_sweep_ranking-006 提取深度预览"><figcaption>提取深度预览</figcaption></figure></div>
+      <div class="case-body">
+        <div class="case-meta">
+          <span>directional_sweep_ranking-006</span>
+          <span>7y3sRwLe3Va · 帧 001</span>
+        </div>
+        <p><span class="badge">三选一</span></p>
+        <h3>机器人半径 0.25 m。比较左前方、正前方、右前方三个可能动作，哪个方向在首次物理接触前允许最长的移动距离？</h3>
+        <div class="qa-grid">
+          <div><strong>选项</strong><ul><li>右前方</li><li>左前方</li><li>正前方</li></ul></div>
+          <div class="answer-box"><strong>GT 答案</strong><p>正前方</p></div>
+        </div>
+        <div class="evidence">
+          <p><strong>GT 推导</strong><span>由深度、相机位姿和身体扫掠走廊求交得到：扫掠走廊首次接触距离约为 10.12 个身体宽度。</span></p>
+          <p><strong>几何 oracle</strong><span>安全距离=10.12 个身体宽度；首次接触像素=[335, 194]。</span></p>
+          <p><strong>可见性</strong><span>可见扫掠比例=0.81；接触点可见=是；依赖隐藏几何=否。</span></p>
+          <p><strong>身体与动作</strong><span>半径=0.25 m；宽度=0.5 m；动作方向=正前方；比较方向=左前方/正前方/右前方。</span></p>
+          <p><strong>位姿</strong><span>位置=[-16.267200469970703, 1.4018409252166748, 0.7207760214805603], 四元数=[-0.7071067690849304, 0.0, 0.7071067690849304, -0.0], 水平视场=79.0</span></p>
+          <p><strong>来源</strong><span>R2R 提取的 RGB/深度/位姿 · 轨迹 7y3sRwLe3Va_r2r_000001</span></p>
+          <p><strong>备注</strong><span>原始英文导航指令仅用于数据溯源，不作为被测模型输入展示。</span></p>
+        </div>
+      </div>
+    </article>
+    
+    <article class="case-card">
+      <div class="media"><figure><img src="assets/directional_sweep_ranking-007_sweep_overlay.jpg" alt="directional_sweep_ranking-007 R2R RGB 与身体扫掠走廊叠加图"><figcaption>R2R RGB 与身体扫掠走廊叠加图</figcaption></figure><figure><img src="assets/directional_sweep_ranking-007_depth.jpg" alt="directional_sweep_ranking-007 提取深度预览"><figcaption>提取深度预览</figcaption></figure></div>
+      <div class="case-body">
+        <div class="case-meta">
+          <span>directional_sweep_ranking-007</span>
+          <span>D7N2EKCX4Sj · 帧 001</span>
+        </div>
+        <p><span class="badge">三选一</span></p>
+        <h3>机器人半径 0.25 m。比较左前方、正前方、右前方三个可能动作，哪个方向在首次物理接触前允许最长的移动距离？</h3>
+        <div class="qa-grid">
+          <div><strong>选项</strong><ul><li>右前方</li><li>左前方</li><li>正前方</li></ul></div>
+          <div class="answer-box"><strong>GT 答案</strong><p>正前方</p></div>
+        </div>
+        <div class="evidence">
+          <p><strong>GT 推导</strong><span>由深度、相机位姿和身体扫掠走廊求交得到：扫掠走廊首次接触距离约为 3.45 个身体宽度。</span></p>
+          <p><strong>几何 oracle</strong><span>安全距离=3.45 个身体宽度；首次接触像素=[273, 470]。</span></p>
+          <p><strong>可见性</strong><span>可见扫掠比例=1；接触点可见=是；依赖隐藏几何=否。</span></p>
+          <p><strong>身体与动作</strong><span>半径=0.25 m；宽度=0.5 m；动作方向=正前方；比较方向=左前方/正前方/右前方。</span></p>
+          <p><strong>位姿</strong><span>位置=[-5.212649822235107, -1.942077875137329, -2.9409799575805664], 四元数=[0.7071067690849304, 0.0, 0.7071067690849304, 0.0], 水平视场=79.0</span></p>
+          <p><strong>来源</strong><span>R2R 提取的 RGB/深度/位姿 · 轨迹 D7N2EKCX4Sj_r2r_000205</span></p>
+          <p><strong>备注</strong><span>原始英文导航指令仅用于数据溯源，不作为被测模型输入展示。</span></p>
+        </div>
+      </div>
+    </article>
+    
+    <article class="case-card">
+      <div class="media"><figure><img src="assets/directional_sweep_ranking-008_sweep_overlay.jpg" alt="directional_sweep_ranking-008 R2R RGB 与身体扫掠走廊叠加图"><figcaption>R2R RGB 与身体扫掠走廊叠加图</figcaption></figure><figure><img src="assets/directional_sweep_ranking-008_depth.jpg" alt="directional_sweep_ranking-008 提取深度预览"><figcaption>提取深度预览</figcaption></figure></div>
+      <div class="case-body">
+        <div class="case-meta">
+          <span>directional_sweep_ranking-008</span>
+          <span>E9uDoFAP3SH · 帧 001</span>
+        </div>
+        <p><span class="badge">三选一</span></p>
+        <h3>机器人半径 0.25 m。比较左前方、正前方、右前方三个可能动作，哪个方向在首次物理接触前允许最长的移动距离？</h3>
+        <div class="qa-grid">
+          <div><strong>选项</strong><ul><li>右前方</li><li>正前方</li><li>左前方</li></ul></div>
+          <div class="answer-box"><strong>GT 答案</strong><p>左前方</p></div>
+        </div>
+        <div class="evidence">
+          <p><strong>GT 推导</strong><span>由深度、相机位姿和身体扫掠走廊求交得到：扫掠走廊首次接触距离约为 2.63 个身体宽度。</span></p>
+          <p><strong>几何 oracle</strong><span>安全距离=2.63 个身体宽度；首次接触像素=[291, 214]。</span></p>
+          <p><strong>可见性</strong><span>可见扫掠比例=1；接触点可见=是；依赖隐藏几何=否。</span></p>
+          <p><strong>身体与动作</strong><span>半径=0.25 m；宽度=0.5 m；动作方向=正前方；比较方向=左前方/正前方/右前方。</span></p>
+          <p><strong>位姿</strong><span>位置=[3.2646100521087646, 1.4943809509277344, 11.371800422668457], 四元数=[-0.5, 0.0, 0.8660253882408142, -0.0], 水平视场=79.0</span></p>
+          <p><strong>来源</strong><span>R2R 提取的 RGB/深度/位姿 · 轨迹 E9uDoFAP3SH_r2r_000064</span></p>
+          <p><strong>备注</strong><span>原始英文导航指令仅用于数据溯源，不作为被测模型输入展示。</span></p>
+        </div>
+      </div>
+    </article>
+    
+    <article class="case-card">
+      <div class="media"><figure><img src="assets/directional_sweep_ranking-009_sweep_overlay.jpg" alt="directional_sweep_ranking-009 R2R RGB 与身体扫掠走廊叠加图"><figcaption>R2R RGB 与身体扫掠走廊叠加图</figcaption></figure><figure><img src="assets/directional_sweep_ranking-009_depth.jpg" alt="directional_sweep_ranking-009 提取深度预览"><figcaption>提取深度预览</figcaption></figure></div>
+      <div class="case-body">
+        <div class="case-meta">
+          <span>directional_sweep_ranking-009</span>
+          <span>JF19kD82Mey · 帧 001</span>
+        </div>
+        <p><span class="badge">三选一</span></p>
+        <h3>机器人半径 0.25 m。比较左前方、正前方、右前方三个可能动作，哪个方向在首次物理接触前允许最长的移动距离？</h3>
+        <div class="qa-grid">
+          <div><strong>选项</strong><ul><li>正前方</li><li>左前方</li><li>右前方</li></ul></div>
+          <div class="answer-box"><strong>GT 答案</strong><p>右前方</p></div>
+        </div>
+        <div class="evidence">
+          <p><strong>GT 推导</strong><span>由深度、相机位姿和身体扫掠走廊求交得到：扫掠走廊首次接触距离约为 2.78 个身体宽度。</span></p>
+          <p><strong>几何 oracle</strong><span>安全距离=2.78 个身体宽度；首次接触像素=[595, 479]。</span></p>
+          <p><strong>可见性</strong><span>可见扫掠比例=1；接触点可见=是；依赖隐藏几何=否。</span></p>
+          <p><strong>身体与动作</strong><span>半径=0.25 m；宽度=0.5 m；动作方向=正前方；比较方向=左前方/正前方/右前方。</span></p>
+          <p><strong>位姿</strong><span>位置=[-2.3408799171447754, 4.568902015686035, 3.6762900352478027], 四元数=[1.0, 0.0, 0.0, 0.0], 水平视场=79.0</span></p>
+          <p><strong>来源</strong><span>R2R 提取的 RGB/深度/位姿 · 轨迹 JF19kD82Mey_r2r_000130</span></p>
+          <p><strong>备注</strong><span>原始英文导航指令仅用于数据溯源，不作为被测模型输入展示。</span></p>
+        </div>
+      </div>
+    </article>
+    
+    <article class="case-card">
+      <div class="media"><figure><img src="assets/directional_sweep_ranking-010_sweep_overlay.jpg" alt="directional_sweep_ranking-010 R2R RGB 与身体扫掠走廊叠加图"><figcaption>R2R RGB 与身体扫掠走廊叠加图</figcaption></figure><figure><img src="assets/directional_sweep_ranking-010_depth.jpg" alt="directional_sweep_ranking-010 提取深度预览"><figcaption>提取深度预览</figcaption></figure></div>
+      <div class="case-body">
+        <div class="case-meta">
+          <span>directional_sweep_ranking-010</span>
+          <span>Uxmj2M2itWa · 帧 001</span>
+        </div>
+        <p><span class="badge">三选一</span></p>
+        <h3>机器人半径 0.25 m。比较左前方、正前方、右前方三个可能动作，哪个方向在首次物理接触前允许最长的移动距离？</h3>
+        <div class="qa-grid">
+          <div><strong>选项</strong><ul><li>右前方</li><li>左前方</li><li>正前方</li></ul></div>
+          <div class="answer-box"><strong>GT 答案</strong><p>左前方</p></div>
+        </div>
+        <div class="evidence">
+          <p><strong>GT 推导</strong><span>由深度、相机位姿和身体扫掠走廊求交得到：扫掠走廊首次接触距离约为 8.74 个身体宽度。</span></p>
+          <p><strong>几何 oracle</strong><span>安全距离=8.74 个身体宽度；首次接触像素=[235, 340]。</span></p>
+          <p><strong>可见性</strong><span>可见扫掠比例=0.88；接触点可见=是；依赖隐藏几何=否。</span></p>
+          <p><strong>身体与动作</strong><span>半径=0.25 m；宽度=0.5 m；动作方向=正前方；比较方向=左前方/正前方/右前方。</span></p>
+          <p><strong>位姿</strong><span>位置=[-8.139470100402832, 1.1194270849227905, -0.5904930233955383], 四元数=[0.5, 0.0, 0.8660253882408142, 0.0], 水平视场=79.0</span></p>
+          <p><strong>来源</strong><span>R2R 提取的 RGB/深度/位姿 · 轨迹 Uxmj2M2itWa_r2r_000157</span></p>
+          <p><strong>备注</strong><span>原始英文导航指令仅用于数据溯源，不作为被测模型输入展示。</span></p>
+        </div>
+      </div>
+    </article>
+    </div>
+            </section>
+            
+            <section class="case-group" id="body_counterfactual_flip">
+              <h2>身体反事实翻转</h2>
+              <p>检验模型是否真正把身体半径作为碰撞算子；同一张图、同一动作下，换身体尺寸应改变结论。</p>
+              <div class="case-grid">
+    <article class="case-card">
+      <div class="media"><figure><img src="assets/body_counterfactual_flip-001_sweep_overlay.jpg" alt="body_counterfactual_flip-001 R2R RGB 与身体扫掠走廊叠加图"><figcaption>R2R RGB 与身体扫掠走廊叠加图</figcaption></figure><figure><img src="assets/body_counterfactual_flip-001_depth.jpg" alt="body_counterfactual_flip-001 提取深度预览"><figcaption>提取深度预览</figcaption></figure></div>
+      <div class="case-body">
+        <div class="case-meta">
+          <span>body_counterfactual_flip-001</span>
+          <span>17DRP5sb8fy · 帧 001</span>
+        </div>
+        <p><span class="badge">单选题</span></p>
+        <h3>在同一张第一人称图像中，比较小身体机器人（半径 0.1 m）和大身体机器人（半径 0.4 m）。如果二者都执行同一个可见局部动作，哪个身体能无接触完成该动作？</h3>
+        <div class="qa-grid">
+          <div><strong>选项</strong><ul><li>两个身体都能通过</li><li>只有小身体能通过</li><li>两个身体都不能通过</li></ul></div>
+          <div class="answer-box"><strong>GT 答案</strong><p>两个身体都能通过</p></div>
+        </div>
+        <div class="evidence">
+          <p><strong>GT 推导</strong><span>由深度、相机位姿和身体扫掠走廊求交得到：扫掠走廊首次接触距离约为 20 个身体宽度。</span></p>
+          <p><strong>几何 oracle</strong><span>安全距离=20 个身体宽度；首次接触像素=[311, 319]。</span></p>
+          <p><strong>可见性</strong><span>可见扫掠比例=0.77；接触点可见=是；依赖隐藏几何=否。</span></p>
+          <p><strong>身体与动作</strong><span>半径=0.1 m；宽度=0.2 m；动作方向=正前方；身体反事实组=17DRP5sb8fy_r2r_000515-001-no-flip。</span></p>
+          <p><strong>位姿</strong><span>位置=[-10.293439865112305, 1.3224470615386963, 1.9079790115356445], 四元数=[-0.9659258127212524, 0.0, 0.258819043636322, -0.0], 水平视场=79.0</span></p>
+          <p><strong>来源</strong><span>R2R 提取的 RGB/深度/位姿 · 轨迹 17DRP5sb8fy_r2r_000515</span></p>
+          <p><strong>备注</strong><span>原始英文导航指令仅用于数据溯源，不作为被测模型输入展示。</span></p>
+        </div>
+      </div>
+    </article>
+    
+    <article class="case-card">
+      <div class="media"><figure><img src="assets/body_counterfactual_flip-002_sweep_overlay.jpg" alt="body_counterfactual_flip-002 R2R RGB 与身体扫掠走廊叠加图"><figcaption>R2R RGB 与身体扫掠走廊叠加图</figcaption></figure><figure><img src="assets/body_counterfactual_flip-002_depth.jpg" alt="body_counterfactual_flip-002 提取深度预览"><figcaption>提取深度预览</figcaption></figure></div>
+      <div class="case-body">
+        <div class="case-meta">
+          <span>body_counterfactual_flip-002</span>
+          <span>1LXtFkjw3qL · 帧 001</span>
+        </div>
+        <p><span class="badge">单选题</span></p>
+        <h3>在同一张第一人称图像中，比较小身体机器人（半径 0.1 m）和大身体机器人（半径 0.4 m）。如果二者都执行同一个可见局部动作，哪个身体能无接触完成该动作？</h3>
+        <div class="qa-grid">
+          <div><strong>选项</strong><ul><li>两个身体都能通过</li><li>只有小身体能通过</li><li>两个身体都不能通过</li></ul></div>
+          <div class="answer-box"><strong>GT 答案</strong><p>只有小身体能通过</p></div>
+        </div>
+        <div class="evidence">
+          <p><strong>GT 推导</strong><span>由深度、相机位姿和身体扫掠走廊求交得到：扫掠走廊首次接触距离约为 11.76 个身体宽度。</span></p>
+          <p><strong>几何 oracle</strong><span>安全距离=11.76 个身体宽度；首次接触像素=[321, 142]。</span></p>
+          <p><strong>可见性</strong><span>可见扫掠比例=1；接触点可见=是；依赖隐藏几何=否。</span></p>
+          <p><strong>身体与动作</strong><span>半径=0.1 m；宽度=0.2 m；动作方向=正前方；身体反事实组=1LXtFkjw3qL_r2r_000085-001-flip。</span></p>
+          <p><strong>位姿</strong><span>位置=[-0.3167470097541809, 4.734411239624023, 14.130499839782715], 四元数=[-0.7071067690849304, 0.0, 0.7071067690849304, -0.0], 水平视场=79.0</span></p>
+          <p><strong>来源</strong><span>R2R 提取的 RGB/深度/位姿 · 轨迹 1LXtFkjw3qL_r2r_000085</span></p>
+          <p><strong>备注</strong><span>原始英文导航指令仅用于数据溯源，不作为被测模型输入展示。</span></p>
+        </div>
+      </div>
+    </article>
+    
+    <article class="case-card">
+      <div class="media"><figure><img src="assets/body_counterfactual_flip-003_sweep_overlay.jpg" alt="body_counterfactual_flip-003 R2R RGB 与身体扫掠走廊叠加图"><figcaption>R2R RGB 与身体扫掠走廊叠加图</figcaption></figure><figure><img src="assets/body_counterfactual_flip-003_depth.jpg" alt="body_counterfactual_flip-003 提取深度预览"><figcaption>提取深度预览</figcaption></figure></div>
+      <div class="case-body">
+        <div class="case-meta">
+          <span>body_counterfactual_flip-003</span>
+          <span>1pXnuDYAj8r · 帧 001</span>
+        </div>
+        <p><span class="badge">单选题</span></p>
+        <h3>在同一张第一人称图像中，比较小身体机器人（半径 0.1 m）和大身体机器人（半径 0.4 m）。如果二者都执行同一个可见局部动作，哪个身体能无接触完成该动作？</h3>
+        <div class="qa-grid">
+          <div><strong>选项</strong><ul><li>两个身体都能通过</li><li>只有小身体能通过</li><li>两个身体都不能通过</li></ul></div>
+          <div class="answer-box"><strong>GT 答案</strong><p>两个身体都不能通过</p></div>
+        </div>
+        <div class="evidence">
+          <p><strong>GT 推导</strong><span>由深度、相机位姿和身体扫掠走廊求交得到：扫掠走廊首次接触距离约为 0.74 个身体宽度。</span></p>
+          <p><strong>几何 oracle</strong><span>安全距离=0.74 个身体宽度；首次接触像素=[583, 195]。</span></p>
+          <p><strong>可见性</strong><span>可见扫掠比例=1；接触点可见=是；依赖隐藏几何=否。</span></p>
+          <p><strong>身体与动作</strong><span>半径=0.4 m；宽度=0.8 m；动作方向=正前方；身体反事实组=1pXnuDYAj8r_r2r_000184-001-no-flip。</span></p>
+          <p><strong>位姿</strong><span>位置=[9.927780151367188, 3.8800408840179443, -3.7776501178741455], 四元数=[6.123234262925839e-17, 0.0, 1.0, 0.0], 水平视场=79.0</span></p>
+          <p><strong>来源</strong><span>R2R 提取的 RGB/深度/位姿 · 轨迹 1pXnuDYAj8r_r2r_000184</span></p>
+          <p><strong>备注</strong><span>原始英文导航指令仅用于数据溯源，不作为被测模型输入展示。</span></p>
+        </div>
+      </div>
+    </article>
+    
+    <article class="case-card">
+      <div class="media"><figure><img src="assets/body_counterfactual_flip-004_sweep_overlay.jpg" alt="body_counterfactual_flip-004 R2R RGB 与身体扫掠走廊叠加图"><figcaption>R2R RGB 与身体扫掠走廊叠加图</figcaption></figure><figure><img src="assets/body_counterfactual_flip-004_depth.jpg" alt="body_counterfactual_flip-004 提取深度预览"><figcaption>提取深度预览</figcaption></figure></div>
+      <div class="case-body">
+        <div class="case-meta">
+          <span>body_counterfactual_flip-004</span>
+          <span>29hnd4uzFmX · 帧 001</span>
+        </div>
+        <p><span class="badge">单选题</span></p>
+        <h3>在同一张第一人称图像中，比较小身体机器人（半径 0.1 m）和大身体机器人（半径 0.4 m）。如果二者都执行同一个可见局部动作，哪个身体能无接触完成该动作？</h3>
+        <div class="qa-grid">
+          <div><strong>选项</strong><ul><li>两个身体都能通过</li><li>只有小身体能通过</li><li>两个身体都不能通过</li></ul></div>
+          <div class="answer-box"><strong>GT 答案</strong><p>只有小身体能通过</p></div>
+        </div>
+        <div class="evidence">
+          <p><strong>GT 推导</strong><span>由深度、相机位姿和身体扫掠走廊求交得到：扫掠走廊首次接触距离约为 17.06 个身体宽度。</span></p>
+          <p><strong>几何 oracle</strong><span>安全距离=17.06 个身体宽度；首次接触像素=[309, 172]。</span></p>
+          <p><strong>可见性</strong><span>可见扫掠比例=0.88；接触点可见=是；依赖隐藏几何=否。</span></p>
+          <p><strong>身体与动作</strong><span>半径=0.1 m；宽度=0.2 m；动作方向=正前方；身体反事实组=29hnd4uzFmX_r2r_000160-001-flip。</span></p>
+          <p><strong>位姿</strong><span>位置=[-4.775169849395752, 1.0410419702529907, -8.342399597167969], 四元数=[-0.258819043636322, 0.0, 0.9659258127212524, -0.0], 水平视场=79.0</span></p>
+          <p><strong>来源</strong><span>R2R 提取的 RGB/深度/位姿 · 轨迹 29hnd4uzFmX_r2r_000160</span></p>
+          <p><strong>备注</strong><span>原始英文导航指令仅用于数据溯源，不作为被测模型输入展示。</span></p>
+        </div>
+      </div>
+    </article>
+    
+    <article class="case-card">
+      <div class="media"><figure><img src="assets/body_counterfactual_flip-005_sweep_overlay.jpg" alt="body_counterfactual_flip-005 R2R RGB 与身体扫掠走廊叠加图"><figcaption>R2R RGB 与身体扫掠走廊叠加图</figcaption></figure><figure><img src="assets/body_counterfactual_flip-005_depth.jpg" alt="body_counterfactual_flip-005 提取深度预览"><figcaption>提取深度预览</figcaption></figure></div>
+      <div class="case-body">
+        <div class="case-meta">
+          <span>body_counterfactual_flip-005</span>
+          <span>2n8kARJN3HM · 帧 001</span>
+        </div>
+        <p><span class="badge">单选题</span></p>
+        <h3>在同一张第一人称图像中，比较小身体机器人（半径 0.1 m）和大身体机器人（半径 0.4 m）。如果二者都执行同一个可见局部动作，哪个身体能无接触完成该动作？</h3>
+        <div class="qa-grid">
+          <div><strong>选项</strong><ul><li>两个身体都能通过</li><li>只有小身体能通过</li><li>两个身体都不能通过</li></ul></div>
+          <div class="answer-box"><strong>GT 答案</strong><p>只有小身体能通过</p></div>
+        </div>
+        <div class="evidence">
+          <p><strong>GT 推导</strong><span>由深度、相机位姿和身体扫掠走廊求交得到：扫掠走廊首次接触距离约为 9.02 个身体宽度。</span></p>
+          <p><strong>几何 oracle</strong><span>安全距离=9.02 个身体宽度；首次接触像素=[326, 310]。</span></p>
+          <p><strong>可见性</strong><span>可见扫掠比例=1；接触点可见=是；依赖隐藏几何=否。</span></p>
+          <p><strong>身体与动作</strong><span>半径=0.1 m；宽度=0.2 m；动作方向=正前方；身体反事实组=2n8kARJN3HM_r2r_000121-001-flip。</span></p>
+          <p><strong>位姿</strong><span>位置=[11.75100040435791, 1.3812379837036133, 10.995499610900879], 四元数=[-0.8660253882408142, 0.0, 0.5, -0.0], 水平视场=79.0</span></p>
+          <p><strong>来源</strong><span>R2R 提取的 RGB/深度/位姿 · 轨迹 2n8kARJN3HM_r2r_000121</span></p>
+          <p><strong>备注</strong><span>原始英文导航指令仅用于数据溯源，不作为被测模型输入展示。</span></p>
+        </div>
+      </div>
+    </article>
+    
+    <article class="case-card">
+      <div class="media"><figure><img src="assets/body_counterfactual_flip-006_sweep_overlay.jpg" alt="body_counterfactual_flip-006 R2R RGB 与身体扫掠走廊叠加图"><figcaption>R2R RGB 与身体扫掠走廊叠加图</figcaption></figure><figure><img src="assets/body_counterfactual_flip-006_depth.jpg" alt="body_counterfactual_flip-006 提取深度预览"><figcaption>提取深度预览</figcaption></figure></div>
+      <div class="case-body">
+        <div class="case-meta">
+          <span>body_counterfactual_flip-006</span>
+          <span>5LpN3gDmAk7 · 帧 001</span>
+        </div>
+        <p><span class="badge">单选题</span></p>
+        <h3>在同一张第一人称图像中，比较小身体机器人（半径 0.1 m）和大身体机器人（半径 0.4 m）。如果二者都执行同一个可见局部动作，哪个身体能无接触完成该动作？</h3>
+        <div class="qa-grid">
+          <div><strong>选项</strong><ul><li>两个身体都能通过</li><li>只有小身体能通过</li><li>两个身体都不能通过</li></ul></div>
+          <div class="answer-box"><strong>GT 答案</strong><p>只有小身体能通过</p></div>
+        </div>
+        <div class="evidence">
+          <p><strong>GT 推导</strong><span>由深度、相机位姿和身体扫掠走廊求交得到：扫掠走廊首次接触距离约为 5.29 个身体宽度。</span></p>
+          <p><strong>几何 oracle</strong><span>安全距离=5.29 个身体宽度；首次接触像素=[306, 113]。</span></p>
+          <p><strong>可见性</strong><span>可见扫掠比例=1；接触点可见=是；依赖隐藏几何=否。</span></p>
+          <p><strong>身体与动作</strong><span>半径=0.1 m；宽度=0.2 m；动作方向=正前方；身体反事实组=5LpN3gDmAk7_r2r_000004-001-flip。</span></p>
+          <p><strong>位姿</strong><span>位置=[6.036600112915039, 4.365650177001953, 3.1862399578094482], 四元数=[0.7071067690849304, 0.0, 0.7071067690849304, 0.0], 水平视场=79.0</span></p>
+          <p><strong>来源</strong><span>R2R 提取的 RGB/深度/位姿 · 轨迹 5LpN3gDmAk7_r2r_000004</span></p>
+          <p><strong>备注</strong><span>原始英文导航指令仅用于数据溯源，不作为被测模型输入展示。</span></p>
+        </div>
+      </div>
+    </article>
+    
+    <article class="case-card">
+      <div class="media"><figure><img src="assets/body_counterfactual_flip-007_sweep_overlay.jpg" alt="body_counterfactual_flip-007 R2R RGB 与身体扫掠走廊叠加图"><figcaption>R2R RGB 与身体扫掠走廊叠加图</figcaption></figure><figure><img src="assets/body_counterfactual_flip-007_depth.jpg" alt="body_counterfactual_flip-007 提取深度预览"><figcaption>提取深度预览</figcaption></figure></div>
+      <div class="case-body">
+        <div class="case-meta">
+          <span>body_counterfactual_flip-007</span>
+          <span>82sE5b5pLXE · 帧 001</span>
+        </div>
+        <p><span class="badge">单选题</span></p>
+        <h3>在同一张第一人称图像中，比较小身体机器人（半径 0.1 m）和大身体机器人（半径 0.4 m）。如果二者都执行同一个可见局部动作，哪个身体能无接触完成该动作？</h3>
+        <div class="qa-grid">
+          <div><strong>选项</strong><ul><li>两个身体都能通过</li><li>只有小身体能通过</li><li>两个身体都不能通过</li></ul></div>
+          <div class="answer-box"><strong>GT 答案</strong><p>两个身体都不能通过</p></div>
+        </div>
+        <div class="evidence">
+          <p><strong>GT 推导</strong><span>由深度、相机位姿和身体扫掠走廊求交得到：扫掠走廊首次接触距离约为 0.39 个身体宽度。</span></p>
+          <p><strong>几何 oracle</strong><span>安全距离=0.39 个身体宽度；首次接触像素=[0, 10]。</span></p>
+          <p><strong>可见性</strong><span>可见扫掠比例=1；接触点可见=是；依赖隐藏几何=否。</span></p>
+          <p><strong>身体与动作</strong><span>半径=0.4 m；宽度=0.8 m；动作方向=正前方；身体反事实组=82sE5b5pLXE_r2r_000022-001-no-flip。</span></p>
+          <p><strong>位姿</strong><span>位置=[-9.088859558105469, 0.8798840045928955, -8.641449928283691], 四元数=[0.5, 0.0, 0.8660253882408142, 0.0], 水平视场=79.0</span></p>
+          <p><strong>来源</strong><span>R2R 提取的 RGB/深度/位姿 · 轨迹 82sE5b5pLXE_r2r_000022</span></p>
+          <p><strong>备注</strong><span>原始英文导航指令仅用于数据溯源，不作为被测模型输入展示。</span></p>
+        </div>
+      </div>
+    </article>
+    
+    <article class="case-card">
+      <div class="media"><figure><img src="assets/body_counterfactual_flip-008_sweep_overlay.jpg" alt="body_counterfactual_flip-008 R2R RGB 与身体扫掠走廊叠加图"><figcaption>R2R RGB 与身体扫掠走廊叠加图</figcaption></figure><figure><img src="assets/body_counterfactual_flip-008_depth.jpg" alt="body_counterfactual_flip-008 提取深度预览"><figcaption>提取深度预览</figcaption></figure></div>
+      <div class="case-body">
+        <div class="case-meta">
+          <span>body_counterfactual_flip-008</span>
+          <span>HxpKQynjfin · 帧 001</span>
+        </div>
+        <p><span class="badge">单选题</span></p>
+        <h3>在同一张第一人称图像中，比较小身体机器人（半径 0.1 m）和大身体机器人（半径 0.4 m）。如果二者都执行同一个可见局部动作，哪个身体能无接触完成该动作？</h3>
+        <div class="qa-grid">
+          <div><strong>选项</strong><ul><li>两个身体都能通过</li><li>只有小身体能通过</li><li>两个身体都不能通过</li></ul></div>
+          <div class="answer-box"><strong>GT 答案</strong><p>两个身体都不能通过</p></div>
+        </div>
+        <div class="evidence">
+          <p><strong>GT 推导</strong><span>由深度、相机位姿和身体扫掠走廊求交得到：扫掠走廊首次接触距离约为 0.49 个身体宽度。</span></p>
+          <p><strong>几何 oracle</strong><span>安全距离=0.49 个身体宽度；首次接触像素=[345, 405]。</span></p>
+          <p><strong>可见性</strong><span>可见扫掠比例=1；接触点可见=是；依赖隐藏几何=否。</span></p>
+          <p><strong>身体与动作</strong><span>半径=0.4 m；宽度=0.8 m；动作方向=正前方；身体反事实组=HxpKQynjfin_r2r_002954-001-no-flip。</span></p>
+          <p><strong>位姿</strong><span>位置=[1.0473899841308594, 1.2598249912261963, 5.510900020599365], 四元数=[0.8660253882408142, 0.0, 0.5, 0.0], 水平视场=79.0</span></p>
+          <p><strong>来源</strong><span>R2R 提取的 RGB/深度/位姿 · 轨迹 HxpKQynjfin_r2r_002954</span></p>
+          <p><strong>备注</strong><span>原始英文导航指令仅用于数据溯源，不作为被测模型输入展示。</span></p>
+        </div>
+      </div>
+    </article>
+    
+    <article class="case-card">
+      <div class="media"><figure><img src="assets/body_counterfactual_flip-009_sweep_overlay.jpg" alt="body_counterfactual_flip-009 R2R RGB 与身体扫掠走廊叠加图"><figcaption>R2R RGB 与身体扫掠走廊叠加图</figcaption></figure><figure><img src="assets/body_counterfactual_flip-009_depth.jpg" alt="body_counterfactual_flip-009 提取深度预览"><figcaption>提取深度预览</figcaption></figure></div>
+      <div class="case-body">
+        <div class="case-meta">
+          <span>body_counterfactual_flip-009</span>
+          <span>SN83YJsR3w2 · 帧 001</span>
+        </div>
+        <p><span class="badge">单选题</span></p>
+        <h3>在同一张第一人称图像中，比较小身体机器人（半径 0.1 m）和大身体机器人（半径 0.4 m）。如果二者都执行同一个可见局部动作，哪个身体能无接触完成该动作？</h3>
+        <div class="qa-grid">
+          <div><strong>选项</strong><ul><li>两个身体都能通过</li><li>只有小身体能通过</li><li>两个身体都不能通过</li></ul></div>
+          <div class="answer-box"><strong>GT 答案</strong><p>两个身体都不能通过</p></div>
+        </div>
+        <div class="evidence">
+          <p><strong>GT 推导</strong><span>由深度、相机位姿和身体扫掠走廊求交得到：扫掠走廊首次接触距离约为 0.54 个身体宽度。</span></p>
+          <p><strong>几何 oracle</strong><span>安全距离=0.54 个身体宽度；首次接触像素=[179, 0]。</span></p>
+          <p><strong>可见性</strong><span>可见扫掠比例=1；接触点可见=是；依赖隐藏几何=否。</span></p>
+          <p><strong>身体与动作</strong><span>半径=0.4 m；宽度=0.8 m；动作方向=正前方；身体反事实组=SN83YJsR3w2_r2r_000272-001-no-flip。</span></p>
+          <p><strong>位姿</strong><span>位置=[5.284049987792969, -2.258549928665161, -11.521300315856934], 四元数=[0.7071067690849304, 0.0, 0.7071067690849304, 0.0], 水平视场=79.0</span></p>
+          <p><strong>来源</strong><span>R2R 提取的 RGB/深度/位姿 · 轨迹 SN83YJsR3w2_r2r_000272</span></p>
+          <p><strong>备注</strong><span>原始英文导航指令仅用于数据溯源，不作为被测模型输入展示。</span></p>
+        </div>
+      </div>
+    </article>
+    
+    <article class="case-card">
+      <div class="media"><figure><img src="assets/body_counterfactual_flip-010_sweep_overlay.jpg" alt="body_counterfactual_flip-010 R2R RGB 与身体扫掠走廊叠加图"><figcaption>R2R RGB 与身体扫掠走廊叠加图</figcaption></figure><figure><img src="assets/body_counterfactual_flip-010_depth.jpg" alt="body_counterfactual_flip-010 提取深度预览"><figcaption>提取深度预览</figcaption></figure></div>
+      <div class="case-body">
+        <div class="case-meta">
+          <span>body_counterfactual_flip-010</span>
+          <span>gZ6f7yhEvPG · 帧 001</span>
+        </div>
+        <p><span class="badge">单选题</span></p>
+        <h3>在同一张第一人称图像中，比较小身体机器人（半径 0.1 m）和大身体机器人（半径 0.4 m）。如果二者都执行同一个可见局部动作，哪个身体能无接触完成该动作？</h3>
+        <div class="qa-grid">
+          <div><strong>选项</strong><ul><li>两个身体都能通过</li><li>只有小身体能通过</li><li>两个身体都不能通过</li></ul></div>
+          <div class="answer-box"><strong>GT 答案</strong><p>两个身体都能通过</p></div>
+        </div>
+        <div class="evidence">
+          <p><strong>GT 推导</strong><span>由深度、相机位姿和身体扫掠走廊求交得到：扫掠走廊首次接触距离约为 18.63 个身体宽度。</span></p>
+          <p><strong>几何 oracle</strong><span>安全距离=18.63 个身体宽度；首次接触像素=[330, 253]。</span></p>
+          <p><strong>可见性</strong><span>可见扫掠比例=0.84；接触点可见=是；依赖隐藏几何=否。</span></p>
+          <p><strong>身体与动作</strong><span>半径=0.1 m；宽度=0.2 m；动作方向=正前方；身体反事实组=gZ6f7yhEvPG_r2r_002021-001-no-flip。</span></p>
+          <p><strong>位姿</strong><span>位置=[-2.7924699783325195, 1.5173797607421875, 1.388010025024414], 四元数=[1.0, 0.0, 0.0, 0.0], 水平视场=79.0</span></p>
+          <p><strong>来源</strong><span>R2R 提取的 RGB/深度/位姿 · 轨迹 gZ6f7yhEvPG_r2r_002021</span></p>
+          <p><strong>备注</strong><span>原始英文导航指令仅用于数据溯源，不作为被测模型输入展示。</span></p>
+        </div>
+      </div>
+    </article>
+    </div>
+            </section>
+            
+            <section class="case-group" id="first_contact_region">
+              <h2>首次接触位置</h2>
+              <p>诊断模型是否能把答案落到图像中可见的首次接触证据，而不是只猜安全/危险。</p>
+              <div class="case-grid">
+    <article class="case-card">
+      <div class="media"><figure><img src="assets/first_contact_region-001_sweep_overlay.jpg" alt="first_contact_region-001 R2R RGB 与身体扫掠走廊叠加图"><figcaption>R2R RGB 与身体扫掠走廊叠加图</figcaption></figure><figure><img src="assets/first_contact_region-001_depth.jpg" alt="first_contact_region-001 提取深度预览"><figcaption>提取深度预览</figcaption></figure></div>
+      <div class="case-body">
+        <div class="case-meta">
+          <span>first_contact_region-001</span>
+          <span>17DRP5sb8fy · 帧 001</span>
+        </div>
+        <p><span class="badge">单选题</span></p>
+        <h3>机器人半径 0.25 m。若它在当前可见局部空间中向前移动最多 指定 个身体宽度，并发生首次接触，接触点会出现在图像哪个区域？</h3>
+        <div class="qa-grid">
+          <div><strong>选项</strong><ul><li>左下区域</li><li>中间区域</li><li>右侧区域</li><li>可见范围内无接触</li></ul></div>
+          <div class="answer-box"><strong>GT 答案</strong><p>中间区域</p></div>
+        </div>
+        <div class="evidence">
+          <p><strong>GT 推导</strong><span>由深度、相机位姿和身体扫掠走廊求交得到：扫掠走廊首次接触距离约为 7.92 个身体宽度。</span></p>
+          <p><strong>几何 oracle</strong><span>安全距离=7.92 个身体宽度；首次接触像素=[296, 308]。</span></p>
+          <p><strong>可见性</strong><span>可见扫掠比例=0.78；接触点可见=是；依赖隐藏几何=否。</span></p>
+          <p><strong>身体与动作</strong><span>半径=0.25 m；宽度=0.5 m；动作方向=正前方。</span></p>
+          <p><strong>位姿</strong><span>位置=[-10.293439865112305, 1.3224470615386963, 1.9079790115356445], 四元数=[-0.9659258127212524, 0.0, 0.258819043636322, -0.0], 水平视场=79.0</span></p>
+          <p><strong>来源</strong><span>R2R 提取的 RGB/深度/位姿 · 轨迹 17DRP5sb8fy_r2r_000515</span></p>
+          <p><strong>备注</strong><span>原始英文导航指令仅用于数据溯源，不作为被测模型输入展示。</span></p>
+        </div>
+      </div>
+    </article>
+    
+    <article class="case-card">
+      <div class="media"><figure><img src="assets/first_contact_region-002_sweep_overlay.jpg" alt="first_contact_region-002 R2R RGB 与身体扫掠走廊叠加图"><figcaption>R2R RGB 与身体扫掠走廊叠加图</figcaption></figure><figure><img src="assets/first_contact_region-002_depth.jpg" alt="first_contact_region-002 提取深度预览"><figcaption>提取深度预览</figcaption></figure></div>
+      <div class="case-body">
+        <div class="case-meta">
+          <span>first_contact_region-002</span>
+          <span>1LXtFkjw3qL · 帧 001</span>
+        </div>
+        <p><span class="badge">单选题</span></p>
+        <h3>机器人半径 0.25 m。若它在当前可见局部空间中向前移动最多 指定 个身体宽度，并发生首次接触，接触点会出现在图像哪个区域？</h3>
+        <div class="qa-grid">
+          <div><strong>选项</strong><ul><li>左下区域</li><li>中间区域</li><li>右侧区域</li><li>可见范围内无接触</li></ul></div>
+          <div class="answer-box"><strong>GT 答案</strong><p>中间区域</p></div>
+        </div>
+        <div class="evidence">
+          <p><strong>GT 推导</strong><span>由深度、相机位姿和身体扫掠走廊求交得到：扫掠走廊首次接触距离约为 4.71 个身体宽度。</span></p>
+          <p><strong>几何 oracle</strong><span>安全距离=4.71 个身体宽度；首次接触像素=[321, 142]。</span></p>
+          <p><strong>可见性</strong><span>可见扫掠比例=1；接触点可见=是；依赖隐藏几何=否。</span></p>
+          <p><strong>身体与动作</strong><span>半径=0.25 m；宽度=0.5 m；动作方向=正前方。</span></p>
+          <p><strong>位姿</strong><span>位置=[-0.3167470097541809, 4.734411239624023, 14.130499839782715], 四元数=[-0.7071067690849304, 0.0, 0.7071067690849304, -0.0], 水平视场=79.0</span></p>
+          <p><strong>来源</strong><span>R2R 提取的 RGB/深度/位姿 · 轨迹 1LXtFkjw3qL_r2r_000085</span></p>
+          <p><strong>备注</strong><span>原始英文导航指令仅用于数据溯源，不作为被测模型输入展示。</span></p>
+        </div>
+      </div>
+    </article>
+    
+    <article class="case-card">
+      <div class="media"><figure><img src="assets/first_contact_region-003_sweep_overlay.jpg" alt="first_contact_region-003 R2R RGB 与身体扫掠走廊叠加图"><figcaption>R2R RGB 与身体扫掠走廊叠加图</figcaption></figure><figure><img src="assets/first_contact_region-003_depth.jpg" alt="first_contact_region-003 提取深度预览"><figcaption>提取深度预览</figcaption></figure></div>
+      <div class="case-body">
+        <div class="case-meta">
+          <span>first_contact_region-003</span>
+          <span>1pXnuDYAj8r · 帧 001</span>
+        </div>
+        <p><span class="badge">单选题</span></p>
+        <h3>机器人半径 0.25 m。若它在当前可见局部空间中向前移动最多 指定 个身体宽度，并发生首次接触，接触点会出现在图像哪个区域？</h3>
+        <div class="qa-grid">
+          <div><strong>选项</strong><ul><li>左下区域</li><li>中间区域</li><li>右侧区域</li><li>可见范围内无接触</li></ul></div>
+          <div class="answer-box"><strong>GT 答案</strong><p>中间区域</p></div>
+        </div>
+        <div class="evidence">
+          <p><strong>GT 推导</strong><span>由深度、相机位姿和身体扫掠走廊求交得到：扫掠走廊首次接触距离约为 1.18 个身体宽度。</span></p>
+          <p><strong>几何 oracle</strong><span>安全距离=1.18 个身体宽度；首次接触像素=[329, 393]。</span></p>
+          <p><strong>可见性</strong><span>可见扫掠比例=0.91；接触点可见=是；依赖隐藏几何=否。</span></p>
+          <p><strong>身体与动作</strong><span>半径=0.25 m；宽度=0.5 m；动作方向=正前方。</span></p>
+          <p><strong>位姿</strong><span>位置=[9.927780151367188, 3.8800408840179443, -3.7776501178741455], 四元数=[6.123234262925839e-17, 0.0, 1.0, 0.0], 水平视场=79.0</span></p>
+          <p><strong>来源</strong><span>R2R 提取的 RGB/深度/位姿 · 轨迹 1pXnuDYAj8r_r2r_000184</span></p>
+          <p><strong>备注</strong><span>原始英文导航指令仅用于数据溯源，不作为被测模型输入展示。</span></p>
+        </div>
+      </div>
+    </article>
+    
+    <article class="case-card">
+      <div class="media"><figure><img src="assets/first_contact_region-004_sweep_overlay.jpg" alt="first_contact_region-004 R2R RGB 与身体扫掠走廊叠加图"><figcaption>R2R RGB 与身体扫掠走廊叠加图</figcaption></figure><figure><img src="assets/first_contact_region-004_depth.jpg" alt="first_contact_region-004 提取深度预览"><figcaption>提取深度预览</figcaption></figure></div>
+      <div class="case-body">
+        <div class="case-meta">
+          <span>first_contact_region-004</span>
+          <span>29hnd4uzFmX · 帧 001</span>
+        </div>
+        <p><span class="badge">单选题</span></p>
+        <h3>机器人半径 0.25 m。若它在当前可见局部空间中向前移动最多 指定 个身体宽度，并发生首次接触，接触点会出现在图像哪个区域？</h3>
+        <div class="qa-grid">
+          <div><strong>选项</strong><ul><li>左下区域</li><li>中间区域</li><li>右侧区域</li><li>可见范围内无接触</li></ul></div>
+          <div class="answer-box"><strong>GT 答案</strong><p>中间区域</p></div>
+        </div>
+        <div class="evidence">
+          <p><strong>GT 推导</strong><span>由深度、相机位姿和身体扫掠走廊求交得到：扫掠走廊首次接触距离约为 2.43 个身体宽度。</span></p>
+          <p><strong>几何 oracle</strong><span>安全距离=2.43 个身体宽度；首次接触像素=[241, 218]。</span></p>
+          <p><strong>可见性</strong><span>可见扫掠比例=1；接触点可见=是；依赖隐藏几何=否。</span></p>
+          <p><strong>身体与动作</strong><span>半径=0.25 m；宽度=0.5 m；动作方向=正前方。</span></p>
+          <p><strong>位姿</strong><span>位置=[-4.775169849395752, 1.0410419702529907, -8.342399597167969], 四元数=[-0.258819043636322, 0.0, 0.9659258127212524, -0.0], 水平视场=79.0</span></p>
+          <p><strong>来源</strong><span>R2R 提取的 RGB/深度/位姿 · 轨迹 29hnd4uzFmX_r2r_000160</span></p>
+          <p><strong>备注</strong><span>原始英文导航指令仅用于数据溯源，不作为被测模型输入展示。</span></p>
+        </div>
+      </div>
+    </article>
+    
+    <article class="case-card">
+      <div class="media"><figure><img src="assets/first_contact_region-005_sweep_overlay.jpg" alt="first_contact_region-005 R2R RGB 与身体扫掠走廊叠加图"><figcaption>R2R RGB 与身体扫掠走廊叠加图</figcaption></figure><figure><img src="assets/first_contact_region-005_depth.jpg" alt="first_contact_region-005 提取深度预览"><figcaption>提取深度预览</figcaption></figure></div>
+      <div class="case-body">
+        <div class="case-meta">
+          <span>first_contact_region-005</span>
+          <span>82sE5b5pLXE · 帧 001</span>
+        </div>
+        <p><span class="badge">单选题</span></p>
+        <h3>机器人半径 0.25 m。若它在当前可见局部空间中向前移动最多 指定 个身体宽度，并发生首次接触，接触点会出现在图像哪个区域？</h3>
+        <div class="qa-grid">
+          <div><strong>选项</strong><ul><li>左下区域</li><li>中间区域</li><li>右侧区域</li><li>可见范围内无接触</li></ul></div>
+          <div class="answer-box"><strong>GT 答案</strong><p>左下区域</p></div>
+        </div>
+        <div class="evidence">
+          <p><strong>GT 推导</strong><span>由深度、相机位姿和身体扫掠走廊求交得到：扫掠走廊首次接触距离约为 0.63 个身体宽度。</span></p>
+          <p><strong>几何 oracle</strong><span>安全距离=0.63 个身体宽度；首次接触像素=[11, 249]。</span></p>
+          <p><strong>可见性</strong><span>可见扫掠比例=1；接触点可见=是；依赖隐藏几何=否。</span></p>
+          <p><strong>身体与动作</strong><span>半径=0.25 m；宽度=0.5 m；动作方向=正前方。</span></p>
+          <p><strong>位姿</strong><span>位置=[-9.088859558105469, 0.8798840045928955, -8.641449928283691], 四元数=[0.5, 0.0, 0.8660253882408142, 0.0], 水平视场=79.0</span></p>
+          <p><strong>来源</strong><span>R2R 提取的 RGB/深度/位姿 · 轨迹 82sE5b5pLXE_r2r_000022</span></p>
+          <p><strong>备注</strong><span>原始英文导航指令仅用于数据溯源，不作为被测模型输入展示。</span></p>
+        </div>
+      </div>
+    </article>
+    
+    <article class="case-card">
+      <div class="media"><figure><img src="assets/first_contact_region-006_sweep_overlay.jpg" alt="first_contact_region-006 R2R RGB 与身体扫掠走廊叠加图"><figcaption>R2R RGB 与身体扫掠走廊叠加图</figcaption></figure><figure><img src="assets/first_contact_region-006_depth.jpg" alt="first_contact_region-006 提取深度预览"><figcaption>提取深度预览</figcaption></figure></div>
+      <div class="case-body">
+        <div class="case-meta">
+          <span>first_contact_region-006</span>
+          <span>E9uDoFAP3SH · 帧 001</span>
+        </div>
+        <p><span class="badge">单选题</span></p>
+        <h3>机器人半径 0.25 m。若它在当前可见局部空间中向前移动最多 指定 个身体宽度，并发生首次接触，接触点会出现在图像哪个区域？</h3>
+        <div class="qa-grid">
+          <div><strong>选项</strong><ul><li>左下区域</li><li>中间区域</li><li>右侧区域</li><li>可见范围内无接触</li></ul></div>
+          <div class="answer-box"><strong>GT 答案</strong><p>右侧区域</p></div>
+        </div>
+        <div class="evidence">
+          <p><strong>GT 推导</strong><span>由深度、相机位姿和身体扫掠走廊求交得到：扫掠走廊首次接触距离约为 1.8 个身体宽度。</span></p>
+          <p><strong>几何 oracle</strong><span>安全距离=1.8 个身体宽度；首次接触像素=[427, 382]。</span></p>
+          <p><strong>可见性</strong><span>可见扫掠比例=1；接触点可见=是；依赖隐藏几何=否。</span></p>
+          <p><strong>身体与动作</strong><span>半径=0.25 m；宽度=0.5 m；动作方向=正前方。</span></p>
+          <p><strong>位姿</strong><span>位置=[3.2646100521087646, 1.4943809509277344, 11.371800422668457], 四元数=[-0.5, 0.0, 0.8660253882408142, -0.0], 水平视场=79.0</span></p>
+          <p><strong>来源</strong><span>R2R 提取的 RGB/深度/位姿 · 轨迹 E9uDoFAP3SH_r2r_000064</span></p>
+          <p><strong>备注</strong><span>原始英文导航指令仅用于数据溯源，不作为被测模型输入展示。</span></p>
+        </div>
+      </div>
+    </article>
+    
+    <article class="case-card">
+      <div class="media"><figure><img src="assets/first_contact_region-007_sweep_overlay.jpg" alt="first_contact_region-007 R2R RGB 与身体扫掠走廊叠加图"><figcaption>R2R RGB 与身体扫掠走廊叠加图</figcaption></figure><figure><img src="assets/first_contact_region-007_depth.jpg" alt="first_contact_region-007 提取深度预览"><figcaption>提取深度预览</figcaption></figure></div>
+      <div class="case-body">
+        <div class="case-meta">
+          <span>first_contact_region-007</span>
+          <span>JF19kD82Mey · 帧 001</span>
+        </div>
+        <p><span class="badge">单选题</span></p>
+        <h3>机器人半径 0.25 m。若它在当前可见局部空间中向前移动最多 指定 个身体宽度，并发生首次接触，接触点会出现在图像哪个区域？</h3>
+        <div class="qa-grid">
+          <div><strong>选项</strong><ul><li>左下区域</li><li>中间区域</li><li>右侧区域</li><li>可见范围内无接触</li></ul></div>
+          <div class="answer-box"><strong>GT 答案</strong><p>左下区域</p></div>
+        </div>
+        <div class="evidence">
+          <p><strong>GT 推导</strong><span>由深度、相机位姿和身体扫掠走廊求交得到：扫掠走廊首次接触距离约为 0.55 个身体宽度。</span></p>
+          <p><strong>几何 oracle</strong><span>安全距离=0.55 个身体宽度；首次接触像素=[23, 0]。</span></p>
+          <p><strong>可见性</strong><span>可见扫掠比例=1；接触点可见=是；依赖隐藏几何=否。</span></p>
+          <p><strong>身体与动作</strong><span>半径=0.25 m；宽度=0.5 m；动作方向=正前方。</span></p>
+          <p><strong>位姿</strong><span>位置=[-2.3408799171447754, 4.568902015686035, 3.6762900352478027], 四元数=[1.0, 0.0, 0.0, 0.0], 水平视场=79.0</span></p>
+          <p><strong>来源</strong><span>R2R 提取的 RGB/深度/位姿 · 轨迹 JF19kD82Mey_r2r_000130</span></p>
+          <p><strong>备注</strong><span>原始英文导航指令仅用于数据溯源，不作为被测模型输入展示。</span></p>
+        </div>
+      </div>
+    </article>
+    
+    <article class="case-card">
+      <div class="media"><figure><img src="assets/first_contact_region-008_sweep_overlay.jpg" alt="first_contact_region-008 R2R RGB 与身体扫掠走廊叠加图"><figcaption>R2R RGB 与身体扫掠走廊叠加图</figcaption></figure><figure><img src="assets/first_contact_region-008_depth.jpg" alt="first_contact_region-008 提取深度预览"><figcaption>提取深度预览</figcaption></figure></div>
+      <div class="case-body">
+        <div class="case-meta">
+          <span>first_contact_region-008</span>
+          <span>JmbYfDe2QKZ · 帧 001</span>
+        </div>
+        <p><span class="badge">单选题</span></p>
+        <h3>机器人半径 0.25 m。若它在当前可见局部空间中向前移动最多 指定 个身体宽度，并发生首次接触，接触点会出现在图像哪个区域？</h3>
+        <div class="qa-grid">
+          <div><strong>选项</strong><ul><li>左下区域</li><li>中间区域</li><li>右侧区域</li><li>可见范围内无接触</li></ul></div>
+          <div class="answer-box"><strong>GT 答案</strong><p>左下区域</p></div>
+        </div>
+        <div class="evidence">
+          <p><strong>GT 推导</strong><span>由深度、相机位姿和身体扫掠走廊求交得到：扫掠走廊首次接触距离约为 1.41 个身体宽度。</span></p>
+          <p><strong>几何 oracle</strong><span>安全距离=1.41 个身体宽度；首次接触像素=[203, 468]。</span></p>
+          <p><strong>可见性</strong><span>可见扫掠比例=1；接触点可见=是；依赖隐藏几何=否。</span></p>
+          <p><strong>身体与动作</strong><span>半径=0.25 m；宽度=0.5 m；动作方向=正前方。</span></p>
+          <p><strong>位姿</strong><span>位置=[-3.5217700004577637, 1.3248469829559326, 4.520040035247803], 四元数=[0.7071067690849304, 0.0, 0.7071067690849304, 0.0], 水平视场=79.0</span></p>
+          <p><strong>来源</strong><span>R2R 提取的 RGB/深度/位姿 · 轨迹 JmbYfDe2QKZ_r2r_000373</span></p>
+          <p><strong>备注</strong><span>原始英文导航指令仅用于数据溯源，不作为被测模型输入展示。</span></p>
+        </div>
+      </div>
+    </article>
+    
+    <article class="case-card">
+      <div class="media"><figure><img src="assets/first_contact_region-009_sweep_overlay.jpg" alt="first_contact_region-009 R2R RGB 与身体扫掠走廊叠加图"><figcaption>R2R RGB 与身体扫掠走廊叠加图</figcaption></figure><figure><img src="assets/first_contact_region-009_depth.jpg" alt="first_contact_region-009 提取深度预览"><figcaption>提取深度预览</figcaption></figure></div>
+      <div class="case-body">
+        <div class="case-meta">
+          <span>first_contact_region-009</span>
+          <span>S9hNv5qa7GM · 帧 001</span>
+        </div>
+        <p><span class="badge">单选题</span></p>
+        <h3>机器人半径 0.25 m。若它在当前可见局部空间中向前移动最多 指定 个身体宽度，并发生首次接触，接触点会出现在图像哪个区域？</h3>
+        <div class="qa-grid">
+          <div><strong>选项</strong><ul><li>左下区域</li><li>中间区域</li><li>右侧区域</li><li>可见范围内无接触</li></ul></div>
+          <div class="answer-box"><strong>GT 答案</strong><p>左下区域</p></div>
+        </div>
+        <div class="evidence">
+          <p><strong>GT 推导</strong><span>由深度、相机位姿和身体扫掠走廊求交得到：扫掠走廊首次接触距离约为 1.8 个身体宽度。</span></p>
+          <p><strong>几何 oracle</strong><span>安全距离=1.8 个身体宽度；首次接触像素=[213, 0]。</span></p>
+          <p><strong>可见性</strong><span>可见扫掠比例=1；接触点可见=是；依赖隐藏几何=否。</span></p>
+          <p><strong>身体与动作</strong><span>半径=0.25 m；宽度=0.5 m；动作方向=正前方。</span></p>
+          <p><strong>位姿</strong><span>位置=[-9.08864974975586, 3.281308650970459, 0.48961400985717773], 四元数=[6.123234262925839e-17, 0.0, 1.0, 0.0], 水平视场=79.0</span></p>
+          <p><strong>来源</strong><span>R2R 提取的 RGB/深度/位姿 · 轨迹 S9hNv5qa7GM_r2r_000094</span></p>
+          <p><strong>备注</strong><span>原始英文导航指令仅用于数据溯源，不作为被测模型输入展示。</span></p>
+        </div>
+      </div>
+    </article>
+    
+    <article class="case-card">
+      <div class="media"><figure><img src="assets/first_contact_region-010_sweep_overlay.jpg" alt="first_contact_region-010 R2R RGB 与身体扫掠走廊叠加图"><figcaption>R2R RGB 与身体扫掠走廊叠加图</figcaption></figure><figure><img src="assets/first_contact_region-010_depth.jpg" alt="first_contact_region-010 提取深度预览"><figcaption>提取深度预览</figcaption></figure></div>
+      <div class="case-body">
+        <div class="case-meta">
+          <span>first_contact_region-010</span>
+          <span>V2XKFyX4ASd · 帧 001</span>
+        </div>
+        <p><span class="badge">单选题</span></p>
+        <h3>机器人半径 0.25 m。若它在当前可见局部空间中向前移动最多 指定 个身体宽度，并发生首次接触，接触点会出现在图像哪个区域？</h3>
+        <div class="qa-grid">
+          <div><strong>选项</strong><ul><li>左下区域</li><li>中间区域</li><li>右侧区域</li><li>可见范围内无接触</li></ul></div>
+          <div class="answer-box"><strong>GT 答案</strong><p>右侧区域</p></div>
+        </div>
+        <div class="evidence">
+          <p><strong>GT 推导</strong><span>由深度、相机位姿和身体扫掠走廊求交得到：扫掠走廊首次接触距离约为 1.49 个身体宽度。</span></p>
+          <p><strong>几何 oracle</strong><span>安全距离=1.49 个身体宽度；首次接触像素=[440, 474]。</span></p>
+          <p><strong>可见性</strong><span>可见扫掠比例=1；接触点可见=是；依赖隐藏几何=否。</span></p>
+          <p><strong>身体与动作</strong><span>半径=0.25 m；宽度=0.5 m；动作方向=正前方。</span></p>
+          <p><strong>位姿</strong><span>位置=[6.414780139923096, 4.440007209777832, -3.9623899459838867], 四元数=[0.9659258127212524, 0.0, 0.258819043636322, 0.0], 水平视场=79.0</span></p>
+          <p><strong>来源</strong><span>R2R 提取的 RGB/深度/位姿 · 轨迹 V2XKFyX4ASd_r2r_000412</span></p>
+          <p><strong>备注</strong><span>原始英文导航指令仅用于数据溯源，不作为被测模型输入展示。</span></p>
+        </div>
+      </div>
+    </article>
+    </div>
+            </section>
+            
+        
+</body>
+</html>
