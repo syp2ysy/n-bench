@@ -40,7 +40,9 @@
     .case-card { display: grid; grid-template-columns: minmax(300px, 44%) 1fr; gap: 16px; padding: 14px; background: #fff; border: 1px solid #d7dce3; border-radius: 8px; }
     .media { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; align-content: start; }
     .media figure { margin: 0; }
-    .media img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; border: 1px solid #d7dce3; border-radius: 6px 6px 0 0; background: #111827; display: block; }
+    .media img { width: 100%; aspect-ratio: 4 / 3; object-fit: contain; border: 1px solid #d7dce3; border-radius: 6px 6px 0 0; background: #111827; display: block; }
+    .media .primary-figure { grid-column: 1 / -1; }
+    .media .primary-figure img { aspect-ratio: 4 / 3; object-fit: contain; }
     .media figcaption { padding: 7px 8px; border: 1px solid #d7dce3; border-top: 0; border-radius: 0 0 6px 6px; color: #465261; background: #f8fafc; font-size: 12px; }
     .case-body { min-width: 0; }
     .case-meta { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px; color: #657386; font-size: 12px; }
@@ -74,7 +76,7 @@
               <p>检验模型能否从起始第一人称图像估计机器人在可见局部空间中实际能推进多远，而不是只描述看起来空不空。</p>
               <div class="case-grid">
     <article class="case-card">
-      <div class="media"><figure><img src="assets/local_progress_estimation-001_rollout_strip.jpg" alt="local_progress_estimation-001 起始 RGB 与动作执行轨迹示意"><figcaption>起始 RGB 与动作执行轨迹示意</figcaption></figure><figure><img src="assets/local_progress_estimation-001_topdown.jpg" alt="local_progress_estimation-001 局部动作轨迹草图"><figcaption>局部动作轨迹草图</figcaption></figure></div>
+      <div class="media"><figure class="primary-figure"><img src="assets/local_progress_estimation-001_initial_rgb.jpg" alt="local_progress_estimation-001 模型输入：完整起始 egocentric RGB"><figcaption>模型输入：完整起始 egocentric RGB</figcaption></figure><figure><img src="assets/local_progress_estimation-001_overlay.jpg" alt="local_progress_estimation-001 动作轨迹 overlay（离线 GT 可视化）"><figcaption>动作轨迹 overlay（离线 GT 可视化）</figcaption></figure><figure><img src="assets/local_progress_estimation-001_depth.jpg" alt="local_progress_estimation-001 深度预览（只用于离线 GT）"><figcaption>深度预览（只用于离线 GT）</figcaption></figure><figure><img src="assets/local_progress_estimation-001_semantic.jpg" alt="local_progress_estimation-001 语义预览（只用于离线上下文）"><figcaption>语义预览（只用于离线上下文）</figcaption></figure><figure><img src="assets/local_progress_estimation-001_topdown.jpg" alt="local_progress_estimation-001 局部动作轨迹草图"><figcaption>局部动作轨迹草图</figcaption></figure><figure><img src="assets/local_progress_estimation-001_rollout_strip.jpg" alt="local_progress_estimation-001 RGB / overlay 对照 strip"><figcaption>RGB / overlay 对照 strip</figcaption></figure></div>
       <div class="case-body">
         <div class="case-meta">
           <span>局部推进范围估计案例 001</span>
@@ -102,7 +104,7 @@
     </article>
     
     <article class="case-card">
-      <div class="media"><figure><img src="assets/local_progress_estimation-002_rollout_strip.jpg" alt="local_progress_estimation-002 起始 RGB 与动作执行轨迹示意"><figcaption>起始 RGB 与动作执行轨迹示意</figcaption></figure><figure><img src="assets/local_progress_estimation-002_topdown.jpg" alt="local_progress_estimation-002 局部动作轨迹草图"><figcaption>局部动作轨迹草图</figcaption></figure></div>
+      <div class="media"><figure class="primary-figure"><img src="assets/local_progress_estimation-002_initial_rgb.jpg" alt="local_progress_estimation-002 模型输入：完整起始 egocentric RGB"><figcaption>模型输入：完整起始 egocentric RGB</figcaption></figure><figure><img src="assets/local_progress_estimation-002_overlay.jpg" alt="local_progress_estimation-002 动作轨迹 overlay（离线 GT 可视化）"><figcaption>动作轨迹 overlay（离线 GT 可视化）</figcaption></figure><figure><img src="assets/local_progress_estimation-002_depth.jpg" alt="local_progress_estimation-002 深度预览（只用于离线 GT）"><figcaption>深度预览（只用于离线 GT）</figcaption></figure><figure><img src="assets/local_progress_estimation-002_semantic.jpg" alt="local_progress_estimation-002 语义预览（只用于离线上下文）"><figcaption>语义预览（只用于离线上下文）</figcaption></figure><figure><img src="assets/local_progress_estimation-002_topdown.jpg" alt="local_progress_estimation-002 局部动作轨迹草图"><figcaption>局部动作轨迹草图</figcaption></figure><figure><img src="assets/local_progress_estimation-002_rollout_strip.jpg" alt="local_progress_estimation-002 RGB / overlay 对照 strip"><figcaption>RGB / overlay 对照 strip</figcaption></figure></div>
       <div class="case-body">
         <div class="case-meta">
           <span>局部推进范围估计案例 002</span>
@@ -130,7 +132,7 @@
     </article>
     
     <article class="case-card">
-      <div class="media"><figure><img src="assets/local_progress_estimation-003_rollout_strip.jpg" alt="local_progress_estimation-003 起始 RGB 与动作执行轨迹示意"><figcaption>起始 RGB 与动作执行轨迹示意</figcaption></figure><figure><img src="assets/local_progress_estimation-003_topdown.jpg" alt="local_progress_estimation-003 局部动作轨迹草图"><figcaption>局部动作轨迹草图</figcaption></figure></div>
+      <div class="media"><figure class="primary-figure"><img src="assets/local_progress_estimation-003_initial_rgb.jpg" alt="local_progress_estimation-003 模型输入：完整起始 egocentric RGB"><figcaption>模型输入：完整起始 egocentric RGB</figcaption></figure><figure><img src="assets/local_progress_estimation-003_overlay.jpg" alt="local_progress_estimation-003 动作轨迹 overlay（离线 GT 可视化）"><figcaption>动作轨迹 overlay（离线 GT 可视化）</figcaption></figure><figure><img src="assets/local_progress_estimation-003_depth.jpg" alt="local_progress_estimation-003 深度预览（只用于离线 GT）"><figcaption>深度预览（只用于离线 GT）</figcaption></figure><figure><img src="assets/local_progress_estimation-003_semantic.jpg" alt="local_progress_estimation-003 语义预览（只用于离线上下文）"><figcaption>语义预览（只用于离线上下文）</figcaption></figure><figure><img src="assets/local_progress_estimation-003_topdown.jpg" alt="local_progress_estimation-003 局部动作轨迹草图"><figcaption>局部动作轨迹草图</figcaption></figure><figure><img src="assets/local_progress_estimation-003_rollout_strip.jpg" alt="local_progress_estimation-003 RGB / overlay 对照 strip"><figcaption>RGB / overlay 对照 strip</figcaption></figure></div>
       <div class="case-body">
         <div class="case-meta">
           <span>局部推进范围估计案例 003</span>
@@ -158,7 +160,7 @@
     </article>
     
     <article class="case-card">
-      <div class="media"><figure><img src="assets/local_progress_estimation-004_rollout_strip.jpg" alt="local_progress_estimation-004 起始 RGB 与动作执行轨迹示意"><figcaption>起始 RGB 与动作执行轨迹示意</figcaption></figure><figure><img src="assets/local_progress_estimation-004_topdown.jpg" alt="local_progress_estimation-004 局部动作轨迹草图"><figcaption>局部动作轨迹草图</figcaption></figure></div>
+      <div class="media"><figure class="primary-figure"><img src="assets/local_progress_estimation-004_initial_rgb.jpg" alt="local_progress_estimation-004 模型输入：完整起始 egocentric RGB"><figcaption>模型输入：完整起始 egocentric RGB</figcaption></figure><figure><img src="assets/local_progress_estimation-004_overlay.jpg" alt="local_progress_estimation-004 动作轨迹 overlay（离线 GT 可视化）"><figcaption>动作轨迹 overlay（离线 GT 可视化）</figcaption></figure><figure><img src="assets/local_progress_estimation-004_depth.jpg" alt="local_progress_estimation-004 深度预览（只用于离线 GT）"><figcaption>深度预览（只用于离线 GT）</figcaption></figure><figure><img src="assets/local_progress_estimation-004_semantic.jpg" alt="local_progress_estimation-004 语义预览（只用于离线上下文）"><figcaption>语义预览（只用于离线上下文）</figcaption></figure><figure><img src="assets/local_progress_estimation-004_topdown.jpg" alt="local_progress_estimation-004 局部动作轨迹草图"><figcaption>局部动作轨迹草图</figcaption></figure><figure><img src="assets/local_progress_estimation-004_rollout_strip.jpg" alt="local_progress_estimation-004 RGB / overlay 对照 strip"><figcaption>RGB / overlay 对照 strip</figcaption></figure></div>
       <div class="case-body">
         <div class="case-meta">
           <span>局部推进范围估计案例 004</span>
@@ -186,7 +188,7 @@
     </article>
     
     <article class="case-card">
-      <div class="media"><figure><img src="assets/local_progress_estimation-005_rollout_strip.jpg" alt="local_progress_estimation-005 起始 RGB 与动作执行轨迹示意"><figcaption>起始 RGB 与动作执行轨迹示意</figcaption></figure><figure><img src="assets/local_progress_estimation-005_topdown.jpg" alt="local_progress_estimation-005 局部动作轨迹草图"><figcaption>局部动作轨迹草图</figcaption></figure></div>
+      <div class="media"><figure class="primary-figure"><img src="assets/local_progress_estimation-005_initial_rgb.jpg" alt="local_progress_estimation-005 模型输入：完整起始 egocentric RGB"><figcaption>模型输入：完整起始 egocentric RGB</figcaption></figure><figure><img src="assets/local_progress_estimation-005_overlay.jpg" alt="local_progress_estimation-005 动作轨迹 overlay（离线 GT 可视化）"><figcaption>动作轨迹 overlay（离线 GT 可视化）</figcaption></figure><figure><img src="assets/local_progress_estimation-005_depth.jpg" alt="local_progress_estimation-005 深度预览（只用于离线 GT）"><figcaption>深度预览（只用于离线 GT）</figcaption></figure><figure><img src="assets/local_progress_estimation-005_semantic.jpg" alt="local_progress_estimation-005 语义预览（只用于离线上下文）"><figcaption>语义预览（只用于离线上下文）</figcaption></figure><figure><img src="assets/local_progress_estimation-005_topdown.jpg" alt="local_progress_estimation-005 局部动作轨迹草图"><figcaption>局部动作轨迹草图</figcaption></figure><figure><img src="assets/local_progress_estimation-005_rollout_strip.jpg" alt="local_progress_estimation-005 RGB / overlay 对照 strip"><figcaption>RGB / overlay 对照 strip</figcaption></figure></div>
       <div class="case-body">
         <div class="case-meta">
           <span>局部推进范围估计案例 005</span>
@@ -214,7 +216,7 @@
     </article>
     
     <article class="case-card">
-      <div class="media"><figure><img src="assets/local_progress_estimation-006_rollout_strip.jpg" alt="local_progress_estimation-006 起始 RGB 与动作执行轨迹示意"><figcaption>起始 RGB 与动作执行轨迹示意</figcaption></figure><figure><img src="assets/local_progress_estimation-006_topdown.jpg" alt="local_progress_estimation-006 局部动作轨迹草图"><figcaption>局部动作轨迹草图</figcaption></figure></div>
+      <div class="media"><figure class="primary-figure"><img src="assets/local_progress_estimation-006_initial_rgb.jpg" alt="local_progress_estimation-006 模型输入：完整起始 egocentric RGB"><figcaption>模型输入：完整起始 egocentric RGB</figcaption></figure><figure><img src="assets/local_progress_estimation-006_overlay.jpg" alt="local_progress_estimation-006 动作轨迹 overlay（离线 GT 可视化）"><figcaption>动作轨迹 overlay（离线 GT 可视化）</figcaption></figure><figure><img src="assets/local_progress_estimation-006_depth.jpg" alt="local_progress_estimation-006 深度预览（只用于离线 GT）"><figcaption>深度预览（只用于离线 GT）</figcaption></figure><figure><img src="assets/local_progress_estimation-006_semantic.jpg" alt="local_progress_estimation-006 语义预览（只用于离线上下文）"><figcaption>语义预览（只用于离线上下文）</figcaption></figure><figure><img src="assets/local_progress_estimation-006_topdown.jpg" alt="local_progress_estimation-006 局部动作轨迹草图"><figcaption>局部动作轨迹草图</figcaption></figure><figure><img src="assets/local_progress_estimation-006_rollout_strip.jpg" alt="local_progress_estimation-006 RGB / overlay 对照 strip"><figcaption>RGB / overlay 对照 strip</figcaption></figure></div>
       <div class="case-body">
         <div class="case-meta">
           <span>局部推进范围估计案例 006</span>
@@ -242,7 +244,7 @@
     </article>
     
     <article class="case-card">
-      <div class="media"><figure><img src="assets/local_progress_estimation-007_rollout_strip.jpg" alt="local_progress_estimation-007 起始 RGB 与动作执行轨迹示意"><figcaption>起始 RGB 与动作执行轨迹示意</figcaption></figure><figure><img src="assets/local_progress_estimation-007_topdown.jpg" alt="local_progress_estimation-007 局部动作轨迹草图"><figcaption>局部动作轨迹草图</figcaption></figure></div>
+      <div class="media"><figure class="primary-figure"><img src="assets/local_progress_estimation-007_initial_rgb.jpg" alt="local_progress_estimation-007 模型输入：完整起始 egocentric RGB"><figcaption>模型输入：完整起始 egocentric RGB</figcaption></figure><figure><img src="assets/local_progress_estimation-007_overlay.jpg" alt="local_progress_estimation-007 动作轨迹 overlay（离线 GT 可视化）"><figcaption>动作轨迹 overlay（离线 GT 可视化）</figcaption></figure><figure><img src="assets/local_progress_estimation-007_depth.jpg" alt="local_progress_estimation-007 深度预览（只用于离线 GT）"><figcaption>深度预览（只用于离线 GT）</figcaption></figure><figure><img src="assets/local_progress_estimation-007_semantic.jpg" alt="local_progress_estimation-007 语义预览（只用于离线上下文）"><figcaption>语义预览（只用于离线上下文）</figcaption></figure><figure><img src="assets/local_progress_estimation-007_topdown.jpg" alt="local_progress_estimation-007 局部动作轨迹草图"><figcaption>局部动作轨迹草图</figcaption></figure><figure><img src="assets/local_progress_estimation-007_rollout_strip.jpg" alt="local_progress_estimation-007 RGB / overlay 对照 strip"><figcaption>RGB / overlay 对照 strip</figcaption></figure></div>
       <div class="case-body">
         <div class="case-meta">
           <span>局部推进范围估计案例 007</span>
@@ -270,7 +272,7 @@
     </article>
     
     <article class="case-card">
-      <div class="media"><figure><img src="assets/local_progress_estimation-008_rollout_strip.jpg" alt="local_progress_estimation-008 起始 RGB 与动作执行轨迹示意"><figcaption>起始 RGB 与动作执行轨迹示意</figcaption></figure><figure><img src="assets/local_progress_estimation-008_topdown.jpg" alt="local_progress_estimation-008 局部动作轨迹草图"><figcaption>局部动作轨迹草图</figcaption></figure></div>
+      <div class="media"><figure class="primary-figure"><img src="assets/local_progress_estimation-008_initial_rgb.jpg" alt="local_progress_estimation-008 模型输入：完整起始 egocentric RGB"><figcaption>模型输入：完整起始 egocentric RGB</figcaption></figure><figure><img src="assets/local_progress_estimation-008_overlay.jpg" alt="local_progress_estimation-008 动作轨迹 overlay（离线 GT 可视化）"><figcaption>动作轨迹 overlay（离线 GT 可视化）</figcaption></figure><figure><img src="assets/local_progress_estimation-008_depth.jpg" alt="local_progress_estimation-008 深度预览（只用于离线 GT）"><figcaption>深度预览（只用于离线 GT）</figcaption></figure><figure><img src="assets/local_progress_estimation-008_semantic.jpg" alt="local_progress_estimation-008 语义预览（只用于离线上下文）"><figcaption>语义预览（只用于离线上下文）</figcaption></figure><figure><img src="assets/local_progress_estimation-008_topdown.jpg" alt="local_progress_estimation-008 局部动作轨迹草图"><figcaption>局部动作轨迹草图</figcaption></figure><figure><img src="assets/local_progress_estimation-008_rollout_strip.jpg" alt="local_progress_estimation-008 RGB / overlay 对照 strip"><figcaption>RGB / overlay 对照 strip</figcaption></figure></div>
       <div class="case-body">
         <div class="case-meta">
           <span>局部推进范围估计案例 008</span>
@@ -298,7 +300,7 @@
     </article>
     
     <article class="case-card">
-      <div class="media"><figure><img src="assets/local_progress_estimation-009_rollout_strip.jpg" alt="local_progress_estimation-009 起始 RGB 与动作执行轨迹示意"><figcaption>起始 RGB 与动作执行轨迹示意</figcaption></figure><figure><img src="assets/local_progress_estimation-009_topdown.jpg" alt="local_progress_estimation-009 局部动作轨迹草图"><figcaption>局部动作轨迹草图</figcaption></figure></div>
+      <div class="media"><figure class="primary-figure"><img src="assets/local_progress_estimation-009_initial_rgb.jpg" alt="local_progress_estimation-009 模型输入：完整起始 egocentric RGB"><figcaption>模型输入：完整起始 egocentric RGB</figcaption></figure><figure><img src="assets/local_progress_estimation-009_overlay.jpg" alt="local_progress_estimation-009 动作轨迹 overlay（离线 GT 可视化）"><figcaption>动作轨迹 overlay（离线 GT 可视化）</figcaption></figure><figure><img src="assets/local_progress_estimation-009_depth.jpg" alt="local_progress_estimation-009 深度预览（只用于离线 GT）"><figcaption>深度预览（只用于离线 GT）</figcaption></figure><figure><img src="assets/local_progress_estimation-009_semantic.jpg" alt="local_progress_estimation-009 语义预览（只用于离线上下文）"><figcaption>语义预览（只用于离线上下文）</figcaption></figure><figure><img src="assets/local_progress_estimation-009_topdown.jpg" alt="local_progress_estimation-009 局部动作轨迹草图"><figcaption>局部动作轨迹草图</figcaption></figure><figure><img src="assets/local_progress_estimation-009_rollout_strip.jpg" alt="local_progress_estimation-009 RGB / overlay 对照 strip"><figcaption>RGB / overlay 对照 strip</figcaption></figure></div>
       <div class="case-body">
         <div class="case-meta">
           <span>局部推进范围估计案例 009</span>
@@ -326,7 +328,7 @@
     </article>
     
     <article class="case-card">
-      <div class="media"><figure><img src="assets/local_progress_estimation-010_rollout_strip.jpg" alt="local_progress_estimation-010 起始 RGB 与动作执行轨迹示意"><figcaption>起始 RGB 与动作执行轨迹示意</figcaption></figure><figure><img src="assets/local_progress_estimation-010_topdown.jpg" alt="local_progress_estimation-010 局部动作轨迹草图"><figcaption>局部动作轨迹草图</figcaption></figure></div>
+      <div class="media"><figure class="primary-figure"><img src="assets/local_progress_estimation-010_initial_rgb.jpg" alt="local_progress_estimation-010 模型输入：完整起始 egocentric RGB"><figcaption>模型输入：完整起始 egocentric RGB</figcaption></figure><figure><img src="assets/local_progress_estimation-010_overlay.jpg" alt="local_progress_estimation-010 动作轨迹 overlay（离线 GT 可视化）"><figcaption>动作轨迹 overlay（离线 GT 可视化）</figcaption></figure><figure><img src="assets/local_progress_estimation-010_depth.jpg" alt="local_progress_estimation-010 深度预览（只用于离线 GT）"><figcaption>深度预览（只用于离线 GT）</figcaption></figure><figure><img src="assets/local_progress_estimation-010_semantic.jpg" alt="local_progress_estimation-010 语义预览（只用于离线上下文）"><figcaption>语义预览（只用于离线上下文）</figcaption></figure><figure><img src="assets/local_progress_estimation-010_topdown.jpg" alt="local_progress_estimation-010 局部动作轨迹草图"><figcaption>局部动作轨迹草图</figcaption></figure><figure><img src="assets/local_progress_estimation-010_rollout_strip.jpg" alt="local_progress_estimation-010 RGB / overlay 对照 strip"><figcaption>RGB / overlay 对照 strip</figcaption></figure></div>
       <div class="case-body">
         <div class="case-meta">
           <span>局部推进范围估计案例 010</span>
@@ -360,7 +362,7 @@
               <p>检验模型能否在给定短动作序列时预测会撞、停住、下落还是正常推进。</p>
               <div class="case-grid">
     <article class="case-card">
-      <div class="media"><figure><img src="assets/action_horizon_collision-005_rollout_strip.jpg" alt="action_horizon_collision-005 起始 RGB 与动作执行轨迹示意"><figcaption>起始 RGB 与动作执行轨迹示意</figcaption></figure><figure><img src="assets/action_horizon_collision-005_topdown.jpg" alt="action_horizon_collision-005 局部动作轨迹草图"><figcaption>局部动作轨迹草图</figcaption></figure></div>
+      <div class="media"><figure class="primary-figure"><img src="assets/action_horizon_collision-005_initial_rgb.jpg" alt="action_horizon_collision-005 模型输入：完整起始 egocentric RGB"><figcaption>模型输入：完整起始 egocentric RGB</figcaption></figure><figure><img src="assets/action_horizon_collision-005_overlay.jpg" alt="action_horizon_collision-005 动作轨迹 overlay（离线 GT 可视化）"><figcaption>动作轨迹 overlay（离线 GT 可视化）</figcaption></figure><figure><img src="assets/action_horizon_collision-005_depth.jpg" alt="action_horizon_collision-005 深度预览（只用于离线 GT）"><figcaption>深度预览（只用于离线 GT）</figcaption></figure><figure><img src="assets/action_horizon_collision-005_semantic.jpg" alt="action_horizon_collision-005 语义预览（只用于离线上下文）"><figcaption>语义预览（只用于离线上下文）</figcaption></figure><figure><img src="assets/action_horizon_collision-005_topdown.jpg" alt="action_horizon_collision-005 局部动作轨迹草图"><figcaption>局部动作轨迹草图</figcaption></figure><figure><img src="assets/action_horizon_collision-005_rollout_strip.jpg" alt="action_horizon_collision-005 RGB / overlay 对照 strip"><figcaption>RGB / overlay 对照 strip</figcaption></figure></div>
       <div class="case-body">
         <div class="case-meta">
           <span>动作时域碰撞案例 005</span>
@@ -388,7 +390,7 @@
     </article>
     
     <article class="case-card">
-      <div class="media"><figure><img src="assets/action_horizon_collision-006_rollout_strip.jpg" alt="action_horizon_collision-006 起始 RGB 与动作执行轨迹示意"><figcaption>起始 RGB 与动作执行轨迹示意</figcaption></figure><figure><img src="assets/action_horizon_collision-006_topdown.jpg" alt="action_horizon_collision-006 局部动作轨迹草图"><figcaption>局部动作轨迹草图</figcaption></figure></div>
+      <div class="media"><figure class="primary-figure"><img src="assets/action_horizon_collision-006_initial_rgb.jpg" alt="action_horizon_collision-006 模型输入：完整起始 egocentric RGB"><figcaption>模型输入：完整起始 egocentric RGB</figcaption></figure><figure><img src="assets/action_horizon_collision-006_overlay.jpg" alt="action_horizon_collision-006 动作轨迹 overlay（离线 GT 可视化）"><figcaption>动作轨迹 overlay（离线 GT 可视化）</figcaption></figure><figure><img src="assets/action_horizon_collision-006_depth.jpg" alt="action_horizon_collision-006 深度预览（只用于离线 GT）"><figcaption>深度预览（只用于离线 GT）</figcaption></figure><figure><img src="assets/action_horizon_collision-006_semantic.jpg" alt="action_horizon_collision-006 语义预览（只用于离线上下文）"><figcaption>语义预览（只用于离线上下文）</figcaption></figure><figure><img src="assets/action_horizon_collision-006_topdown.jpg" alt="action_horizon_collision-006 局部动作轨迹草图"><figcaption>局部动作轨迹草图</figcaption></figure><figure><img src="assets/action_horizon_collision-006_rollout_strip.jpg" alt="action_horizon_collision-006 RGB / overlay 对照 strip"><figcaption>RGB / overlay 对照 strip</figcaption></figure></div>
       <div class="case-body">
         <div class="case-meta">
           <span>动作时域碰撞案例 006</span>
@@ -416,7 +418,7 @@
     </article>
     
     <article class="case-card">
-      <div class="media"><figure><img src="assets/action_horizon_collision-007_rollout_strip.jpg" alt="action_horizon_collision-007 起始 RGB 与动作执行轨迹示意"><figcaption>起始 RGB 与动作执行轨迹示意</figcaption></figure><figure><img src="assets/action_horizon_collision-007_topdown.jpg" alt="action_horizon_collision-007 局部动作轨迹草图"><figcaption>局部动作轨迹草图</figcaption></figure></div>
+      <div class="media"><figure class="primary-figure"><img src="assets/action_horizon_collision-007_initial_rgb.jpg" alt="action_horizon_collision-007 模型输入：完整起始 egocentric RGB"><figcaption>模型输入：完整起始 egocentric RGB</figcaption></figure><figure><img src="assets/action_horizon_collision-007_overlay.jpg" alt="action_horizon_collision-007 动作轨迹 overlay（离线 GT 可视化）"><figcaption>动作轨迹 overlay（离线 GT 可视化）</figcaption></figure><figure><img src="assets/action_horizon_collision-007_depth.jpg" alt="action_horizon_collision-007 深度预览（只用于离线 GT）"><figcaption>深度预览（只用于离线 GT）</figcaption></figure><figure><img src="assets/action_horizon_collision-007_semantic.jpg" alt="action_horizon_collision-007 语义预览（只用于离线上下文）"><figcaption>语义预览（只用于离线上下文）</figcaption></figure><figure><img src="assets/action_horizon_collision-007_topdown.jpg" alt="action_horizon_collision-007 局部动作轨迹草图"><figcaption>局部动作轨迹草图</figcaption></figure><figure><img src="assets/action_horizon_collision-007_rollout_strip.jpg" alt="action_horizon_collision-007 RGB / overlay 对照 strip"><figcaption>RGB / overlay 对照 strip</figcaption></figure></div>
       <div class="case-body">
         <div class="case-meta">
           <span>动作时域碰撞案例 007</span>
@@ -444,7 +446,7 @@
     </article>
     
     <article class="case-card">
-      <div class="media"><figure><img src="assets/action_horizon_collision-013_rollout_strip.jpg" alt="action_horizon_collision-013 起始 RGB 与动作执行轨迹示意"><figcaption>起始 RGB 与动作执行轨迹示意</figcaption></figure><figure><img src="assets/action_horizon_collision-013_topdown.jpg" alt="action_horizon_collision-013 局部动作轨迹草图"><figcaption>局部动作轨迹草图</figcaption></figure></div>
+      <div class="media"><figure class="primary-figure"><img src="assets/action_horizon_collision-013_initial_rgb.jpg" alt="action_horizon_collision-013 模型输入：完整起始 egocentric RGB"><figcaption>模型输入：完整起始 egocentric RGB</figcaption></figure><figure><img src="assets/action_horizon_collision-013_overlay.jpg" alt="action_horizon_collision-013 动作轨迹 overlay（离线 GT 可视化）"><figcaption>动作轨迹 overlay（离线 GT 可视化）</figcaption></figure><figure><img src="assets/action_horizon_collision-013_depth.jpg" alt="action_horizon_collision-013 深度预览（只用于离线 GT）"><figcaption>深度预览（只用于离线 GT）</figcaption></figure><figure><img src="assets/action_horizon_collision-013_semantic.jpg" alt="action_horizon_collision-013 语义预览（只用于离线上下文）"><figcaption>语义预览（只用于离线上下文）</figcaption></figure><figure><img src="assets/action_horizon_collision-013_topdown.jpg" alt="action_horizon_collision-013 局部动作轨迹草图"><figcaption>局部动作轨迹草图</figcaption></figure><figure><img src="assets/action_horizon_collision-013_rollout_strip.jpg" alt="action_horizon_collision-013 RGB / overlay 对照 strip"><figcaption>RGB / overlay 对照 strip</figcaption></figure></div>
       <div class="case-body">
         <div class="case-meta">
           <span>动作时域碰撞案例 013</span>
@@ -472,7 +474,7 @@
     </article>
     
     <article class="case-card">
-      <div class="media"><figure><img src="assets/action_horizon_collision-014_rollout_strip.jpg" alt="action_horizon_collision-014 起始 RGB 与动作执行轨迹示意"><figcaption>起始 RGB 与动作执行轨迹示意</figcaption></figure><figure><img src="assets/action_horizon_collision-014_topdown.jpg" alt="action_horizon_collision-014 局部动作轨迹草图"><figcaption>局部动作轨迹草图</figcaption></figure></div>
+      <div class="media"><figure class="primary-figure"><img src="assets/action_horizon_collision-014_initial_rgb.jpg" alt="action_horizon_collision-014 模型输入：完整起始 egocentric RGB"><figcaption>模型输入：完整起始 egocentric RGB</figcaption></figure><figure><img src="assets/action_horizon_collision-014_overlay.jpg" alt="action_horizon_collision-014 动作轨迹 overlay（离线 GT 可视化）"><figcaption>动作轨迹 overlay（离线 GT 可视化）</figcaption></figure><figure><img src="assets/action_horizon_collision-014_depth.jpg" alt="action_horizon_collision-014 深度预览（只用于离线 GT）"><figcaption>深度预览（只用于离线 GT）</figcaption></figure><figure><img src="assets/action_horizon_collision-014_semantic.jpg" alt="action_horizon_collision-014 语义预览（只用于离线上下文）"><figcaption>语义预览（只用于离线上下文）</figcaption></figure><figure><img src="assets/action_horizon_collision-014_topdown.jpg" alt="action_horizon_collision-014 局部动作轨迹草图"><figcaption>局部动作轨迹草图</figcaption></figure><figure><img src="assets/action_horizon_collision-014_rollout_strip.jpg" alt="action_horizon_collision-014 RGB / overlay 对照 strip"><figcaption>RGB / overlay 对照 strip</figcaption></figure></div>
       <div class="case-body">
         <div class="case-meta">
           <span>动作时域碰撞案例 014</span>
@@ -500,7 +502,7 @@
     </article>
     
     <article class="case-card">
-      <div class="media"><figure><img src="assets/action_horizon_collision-015_rollout_strip.jpg" alt="action_horizon_collision-015 起始 RGB 与动作执行轨迹示意"><figcaption>起始 RGB 与动作执行轨迹示意</figcaption></figure><figure><img src="assets/action_horizon_collision-015_topdown.jpg" alt="action_horizon_collision-015 局部动作轨迹草图"><figcaption>局部动作轨迹草图</figcaption></figure></div>
+      <div class="media"><figure class="primary-figure"><img src="assets/action_horizon_collision-015_initial_rgb.jpg" alt="action_horizon_collision-015 模型输入：完整起始 egocentric RGB"><figcaption>模型输入：完整起始 egocentric RGB</figcaption></figure><figure><img src="assets/action_horizon_collision-015_overlay.jpg" alt="action_horizon_collision-015 动作轨迹 overlay（离线 GT 可视化）"><figcaption>动作轨迹 overlay（离线 GT 可视化）</figcaption></figure><figure><img src="assets/action_horizon_collision-015_depth.jpg" alt="action_horizon_collision-015 深度预览（只用于离线 GT）"><figcaption>深度预览（只用于离线 GT）</figcaption></figure><figure><img src="assets/action_horizon_collision-015_semantic.jpg" alt="action_horizon_collision-015 语义预览（只用于离线上下文）"><figcaption>语义预览（只用于离线上下文）</figcaption></figure><figure><img src="assets/action_horizon_collision-015_topdown.jpg" alt="action_horizon_collision-015 局部动作轨迹草图"><figcaption>局部动作轨迹草图</figcaption></figure><figure><img src="assets/action_horizon_collision-015_rollout_strip.jpg" alt="action_horizon_collision-015 RGB / overlay 对照 strip"><figcaption>RGB / overlay 对照 strip</figcaption></figure></div>
       <div class="case-body">
         <div class="case-meta">
           <span>动作时域碰撞案例 015</span>
@@ -528,7 +530,7 @@
     </article>
     
     <article class="case-card">
-      <div class="media"><figure><img src="assets/action_horizon_collision-019_rollout_strip.jpg" alt="action_horizon_collision-019 起始 RGB 与动作执行轨迹示意"><figcaption>起始 RGB 与动作执行轨迹示意</figcaption></figure><figure><img src="assets/action_horizon_collision-019_topdown.jpg" alt="action_horizon_collision-019 局部动作轨迹草图"><figcaption>局部动作轨迹草图</figcaption></figure></div>
+      <div class="media"><figure class="primary-figure"><img src="assets/action_horizon_collision-019_initial_rgb.jpg" alt="action_horizon_collision-019 模型输入：完整起始 egocentric RGB"><figcaption>模型输入：完整起始 egocentric RGB</figcaption></figure><figure><img src="assets/action_horizon_collision-019_overlay.jpg" alt="action_horizon_collision-019 动作轨迹 overlay（离线 GT 可视化）"><figcaption>动作轨迹 overlay（离线 GT 可视化）</figcaption></figure><figure><img src="assets/action_horizon_collision-019_depth.jpg" alt="action_horizon_collision-019 深度预览（只用于离线 GT）"><figcaption>深度预览（只用于离线 GT）</figcaption></figure><figure><img src="assets/action_horizon_collision-019_semantic.jpg" alt="action_horizon_collision-019 语义预览（只用于离线上下文）"><figcaption>语义预览（只用于离线上下文）</figcaption></figure><figure><img src="assets/action_horizon_collision-019_topdown.jpg" alt="action_horizon_collision-019 局部动作轨迹草图"><figcaption>局部动作轨迹草图</figcaption></figure><figure><img src="assets/action_horizon_collision-019_rollout_strip.jpg" alt="action_horizon_collision-019 RGB / overlay 对照 strip"><figcaption>RGB / overlay 对照 strip</figcaption></figure></div>
       <div class="case-body">
         <div class="case-meta">
           <span>动作时域碰撞案例 019</span>
@@ -556,7 +558,7 @@
     </article>
     
     <article class="case-card">
-      <div class="media"><figure><img src="assets/action_horizon_collision-020_rollout_strip.jpg" alt="action_horizon_collision-020 起始 RGB 与动作执行轨迹示意"><figcaption>起始 RGB 与动作执行轨迹示意</figcaption></figure><figure><img src="assets/action_horizon_collision-020_topdown.jpg" alt="action_horizon_collision-020 局部动作轨迹草图"><figcaption>局部动作轨迹草图</figcaption></figure></div>
+      <div class="media"><figure class="primary-figure"><img src="assets/action_horizon_collision-020_initial_rgb.jpg" alt="action_horizon_collision-020 模型输入：完整起始 egocentric RGB"><figcaption>模型输入：完整起始 egocentric RGB</figcaption></figure><figure><img src="assets/action_horizon_collision-020_overlay.jpg" alt="action_horizon_collision-020 动作轨迹 overlay（离线 GT 可视化）"><figcaption>动作轨迹 overlay（离线 GT 可视化）</figcaption></figure><figure><img src="assets/action_horizon_collision-020_depth.jpg" alt="action_horizon_collision-020 深度预览（只用于离线 GT）"><figcaption>深度预览（只用于离线 GT）</figcaption></figure><figure><img src="assets/action_horizon_collision-020_semantic.jpg" alt="action_horizon_collision-020 语义预览（只用于离线上下文）"><figcaption>语义预览（只用于离线上下文）</figcaption></figure><figure><img src="assets/action_horizon_collision-020_topdown.jpg" alt="action_horizon_collision-020 局部动作轨迹草图"><figcaption>局部动作轨迹草图</figcaption></figure><figure><img src="assets/action_horizon_collision-020_rollout_strip.jpg" alt="action_horizon_collision-020 RGB / overlay 对照 strip"><figcaption>RGB / overlay 对照 strip</figcaption></figure></div>
       <div class="case-body">
         <div class="case-meta">
           <span>动作时域碰撞案例 020</span>
@@ -584,7 +586,7 @@
     </article>
     
     <article class="case-card">
-      <div class="media"><figure><img src="assets/action_horizon_collision-021_rollout_strip.jpg" alt="action_horizon_collision-021 起始 RGB 与动作执行轨迹示意"><figcaption>起始 RGB 与动作执行轨迹示意</figcaption></figure><figure><img src="assets/action_horizon_collision-021_topdown.jpg" alt="action_horizon_collision-021 局部动作轨迹草图"><figcaption>局部动作轨迹草图</figcaption></figure></div>
+      <div class="media"><figure class="primary-figure"><img src="assets/action_horizon_collision-021_initial_rgb.jpg" alt="action_horizon_collision-021 模型输入：完整起始 egocentric RGB"><figcaption>模型输入：完整起始 egocentric RGB</figcaption></figure><figure><img src="assets/action_horizon_collision-021_overlay.jpg" alt="action_horizon_collision-021 动作轨迹 overlay（离线 GT 可视化）"><figcaption>动作轨迹 overlay（离线 GT 可视化）</figcaption></figure><figure><img src="assets/action_horizon_collision-021_depth.jpg" alt="action_horizon_collision-021 深度预览（只用于离线 GT）"><figcaption>深度预览（只用于离线 GT）</figcaption></figure><figure><img src="assets/action_horizon_collision-021_semantic.jpg" alt="action_horizon_collision-021 语义预览（只用于离线上下文）"><figcaption>语义预览（只用于离线上下文）</figcaption></figure><figure><img src="assets/action_horizon_collision-021_topdown.jpg" alt="action_horizon_collision-021 局部动作轨迹草图"><figcaption>局部动作轨迹草图</figcaption></figure><figure><img src="assets/action_horizon_collision-021_rollout_strip.jpg" alt="action_horizon_collision-021 RGB / overlay 对照 strip"><figcaption>RGB / overlay 对照 strip</figcaption></figure></div>
       <div class="case-body">
         <div class="case-meta">
           <span>动作时域碰撞案例 021</span>
@@ -612,7 +614,7 @@
     </article>
     
     <article class="case-card">
-      <div class="media"><figure><img src="assets/action_horizon_collision-024_rollout_strip.jpg" alt="action_horizon_collision-024 起始 RGB 与动作执行轨迹示意"><figcaption>起始 RGB 与动作执行轨迹示意</figcaption></figure><figure><img src="assets/action_horizon_collision-024_topdown.jpg" alt="action_horizon_collision-024 局部动作轨迹草图"><figcaption>局部动作轨迹草图</figcaption></figure></div>
+      <div class="media"><figure class="primary-figure"><img src="assets/action_horizon_collision-024_initial_rgb.jpg" alt="action_horizon_collision-024 模型输入：完整起始 egocentric RGB"><figcaption>模型输入：完整起始 egocentric RGB</figcaption></figure><figure><img src="assets/action_horizon_collision-024_overlay.jpg" alt="action_horizon_collision-024 动作轨迹 overlay（离线 GT 可视化）"><figcaption>动作轨迹 overlay（离线 GT 可视化）</figcaption></figure><figure><img src="assets/action_horizon_collision-024_depth.jpg" alt="action_horizon_collision-024 深度预览（只用于离线 GT）"><figcaption>深度预览（只用于离线 GT）</figcaption></figure><figure><img src="assets/action_horizon_collision-024_semantic.jpg" alt="action_horizon_collision-024 语义预览（只用于离线上下文）"><figcaption>语义预览（只用于离线上下文）</figcaption></figure><figure><img src="assets/action_horizon_collision-024_topdown.jpg" alt="action_horizon_collision-024 局部动作轨迹草图"><figcaption>局部动作轨迹草图</figcaption></figure><figure><img src="assets/action_horizon_collision-024_rollout_strip.jpg" alt="action_horizon_collision-024 RGB / overlay 对照 strip"><figcaption>RGB / overlay 对照 strip</figcaption></figure></div>
       <div class="case-body">
         <div class="case-meta">
           <span>动作时域碰撞案例 024</span>
@@ -646,7 +648,7 @@
               <p>检验模型是否把左前、正前、右前三个第一人称方向绑定到真实可通行的 3D 动作后果，而不是套用中心偏置。</p>
               <div class="case-grid">
     <article class="case-card">
-      <div class="media"><figure><img src="assets/directional_rollout_comparison-001_rollout_strip.jpg" alt="directional_rollout_comparison-001 起始 RGB 与动作执行轨迹示意"><figcaption>起始 RGB 与动作执行轨迹示意</figcaption></figure><figure><img src="assets/directional_rollout_comparison-001_topdown.jpg" alt="directional_rollout_comparison-001 局部动作轨迹草图"><figcaption>局部动作轨迹草图</figcaption></figure></div>
+      <div class="media"><figure class="primary-figure"><img src="assets/directional_rollout_comparison-001_initial_rgb.jpg" alt="directional_rollout_comparison-001 模型输入：完整起始 egocentric RGB"><figcaption>模型输入：完整起始 egocentric RGB</figcaption></figure><figure><img src="assets/directional_rollout_comparison-001_overlay.jpg" alt="directional_rollout_comparison-001 动作轨迹 overlay（离线 GT 可视化）"><figcaption>动作轨迹 overlay（离线 GT 可视化）</figcaption></figure><figure><img src="assets/directional_rollout_comparison-001_depth.jpg" alt="directional_rollout_comparison-001 深度预览（只用于离线 GT）"><figcaption>深度预览（只用于离线 GT）</figcaption></figure><figure><img src="assets/directional_rollout_comparison-001_semantic.jpg" alt="directional_rollout_comparison-001 语义预览（只用于离线上下文）"><figcaption>语义预览（只用于离线上下文）</figcaption></figure><figure><img src="assets/directional_rollout_comparison-001_topdown.jpg" alt="directional_rollout_comparison-001 局部动作轨迹草图"><figcaption>局部动作轨迹草图</figcaption></figure><figure><img src="assets/directional_rollout_comparison-001_rollout_strip.jpg" alt="directional_rollout_comparison-001 RGB / overlay 对照 strip"><figcaption>RGB / overlay 对照 strip</figcaption></figure></div>
       <div class="case-body">
         <div class="case-meta">
           <span>方向动作后果比较案例 001</span>
@@ -674,7 +676,7 @@
     </article>
     
     <article class="case-card">
-      <div class="media"><figure><img src="assets/directional_rollout_comparison-002_rollout_strip.jpg" alt="directional_rollout_comparison-002 起始 RGB 与动作执行轨迹示意"><figcaption>起始 RGB 与动作执行轨迹示意</figcaption></figure><figure><img src="assets/directional_rollout_comparison-002_topdown.jpg" alt="directional_rollout_comparison-002 局部动作轨迹草图"><figcaption>局部动作轨迹草图</figcaption></figure></div>
+      <div class="media"><figure class="primary-figure"><img src="assets/directional_rollout_comparison-002_initial_rgb.jpg" alt="directional_rollout_comparison-002 模型输入：完整起始 egocentric RGB"><figcaption>模型输入：完整起始 egocentric RGB</figcaption></figure><figure><img src="assets/directional_rollout_comparison-002_overlay.jpg" alt="directional_rollout_comparison-002 动作轨迹 overlay（离线 GT 可视化）"><figcaption>动作轨迹 overlay（离线 GT 可视化）</figcaption></figure><figure><img src="assets/directional_rollout_comparison-002_depth.jpg" alt="directional_rollout_comparison-002 深度预览（只用于离线 GT）"><figcaption>深度预览（只用于离线 GT）</figcaption></figure><figure><img src="assets/directional_rollout_comparison-002_semantic.jpg" alt="directional_rollout_comparison-002 语义预览（只用于离线上下文）"><figcaption>语义预览（只用于离线上下文）</figcaption></figure><figure><img src="assets/directional_rollout_comparison-002_topdown.jpg" alt="directional_rollout_comparison-002 局部动作轨迹草图"><figcaption>局部动作轨迹草图</figcaption></figure><figure><img src="assets/directional_rollout_comparison-002_rollout_strip.jpg" alt="directional_rollout_comparison-002 RGB / overlay 对照 strip"><figcaption>RGB / overlay 对照 strip</figcaption></figure></div>
       <div class="case-body">
         <div class="case-meta">
           <span>方向动作后果比较案例 002</span>
@@ -702,7 +704,7 @@
     </article>
     
     <article class="case-card">
-      <div class="media"><figure><img src="assets/directional_rollout_comparison-003_rollout_strip.jpg" alt="directional_rollout_comparison-003 起始 RGB 与动作执行轨迹示意"><figcaption>起始 RGB 与动作执行轨迹示意</figcaption></figure><figure><img src="assets/directional_rollout_comparison-003_topdown.jpg" alt="directional_rollout_comparison-003 局部动作轨迹草图"><figcaption>局部动作轨迹草图</figcaption></figure></div>
+      <div class="media"><figure class="primary-figure"><img src="assets/directional_rollout_comparison-003_initial_rgb.jpg" alt="directional_rollout_comparison-003 模型输入：完整起始 egocentric RGB"><figcaption>模型输入：完整起始 egocentric RGB</figcaption></figure><figure><img src="assets/directional_rollout_comparison-003_overlay.jpg" alt="directional_rollout_comparison-003 动作轨迹 overlay（离线 GT 可视化）"><figcaption>动作轨迹 overlay（离线 GT 可视化）</figcaption></figure><figure><img src="assets/directional_rollout_comparison-003_depth.jpg" alt="directional_rollout_comparison-003 深度预览（只用于离线 GT）"><figcaption>深度预览（只用于离线 GT）</figcaption></figure><figure><img src="assets/directional_rollout_comparison-003_semantic.jpg" alt="directional_rollout_comparison-003 语义预览（只用于离线上下文）"><figcaption>语义预览（只用于离线上下文）</figcaption></figure><figure><img src="assets/directional_rollout_comparison-003_topdown.jpg" alt="directional_rollout_comparison-003 局部动作轨迹草图"><figcaption>局部动作轨迹草图</figcaption></figure><figure><img src="assets/directional_rollout_comparison-003_rollout_strip.jpg" alt="directional_rollout_comparison-003 RGB / overlay 对照 strip"><figcaption>RGB / overlay 对照 strip</figcaption></figure></div>
       <div class="case-body">
         <div class="case-meta">
           <span>方向动作后果比较案例 003</span>
@@ -730,7 +732,7 @@
     </article>
     
     <article class="case-card">
-      <div class="media"><figure><img src="assets/directional_rollout_comparison-004_rollout_strip.jpg" alt="directional_rollout_comparison-004 起始 RGB 与动作执行轨迹示意"><figcaption>起始 RGB 与动作执行轨迹示意</figcaption></figure><figure><img src="assets/directional_rollout_comparison-004_topdown.jpg" alt="directional_rollout_comparison-004 局部动作轨迹草图"><figcaption>局部动作轨迹草图</figcaption></figure></div>
+      <div class="media"><figure class="primary-figure"><img src="assets/directional_rollout_comparison-004_initial_rgb.jpg" alt="directional_rollout_comparison-004 模型输入：完整起始 egocentric RGB"><figcaption>模型输入：完整起始 egocentric RGB</figcaption></figure><figure><img src="assets/directional_rollout_comparison-004_overlay.jpg" alt="directional_rollout_comparison-004 动作轨迹 overlay（离线 GT 可视化）"><figcaption>动作轨迹 overlay（离线 GT 可视化）</figcaption></figure><figure><img src="assets/directional_rollout_comparison-004_depth.jpg" alt="directional_rollout_comparison-004 深度预览（只用于离线 GT）"><figcaption>深度预览（只用于离线 GT）</figcaption></figure><figure><img src="assets/directional_rollout_comparison-004_semantic.jpg" alt="directional_rollout_comparison-004 语义预览（只用于离线上下文）"><figcaption>语义预览（只用于离线上下文）</figcaption></figure><figure><img src="assets/directional_rollout_comparison-004_topdown.jpg" alt="directional_rollout_comparison-004 局部动作轨迹草图"><figcaption>局部动作轨迹草图</figcaption></figure><figure><img src="assets/directional_rollout_comparison-004_rollout_strip.jpg" alt="directional_rollout_comparison-004 RGB / overlay 对照 strip"><figcaption>RGB / overlay 对照 strip</figcaption></figure></div>
       <div class="case-body">
         <div class="case-meta">
           <span>方向动作后果比较案例 004</span>
@@ -758,7 +760,7 @@
     </article>
     
     <article class="case-card">
-      <div class="media"><figure><img src="assets/directional_rollout_comparison-005_rollout_strip.jpg" alt="directional_rollout_comparison-005 起始 RGB 与动作执行轨迹示意"><figcaption>起始 RGB 与动作执行轨迹示意</figcaption></figure><figure><img src="assets/directional_rollout_comparison-005_topdown.jpg" alt="directional_rollout_comparison-005 局部动作轨迹草图"><figcaption>局部动作轨迹草图</figcaption></figure></div>
+      <div class="media"><figure class="primary-figure"><img src="assets/directional_rollout_comparison-005_initial_rgb.jpg" alt="directional_rollout_comparison-005 模型输入：完整起始 egocentric RGB"><figcaption>模型输入：完整起始 egocentric RGB</figcaption></figure><figure><img src="assets/directional_rollout_comparison-005_overlay.jpg" alt="directional_rollout_comparison-005 动作轨迹 overlay（离线 GT 可视化）"><figcaption>动作轨迹 overlay（离线 GT 可视化）</figcaption></figure><figure><img src="assets/directional_rollout_comparison-005_depth.jpg" alt="directional_rollout_comparison-005 深度预览（只用于离线 GT）"><figcaption>深度预览（只用于离线 GT）</figcaption></figure><figure><img src="assets/directional_rollout_comparison-005_semantic.jpg" alt="directional_rollout_comparison-005 语义预览（只用于离线上下文）"><figcaption>语义预览（只用于离线上下文）</figcaption></figure><figure><img src="assets/directional_rollout_comparison-005_topdown.jpg" alt="directional_rollout_comparison-005 局部动作轨迹草图"><figcaption>局部动作轨迹草图</figcaption></figure><figure><img src="assets/directional_rollout_comparison-005_rollout_strip.jpg" alt="directional_rollout_comparison-005 RGB / overlay 对照 strip"><figcaption>RGB / overlay 对照 strip</figcaption></figure></div>
       <div class="case-body">
         <div class="case-meta">
           <span>方向动作后果比较案例 005</span>
@@ -786,7 +788,7 @@
     </article>
     
     <article class="case-card">
-      <div class="media"><figure><img src="assets/directional_rollout_comparison-013_rollout_strip.jpg" alt="directional_rollout_comparison-013 起始 RGB 与动作执行轨迹示意"><figcaption>起始 RGB 与动作执行轨迹示意</figcaption></figure><figure><img src="assets/directional_rollout_comparison-013_topdown.jpg" alt="directional_rollout_comparison-013 局部动作轨迹草图"><figcaption>局部动作轨迹草图</figcaption></figure></div>
+      <div class="media"><figure class="primary-figure"><img src="assets/directional_rollout_comparison-013_initial_rgb.jpg" alt="directional_rollout_comparison-013 模型输入：完整起始 egocentric RGB"><figcaption>模型输入：完整起始 egocentric RGB</figcaption></figure><figure><img src="assets/directional_rollout_comparison-013_overlay.jpg" alt="directional_rollout_comparison-013 动作轨迹 overlay（离线 GT 可视化）"><figcaption>动作轨迹 overlay（离线 GT 可视化）</figcaption></figure><figure><img src="assets/directional_rollout_comparison-013_depth.jpg" alt="directional_rollout_comparison-013 深度预览（只用于离线 GT）"><figcaption>深度预览（只用于离线 GT）</figcaption></figure><figure><img src="assets/directional_rollout_comparison-013_semantic.jpg" alt="directional_rollout_comparison-013 语义预览（只用于离线上下文）"><figcaption>语义预览（只用于离线上下文）</figcaption></figure><figure><img src="assets/directional_rollout_comparison-013_topdown.jpg" alt="directional_rollout_comparison-013 局部动作轨迹草图"><figcaption>局部动作轨迹草图</figcaption></figure><figure><img src="assets/directional_rollout_comparison-013_rollout_strip.jpg" alt="directional_rollout_comparison-013 RGB / overlay 对照 strip"><figcaption>RGB / overlay 对照 strip</figcaption></figure></div>
       <div class="case-body">
         <div class="case-meta">
           <span>方向动作后果比较案例 013</span>
@@ -814,7 +816,7 @@
     </article>
     
     <article class="case-card">
-      <div class="media"><figure><img src="assets/directional_rollout_comparison-014_rollout_strip.jpg" alt="directional_rollout_comparison-014 起始 RGB 与动作执行轨迹示意"><figcaption>起始 RGB 与动作执行轨迹示意</figcaption></figure><figure><img src="assets/directional_rollout_comparison-014_topdown.jpg" alt="directional_rollout_comparison-014 局部动作轨迹草图"><figcaption>局部动作轨迹草图</figcaption></figure></div>
+      <div class="media"><figure class="primary-figure"><img src="assets/directional_rollout_comparison-014_initial_rgb.jpg" alt="directional_rollout_comparison-014 模型输入：完整起始 egocentric RGB"><figcaption>模型输入：完整起始 egocentric RGB</figcaption></figure><figure><img src="assets/directional_rollout_comparison-014_overlay.jpg" alt="directional_rollout_comparison-014 动作轨迹 overlay（离线 GT 可视化）"><figcaption>动作轨迹 overlay（离线 GT 可视化）</figcaption></figure><figure><img src="assets/directional_rollout_comparison-014_depth.jpg" alt="directional_rollout_comparison-014 深度预览（只用于离线 GT）"><figcaption>深度预览（只用于离线 GT）</figcaption></figure><figure><img src="assets/directional_rollout_comparison-014_semantic.jpg" alt="directional_rollout_comparison-014 语义预览（只用于离线上下文）"><figcaption>语义预览（只用于离线上下文）</figcaption></figure><figure><img src="assets/directional_rollout_comparison-014_topdown.jpg" alt="directional_rollout_comparison-014 局部动作轨迹草图"><figcaption>局部动作轨迹草图</figcaption></figure><figure><img src="assets/directional_rollout_comparison-014_rollout_strip.jpg" alt="directional_rollout_comparison-014 RGB / overlay 对照 strip"><figcaption>RGB / overlay 对照 strip</figcaption></figure></div>
       <div class="case-body">
         <div class="case-meta">
           <span>方向动作后果比较案例 014</span>
@@ -842,7 +844,7 @@
     </article>
     
     <article class="case-card">
-      <div class="media"><figure><img src="assets/directional_rollout_comparison-019_rollout_strip.jpg" alt="directional_rollout_comparison-019 起始 RGB 与动作执行轨迹示意"><figcaption>起始 RGB 与动作执行轨迹示意</figcaption></figure><figure><img src="assets/directional_rollout_comparison-019_topdown.jpg" alt="directional_rollout_comparison-019 局部动作轨迹草图"><figcaption>局部动作轨迹草图</figcaption></figure></div>
+      <div class="media"><figure class="primary-figure"><img src="assets/directional_rollout_comparison-019_initial_rgb.jpg" alt="directional_rollout_comparison-019 模型输入：完整起始 egocentric RGB"><figcaption>模型输入：完整起始 egocentric RGB</figcaption></figure><figure><img src="assets/directional_rollout_comparison-019_overlay.jpg" alt="directional_rollout_comparison-019 动作轨迹 overlay（离线 GT 可视化）"><figcaption>动作轨迹 overlay（离线 GT 可视化）</figcaption></figure><figure><img src="assets/directional_rollout_comparison-019_depth.jpg" alt="directional_rollout_comparison-019 深度预览（只用于离线 GT）"><figcaption>深度预览（只用于离线 GT）</figcaption></figure><figure><img src="assets/directional_rollout_comparison-019_semantic.jpg" alt="directional_rollout_comparison-019 语义预览（只用于离线上下文）"><figcaption>语义预览（只用于离线上下文）</figcaption></figure><figure><img src="assets/directional_rollout_comparison-019_topdown.jpg" alt="directional_rollout_comparison-019 局部动作轨迹草图"><figcaption>局部动作轨迹草图</figcaption></figure><figure><img src="assets/directional_rollout_comparison-019_rollout_strip.jpg" alt="directional_rollout_comparison-019 RGB / overlay 对照 strip"><figcaption>RGB / overlay 对照 strip</figcaption></figure></div>
       <div class="case-body">
         <div class="case-meta">
           <span>方向动作后果比较案例 019</span>
@@ -870,7 +872,7 @@
     </article>
     
     <article class="case-card">
-      <div class="media"><figure><img src="assets/directional_rollout_comparison-025_rollout_strip.jpg" alt="directional_rollout_comparison-025 起始 RGB 与动作执行轨迹示意"><figcaption>起始 RGB 与动作执行轨迹示意</figcaption></figure><figure><img src="assets/directional_rollout_comparison-025_topdown.jpg" alt="directional_rollout_comparison-025 局部动作轨迹草图"><figcaption>局部动作轨迹草图</figcaption></figure></div>
+      <div class="media"><figure class="primary-figure"><img src="assets/directional_rollout_comparison-025_initial_rgb.jpg" alt="directional_rollout_comparison-025 模型输入：完整起始 egocentric RGB"><figcaption>模型输入：完整起始 egocentric RGB</figcaption></figure><figure><img src="assets/directional_rollout_comparison-025_overlay.jpg" alt="directional_rollout_comparison-025 动作轨迹 overlay（离线 GT 可视化）"><figcaption>动作轨迹 overlay（离线 GT 可视化）</figcaption></figure><figure><img src="assets/directional_rollout_comparison-025_depth.jpg" alt="directional_rollout_comparison-025 深度预览（只用于离线 GT）"><figcaption>深度预览（只用于离线 GT）</figcaption></figure><figure><img src="assets/directional_rollout_comparison-025_semantic.jpg" alt="directional_rollout_comparison-025 语义预览（只用于离线上下文）"><figcaption>语义预览（只用于离线上下文）</figcaption></figure><figure><img src="assets/directional_rollout_comparison-025_topdown.jpg" alt="directional_rollout_comparison-025 局部动作轨迹草图"><figcaption>局部动作轨迹草图</figcaption></figure><figure><img src="assets/directional_rollout_comparison-025_rollout_strip.jpg" alt="directional_rollout_comparison-025 RGB / overlay 对照 strip"><figcaption>RGB / overlay 对照 strip</figcaption></figure></div>
       <div class="case-body">
         <div class="case-meta">
           <span>方向动作后果比较案例 025</span>
@@ -898,7 +900,7 @@
     </article>
     
     <article class="case-card">
-      <div class="media"><figure><img src="assets/directional_rollout_comparison-035_rollout_strip.jpg" alt="directional_rollout_comparison-035 起始 RGB 与动作执行轨迹示意"><figcaption>起始 RGB 与动作执行轨迹示意</figcaption></figure><figure><img src="assets/directional_rollout_comparison-035_topdown.jpg" alt="directional_rollout_comparison-035 局部动作轨迹草图"><figcaption>局部动作轨迹草图</figcaption></figure></div>
+      <div class="media"><figure class="primary-figure"><img src="assets/directional_rollout_comparison-035_initial_rgb.jpg" alt="directional_rollout_comparison-035 模型输入：完整起始 egocentric RGB"><figcaption>模型输入：完整起始 egocentric RGB</figcaption></figure><figure><img src="assets/directional_rollout_comparison-035_overlay.jpg" alt="directional_rollout_comparison-035 动作轨迹 overlay（离线 GT 可视化）"><figcaption>动作轨迹 overlay（离线 GT 可视化）</figcaption></figure><figure><img src="assets/directional_rollout_comparison-035_depth.jpg" alt="directional_rollout_comparison-035 深度预览（只用于离线 GT）"><figcaption>深度预览（只用于离线 GT）</figcaption></figure><figure><img src="assets/directional_rollout_comparison-035_semantic.jpg" alt="directional_rollout_comparison-035 语义预览（只用于离线上下文）"><figcaption>语义预览（只用于离线上下文）</figcaption></figure><figure><img src="assets/directional_rollout_comparison-035_topdown.jpg" alt="directional_rollout_comparison-035 局部动作轨迹草图"><figcaption>局部动作轨迹草图</figcaption></figure><figure><img src="assets/directional_rollout_comparison-035_rollout_strip.jpg" alt="directional_rollout_comparison-035 RGB / overlay 对照 strip"><figcaption>RGB / overlay 对照 strip</figcaption></figure></div>
       <div class="case-body">
         <div class="case-meta">
           <span>方向动作后果比较案例 035</span>
@@ -932,7 +934,7 @@
               <p>检验模型是否真正把身体半径作为碰撞算子；同一张图、同一动作下，换身体尺寸应改变结论。</p>
               <div class="case-grid">
     <article class="case-card">
-      <div class="media"><figure><img src="assets/body_counterfactual_flip-001_rollout_strip.jpg" alt="body_counterfactual_flip-001 起始 RGB 与动作执行轨迹示意"><figcaption>起始 RGB 与动作执行轨迹示意</figcaption></figure><figure><img src="assets/body_counterfactual_flip-001_topdown.jpg" alt="body_counterfactual_flip-001 局部动作轨迹草图"><figcaption>局部动作轨迹草图</figcaption></figure></div>
+      <div class="media"><figure class="primary-figure"><img src="assets/body_counterfactual_flip-001_initial_rgb.jpg" alt="body_counterfactual_flip-001 模型输入：完整起始 egocentric RGB"><figcaption>模型输入：完整起始 egocentric RGB</figcaption></figure><figure><img src="assets/body_counterfactual_flip-001_overlay.jpg" alt="body_counterfactual_flip-001 动作轨迹 overlay（离线 GT 可视化）"><figcaption>动作轨迹 overlay（离线 GT 可视化）</figcaption></figure><figure><img src="assets/body_counterfactual_flip-001_depth.jpg" alt="body_counterfactual_flip-001 深度预览（只用于离线 GT）"><figcaption>深度预览（只用于离线 GT）</figcaption></figure><figure><img src="assets/body_counterfactual_flip-001_semantic.jpg" alt="body_counterfactual_flip-001 语义预览（只用于离线上下文）"><figcaption>语义预览（只用于离线上下文）</figcaption></figure><figure><img src="assets/body_counterfactual_flip-001_topdown.jpg" alt="body_counterfactual_flip-001 局部动作轨迹草图"><figcaption>局部动作轨迹草图</figcaption></figure><figure><img src="assets/body_counterfactual_flip-001_rollout_strip.jpg" alt="body_counterfactual_flip-001 RGB / overlay 对照 strip"><figcaption>RGB / overlay 对照 strip</figcaption></figure></div>
       <div class="case-body">
         <div class="case-meta">
           <span>身体反事实翻转案例 001</span>
@@ -960,7 +962,7 @@
     </article>
     
     <article class="case-card">
-      <div class="media"><figure><img src="assets/body_counterfactual_flip-002_rollout_strip.jpg" alt="body_counterfactual_flip-002 起始 RGB 与动作执行轨迹示意"><figcaption>起始 RGB 与动作执行轨迹示意</figcaption></figure><figure><img src="assets/body_counterfactual_flip-002_topdown.jpg" alt="body_counterfactual_flip-002 局部动作轨迹草图"><figcaption>局部动作轨迹草图</figcaption></figure></div>
+      <div class="media"><figure class="primary-figure"><img src="assets/body_counterfactual_flip-002_initial_rgb.jpg" alt="body_counterfactual_flip-002 模型输入：完整起始 egocentric RGB"><figcaption>模型输入：完整起始 egocentric RGB</figcaption></figure><figure><img src="assets/body_counterfactual_flip-002_overlay.jpg" alt="body_counterfactual_flip-002 动作轨迹 overlay（离线 GT 可视化）"><figcaption>动作轨迹 overlay（离线 GT 可视化）</figcaption></figure><figure><img src="assets/body_counterfactual_flip-002_depth.jpg" alt="body_counterfactual_flip-002 深度预览（只用于离线 GT）"><figcaption>深度预览（只用于离线 GT）</figcaption></figure><figure><img src="assets/body_counterfactual_flip-002_semantic.jpg" alt="body_counterfactual_flip-002 语义预览（只用于离线上下文）"><figcaption>语义预览（只用于离线上下文）</figcaption></figure><figure><img src="assets/body_counterfactual_flip-002_topdown.jpg" alt="body_counterfactual_flip-002 局部动作轨迹草图"><figcaption>局部动作轨迹草图</figcaption></figure><figure><img src="assets/body_counterfactual_flip-002_rollout_strip.jpg" alt="body_counterfactual_flip-002 RGB / overlay 对照 strip"><figcaption>RGB / overlay 对照 strip</figcaption></figure></div>
       <div class="case-body">
         <div class="case-meta">
           <span>身体反事实翻转案例 002</span>
@@ -988,7 +990,7 @@
     </article>
     
     <article class="case-card">
-      <div class="media"><figure><img src="assets/body_counterfactual_flip-004_rollout_strip.jpg" alt="body_counterfactual_flip-004 起始 RGB 与动作执行轨迹示意"><figcaption>起始 RGB 与动作执行轨迹示意</figcaption></figure><figure><img src="assets/body_counterfactual_flip-004_topdown.jpg" alt="body_counterfactual_flip-004 局部动作轨迹草图"><figcaption>局部动作轨迹草图</figcaption></figure></div>
+      <div class="media"><figure class="primary-figure"><img src="assets/body_counterfactual_flip-004_initial_rgb.jpg" alt="body_counterfactual_flip-004 模型输入：完整起始 egocentric RGB"><figcaption>模型输入：完整起始 egocentric RGB</figcaption></figure><figure><img src="assets/body_counterfactual_flip-004_overlay.jpg" alt="body_counterfactual_flip-004 动作轨迹 overlay（离线 GT 可视化）"><figcaption>动作轨迹 overlay（离线 GT 可视化）</figcaption></figure><figure><img src="assets/body_counterfactual_flip-004_depth.jpg" alt="body_counterfactual_flip-004 深度预览（只用于离线 GT）"><figcaption>深度预览（只用于离线 GT）</figcaption></figure><figure><img src="assets/body_counterfactual_flip-004_semantic.jpg" alt="body_counterfactual_flip-004 语义预览（只用于离线上下文）"><figcaption>语义预览（只用于离线上下文）</figcaption></figure><figure><img src="assets/body_counterfactual_flip-004_topdown.jpg" alt="body_counterfactual_flip-004 局部动作轨迹草图"><figcaption>局部动作轨迹草图</figcaption></figure><figure><img src="assets/body_counterfactual_flip-004_rollout_strip.jpg" alt="body_counterfactual_flip-004 RGB / overlay 对照 strip"><figcaption>RGB / overlay 对照 strip</figcaption></figure></div>
       <div class="case-body">
         <div class="case-meta">
           <span>身体反事实翻转案例 004</span>
@@ -1016,7 +1018,7 @@
     </article>
     
     <article class="case-card">
-      <div class="media"><figure><img src="assets/body_counterfactual_flip-008_rollout_strip.jpg" alt="body_counterfactual_flip-008 起始 RGB 与动作执行轨迹示意"><figcaption>起始 RGB 与动作执行轨迹示意</figcaption></figure><figure><img src="assets/body_counterfactual_flip-008_topdown.jpg" alt="body_counterfactual_flip-008 局部动作轨迹草图"><figcaption>局部动作轨迹草图</figcaption></figure></div>
+      <div class="media"><figure class="primary-figure"><img src="assets/body_counterfactual_flip-008_initial_rgb.jpg" alt="body_counterfactual_flip-008 模型输入：完整起始 egocentric RGB"><figcaption>模型输入：完整起始 egocentric RGB</figcaption></figure><figure><img src="assets/body_counterfactual_flip-008_overlay.jpg" alt="body_counterfactual_flip-008 动作轨迹 overlay（离线 GT 可视化）"><figcaption>动作轨迹 overlay（离线 GT 可视化）</figcaption></figure><figure><img src="assets/body_counterfactual_flip-008_depth.jpg" alt="body_counterfactual_flip-008 深度预览（只用于离线 GT）"><figcaption>深度预览（只用于离线 GT）</figcaption></figure><figure><img src="assets/body_counterfactual_flip-008_semantic.jpg" alt="body_counterfactual_flip-008 语义预览（只用于离线上下文）"><figcaption>语义预览（只用于离线上下文）</figcaption></figure><figure><img src="assets/body_counterfactual_flip-008_topdown.jpg" alt="body_counterfactual_flip-008 局部动作轨迹草图"><figcaption>局部动作轨迹草图</figcaption></figure><figure><img src="assets/body_counterfactual_flip-008_rollout_strip.jpg" alt="body_counterfactual_flip-008 RGB / overlay 对照 strip"><figcaption>RGB / overlay 对照 strip</figcaption></figure></div>
       <div class="case-body">
         <div class="case-meta">
           <span>身体反事实翻转案例 008</span>
@@ -1044,7 +1046,7 @@
     </article>
     
     <article class="case-card">
-      <div class="media"><figure><img src="assets/body_counterfactual_flip-014_rollout_strip.jpg" alt="body_counterfactual_flip-014 起始 RGB 与动作执行轨迹示意"><figcaption>起始 RGB 与动作执行轨迹示意</figcaption></figure><figure><img src="assets/body_counterfactual_flip-014_topdown.jpg" alt="body_counterfactual_flip-014 局部动作轨迹草图"><figcaption>局部动作轨迹草图</figcaption></figure></div>
+      <div class="media"><figure class="primary-figure"><img src="assets/body_counterfactual_flip-014_initial_rgb.jpg" alt="body_counterfactual_flip-014 模型输入：完整起始 egocentric RGB"><figcaption>模型输入：完整起始 egocentric RGB</figcaption></figure><figure><img src="assets/body_counterfactual_flip-014_overlay.jpg" alt="body_counterfactual_flip-014 动作轨迹 overlay（离线 GT 可视化）"><figcaption>动作轨迹 overlay（离线 GT 可视化）</figcaption></figure><figure><img src="assets/body_counterfactual_flip-014_depth.jpg" alt="body_counterfactual_flip-014 深度预览（只用于离线 GT）"><figcaption>深度预览（只用于离线 GT）</figcaption></figure><figure><img src="assets/body_counterfactual_flip-014_semantic.jpg" alt="body_counterfactual_flip-014 语义预览（只用于离线上下文）"><figcaption>语义预览（只用于离线上下文）</figcaption></figure><figure><img src="assets/body_counterfactual_flip-014_topdown.jpg" alt="body_counterfactual_flip-014 局部动作轨迹草图"><figcaption>局部动作轨迹草图</figcaption></figure><figure><img src="assets/body_counterfactual_flip-014_rollout_strip.jpg" alt="body_counterfactual_flip-014 RGB / overlay 对照 strip"><figcaption>RGB / overlay 对照 strip</figcaption></figure></div>
       <div class="case-body">
         <div class="case-meta">
           <span>身体反事实翻转案例 014</span>
@@ -1072,7 +1074,7 @@
     </article>
     
     <article class="case-card">
-      <div class="media"><figure><img src="assets/body_counterfactual_flip-019_rollout_strip.jpg" alt="body_counterfactual_flip-019 起始 RGB 与动作执行轨迹示意"><figcaption>起始 RGB 与动作执行轨迹示意</figcaption></figure><figure><img src="assets/body_counterfactual_flip-019_topdown.jpg" alt="body_counterfactual_flip-019 局部动作轨迹草图"><figcaption>局部动作轨迹草图</figcaption></figure></div>
+      <div class="media"><figure class="primary-figure"><img src="assets/body_counterfactual_flip-019_initial_rgb.jpg" alt="body_counterfactual_flip-019 模型输入：完整起始 egocentric RGB"><figcaption>模型输入：完整起始 egocentric RGB</figcaption></figure><figure><img src="assets/body_counterfactual_flip-019_overlay.jpg" alt="body_counterfactual_flip-019 动作轨迹 overlay（离线 GT 可视化）"><figcaption>动作轨迹 overlay（离线 GT 可视化）</figcaption></figure><figure><img src="assets/body_counterfactual_flip-019_depth.jpg" alt="body_counterfactual_flip-019 深度预览（只用于离线 GT）"><figcaption>深度预览（只用于离线 GT）</figcaption></figure><figure><img src="assets/body_counterfactual_flip-019_semantic.jpg" alt="body_counterfactual_flip-019 语义预览（只用于离线上下文）"><figcaption>语义预览（只用于离线上下文）</figcaption></figure><figure><img src="assets/body_counterfactual_flip-019_topdown.jpg" alt="body_counterfactual_flip-019 局部动作轨迹草图"><figcaption>局部动作轨迹草图</figcaption></figure><figure><img src="assets/body_counterfactual_flip-019_rollout_strip.jpg" alt="body_counterfactual_flip-019 RGB / overlay 对照 strip"><figcaption>RGB / overlay 对照 strip</figcaption></figure></div>
       <div class="case-body">
         <div class="case-meta">
           <span>身体反事实翻转案例 019</span>
@@ -1100,7 +1102,7 @@
     </article>
     
     <article class="case-card">
-      <div class="media"><figure><img src="assets/body_counterfactual_flip-020_rollout_strip.jpg" alt="body_counterfactual_flip-020 起始 RGB 与动作执行轨迹示意"><figcaption>起始 RGB 与动作执行轨迹示意</figcaption></figure><figure><img src="assets/body_counterfactual_flip-020_topdown.jpg" alt="body_counterfactual_flip-020 局部动作轨迹草图"><figcaption>局部动作轨迹草图</figcaption></figure></div>
+      <div class="media"><figure class="primary-figure"><img src="assets/body_counterfactual_flip-020_initial_rgb.jpg" alt="body_counterfactual_flip-020 模型输入：完整起始 egocentric RGB"><figcaption>模型输入：完整起始 egocentric RGB</figcaption></figure><figure><img src="assets/body_counterfactual_flip-020_overlay.jpg" alt="body_counterfactual_flip-020 动作轨迹 overlay（离线 GT 可视化）"><figcaption>动作轨迹 overlay（离线 GT 可视化）</figcaption></figure><figure><img src="assets/body_counterfactual_flip-020_depth.jpg" alt="body_counterfactual_flip-020 深度预览（只用于离线 GT）"><figcaption>深度预览（只用于离线 GT）</figcaption></figure><figure><img src="assets/body_counterfactual_flip-020_semantic.jpg" alt="body_counterfactual_flip-020 语义预览（只用于离线上下文）"><figcaption>语义预览（只用于离线上下文）</figcaption></figure><figure><img src="assets/body_counterfactual_flip-020_topdown.jpg" alt="body_counterfactual_flip-020 局部动作轨迹草图"><figcaption>局部动作轨迹草图</figcaption></figure><figure><img src="assets/body_counterfactual_flip-020_rollout_strip.jpg" alt="body_counterfactual_flip-020 RGB / overlay 对照 strip"><figcaption>RGB / overlay 对照 strip</figcaption></figure></div>
       <div class="case-body">
         <div class="case-meta">
           <span>身体反事实翻转案例 020</span>
@@ -1128,7 +1130,7 @@
     </article>
     
     <article class="case-card">
-      <div class="media"><figure><img src="assets/body_counterfactual_flip-029_rollout_strip.jpg" alt="body_counterfactual_flip-029 起始 RGB 与动作执行轨迹示意"><figcaption>起始 RGB 与动作执行轨迹示意</figcaption></figure><figure><img src="assets/body_counterfactual_flip-029_topdown.jpg" alt="body_counterfactual_flip-029 局部动作轨迹草图"><figcaption>局部动作轨迹草图</figcaption></figure></div>
+      <div class="media"><figure class="primary-figure"><img src="assets/body_counterfactual_flip-029_initial_rgb.jpg" alt="body_counterfactual_flip-029 模型输入：完整起始 egocentric RGB"><figcaption>模型输入：完整起始 egocentric RGB</figcaption></figure><figure><img src="assets/body_counterfactual_flip-029_overlay.jpg" alt="body_counterfactual_flip-029 动作轨迹 overlay（离线 GT 可视化）"><figcaption>动作轨迹 overlay（离线 GT 可视化）</figcaption></figure><figure><img src="assets/body_counterfactual_flip-029_depth.jpg" alt="body_counterfactual_flip-029 深度预览（只用于离线 GT）"><figcaption>深度预览（只用于离线 GT）</figcaption></figure><figure><img src="assets/body_counterfactual_flip-029_semantic.jpg" alt="body_counterfactual_flip-029 语义预览（只用于离线上下文）"><figcaption>语义预览（只用于离线上下文）</figcaption></figure><figure><img src="assets/body_counterfactual_flip-029_topdown.jpg" alt="body_counterfactual_flip-029 局部动作轨迹草图"><figcaption>局部动作轨迹草图</figcaption></figure><figure><img src="assets/body_counterfactual_flip-029_rollout_strip.jpg" alt="body_counterfactual_flip-029 RGB / overlay 对照 strip"><figcaption>RGB / overlay 对照 strip</figcaption></figure></div>
       <div class="case-body">
         <div class="case-meta">
           <span>身体反事实翻转案例 029</span>
@@ -1156,7 +1158,7 @@
     </article>
     
     <article class="case-card">
-      <div class="media"><figure><img src="assets/body_counterfactual_flip-049_rollout_strip.jpg" alt="body_counterfactual_flip-049 起始 RGB 与动作执行轨迹示意"><figcaption>起始 RGB 与动作执行轨迹示意</figcaption></figure><figure><img src="assets/body_counterfactual_flip-049_topdown.jpg" alt="body_counterfactual_flip-049 局部动作轨迹草图"><figcaption>局部动作轨迹草图</figcaption></figure></div>
+      <div class="media"><figure class="primary-figure"><img src="assets/body_counterfactual_flip-049_initial_rgb.jpg" alt="body_counterfactual_flip-049 模型输入：完整起始 egocentric RGB"><figcaption>模型输入：完整起始 egocentric RGB</figcaption></figure><figure><img src="assets/body_counterfactual_flip-049_overlay.jpg" alt="body_counterfactual_flip-049 动作轨迹 overlay（离线 GT 可视化）"><figcaption>动作轨迹 overlay（离线 GT 可视化）</figcaption></figure><figure><img src="assets/body_counterfactual_flip-049_depth.jpg" alt="body_counterfactual_flip-049 深度预览（只用于离线 GT）"><figcaption>深度预览（只用于离线 GT）</figcaption></figure><figure><img src="assets/body_counterfactual_flip-049_semantic.jpg" alt="body_counterfactual_flip-049 语义预览（只用于离线上下文）"><figcaption>语义预览（只用于离线上下文）</figcaption></figure><figure><img src="assets/body_counterfactual_flip-049_topdown.jpg" alt="body_counterfactual_flip-049 局部动作轨迹草图"><figcaption>局部动作轨迹草图</figcaption></figure><figure><img src="assets/body_counterfactual_flip-049_rollout_strip.jpg" alt="body_counterfactual_flip-049 RGB / overlay 对照 strip"><figcaption>RGB / overlay 对照 strip</figcaption></figure></div>
       <div class="case-body">
         <div class="case-meta">
           <span>身体反事实翻转案例 049</span>
@@ -1184,7 +1186,7 @@
     </article>
     
     <article class="case-card">
-      <div class="media"><figure><img src="assets/body_counterfactual_flip-100_rollout_strip.jpg" alt="body_counterfactual_flip-100 起始 RGB 与动作执行轨迹示意"><figcaption>起始 RGB 与动作执行轨迹示意</figcaption></figure><figure><img src="assets/body_counterfactual_flip-100_topdown.jpg" alt="body_counterfactual_flip-100 局部动作轨迹草图"><figcaption>局部动作轨迹草图</figcaption></figure></div>
+      <div class="media"><figure class="primary-figure"><img src="assets/body_counterfactual_flip-100_initial_rgb.jpg" alt="body_counterfactual_flip-100 模型输入：完整起始 egocentric RGB"><figcaption>模型输入：完整起始 egocentric RGB</figcaption></figure><figure><img src="assets/body_counterfactual_flip-100_overlay.jpg" alt="body_counterfactual_flip-100 动作轨迹 overlay（离线 GT 可视化）"><figcaption>动作轨迹 overlay（离线 GT 可视化）</figcaption></figure><figure><img src="assets/body_counterfactual_flip-100_depth.jpg" alt="body_counterfactual_flip-100 深度预览（只用于离线 GT）"><figcaption>深度预览（只用于离线 GT）</figcaption></figure><figure><img src="assets/body_counterfactual_flip-100_semantic.jpg" alt="body_counterfactual_flip-100 语义预览（只用于离线上下文）"><figcaption>语义预览（只用于离线上下文）</figcaption></figure><figure><img src="assets/body_counterfactual_flip-100_topdown.jpg" alt="body_counterfactual_flip-100 局部动作轨迹草图"><figcaption>局部动作轨迹草图</figcaption></figure><figure><img src="assets/body_counterfactual_flip-100_rollout_strip.jpg" alt="body_counterfactual_flip-100 RGB / overlay 对照 strip"><figcaption>RGB / overlay 对照 strip</figcaption></figure></div>
       <div class="case-body">
         <div class="case-meta">
           <span>身体反事实翻转案例 100</span>
@@ -1218,7 +1220,7 @@
               <p>诊断模型是否能把失败判断落到真实执行反馈中的碰撞、提前停止、高度变化或局部支撑风险，而不是只回答安全/不安全。</p>
               <div class="case-grid">
     <article class="case-card">
-      <div class="media"><figure><img src="assets/local_hazard_explanation-001_rollout_strip.jpg" alt="local_hazard_explanation-001 起始 RGB 与动作执行轨迹示意"><figcaption>起始 RGB 与动作执行轨迹示意</figcaption></figure><figure><img src="assets/local_hazard_explanation-001_topdown.jpg" alt="local_hazard_explanation-001 局部动作轨迹草图"><figcaption>局部动作轨迹草图</figcaption></figure></div>
+      <div class="media"><figure class="primary-figure"><img src="assets/local_hazard_explanation-001_initial_rgb.jpg" alt="local_hazard_explanation-001 模型输入：完整起始 egocentric RGB"><figcaption>模型输入：完整起始 egocentric RGB</figcaption></figure><figure><img src="assets/local_hazard_explanation-001_overlay.jpg" alt="local_hazard_explanation-001 动作轨迹 overlay（离线 GT 可视化）"><figcaption>动作轨迹 overlay（离线 GT 可视化）</figcaption></figure><figure><img src="assets/local_hazard_explanation-001_depth.jpg" alt="local_hazard_explanation-001 深度预览（只用于离线 GT）"><figcaption>深度预览（只用于离线 GT）</figcaption></figure><figure><img src="assets/local_hazard_explanation-001_semantic.jpg" alt="local_hazard_explanation-001 语义预览（只用于离线上下文）"><figcaption>语义预览（只用于离线上下文）</figcaption></figure><figure><img src="assets/local_hazard_explanation-001_topdown.jpg" alt="local_hazard_explanation-001 局部动作轨迹草图"><figcaption>局部动作轨迹草图</figcaption></figure><figure><img src="assets/local_hazard_explanation-001_rollout_strip.jpg" alt="local_hazard_explanation-001 RGB / overlay 对照 strip"><figcaption>RGB / overlay 对照 strip</figcaption></figure></div>
       <div class="case-body">
         <div class="case-meta">
           <span>局部风险解释案例 001</span>
@@ -1246,7 +1248,7 @@
     </article>
     
     <article class="case-card">
-      <div class="media"><figure><img src="assets/local_hazard_explanation-002_rollout_strip.jpg" alt="local_hazard_explanation-002 起始 RGB 与动作执行轨迹示意"><figcaption>起始 RGB 与动作执行轨迹示意</figcaption></figure><figure><img src="assets/local_hazard_explanation-002_topdown.jpg" alt="local_hazard_explanation-002 局部动作轨迹草图"><figcaption>局部动作轨迹草图</figcaption></figure></div>
+      <div class="media"><figure class="primary-figure"><img src="assets/local_hazard_explanation-002_initial_rgb.jpg" alt="local_hazard_explanation-002 模型输入：完整起始 egocentric RGB"><figcaption>模型输入：完整起始 egocentric RGB</figcaption></figure><figure><img src="assets/local_hazard_explanation-002_overlay.jpg" alt="local_hazard_explanation-002 动作轨迹 overlay（离线 GT 可视化）"><figcaption>动作轨迹 overlay（离线 GT 可视化）</figcaption></figure><figure><img src="assets/local_hazard_explanation-002_depth.jpg" alt="local_hazard_explanation-002 深度预览（只用于离线 GT）"><figcaption>深度预览（只用于离线 GT）</figcaption></figure><figure><img src="assets/local_hazard_explanation-002_semantic.jpg" alt="local_hazard_explanation-002 语义预览（只用于离线上下文）"><figcaption>语义预览（只用于离线上下文）</figcaption></figure><figure><img src="assets/local_hazard_explanation-002_topdown.jpg" alt="local_hazard_explanation-002 局部动作轨迹草图"><figcaption>局部动作轨迹草图</figcaption></figure><figure><img src="assets/local_hazard_explanation-002_rollout_strip.jpg" alt="local_hazard_explanation-002 RGB / overlay 对照 strip"><figcaption>RGB / overlay 对照 strip</figcaption></figure></div>
       <div class="case-body">
         <div class="case-meta">
           <span>局部风险解释案例 002</span>
@@ -1274,7 +1276,7 @@
     </article>
     
     <article class="case-card">
-      <div class="media"><figure><img src="assets/local_hazard_explanation-003_rollout_strip.jpg" alt="local_hazard_explanation-003 起始 RGB 与动作执行轨迹示意"><figcaption>起始 RGB 与动作执行轨迹示意</figcaption></figure><figure><img src="assets/local_hazard_explanation-003_topdown.jpg" alt="local_hazard_explanation-003 局部动作轨迹草图"><figcaption>局部动作轨迹草图</figcaption></figure></div>
+      <div class="media"><figure class="primary-figure"><img src="assets/local_hazard_explanation-003_initial_rgb.jpg" alt="local_hazard_explanation-003 模型输入：完整起始 egocentric RGB"><figcaption>模型输入：完整起始 egocentric RGB</figcaption></figure><figure><img src="assets/local_hazard_explanation-003_overlay.jpg" alt="local_hazard_explanation-003 动作轨迹 overlay（离线 GT 可视化）"><figcaption>动作轨迹 overlay（离线 GT 可视化）</figcaption></figure><figure><img src="assets/local_hazard_explanation-003_depth.jpg" alt="local_hazard_explanation-003 深度预览（只用于离线 GT）"><figcaption>深度预览（只用于离线 GT）</figcaption></figure><figure><img src="assets/local_hazard_explanation-003_semantic.jpg" alt="local_hazard_explanation-003 语义预览（只用于离线上下文）"><figcaption>语义预览（只用于离线上下文）</figcaption></figure><figure><img src="assets/local_hazard_explanation-003_topdown.jpg" alt="local_hazard_explanation-003 局部动作轨迹草图"><figcaption>局部动作轨迹草图</figcaption></figure><figure><img src="assets/local_hazard_explanation-003_rollout_strip.jpg" alt="local_hazard_explanation-003 RGB / overlay 对照 strip"><figcaption>RGB / overlay 对照 strip</figcaption></figure></div>
       <div class="case-body">
         <div class="case-meta">
           <span>局部风险解释案例 003</span>
@@ -1302,7 +1304,7 @@
     </article>
     
     <article class="case-card">
-      <div class="media"><figure><img src="assets/local_hazard_explanation-004_rollout_strip.jpg" alt="local_hazard_explanation-004 起始 RGB 与动作执行轨迹示意"><figcaption>起始 RGB 与动作执行轨迹示意</figcaption></figure><figure><img src="assets/local_hazard_explanation-004_topdown.jpg" alt="local_hazard_explanation-004 局部动作轨迹草图"><figcaption>局部动作轨迹草图</figcaption></figure></div>
+      <div class="media"><figure class="primary-figure"><img src="assets/local_hazard_explanation-004_initial_rgb.jpg" alt="local_hazard_explanation-004 模型输入：完整起始 egocentric RGB"><figcaption>模型输入：完整起始 egocentric RGB</figcaption></figure><figure><img src="assets/local_hazard_explanation-004_overlay.jpg" alt="local_hazard_explanation-004 动作轨迹 overlay（离线 GT 可视化）"><figcaption>动作轨迹 overlay（离线 GT 可视化）</figcaption></figure><figure><img src="assets/local_hazard_explanation-004_depth.jpg" alt="local_hazard_explanation-004 深度预览（只用于离线 GT）"><figcaption>深度预览（只用于离线 GT）</figcaption></figure><figure><img src="assets/local_hazard_explanation-004_semantic.jpg" alt="local_hazard_explanation-004 语义预览（只用于离线上下文）"><figcaption>语义预览（只用于离线上下文）</figcaption></figure><figure><img src="assets/local_hazard_explanation-004_topdown.jpg" alt="local_hazard_explanation-004 局部动作轨迹草图"><figcaption>局部动作轨迹草图</figcaption></figure><figure><img src="assets/local_hazard_explanation-004_rollout_strip.jpg" alt="local_hazard_explanation-004 RGB / overlay 对照 strip"><figcaption>RGB / overlay 对照 strip</figcaption></figure></div>
       <div class="case-body">
         <div class="case-meta">
           <span>局部风险解释案例 004</span>
@@ -1330,7 +1332,7 @@
     </article>
     
     <article class="case-card">
-      <div class="media"><figure><img src="assets/local_hazard_explanation-005_rollout_strip.jpg" alt="local_hazard_explanation-005 起始 RGB 与动作执行轨迹示意"><figcaption>起始 RGB 与动作执行轨迹示意</figcaption></figure><figure><img src="assets/local_hazard_explanation-005_topdown.jpg" alt="local_hazard_explanation-005 局部动作轨迹草图"><figcaption>局部动作轨迹草图</figcaption></figure></div>
+      <div class="media"><figure class="primary-figure"><img src="assets/local_hazard_explanation-005_initial_rgb.jpg" alt="local_hazard_explanation-005 模型输入：完整起始 egocentric RGB"><figcaption>模型输入：完整起始 egocentric RGB</figcaption></figure><figure><img src="assets/local_hazard_explanation-005_overlay.jpg" alt="local_hazard_explanation-005 动作轨迹 overlay（离线 GT 可视化）"><figcaption>动作轨迹 overlay（离线 GT 可视化）</figcaption></figure><figure><img src="assets/local_hazard_explanation-005_depth.jpg" alt="local_hazard_explanation-005 深度预览（只用于离线 GT）"><figcaption>深度预览（只用于离线 GT）</figcaption></figure><figure><img src="assets/local_hazard_explanation-005_semantic.jpg" alt="local_hazard_explanation-005 语义预览（只用于离线上下文）"><figcaption>语义预览（只用于离线上下文）</figcaption></figure><figure><img src="assets/local_hazard_explanation-005_topdown.jpg" alt="local_hazard_explanation-005 局部动作轨迹草图"><figcaption>局部动作轨迹草图</figcaption></figure><figure><img src="assets/local_hazard_explanation-005_rollout_strip.jpg" alt="local_hazard_explanation-005 RGB / overlay 对照 strip"><figcaption>RGB / overlay 对照 strip</figcaption></figure></div>
       <div class="case-body">
         <div class="case-meta">
           <span>局部风险解释案例 005</span>
@@ -1358,7 +1360,7 @@
     </article>
     
     <article class="case-card">
-      <div class="media"><figure><img src="assets/local_hazard_explanation-026_rollout_strip.jpg" alt="local_hazard_explanation-026 起始 RGB 与动作执行轨迹示意"><figcaption>起始 RGB 与动作执行轨迹示意</figcaption></figure><figure><img src="assets/local_hazard_explanation-026_topdown.jpg" alt="local_hazard_explanation-026 局部动作轨迹草图"><figcaption>局部动作轨迹草图</figcaption></figure></div>
+      <div class="media"><figure class="primary-figure"><img src="assets/local_hazard_explanation-026_initial_rgb.jpg" alt="local_hazard_explanation-026 模型输入：完整起始 egocentric RGB"><figcaption>模型输入：完整起始 egocentric RGB</figcaption></figure><figure><img src="assets/local_hazard_explanation-026_overlay.jpg" alt="local_hazard_explanation-026 动作轨迹 overlay（离线 GT 可视化）"><figcaption>动作轨迹 overlay（离线 GT 可视化）</figcaption></figure><figure><img src="assets/local_hazard_explanation-026_depth.jpg" alt="local_hazard_explanation-026 深度预览（只用于离线 GT）"><figcaption>深度预览（只用于离线 GT）</figcaption></figure><figure><img src="assets/local_hazard_explanation-026_semantic.jpg" alt="local_hazard_explanation-026 语义预览（只用于离线上下文）"><figcaption>语义预览（只用于离线上下文）</figcaption></figure><figure><img src="assets/local_hazard_explanation-026_topdown.jpg" alt="local_hazard_explanation-026 局部动作轨迹草图"><figcaption>局部动作轨迹草图</figcaption></figure><figure><img src="assets/local_hazard_explanation-026_rollout_strip.jpg" alt="local_hazard_explanation-026 RGB / overlay 对照 strip"><figcaption>RGB / overlay 对照 strip</figcaption></figure></div>
       <div class="case-body">
         <div class="case-meta">
           <span>局部风险解释案例 026</span>
@@ -1386,7 +1388,7 @@
     </article>
     
     <article class="case-card">
-      <div class="media"><figure><img src="assets/local_hazard_explanation-084_rollout_strip.jpg" alt="local_hazard_explanation-084 起始 RGB 与动作执行轨迹示意"><figcaption>起始 RGB 与动作执行轨迹示意</figcaption></figure><figure><img src="assets/local_hazard_explanation-084_topdown.jpg" alt="local_hazard_explanation-084 局部动作轨迹草图"><figcaption>局部动作轨迹草图</figcaption></figure></div>
+      <div class="media"><figure class="primary-figure"><img src="assets/local_hazard_explanation-084_initial_rgb.jpg" alt="local_hazard_explanation-084 模型输入：完整起始 egocentric RGB"><figcaption>模型输入：完整起始 egocentric RGB</figcaption></figure><figure><img src="assets/local_hazard_explanation-084_overlay.jpg" alt="local_hazard_explanation-084 动作轨迹 overlay（离线 GT 可视化）"><figcaption>动作轨迹 overlay（离线 GT 可视化）</figcaption></figure><figure><img src="assets/local_hazard_explanation-084_depth.jpg" alt="local_hazard_explanation-084 深度预览（只用于离线 GT）"><figcaption>深度预览（只用于离线 GT）</figcaption></figure><figure><img src="assets/local_hazard_explanation-084_semantic.jpg" alt="local_hazard_explanation-084 语义预览（只用于离线上下文）"><figcaption>语义预览（只用于离线上下文）</figcaption></figure><figure><img src="assets/local_hazard_explanation-084_topdown.jpg" alt="local_hazard_explanation-084 局部动作轨迹草图"><figcaption>局部动作轨迹草图</figcaption></figure><figure><img src="assets/local_hazard_explanation-084_rollout_strip.jpg" alt="local_hazard_explanation-084 RGB / overlay 对照 strip"><figcaption>RGB / overlay 对照 strip</figcaption></figure></div>
       <div class="case-body">
         <div class="case-meta">
           <span>局部风险解释案例 084</span>
@@ -1414,7 +1416,7 @@
     </article>
     
     <article class="case-card">
-      <div class="media"><figure><img src="assets/local_hazard_explanation-142_rollout_strip.jpg" alt="local_hazard_explanation-142 起始 RGB 与动作执行轨迹示意"><figcaption>起始 RGB 与动作执行轨迹示意</figcaption></figure><figure><img src="assets/local_hazard_explanation-142_topdown.jpg" alt="local_hazard_explanation-142 局部动作轨迹草图"><figcaption>局部动作轨迹草图</figcaption></figure></div>
+      <div class="media"><figure class="primary-figure"><img src="assets/local_hazard_explanation-142_initial_rgb.jpg" alt="local_hazard_explanation-142 模型输入：完整起始 egocentric RGB"><figcaption>模型输入：完整起始 egocentric RGB</figcaption></figure><figure><img src="assets/local_hazard_explanation-142_overlay.jpg" alt="local_hazard_explanation-142 动作轨迹 overlay（离线 GT 可视化）"><figcaption>动作轨迹 overlay（离线 GT 可视化）</figcaption></figure><figure><img src="assets/local_hazard_explanation-142_depth.jpg" alt="local_hazard_explanation-142 深度预览（只用于离线 GT）"><figcaption>深度预览（只用于离线 GT）</figcaption></figure><figure><img src="assets/local_hazard_explanation-142_semantic.jpg" alt="local_hazard_explanation-142 语义预览（只用于离线上下文）"><figcaption>语义预览（只用于离线上下文）</figcaption></figure><figure><img src="assets/local_hazard_explanation-142_topdown.jpg" alt="local_hazard_explanation-142 局部动作轨迹草图"><figcaption>局部动作轨迹草图</figcaption></figure><figure><img src="assets/local_hazard_explanation-142_rollout_strip.jpg" alt="local_hazard_explanation-142 RGB / overlay 对照 strip"><figcaption>RGB / overlay 对照 strip</figcaption></figure></div>
       <div class="case-body">
         <div class="case-meta">
           <span>局部风险解释案例 142</span>
@@ -1442,7 +1444,7 @@
     </article>
     
     <article class="case-card">
-      <div class="media"><figure><img src="assets/local_hazard_explanation-153_rollout_strip.jpg" alt="local_hazard_explanation-153 起始 RGB 与动作执行轨迹示意"><figcaption>起始 RGB 与动作执行轨迹示意</figcaption></figure><figure><img src="assets/local_hazard_explanation-153_topdown.jpg" alt="local_hazard_explanation-153 局部动作轨迹草图"><figcaption>局部动作轨迹草图</figcaption></figure></div>
+      <div class="media"><figure class="primary-figure"><img src="assets/local_hazard_explanation-153_initial_rgb.jpg" alt="local_hazard_explanation-153 模型输入：完整起始 egocentric RGB"><figcaption>模型输入：完整起始 egocentric RGB</figcaption></figure><figure><img src="assets/local_hazard_explanation-153_overlay.jpg" alt="local_hazard_explanation-153 动作轨迹 overlay（离线 GT 可视化）"><figcaption>动作轨迹 overlay（离线 GT 可视化）</figcaption></figure><figure><img src="assets/local_hazard_explanation-153_depth.jpg" alt="local_hazard_explanation-153 深度预览（只用于离线 GT）"><figcaption>深度预览（只用于离线 GT）</figcaption></figure><figure><img src="assets/local_hazard_explanation-153_semantic.jpg" alt="local_hazard_explanation-153 语义预览（只用于离线上下文）"><figcaption>语义预览（只用于离线上下文）</figcaption></figure><figure><img src="assets/local_hazard_explanation-153_topdown.jpg" alt="local_hazard_explanation-153 局部动作轨迹草图"><figcaption>局部动作轨迹草图</figcaption></figure><figure><img src="assets/local_hazard_explanation-153_rollout_strip.jpg" alt="local_hazard_explanation-153 RGB / overlay 对照 strip"><figcaption>RGB / overlay 对照 strip</figcaption></figure></div>
       <div class="case-body">
         <div class="case-meta">
           <span>局部风险解释案例 153</span>
@@ -1470,7 +1472,7 @@
     </article>
     
     <article class="case-card">
-      <div class="media"><figure><img src="assets/local_hazard_explanation-157_rollout_strip.jpg" alt="local_hazard_explanation-157 起始 RGB 与动作执行轨迹示意"><figcaption>起始 RGB 与动作执行轨迹示意</figcaption></figure><figure><img src="assets/local_hazard_explanation-157_topdown.jpg" alt="local_hazard_explanation-157 局部动作轨迹草图"><figcaption>局部动作轨迹草图</figcaption></figure></div>
+      <div class="media"><figure class="primary-figure"><img src="assets/local_hazard_explanation-157_initial_rgb.jpg" alt="local_hazard_explanation-157 模型输入：完整起始 egocentric RGB"><figcaption>模型输入：完整起始 egocentric RGB</figcaption></figure><figure><img src="assets/local_hazard_explanation-157_overlay.jpg" alt="local_hazard_explanation-157 动作轨迹 overlay（离线 GT 可视化）"><figcaption>动作轨迹 overlay（离线 GT 可视化）</figcaption></figure><figure><img src="assets/local_hazard_explanation-157_depth.jpg" alt="local_hazard_explanation-157 深度预览（只用于离线 GT）"><figcaption>深度预览（只用于离线 GT）</figcaption></figure><figure><img src="assets/local_hazard_explanation-157_semantic.jpg" alt="local_hazard_explanation-157 语义预览（只用于离线上下文）"><figcaption>语义预览（只用于离线上下文）</figcaption></figure><figure><img src="assets/local_hazard_explanation-157_topdown.jpg" alt="local_hazard_explanation-157 局部动作轨迹草图"><figcaption>局部动作轨迹草图</figcaption></figure><figure><img src="assets/local_hazard_explanation-157_rollout_strip.jpg" alt="local_hazard_explanation-157 RGB / overlay 对照 strip"><figcaption>RGB / overlay 对照 strip</figcaption></figure></div>
       <div class="case-body">
         <div class="case-meta">
           <span>局部风险解释案例 157</span>
