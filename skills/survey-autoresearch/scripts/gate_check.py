@@ -24,6 +24,7 @@ try:
     from .validate_newcomer_tutorial import validate_newcomer_tutorial
     from .validate_card_specificity import validate_card_specificity
     from .validate_review_absorption import validate_review_absorption
+    from .validate_publication_prose import validate_publication_prose
     from .review_scorecard import score_review
 except ImportError:  # pragma: no cover - used when run as a standalone script
     from coverage_report import build_coverage
@@ -41,6 +42,7 @@ except ImportError:  # pragma: no cover - used when run as a standalone script
     from validate_newcomer_tutorial import validate_newcomer_tutorial
     from validate_card_specificity import validate_card_specificity
     from validate_review_absorption import validate_review_absorption
+    from validate_publication_prose import validate_publication_prose
     from review_scorecard import score_review
 
 
@@ -751,6 +753,7 @@ def review_depth_readiness(task_dir: Path, target: str) -> dict:
         "errors": ["missing paper_cards"],
     }
     absorption_status = validate_review_absorption(task_dir, target=target)
+    publication_prose_status = validate_publication_prose(review_text, target=target)
     scorecard_status = score_review(review_text, target=target)
 
     checks = {
@@ -762,6 +765,7 @@ def review_depth_readiness(task_dir: Path, target: str) -> dict:
         "newcomer tutorial": tutorial_status["valid"],
         "card specificity": card_specificity_status["valid"],
         "artifact absorption": absorption_status["valid"],
+        "publication prose": publication_prose_status["valid"],
         "review scorecard": scorecard_status["passed"],
     }
     failed_checks = [name for name, passed in checks.items() if not passed]
@@ -779,6 +783,7 @@ def review_depth_readiness(task_dir: Path, target: str) -> dict:
         "newcomer_tutorial": tutorial_status,
         "card_specificity": card_specificity_status,
         "review_absorption": absorption_status,
+        "publication_prose": publication_prose_status,
         "review_scorecard": scorecard_status,
     }
 

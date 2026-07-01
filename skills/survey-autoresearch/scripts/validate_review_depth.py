@@ -14,7 +14,7 @@ THRESHOLDS = {
         "min_chars": 35_000,
         "min_tables": 8,
         "min_h3": 10,
-        "min_worked_examples": 12,
+        "min_case_studies": 4,
         "min_benchmark_entries": 10,
         "min_method_families": 8,
     },
@@ -22,7 +22,7 @@ THRESHOLDS = {
         "min_chars": 60_000,
         "min_tables": 12,
         "min_h3": 18,
-        "min_worked_examples": 25,
+        "min_case_studies": 6,
         "min_benchmark_entries": 18,
         "min_method_families": 10,
     },
@@ -50,7 +50,13 @@ def validate_review_depth(review_text: str, target: str = "full") -> dict:
     cfg = THRESHOLDS[target]
     h3_count = len(re.findall(r"^###\s+", review_text, flags=re.MULTILINE))
     table_count = review_text.count("| ---")
-    worked_examples = len(re.findall(r"^#{3,4}\s+.*worked example", review_text, flags=re.IGNORECASE | re.MULTILINE))
+    case_studies = len(
+        re.findall(
+            r"^#{3,4}\s+.*(?:case study|case box|worked example|案例|个案|机制解剖)",
+            review_text,
+            flags=re.IGNORECASE | re.MULTILINE,
+        )
+    )
     benchmark_entries = _table_rows_after_heading(review_text, r"^##\s+.*benchmark")
     method_families = _table_rows_after_heading(review_text, r"^##\s+.*method taxonomy|^##\s+.*方法")
     has_tutorial = bool(re.search(r"tutorial primer|入门|术语|glossary", review_text, flags=re.IGNORECASE))
@@ -62,7 +68,7 @@ def validate_review_depth(review_text: str, target: str = "full") -> dict:
         "length": len(review_text) >= cfg["min_chars"],
         "tables": table_count >= cfg["min_tables"],
         "h3_subsections": h3_count >= cfg["min_h3"],
-        "worked_examples": worked_examples >= cfg["min_worked_examples"],
+        "case_studies": case_studies >= cfg["min_case_studies"],
         "benchmark_entries": benchmark_entries >= cfg["min_benchmark_entries"],
         "method_families": method_families >= cfg["min_method_families"],
         "tutorial_primer": has_tutorial,
@@ -81,7 +87,7 @@ def validate_review_depth(review_text: str, target: str = "full") -> dict:
         "min_chars": cfg["min_chars"],
         "table_count": table_count,
         "h3_count": h3_count,
-        "worked_examples": worked_examples,
+        "case_studies": case_studies,
         "benchmark_entries": benchmark_entries,
         "method_families": method_families,
     }

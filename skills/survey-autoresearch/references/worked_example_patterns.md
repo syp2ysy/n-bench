@@ -1,6 +1,6 @@
 # Worked Example Patterns
 
-Use this reference when writing `outputs/worked_examples.md` and method sections.
+Use this reference when writing `outputs/worked_examples.md`.
 
 Each worked example must answer:
 
@@ -19,4 +19,6 @@ Each worked example must answer:
 - Design lesson:
 ```
 
-Use prose in `review.md` if it reads better, but all fields must be present in substance. Avoid the shortcut "X shows / Y demonstrates" unless the mechanism immediately follows.
+This fielded format belongs in `outputs/worked_examples.md` or `outputs/appendix.md`. In `outputs/review.md`, translate selected worked examples into prose case studies; do not paste the repeated field labels into the article body. See `publication_prose_translation.md`.
+
+Avoid the shortcut "X shows / Y demonstrates" unless the mechanism immediately follows.

@@ -164,7 +164,16 @@ Required final-review artifacts:
 - `outputs/design_guidelines.md`;
 - `outputs/section_dossiers/`.
 
-Gate 7 rejects a review that only names a framework, lists benchmarks, or contains fluent overview paragraphs. Paper cards must become worked examples, system-node cards must become a node-paper matrix, section cards must become section dossiers, and benchmark/method artifacts must be embedded or substantively summarized in `outputs/review.md`.
+Gate 7 rejects a review that only names a framework, lists benchmarks, or contains fluent overview paragraphs. Paper cards must become structured worked examples, system-node cards must become a node-paper matrix, section cards must become section dossiers, and benchmark/method artifacts must be substantively summarized in `outputs/review.md`.
+
+Gate 7 also rejects artifact-dump prose:
+- repeated raw worked-example labels in `review.md`;
+- "该工作在本文中被读作" or equivalent state-file phrasing;
+- tables that are not introduced and interpreted;
+- sections that lack an opening thesis or closing implication;
+- article bodies that read like `state/` files or appendix material.
+
+The full set of worked examples may live in `outputs/worked_examples.md` or `outputs/appendix.md`. `review.md` should use a smaller set of publication-facing case-study boxes.
 
 Gate 7 also checks a review scorecard: newcomer, method-depth, benchmark-utility, and CSUR-style scores must each be at least 8/10.
 
@@ -206,4 +215,4 @@ python3 scripts/gate_check.py --task-dir <run_dir> --target short
 python3 scripts/gate_check.py --task-dir <run_dir> --target csur
 ```
 
-The helper checks deterministic Gates 1-6. The orchestrator records qualitative final review separately as `final_review_status`.
+The helper checks deterministic Gates 1-7. The orchestrator records qualitative final review separately as `final_review_status`.

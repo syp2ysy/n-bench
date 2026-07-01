@@ -36,6 +36,8 @@ LOG_FILES = [
 
 OUTPUT_FILES = {
     "review.md": "",
+    "review_body_draft.md": "",
+    "appendix.md": "",
     "evidence_table.csv": "claim_id,paper_id,evidence\n",
     "references.bib": "",
     "final_report.md": "",

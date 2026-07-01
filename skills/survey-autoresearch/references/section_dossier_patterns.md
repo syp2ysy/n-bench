@@ -18,4 +18,10 @@ Required dossier contents:
 10. Open questions.
 11. Required citations and evidence spans.
 
-The synthesizer must write article prose from dossiers, not from section headings alone. If a dossier lacks worked examples, comparison table, or benchmark tie-in, repair the dossier before drafting.
+The synthesizer must write article prose from dossiers, not from section headings alone and not directly from raw paper cards. If a dossier lacks worked examples, comparison table, or benchmark tie-in, repair the dossier before drafting.
+
+Before writing `review.md`, turn each dossier into section prose:
+- opening paragraph: reader question, tension, and thesis;
+- middle paragraphs: compare families, explain mechanisms, and use selected case studies;
+- table paragraphs: introduce and interpret the table;
+- closing paragraph: design, evaluation, or open-problem implication.

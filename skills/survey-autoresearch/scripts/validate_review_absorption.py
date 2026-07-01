@@ -49,7 +49,7 @@ def validate_review_absorption(task_dir: Path, target: str = "full") -> dict:
     ]
 
     required_review_terms = {
-        "worked_examples": ["worked example", "worked paper", "案例", "paper example"],
+        "worked_examples": ["worked example", "worked-example", "worked paper", "case study", "case studies", "机制解剖", "案例", "paper example"],
         "benchmark_landscape": ["benchmark landscape", "memory pressure", "confounders", "baseline", "基准"],
         "method_taxonomy": ["method taxonomy", "write trigger", "read key", "update policy", "controller interface", "方法"],
         "node_matrix": ["node", "representative papers", "mechanism pattern", "evaluation signal", "系统节点"],

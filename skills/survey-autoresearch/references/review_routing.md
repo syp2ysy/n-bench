@@ -72,6 +72,10 @@ Calibration:
 | Paper cards exist but do not appear in final review | Final-review absorption repair |
 | Section cards compress into short overview prose | Section dossier expansion |
 | Paper cards use template fields instead of paper-specific mechanisms | Paper-card specificity repair |
+| Review body pastes worked-example field labels | Publication prose translation |
+| Tables appear without interpretation paragraphs | Table interpretation repair |
+| Case studies read like paper-card dumps | Case-study prose rewrite |
+| Review reads like state artifacts instead of an article | Publication prose translation and appendix split |
 | Missing visualizations | Figures and tables pass |
 | Process-correction language appears in review body | Section reorganization and final-report relocation |
 | Related-survey differentiation is only recency or breadth | Taxonomy redesign and related-survey matrix repair |

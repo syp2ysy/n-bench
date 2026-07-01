@@ -106,11 +106,13 @@ PHASES = [
     {
         "id": "phase_9_synthesis",
         "file": "phase_09_synthesis.html",
-        "title": "Phase 9: Synthesis",
-        "purpose": "Write review outputs from paper cards, node cards, section cards, claims, and verified citations.",
+        "title": "Phase 9: Dossiers and Publication Prose",
+        "purpose": "Build section dossiers and article-facing outputs, then translate them into publication prose rather than pasting raw cards.",
         "inputs": ["state/section_cards.jsonl", "state/paper_cards.jsonl", "state/claims.jsonl", "state/citation_plan.jsonl"],
         "outputs": [
+            "outputs/review_body_draft.md",
             "outputs/review.md",
+            "outputs/appendix.md",
             "outputs/evidence_table.csv",
             "outputs/references.bib",
             "outputs/synthesis_tables.md",
@@ -119,8 +121,9 @@ PHASES = [
             "outputs/benchmark_landscape.md",
             "outputs/method_taxonomy.md",
             "outputs/node_paper_matrix.md",
+            "outputs/section_dossiers/",
         ],
-        "checks": ["Output files are nonempty", "claims are linked to evidence", "sections follow their cards"],
+        "checks": ["Output files are nonempty", "claims are linked to evidence", "sections follow dossiers", "review body has publication prose"],
     },
     {
         "id": "phase_10_peer_review",

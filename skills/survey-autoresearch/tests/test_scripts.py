@@ -26,6 +26,9 @@ from scripts.validate_card_specificity import validate_card_specificity
 from scripts.validate_review_absorption import validate_review_absorption
 from scripts.review_scorecard import score_review
 from scripts.derive_paper_facts import derive_paper_facts
+from scripts.validate_case_study_prose import validate_case_study_prose
+from scripts.validate_table_interpretation import validate_table_interpretation
+from scripts.validate_publication_prose import validate_publication_prose
 
 
 class SurveyAutoResearchScriptsTest(unittest.TestCase):
@@ -238,23 +241,37 @@ class SurveyAutoResearchScriptsTest(unittest.TestCase):
         ]
 
     def _rich_review_text(self, *, target: str = "full") -> str:
-        examples = []
-        for i in range(12 if target == "full" else 25):
+        cases = []
+        for i in range(4 if target == "full" else 6):
             paper_id = "p1" if i % 2 == 0 else "p2"
-            examples.append(
-                f"### Worked example {i + 1}: Paper {paper_id}\n"
-                f"Paper ID: {paper_id}. Problem: this system explains how a typed memory record enters later decisions. "
-                "Memory record: observation, action, timestamp, provenance, confidence, and task state. "
-                "Write policy: append or revise records at event boundaries. Read policy: task-conditioned retrieval with spatial and temporal keys. "
-                "Update policy: consolidate repeated events and mark stale records. Controller interface: planner receives a retrieved constraint before action selection. "
-                "Benchmark evidence: no-memory, oracle-memory, wrong-memory, latency, and capacity conditions identify whether memory changes behavior. "
-                "Failure mode: stale state and false recall. Design lesson: record schema, access key, and control interface must be evaluated together.\n"
+            cases.append(
+                f"### Case study {i + 1}: Paper {paper_id} as a mechanism example\n"
+                f"Paper {paper_id} is useful here because it makes one design decision observable rather than treating memory as a generic accuracy booster. "
+                "Its mechanism starts from a typed record, connects that record to a task-conditioned read operation, and passes the retrieved state to a planner or diagnostic harness. "
+                "Compared with a flat context buffer, this design exposes where information is written, what key retrieves it, and which downstream decision is allowed to consume it.\n\n"
+                "The evaluation lesson is equally important. No-memory, oracle-memory, wrong-memory, stale-memory, latency, and capacity conditions are needed to decide whether the memory interface caused the behavior or whether perception and policy strength explain the gain. "
+                "The main limitation is that stale state, false recall, and missing provenance can still look like successful memory use unless the benchmark perturbs the record itself. "
+                "This case therefore supports the section thesis: mechanism, interface, and evidence must be discussed together.\n"
             )
+
+        def table_block(title: str, header: str, row: str) -> str:
+            return (
+                f"\n{title}\n\n"
+                f"{header}\n"
+                "| --- | --- | --- |\n"
+                f"{row}\n\n"
+                "This table is not a catalogue; it separates the design choice from the evidence needed to interpret it. "
+                "The important comparison is that two systems can share a task label while relying on different records, read keys, and failure modes. "
+                "Consequently, the table should be read as a guide for method selection and evaluation design rather than as an exhaustive bibliography.\n"
+            )
+
+        method_section_count = 10 if target == "full" else 12
         h3_sections = "\n".join(
             f"### Method family {i}: structured tutorial subsection\n"
-            "This subsection defines the method family, explains its memory representation, contrasts write and read policies, "
-            "links controller interfaces to benchmark evidence, and closes with a design lesson about failure modes and ablations.\n"
-            for i in range(1, 11)
+            "This subsection opens by defining the reader question: which record is being maintained, when is it written, and how does it enter action? "
+            "Compared with adjacent families, it emphasizes a different trade-off among representation fidelity, retrieval latency, update cost, and controller compatibility. "
+            "The section then uses representative systems as evidence and closes by explaining which benchmark or ablation would falsify the claimed memory benefit.\n"
+            for i in range(1, method_section_count + 1)
         )
         filler = " ".join(
             [
@@ -266,54 +283,113 @@ class SurveyAutoResearchScriptsTest(unittest.TestCase):
         return (
             "# Rich Tutorial Survey\n\n"
             "## Tutorial Primer: Embodied Memory in One Running Example\n"
+            "This section first builds the reader's mental model before introducing any taxonomy. "
+            "The central tension is that embodied memory is not merely stored text: it is a record that must survive perception noise, partial observability, action latency, and environmental change. "
             "Glossary terms: embodied memory, episodic memory, semantic memory, spatial memory, procedural memory, semantic map, topological graph, "
             "3D scene memory, retrieval memory, VLA working memory, stale memory, oracle memory, wrong-memory injection, and memory-causal ablation. "
             "Running example: a robot records an observation, writes an object-state tuple, stores short-term and long-term memories, retrieves by object plus time plus place, "
-            "updates stale records, sends a route constraint to the planner, and is evaluated with no-memory, wrong-memory, and oracle-memory controls.\n\n"
+            "updates stale records, sends a route constraint to the planner, and is evaluated with no-memory, wrong-memory, and oracle-memory controls. "
+            "The implication is that each later method family can be understood by asking what changes in this flow.\n\n"
             "## System Model\n"
+            "The system model turns the running example into a reusable analysis tool. "
+            "Rather than asking whether a paper has a memory module, this section asks which node it implements, what record crosses the interface, and what failure becomes visible if the node is weak. "
+            "This framing also explains why navigation, EQA, manipulation, and lifelong deployment are evaluation settings rather than the organizing spine.\n\n"
             "| node | input | output | representative papers | failure mode | evaluation |\n"
             "| --- | --- | --- | --- | --- | --- |\n"
             "| capture | frame, pose, action | typed record | p1, p2 | missing provenance | no-record ablation |\n"
             "| retrieval | query, goal | evidence, constraint | p1, p2 | false recall | oracle/wrong-memory tests |\n\n"
+            "The table shows that each node has both a data function and an evidential function. "
+            "Capture is not complete unless provenance can later be inspected; retrieval is not useful unless wrong-memory controls show that the controller can reject misleading evidence.\n\n"
             "## Related Surveys\n"
-            "Related surveys are positioned by organizing lens, missing evidence matrix, benchmark coverage, and method taxonomy gaps.\n\n"
+            "Related surveys are positioned by organizing lens, missing evidence matrix, benchmark coverage, and method taxonomy gaps. "
+            "This section uses them to motivate the present system-level lens, then transitions from survey positioning to the concrete mechanism taxonomy.\n\n"
             + h3_sections
             + "\n## Method Taxonomy\n"
+            "The method taxonomy is an analysis tool, not a naming exercise. "
+            "It compares method families by the shape of their memory record, the trigger that writes the record, the key that retrieves it, the lifecycle operation that maintains it, and the interface that exposes it to a planner or policy. "
+            "This comparison lets a reader decide which family fits a new problem before seeing any benchmark score.\n\n"
             "| method family | representation | memory record | write trigger | read key | update policy | controller interface | strength | failure mode | representative works | best benchmarks |\n"
             "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |\n"
             + "".join(
                 f"| family {i} | structured state | record fields | event boundary | task key | revise stale records | planner or policy | interpretable | stale state | p1, p2 | benchmark {i} |\n"
                 for i in range(1, 9 if target == "full" else 11)
             )
+            + "\nThe table's main message is that representation and interface cannot be selected independently. "
+            "A spatial map gives strong locality but weak object-state revision; an episodic store preserves evidence provenance but can add retrieval latency; a skill memory changes action directly but can hide whether success came from memory or from policy prior. "
+            "These trade-offs set up the case studies below.\n"
             + "\n## Benchmark Landscape\n"
+            "Benchmarks are useful only when the capability they operationalize is explicit. "
+            "This section therefore groups tasks by memory pressure, required record fields, metric, baseline, and confounder. "
+            "The goal is to help readers choose a benchmark for a memory claim and to design the negative controls needed to interpret the result.\n\n"
             "| benchmark | task family | environment | memory pressure | required memory fields | input/output | metrics | baselines | memory-specific ablations | confounders | best-suited method families | representative papers |\n"
             "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |\n"
             + "".join(
                 f"| benchmark {i} | task | simulator | long-horizon record validity | object, place, time | observation/action | success, latency | no-memory, oracle-memory | wrong-memory, stale-memory | perception and planner strength | family {i} | p1, p2 |\n"
                 for i in range(1, 11 if target == "full" else 19)
             )
-            + "\n## Worked Paper Examples\n"
-            + "\n".join(examples)
+            + "\nThe table should be read as a selection guide. "
+            "If a claim is about spatial grounding, the benchmark must perturb location or map state; if it is about evidence-grounded question answering, the benchmark must distinguish correct recall from language priors; if it is about action-facing memory, latency and wrong-state tests become part of the protocol.\n"
+            + "\n## Case Studies: Translating Paper Cards Into Article Prose\n"
+            "The following boxes are deliberately selective. "
+            "The exhaustive paper-card material remains in the worked-example artifact, while the review body uses a smaller set of prose case studies to teach mechanism, evidence, and limitation without turning the article into a state-file dump.\n\n"
+            + "\n".join(cases)
             + "\n## Method Design Pipeline\n"
-            "The method design pipeline starts from memory pressure, selects a memory record schema, chooses a store family, defines write policy, read key, update policy, and controller interface, then designs memory-causal ablations.\n\n"
+            "The method design pipeline starts from memory pressure, selects a memory record schema, chooses a store family, defines write behavior, read behavior, update behavior, and controller interface, then designs memory-causal ablations. "
+            "The practical implication is that an implementation report should not stop at a memory-module diagram: it must state which record is written, which query reads it, and which action component consumes the result.\n\n"
             + "\n## Evaluation Protocol\n"
+            "Evaluation is where the survey's system lens becomes causal. "
+            "A memory claim is weak if it compares only final task success; it becomes stronger when the benchmark manipulates memory availability, correctness, freshness, capacity, and latency while holding perception and policy as stable as possible.\n\n"
             "| condition | purpose | expected evidence |\n| --- | --- | --- |\n| no-memory | checks reliance | success drop |\n| oracle-memory | estimates upper bound | recoverable failures |\n| wrong-memory | detects false recall | rejection or repair |\n\n"
+            "The table separates upper-bound evidence from negative controls. "
+            "No-memory tests show whether a system uses memory at all, while wrong-memory and stale-memory tests show whether it can avoid acting on misleading records.\n\n"
             "## Failure Modes\n"
+            "Failure modes turn the taxonomy into a research agenda. "
+            "They show where an apparently successful method family can break when records are stale, retrieval is plausible but wrong, or the controller ignores the retrieved state.\n\n"
             "| failure mode | cause | diagnostic test | design response |\n| --- | --- | --- | --- |\n| stale memory | outdated state | stale injection | update or decay |\n| ignored memory | weak interface | action attribution | tighter controller interface |\n\n"
+            "The implication is that robustness cannot be judged by a single success score. "
+            "A mature benchmark should reveal whether the failure occurred at record capture, retrieval, update, or controller integration.\n\n"
             "## Tutorial Glossary Table\n"
+            "The glossary is included to keep the article readable for newcomers while preserving precise distinctions among record, query, interface, and evaluation.\n\n"
             "| term | plain explanation |\n| --- | --- |\n| memory record | typed evidence used by future actions |\n| read key | query used to retrieve memory |\n\n"
+            "These terms recur throughout the review and prevent method families from being compared only by task label.\n\n"
             "## Node-Paper Matrix\n"
+            "The node-paper matrix compresses the detailed system-node cards into an article-facing synthesis. "
+            "It is used here to explain which papers instantiate a mechanism, which evidence they provide, and which failure mode remains open.\n\n"
             "| system node | representative papers | mechanism pattern | evaluation signal |\n| --- | --- | --- | --- |\n| capture | p1, p2 | event record | no-memory test |\n\n"
+            "This matrix is most useful when it is read together with the case studies: the matrix gives coverage, while the cases explain mechanisms.\n\n"
             "## Evidence Trace Table\n"
+            "The evidence trace keeps the review's claims grounded without exposing internal state files. "
+            "It summarizes the chain from claim to paper to evidence span and design lesson in article language.\n\n"
             "| claim | paper | evidence span | design lesson |\n| --- | --- | --- | --- |\n| memory changes action | p1 | no-memory ablation | expose controller interface |\n\n"
+            "The trace makes clear where the evidence is strong and where the survey is proposing a design implication rather than reporting a settled result.\n\n"
             "## Design Guidelines\n"
-            "Choose schema, store, read key, update policy, controller interface, and evaluation protocol before claiming memory contribution.\n\n"
+            "Choose schema, store, read key, update behavior, controller interface, and evaluation protocol before claiming memory contribution. "
+            "Compared with a generic module checklist, this guideline emphasizes dependencies: record schema constrains retrieval, retrieval constrains controller integration, and controller integration determines which ablation is meaningful.\n\n"
             "## Open Problems\n"
-            "Each open problem links an evidence gap to a benchmark or method move: dynamic update tests, privacy deletion, latency-aware control, and provenance-aware shared records.\n\n"
+            "Each open problem links an evidence gap to a benchmark or method move: dynamic update tests, privacy deletion, latency-aware control, and provenance-aware shared records. "
+            "The agenda is therefore concrete: define perturbations that isolate stale records, build benchmarks that report memory-causal ablations, and design interfaces that expose when a policy used or ignored retrieved state.\n\n"
             "## Critical Analysis\n"
             "Benchmark limitations, failure modes, trade-offs, and negative evidence show where method families disagree. "
             + filler
         )
+
+    def _artifact_dump_review_text(self, *, target: str = "full") -> str:
+        text = self._rich_review_text(target=target)
+        raw_examples = "\n".join(
+            f"### Worked example {i + 1}: Paper p1\n"
+            "- Problem: generic task description.\n"
+            "- Memory record: observation, action, timestamp.\n"
+            "- Write policy: records are written when available.\n"
+            "- Read policy: memory is read when needed.\n"
+            "- Update policy: update when new observations arrive.\n"
+            "- Controller interface: planner uses memory.\n"
+            "- Benchmark / task: arXiv and related task family.\n"
+            "- Ablation evidence: 本文要求把该工作放入 no-memory, oracle-memory, wrong-memory.\n"
+            "- Failure mode: 若原文没有完整报告，则将其作为证据缺口.\n"
+            "- Design lesson: The paper teaches that memory must be specified through record schema.\n"
+            for i in range(12 if target == "full" else 25)
+        )
+        return text + "\n\n## Raw Worked Example Dump\n" + raw_examples
 
     def _write_depth_outputs(self, task_dir: Path, *, target: str = "full") -> None:
         worked = []
@@ -522,19 +598,7 @@ class SurveyAutoResearchScriptsTest(unittest.TestCase):
                     )
                 )
             )
-            fact_rows = [
-                {
-                    "paper_id": f"p{i}",
-                    "method_family": "retrieval",
-                    "task_family": "agents",
-                    "benchmark_or_dataset": "Benchmark",
-                    "metrics": ["success"],
-                    "mechanism_or_contribution": "retrieval system",
-                    "ablations": ["no retrieval"],
-                    "limitations": "Limited scope.",
-                }
-                for i in range(12)
-            ]
+            fact_rows = derive_paper_facts(self._valid_paper_cards())
             (task_dir / "state/paper_facts.jsonl").write_text(
                 "".join(json.dumps(item) + "\n" for item in fact_rows)
             )
@@ -596,6 +660,8 @@ class SurveyAutoResearchScriptsTest(unittest.TestCase):
                 "logs/synthesis.jsonl",
                 "logs/verification.jsonl",
                 "outputs/review.md",
+                "outputs/review_body_draft.md",
+                "outputs/appendix.md",
                 "outputs/evidence_table.csv",
                 "outputs/references.bib",
                 "outputs/final_report.md",
@@ -980,7 +1046,7 @@ class SurveyAutoResearchScriptsTest(unittest.TestCase):
 
         self.assertFalse(result["valid"])
         self.assertIn("length", result["failed_checks"])
-        self.assertIn("worked_examples", result["failed_checks"])
+        self.assertIn("case_studies", result["failed_checks"])
         self.assertIn("benchmark_entries", result["failed_checks"])
         self.assertIn("method_families", result["failed_checks"])
 
@@ -989,7 +1055,82 @@ class SurveyAutoResearchScriptsTest(unittest.TestCase):
 
         self.assertTrue(result["valid"])
         self.assertGreaterEqual(result["h3_count"], 10)
-        self.assertGreaterEqual(result["worked_examples"], 12)
+        self.assertGreaterEqual(result["case_studies"], 4)
+
+    def test_validate_case_study_prose_rejects_raw_field_dump_in_review(self):
+        bad = (
+            "### Worked example: Paper p1\n\n"
+            "- Problem: generic task description.\n"
+            "- Memory record: observation, action, timestamp.\n"
+            "- Write policy: records are written when available.\n"
+            "- Read policy: memory is read when needed.\n"
+            "- Update policy: update when new observations arrive.\n"
+            "- Controller interface: planner uses memory.\n"
+            "- Benchmark / task: arXiv and related task family.\n"
+            "- Ablation evidence: 本文要求把该工作放入 no-memory controls.\n"
+            "- Failure mode: stale state.\n"
+            "- Design lesson: The paper teaches that memory must be specified through record schema.\n"
+        )
+
+        result = validate_case_study_prose(bad, target="full")
+
+        self.assertFalse(result["valid"])
+        self.assertIn("raw_field_labels", result["failed_checks"])
+        self.assertIn("banned_template_phrases", result["failed_checks"])
+
+        good = (
+            "### Case study: Paper p1 as spatial external memory\n\n"
+            "Paper p1 matters because it replaces an opaque recurrent state with a typed memory interface. "
+            "The mechanism writes observation and action evidence into a structured record, retrieves the record through a task-conditioned query, and passes the retrieved constraint to a planner. "
+            "Compared with a flat context buffer, this design makes the read and write boundaries inspectable.\n\n"
+            "The evaluation evidence is strongest when no-memory, oracle-memory, wrong-memory, and stale-memory controls are all reported. "
+            "Its limitation is that false recall can still be hidden by a strong controller, so the design lesson is to evaluate the memory object and the action interface together.\n"
+        )
+
+        result = validate_case_study_prose(good, target="full")
+
+        self.assertTrue(result["valid"])
+
+    def test_validate_table_interpretation_requires_explanatory_prose(self):
+        bad = (
+            "## Benchmark Landscape\n"
+            "Benchmarks are listed below.\n\n"
+            "| benchmark | metric | baseline |\n"
+            "| --- | --- | --- |\n"
+            "| B1 | success | no-memory |\n"
+            "## Next Section\n"
+            "More content.\n"
+        )
+
+        result = validate_table_interpretation(bad, target="full")
+
+        self.assertFalse(result["valid"])
+        self.assertIn("table_1 missing after-table interpretation", "\n".join(result["errors"]))
+
+        good = (
+            "## Benchmark Landscape\n"
+            "Benchmarks are compared by the memory claim they can isolate, not only by task family.\n\n"
+            "| benchmark | metric | baseline |\n"
+            "| --- | --- | --- |\n"
+            "| B1 | success | no-memory |\n\n"
+            "This table shows why the benchmark is useful: it separates final success from memory-causal evidence. "
+            "The comparison implies that wrong-memory and stale-memory controls are needed before the method claim is credible.\n"
+        )
+
+        result = validate_table_interpretation(good, target="full")
+
+        self.assertTrue(result["valid"])
+
+    def test_validate_publication_prose_rejects_artifact_dump_review(self):
+        result = validate_publication_prose(self._artifact_dump_review_text(target="full"), target="full")
+
+        self.assertFalse(result["valid"])
+        self.assertIn("case_study_prose", result["failed_checks"])
+        self.assertIn("raw_artifact_language", result["failed_checks"])
+
+        result = validate_publication_prose(self._rich_review_text(target="full"), target="full")
+
+        self.assertTrue(result["valid"])
 
     def test_validate_worked_examples_requires_mechanism_interface_and_evidence(self):
         bad = "### Worked example: Paper p1\n\n- Problem: too short\n"
@@ -1226,6 +1367,12 @@ class SurveyAutoResearchScriptsTest(unittest.TestCase):
             gates = evaluate_gates(task_dir, target="full")
 
             self.assertTrue(gates["all_blocking_gates_passed"])
+
+            (task_dir / "outputs/review.md").write_text(self._artifact_dump_review_text(target="full"))
+            gates = evaluate_gates(task_dir, target="full")
+
+            self.assertFalse(gates["gate_7_review_depth"]["passed"])
+            self.assertIn("publication prose", gates["gate_7_review_depth"]["failed_checks"])
 
     def test_full_survey_gate_requires_critical_analysis(self):
         with tempfile.TemporaryDirectory() as tmp:
