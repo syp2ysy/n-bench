@@ -16,9 +16,13 @@ Remove or rewrite:
 - 本文要求把该工作放入
 - 若原文没有完整报告，则将其作为证据缺口
 - artifact, dossier, paper card, node card, section card, state file, gate check, workflow log
+- system-object survey, primary survey type, secondary lenses, A-level/B-level/C-level, design signal, anchor evidence
+- 候选文献、深读文献、证据层级、调研设计、检索和筛选围绕、文献被分为
 - repeated field labels such as `Problem:`, `Memory record:`, `Write policy:`, `Read policy:`, `Update policy:`, `Controller interface:`, `Benchmark / task:`, `Design lesson:`
 
 Article prose may still refer to tables and sections, but the language should be scholarly rather than instructional.
+
+Article prose may discuss evidence limitations, but it must not expose private evidence-routing labels. Use calibrated scholarly wording instead of A/B/C labels, run counts, candidate counts, or survey-type-routing decisions.
 
 Prefer:
 - `Table 2 distinguishes method families by the memory object they maintain and by the failure modes their evaluations can reveal.`

@@ -43,6 +43,23 @@ RAW_ARTIFACT_PHRASES = [
     "otherwise memory cannot be distinguished",
     "paper id:",
     "benchmark / task:",
+    "system-object survey",
+    "primary survey type",
+    "secondary lenses",
+    "A-level",
+    "B-level",
+    "C-level",
+    "design signal",
+    "anchor evidence",
+    "evidence tier",
+    "evidence tiers",
+    "evidence ladder",
+    "候选文献",
+    "深读文献",
+    "证据层级",
+    "调研设计",
+    "检索和筛选围绕",
+    "文献被分为",
 ]
 
 SECTION_SKIP_TERMS = [

@@ -185,6 +185,7 @@ Gate 7 also rejects artifact-dump prose:
 - repeated raw worked-example labels in `review.md`;
 - "该工作在本文中被读作" or equivalent state-file phrasing;
 - "本节面向", "下面的表", "这个矩阵", "核心文献吸收矩阵", or equivalent lecture/scaffold wording;
+- internal article-boundary leaks such as `system-object survey`, `primary survey type`, `A-level/B-level/C-level`, `design signal`, `anchor evidence`, `候选文献`, `深读文献`, `证据层级`, `调研设计`, `检索和筛选围绕`, or `文献被分为`;
 - tables that are not introduced and interpreted;
 - sections that lack an opening thesis or closing implication;
 - duplicate headings, repeated template paragraphs, and padding-like extended synthesis;
@@ -193,7 +194,9 @@ Gate 7 also rejects artifact-dump prose:
 The full set of worked examples may live in `outputs/worked_examples.md` or `outputs/appendix.md`. `review.md` should use a smaller set of publication-facing case-study boxes. Full coverage belongs in `outputs/coverage_matrix.md`, not in a raw "core literature absorption matrix" inside the article.
 
 Gate 7 reports a review scorecard for debugging, but the blocking checks are depth, worked examples, benchmark/method/node artifacts, newcomer tutorial, card specificity, artifact absorption, publication prose, semantic repetition, and global coherence.
-Gate 7 also checks that `outputs/article_plan.md` follows `state/argument_graph.yml`; the scorecard is diagnostic and must not be used as a substitute for argument alignment.
+Gate 7 also checks that `outputs/article_plan.md` follows `state/argument_graph.yml` and declares `article_body_sections`, `article_displays`, `appendix_sections`, and `internal_only`. The scorecard is diagnostic and must not be used as a substitute for argument alignment or article-boundary validation.
+
+`review.md` must not contain a standalone survey-methodology, evidence-tier, or survey-type-routing section unless the user explicitly requested a systematic-review protocol in the article body. Search routes, evidence-tier labels, candidate counts, artifact-selection decisions, and run metadata belong in `outputs/appendix.md`, `outputs/final_report.md`, or state files.
 
 ## Qualitative Final Review
 

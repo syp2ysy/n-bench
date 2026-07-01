@@ -11,9 +11,11 @@ from pathlib import Path
 try:
     from .validate_argument_graph import validate_argument_graph
     from .validate_topic_diagnosis import parse_structured_text
+    from .validate_article_boundary import _find_plan_blocks
 except ImportError:  # pragma: no cover
     from validate_argument_graph import validate_argument_graph
     from validate_topic_diagnosis import parse_structured_text
+    from validate_article_boundary import _find_plan_blocks
 
 
 def _plain(text: str) -> str:
@@ -38,29 +40,23 @@ def validate_article_plan_alignment(plan_text: str, argument_graph_or_text) -> d
     graph_status = validate_argument_graph(graph)
     sections = [str(item) for item in (graph.get("section_order") or [])]
     has_order, missing_sections = _ordered_contains(plan_text, sections)
-    lower = plan_text.lower()
-    required_terms = {
-        "article-facing": ["article-facing", "article facing", "正文", "article body"],
-        "appendix-facing": ["appendix", "appendix-facing", "附录"],
-        "evidence": ["evidence", "证据", "mechanism card", "paper mechanism"],
-        "case boxes": ["case", "box", "案例", "机制解剖"],
-    }
-    missing_terms = [
-        name for name, terms in required_terms.items()
-        if not any(term in lower or term in plan_text for term in terms)
+    plan_blocks = _find_plan_blocks(plan_text)
+    missing_blocks = [
+        block for block in ("article_body_sections", "article_displays", "appendix_sections", "internal_only")
+        if not plan_blocks.get(block, "").strip()
     ]
     errors = []
     if not graph_status["valid"]:
         errors.append("invalid_argument_graph")
     if not has_order:
         errors.append("missing_or_unordered_sections:" + ",".join(missing_sections))
-    if missing_terms:
-        errors.append("missing_article_plan_terms:" + ",".join(missing_terms))
+    if missing_blocks:
+        errors.append("missing_article_plan_boundary_blocks:" + ",".join(missing_blocks))
     return {
         "valid": not errors,
         "errors": errors,
         "missing_sections": missing_sections,
-        "missing_terms": missing_terms,
+        "missing_plan_blocks": missing_blocks,
     }
 
 

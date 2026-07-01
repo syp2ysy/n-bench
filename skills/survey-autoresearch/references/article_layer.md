@@ -22,20 +22,19 @@ Write `state/topic_diagnosis.yml` and `state/argument_graph.yml` before `outputs
 
 It must specify:
 - central article thesis;
-- primary survey type, secondary lenses, and selected skeleton;
-- how the article section order follows the argument graph;
-- H2/H3 section order and the reader function of each major section;
-- selected article-facing tables, usually 3-6;
-- selected prose case-study boxes, usually 4-8;
-- appendix-facing exhaustive artifacts;
-- what must not enter `review.md`, including raw paper-card fields, full coverage matrices, and internal workflow notes.
+- `article_body_sections`: H2/H3 section order, reader function, argument node, and publication-facing section thesis.
+- `article_displays`: the 3-6 tables, figures, or prose case boxes allowed in `review.md`, each with a publication-facing title.
+- `appendix_sections`: survey protocol, exhaustive tables, coverage matrices, full worked examples, and other transparent but non-narrative material.
+- `internal_only`: survey type diagnosis, primary/secondary lenses, evidence tiers, search routes, run counts, artifact decisions, repair notes, gate status, and state-file terminology.
+
+The article plan is a private blueprint, not article source text. Only `article_body_sections` and `article_displays` can drive `review.md`; `appendix_sections` can drive `outputs/appendix.md`; `internal_only` must never be copied into `review.md`.
 
 ## Article-Facing Vs Appendix-Facing
 
 Article-facing:
 - a small number of synthesis tables that the prose interprets;
 - selective case-study boxes written as paragraphs;
-- benchmark selection guide or evidence ladder;
+- benchmark selection guide or calibrated evidence wording;
 - take-home findings.
 
 Appendix-facing:
@@ -46,11 +45,13 @@ Appendix-facing:
 - full coverage matrix.
 
 Internal-facing:
-- state files, logs, gate reports, review rounds, and raw extraction cards.
+- state files, logs, gate reports, review rounds, raw extraction cards, topic diagnosis, survey type labels, evidence tiers, search routes, run counts, and artifact-selection decisions.
 
 ## Integration Rule
 
 `review.md` should integrate selected artifacts, not paste all artifacts.
+
+Do not include a standalone methodology, evidence-tier, or survey-type-routing section in `review.md` unless the user explicitly requested a systematic-review protocol in the article body. For ordinary full/CSUR-style surveys, put search/screening details, A/B/C evidence tiers, candidate counts, and source-route notes in `outputs/appendix.md` or `outputs/final_report.md`. The article body may still position related surveys and calibrate claim strength through scholarly prose.
 
 Every major section must correspond to an argument node. If the article plan cannot explain which node a section realizes, repair `state/argument_graph.yml` or remove the section.
 

@@ -38,6 +38,7 @@ from scripts.validate_claim_evidence_spans import validate_claim_evidence_spans
 from scripts.validate_citation_identity import validate_citation_identity
 from scripts.validate_paper_summary_consistency import validate_paper_summary_consistency
 from scripts.validate_article_plan_alignment import validate_article_plan_alignment
+from scripts.validate_article_boundary import validate_article_boundary
 from scripts.derive_paper_cards_from_mechanism_cards import derive_paper_cards
 from scripts.derive_evidence_ladder import derive_evidence_ladder
 
@@ -658,20 +659,19 @@ class SurveyAutoResearchScriptsTest(unittest.TestCase):
         )
         (task_dir / "outputs/article_plan.md").write_text(
             "# Article Plan\n\n"
-            "## Section Order\n"
+            "## Article Body Sections\n"
             "- Tutorial Primer: Embodied Memory in One Running Example\n"
             "- System Model\n"
             "- Benchmark Landscape\n\n"
-            "## Article-facing selections\n"
-            "- Use the tutorial primer, system model, method taxonomy, benchmark landscape, evaluation protocol, and selected case-study boxes in review.md.\n"
-            "- Keep exhaustive worked examples, benchmark rows, method rows, and node-paper coverage in appendix-facing files.\n\n"
-            "## Evidence Sources\n"
-            "- Use paper mechanism cards, claim evidence spans, and benchmark evidence when selecting article-facing cases.\n\n"
+            "## Article Displays\n"
+            "- Use one system-model table, one method-taxonomy table, one benchmark-selection table, one evaluation-protocol table, and a small number of prose case-study boxes.\n\n"
+            "## Appendix Sections\n"
+            "- Keep exhaustive worked examples, benchmark rows, method rows, node-paper coverage, search protocol, and broad coverage in appendix-facing files.\n\n"
+            "## Internal Only\n"
+            "- Keep topic diagnosis, survey type routing, evidence tiers, source routes, run counts, repair notes, and state-file terminology outside review.md.\n\n"
             "## Section flow\n"
             "Each H2 opens with a thesis, compares mechanisms or benchmark signals in the body, and closes with a design or evaluation implication. "
             "The review should not paste structured extraction fields directly into article prose.\n\n"
-            "## Selected tables and boxes\n"
-            "Use one system-model table, one method-taxonomy table, one benchmark-selection table, one evaluation-protocol table, and a small number of prose case-study boxes.\n"
         )
         (task_dir / "outputs/coverage_matrix.md").write_text(
             "# Coverage Matrix\n\n"
@@ -1410,6 +1410,58 @@ class SurveyAutoResearchScriptsTest(unittest.TestCase):
         self.assertIn("raw_artifact_language", result["failed_checks"])
         self.assertIn("本节面向", result["raw_artifact_phrases"])
         self.assertIn("核心文献吸收矩阵", result["raw_artifact_phrases"])
+
+    def test_validate_article_boundary_rejects_internal_methodology_leakage(self):
+        plan = (
+            "# Article Plan\n\n"
+            "## Article Body Sections\n"
+            "- 引言\n- 系统模型\n- Benchmark Landscape\n\n"
+            "## Article Displays\n"
+            "- 系统节点表\n- benchmark selection guide\n\n"
+            "## Appendix Sections\n"
+            "- Search and screening protocol\n- Full coverage matrix\n\n"
+            "## Internal Only\n"
+            "- 本文采用 system-object survey 的结构。\n"
+            "- 文献被分为 A/B/C 证据层级。\n"
+        )
+        bad = (
+            "# Survey\n\n"
+            "## 调研设计、证据层级与相关综述定位\n"
+            "本文采用 system-object survey 的结构。检索和筛选围绕五类来源展开。"
+            "文献被分为 A/B/C 证据层级，其中 A-level 论文用于机制解剖，"
+            "部分前沿系统作为 design signal，并与 anchor evidence 区分。"
+        )
+
+        result = validate_article_boundary(bad, plan, target="full")
+
+        self.assertFalse(result["valid"])
+        self.assertIn("internal_planning_language", result["failed_checks"])
+        self.assertIn("appendix_or_internal_section_in_review", result["failed_checks"])
+        self.assertIn("system-object survey", result["leaked_terms"])
+
+    def test_validate_article_boundary_accepts_public_evidence_calibration(self):
+        plan = (
+            "# Article Plan\n\n"
+            "## Article Body Sections\n"
+            "- 引言\n- 系统模型\n- Benchmark Landscape\n\n"
+            "## Article Displays\n"
+            "- 系统节点表\n- benchmark selection guide\n\n"
+            "## Appendix Sections\n"
+            "- Search and screening protocol\n- Full coverage matrix\n\n"
+            "## Internal Only\n"
+            "- Keep topic diagnosis, source routes, and evidence tiers out of review.md.\n"
+        )
+        good = (
+            "# Survey\n\n"
+            "## 系统模型\n"
+            "新近系统提示了长期记忆与闭环控制结合的方向，但许多结果仍缺少 no-memory、"
+            "wrong-memory 和 stale-memory 消融。因此，本文在比较方法时区分已由 benchmark "
+            "稳定刻画的能力和仍需要进一步验证的设计假设。"
+        )
+
+        result = validate_article_boundary(good, plan, target="full")
+
+        self.assertTrue(result["valid"], result)
 
     def test_validate_semantic_repetition_rejects_repeated_headings_and_template_blocks(self):
         repeated = (
@@ -2665,9 +2717,10 @@ class SurveyAutoResearchScriptsTest(unittest.TestCase):
         }
         article_plan = (
             "# Article Plan\n\n"
-            "## Section Order\n- Introduction\n- System Model\n- Benchmarks\n\n"
-            "## Article-facing Evidence\nUse mechanism cards, benchmark landscape, and selected prose case boxes.\n\n"
-            "## Appendix-facing Artifacts\nMove exhaustive coverage matrices to appendix.\n"
+            "## Article Body Sections\n- Introduction\n- System Model\n- Benchmarks\n\n"
+            "## Article Displays\n- System model table\n- Benchmark selection guide\n\n"
+            "## Appendix Sections\n- Move exhaustive coverage matrices and search protocol to appendix.\n\n"
+            "## Internal Only\n- Keep topic diagnosis, evidence tiers, source routes, and state-file terminology out of review.md.\n"
         )
 
         self.assertTrue(validate_argument_graph(graph)["valid"])

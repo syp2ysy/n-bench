@@ -18,6 +18,7 @@ The article plan must decide:
 - which exhaustive tables belong in `outputs/appendix.md` or supporting artifacts;
 - which sections should explain methods, benchmarks, evidence, and open problems;
 - which internal notes, state artifacts, and raw matrices are forbidden from the article body.
+- which sections are article-body, appendix-only, and internal-only. Search routes, survey-type labels, evidence tiers, run counts, candidate counts, and repair notes are internal or appendix material by default.
 
 The draft must be written from:
 - `outputs/article_plan.md`;
@@ -77,8 +78,11 @@ Keep these in state files or appendices, not in the article body:
 - state filenames, draft version labels, workflow repair notes, or gate language.
 - "本节面向", "下面的表", "这个表的作用", "这个矩阵", "核心文献吸收矩阵", "本文如何使用它";
 - `artifact`, `dossier`, `paper card`, `node card`, `section card`, `state file`, or `gate check`.
+- "本文采用 system-object survey 的结构", `primary survey type`, `secondary lenses`, `A-level`, `B-level`, `C-level`, `design signal`, `anchor evidence`, `候选文献`, `深读文献`, `证据层级`, `调研设计`, `检索和筛选围绕`, or `文献被分为`.
 
 Publication prose can still say a study lacks a no-memory or wrong-memory control. Say it as an evidence limitation, not as an internal instruction.
+
+Publication prose can calibrate evidence strength, but it must do so without exposing internal labels. Prefer "新近系统提示了这一方向，但缺少闭环消融" over "this is a B-level design signal." Prefer "相关综述多以任务或模型族组织" over "本文采用 system-object survey."
 
 ## Final Coherence Pass
 

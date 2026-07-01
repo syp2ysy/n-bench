@@ -34,6 +34,7 @@ try:
     from .validate_citation_identity import validate_citation_identity
     from .validate_paper_summary_consistency import validate_paper_summary_consistency
     from .validate_article_plan_alignment import validate_article_plan_alignment
+    from .validate_article_boundary import validate_article_boundary
     from .review_scorecard import score_review
 except ImportError:  # pragma: no cover - used when run as a standalone script
     from coverage_report import build_coverage
@@ -61,6 +62,7 @@ except ImportError:  # pragma: no cover - used when run as a standalone script
     from validate_citation_identity import validate_citation_identity
     from validate_paper_summary_consistency import validate_paper_summary_consistency
     from validate_article_plan_alignment import validate_article_plan_alignment
+    from validate_article_boundary import validate_article_boundary
     from review_scorecard import score_review
 
 
@@ -803,6 +805,11 @@ def review_depth_readiness(task_dir: Path, target: str) -> dict:
     }
     absorption_status = validate_review_absorption(task_dir, target=target)
     publication_prose_status = validate_publication_prose(review_text, target=target)
+    article_boundary_status = validate_article_boundary(
+        review_text,
+        text_or_empty(outputs_dir / "article_plan.md"),
+        target=target,
+    )
     semantic_repetition_status = validate_semantic_repetition(review_text, target=target)
     global_coherence_status = validate_global_coherence(
         review_text,
@@ -825,6 +832,7 @@ def review_depth_readiness(task_dir: Path, target: str) -> dict:
         "card specificity": card_specificity_status["valid"],
         "artifact absorption": absorption_status["valid"],
         "publication prose": publication_prose_status["valid"],
+        "article boundary": article_boundary_status["valid"],
         "semantic repetition": semantic_repetition_status["valid"],
         "global coherence": global_coherence_status["valid"],
         "article plan alignment": article_plan_alignment_status["valid"],
@@ -845,6 +853,7 @@ def review_depth_readiness(task_dir: Path, target: str) -> dict:
         "card_specificity": card_specificity_status,
         "review_absorption": absorption_status,
         "publication_prose": publication_prose_status,
+        "article_boundary": article_boundary_status,
         "semantic_repetition": semantic_repetition_status,
         "global_coherence": global_coherence_status,
         "article_plan_alignment": article_plan_alignment_status,

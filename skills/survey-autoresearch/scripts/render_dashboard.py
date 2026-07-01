@@ -461,10 +461,13 @@ def render_gate_board(gates: dict) -> str:
             total = len(checks)
             passed = sum(1 for item in checks.values() if bool(item)) if isinstance(checks, dict) else 0
             depth = gate.get("review_depth", {})
+            boundary = gate.get("article_boundary", {})
+            boundary_label = "pass" if boundary.get("valid") else "fail"
             detail = (
                 f"<div class=\"muted\">checks {html_escape(passed)}/{html_escape(total)}</div>"
                 f"<div class=\"muted\">chars {html_escape(depth.get('chars', 0))}/"
                 f"{html_escape(depth.get('min_chars', 'n/a'))}</div>"
+                f"<div class=\"muted\">article boundary {html_escape(boundary_label)}</div>"
             )
         cards.append(
             f'<div class="card"><h3>{html_escape(label)}</h3>{gate_label(bool(gate.get("passed")))}{detail}</div>'

@@ -15,7 +15,7 @@ The design follows two required patterns:
 - Argument-first synthesis: build `state/topic_diagnosis.yml` and `state/argument_graph.yml` before `outputs/article_plan.md`; the final article must follow the selected survey architecture and argument graph. See `references/topic_diagnosis.md` and `references/argument_graph.md`.
 - Deep synthesis artifacts: for `target=full` and `target=csur`, build mechanism cards, compatibility paper cards, system-node cards, section cards, tutorial artifacts, worked examples, benchmark/method tables, section dossiers, and a conceptual framework before drafting. See `references/deep_synthesis_artifacts.md`, `references/final_review_absorption.md`, and `references/section_dossier_patterns.md`.
 - Publication prose translation: `outputs/review.md` must read like a mature survey article, not a pasted bundle of state artifacts. Translate dossiers, tables, and worked examples into article prose through `references/publication_prose_translation.md`.
-- Article layer: separate research artifacts, synthesis artifacts, and article-facing prose. Write `outputs/article_plan.md` before `outputs/review.md`; do not paste every table or worked example into the article body. See `references/article_layer.md`.
+- Article layer: separate research artifacts, synthesis artifacts, appendix methodology, internal planning, and article-facing prose. Write `outputs/article_plan.md` before `outputs/review.md`; the plan must declare article-body, article-display, appendix, and internal-only material. Do not paste survey-type labels, evidence tiers, search routes, run counts, raw tables, or worked-example fields into the article body. See `references/article_layer.md`.
 - Survey type routing: first decide primary survey type plus secondary lenses. Use the corresponding section grammar instead of forcing every survey into the same node model. See `references/survey_type_router.md`.
 - System-object survey adapter: if the topic names a system, architecture, memory, planner, world model, retrieval system, controller, interface, or comparable composed object, read `references/system_object_survey_adapter.md` before node-card construction.
 - CSUR-grade writing craft: for `target=csur`, imitate recent official ACM Computing Surveys exemplars through `references/csur_exemplar_patterns.md`, mine section rhetoric through `references/csur_rhetoric_mining.md`, then write both `state/csur_imitation_plan.md` and `state/csur_style_patterns.yml` before synthesis.
@@ -212,9 +212,10 @@ Run phases in this order, looping where gates fail:
 10. Phase 9: Argument graph and section planning. Build `state/argument_graph.yml`, `state/section_cards.jsonl`, `outputs/conceptual_framework.md`, and for CSUR `state/csur_style_patterns.yml`.
 11. Phase 10A: Artifact synthesis. Build tutorial artifacts, worked examples, benchmark landscape, method taxonomy, node-paper matrix, coverage matrix, evidence ladder, evaluation protocol, design guidelines, and section dossiers.
 12. Phase 10B: Article planning. Write `outputs/article_plan.md` aligned to `state/argument_graph.yml`.
-13. Phase 10C: Publication prose drafting. Draft `outputs/review_body_draft.md` only from the argument graph, article plan, section dossiers, selected prose case studies, interpreted tables, and CSUR paragraph patterns.
-14. Phase 10D: Evidence calibration and style pass. Repair unsupported paper summaries, over-strong claims, raw artifact language, repeated templates, and uninterpreted tables before final `outputs/review.md`.
-15. Phase 11: Peer review and sprint loop. Run newcomer, system architect, experimentalist, and CSUR stylist review passes; fix routed weaknesses and rerun gates.
+13. Phase 10C: Article boundary check. Mark each planned section/display as article-body, appendix-only, or internal-only; move survey protocols, evidence tiers, search routes, run metadata, and artifact-selection decisions out of the article body.
+14. Phase 10D: Publication prose drafting. Draft `outputs/review_body_draft.md` only from the argument graph, article-body plan, section dossiers, selected prose case studies, interpreted tables, and CSUR paragraph patterns.
+15. Phase 10E: Evidence calibration and style pass. Repair unsupported paper summaries, over-strong claims, article-boundary leaks, raw artifact language, repeated templates, and uninterpreted tables before final `outputs/review.md`.
+16. Phase 11: Peer review and sprint loop. Run newcomer, system architect, experimentalist, and CSUR stylist review passes; fix routed weaknesses and rerun gates.
 
 For the AutoResearch landscape and workflow borrowing rules, read `references/autoresearch_landscape.md`. For the literature pipeline, read `references/literature_pipeline.md`. For topic diagnosis and survey type routing, read `references/topic_diagnosis.md` and `references/survey_type_router.md`. For mechanism extraction and claim alignment, read `references/paper_mechanism_cards.md`, `references/claim_evidence_alignment.md`, and `references/evidence_verification.md`. For argument structure, read `references/argument_graph.md`. For system-object topics, read `references/system_object_survey_adapter.md`. For deep synthesis artifacts, read `references/deep_synthesis_artifacts.md`. For article-layer writing, read `references/article_layer.md`, `references/final_review_absorption.md`, `references/tutorial_survey_requirements.md`, `references/worked_example_patterns.md`, `references/benchmark_landscape_schema.md`, `references/method_taxonomy_schema.md`, `references/section_dossier_patterns.md`, `references/publication_prose_translation.md`, and `references/publication_prose_rules.md`. For section grammar, read `references/section_card_patterns.md`. For review-writing craft, read `references/review_writing_patterns.md`. For CSUR exemplars, read `references/csur_exemplar_patterns.md`, `references/csur_official_exemplars.yml`, and `references/csur_rhetoric_mining.md`. For reviewer routing, read `references/review_routing.md`. For completion criteria, read `references/completion_gates.md`.
 For visual progress reporting, read `references/html_dashboard.md`.
@@ -289,9 +290,9 @@ Worker roles describe responsibilities. They are true separate agents only when 
 - Section Planner: write `section_cards.jsonl`.
 - Framework Writer: write `outputs/conceptual_framework.md`.
 - CSUR Rhetoric Miner: write `state/csur_style_patterns.yml` from selected official exemplars.
-- Article Planner: write `outputs/article_plan.md`; decide what belongs in `review.md`, `appendix.md`, and supporting outputs.
+- Article Planner: write `outputs/article_plan.md`; separate `article_body_sections`, `article_displays`, `appendix_sections`, and `internal_only` material before drafting.
 - Publication Prose Writer: draft `review_body_draft.md` only from article plan, section dossiers, article-facing matrices, selected prose case studies, tutorial artifacts, and CSUR paragraph patterns.
-- Synthesizer: produce final `review.md` after the publication prose and global coherence passes. Do not paste raw paper-card fields, worked-example bullet labels, coverage matrices, or state-artifact language into the review body.
+- Synthesizer: produce final `review.md` after the article-boundary, publication-prose, and global-coherence passes. Do not paste raw paper-card fields, worked-example bullet labels, coverage matrices, survey-type labels, evidence tiers, search routes, run counts, or state-artifact language into the review body.
 - Reviewer: score independently and route weaknesses.
 - Heartbeat: update liveness only; do not modify business state.
 
@@ -315,6 +316,7 @@ Worker roles describe responsibilities. They are true separate agents only when 
 - `scripts/validate_citation_identity.py`: verify A/B paper identity and verification status.
 - `scripts/validate_paper_summary_consistency.py`: reject unsupported baseline, ablation, result, and role claims.
 - `scripts/validate_article_plan_alignment.py`: verify article plan follows the argument graph.
+- `scripts/validate_article_boundary.py`: verify internal planning, survey-type routing, evidence tiers, search routes, and run metadata stay out of `review.md`.
 - `scripts/validate_paper_cards.py`: verify deep paper-card schema.
 - `scripts/validate_node_cards.py`: verify system-node cards.
 - `scripts/validate_section_cards.py`: verify argument-driven section cards.
