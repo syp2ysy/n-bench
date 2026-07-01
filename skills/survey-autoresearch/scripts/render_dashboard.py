@@ -434,8 +434,12 @@ def render_gate_board(gates: dict) -> str:
             detail = f"<div class=\"muted\">valid claims {html_escape(validation.get('valid_claims', 0))}</div>"
         elif gate_id == "gate_5_deep_synthesis":
             checks = gate.get("checks", [])
-            total = len(checks)
-            passed = sum(1 for item in checks if item.get("passed"))
+            if isinstance(checks, dict):
+                total = len(checks)
+                passed = sum(1 for item in checks.values() if bool(item))
+            else:
+                total = len(checks)
+                passed = sum(1 for item in checks if isinstance(item, dict) and item.get("passed"))
             detail = f"<div class=\"muted\">checks {html_escape(passed)}/{html_escape(total)}</div>"
         cards.append(
             f'<div class="card"><h3>{html_escape(label)}</h3>{gate_label(bool(gate.get("passed")))}{detail}</div>'
