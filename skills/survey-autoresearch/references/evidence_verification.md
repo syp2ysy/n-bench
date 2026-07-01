@@ -18,7 +18,13 @@ Each major claim belongs in `state/claims.jsonl`:
 }
 ```
 
-## Paper-Card Schema
+## Paper-Mechanism Card Schema
+
+For `target=full` and `target=csur`, `state/paper_mechanism_cards.jsonl` is the canonical deep extraction layer. It must explain each A-level paper as a scientific contribution: motivation, task, benchmark/environment, method pipeline, implementation details, experiments, results, limitations, relationship to prior work, and how it changes the survey argument.
+
+Read `references/paper_mechanism_cards.md` before extraction.
+
+## Compatibility Paper-Card Schema
 
 For `target=full` and `target=csur`, every A/B paper in `state/citation_plan.jsonl` needs a deep record in `state/paper_cards.jsonl`. This is the canonical extraction layer for synthesis:
 
@@ -51,6 +57,12 @@ For `target=full` and `target=csur`, every A/B paper in `state/citation_plan.jso
 
 The extractor may adapt field names to the topic, but the card must still capture role, mechanism, system node or component, interface, evaluation signal, failure/limitation, and the lesson used by the survey.
 
+When `state/paper_mechanism_cards.jsonl` exists, prefer deriving compatibility paper cards:
+
+```bash
+python3 scripts/derive_paper_cards_from_mechanism_cards.py --paper-mechanism-cards state/paper_mechanism_cards.jsonl --output state/paper_cards.jsonl
+```
+
 ## CSUR Paper-Fact Schema
 
 For compatibility and compact tables, keep `state/paper_facts.jsonl`. It is a derived artifact, not a second source of truth. Prefer:
@@ -80,16 +92,19 @@ Use paper facts as compact sources for benchmark and method synthesis tables. Do
 
 - Every important claim in `review.md` must map to at least one claim record.
 - For `target=full` and `target=csur`, claim records must trace to paper-card fields such as mechanism, interface, evidence spans, or `what_it_teaches_the_survey`; a bare paper ID is not enough.
+- For `target=full` and `target=csur`, important method/result/benchmark/comparison claims must also appear in `state/claim_evidence_spans.jsonl` with paper ID, section/page/table note, evidence summary, support type, and strength.
 - Claim strength must not exceed evidence strength.
 - Numbers, dates, venues, benchmark scores, and model names must be source-backed.
 - If a number cannot be verified, omit it or mark it source-limited.
 - Do not cite a paper for a claim it does not support.
 - For `target=csur`, do not use an A/B paper in a synthesis table unless its `paper_cards.jsonl` and `paper_facts.jsonl` records have the required fields.
 
-For standalone claim validation in full/CSUR runs, pass paper cards:
+For standalone claim validation in full/CSUR runs, pass paper cards and mechanism cards:
 
 ```bash
 python3 scripts/validate_claims.py --claims state/claims.jsonl --papers state/papers.jsonl --paper-cards state/paper_cards.jsonl
+python3 scripts/validate_claim_evidence_spans.py --claims state/claim_evidence_spans.jsonl --paper-mechanism-cards state/paper_mechanism_cards.jsonl
+python3 scripts/validate_paper_summary_consistency.py --paper-mechanism-cards state/paper_mechanism_cards.jsonl
 ```
 
 ## Strength Ladder
@@ -112,6 +127,17 @@ Every batch of 20 citations must be checked for:
 - DOI, arXiv, OpenReview, DBLP, or official page URL where available.
 
 Write verification decisions to `logs/verification.jsonl`.
+
+For full/CSUR targets:
+- A/B papers must be identity verified before supporting review-body claims.
+- C-level papers should be at least 90% verified for broad coverage.
+- Unverified papers may remain in recall state, but cannot support final synthesis.
+
+Run:
+
+```bash
+python3 scripts/validate_citation_identity.py --papers state/papers.jsonl --citation-plan state/citation_plan.jsonl --target full
+```
 
 ## Source-Limited Areas
 

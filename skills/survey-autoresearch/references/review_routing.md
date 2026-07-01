@@ -54,6 +54,13 @@ Calibration:
 | Critical analysis missing | Evidence extraction and synthesis repair |
 | No failure modes, disagreements, or negative evidence | Contradiction-first search and synthesis repair |
 | Claims too strong | Evidence verification and hedge downgrade |
+| A/B papers lack motivation/task/method/experiment/result extraction | Paper-mechanism-card repair |
+| Paper mechanism card claims unsupported baselines, ablations, or results | Paper-summary consistency repair |
+| Important claim lacks evidence span or support strength | Claim-evidence-span repair |
+| Unverified paper supports review-body claim | Citation identity repair or remove claim |
+| Section order feels modular rather than argumentative | Argument-graph repair |
+| Article plan does not follow argument graph | Article-plan alignment repair |
+| Topic is forced into the wrong survey template | Topic diagnosis repair |
 | Tables incomparable | Synthesis table rebuild |
 | Paper cards generic or missing mechanism | Paper-card extraction repair |
 | A/B papers missing paper cards | Paper-card coverage repair |

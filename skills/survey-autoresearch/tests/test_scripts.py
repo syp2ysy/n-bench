@@ -31,6 +31,15 @@ from scripts.validate_table_interpretation import validate_table_interpretation
 from scripts.validate_publication_prose import validate_publication_prose
 from scripts.validate_semantic_repetition import validate_semantic_repetition
 from scripts.validate_global_coherence import validate_global_coherence
+from scripts.validate_topic_diagnosis import validate_topic_diagnosis
+from scripts.validate_argument_graph import validate_argument_graph
+from scripts.validate_paper_mechanism_cards import validate_paper_mechanism_cards
+from scripts.validate_claim_evidence_spans import validate_claim_evidence_spans
+from scripts.validate_citation_identity import validate_citation_identity
+from scripts.validate_paper_summary_consistency import validate_paper_summary_consistency
+from scripts.validate_article_plan_alignment import validate_article_plan_alignment
+from scripts.derive_paper_cards_from_mechanism_cards import derive_paper_cards
+from scripts.derive_evidence_ladder import derive_evidence_ladder
 
 
 class SurveyAutoResearchScriptsTest(unittest.TestCase):
@@ -240,6 +249,178 @@ class SurveyAutoResearchScriptsTest(unittest.TestCase):
                 "closing_move": "Return to design and evaluation implications for later method sections.",
                 "required_display_item": "System node table",
             }
+        ]
+
+    def _valid_topic_diagnosis(self) -> str:
+        return (
+            "primary_survey_type: system-object\n"
+            "secondary_lenses:\n"
+            "  - benchmark/evaluation\n"
+            "  - method-family\n"
+            "domain_pressures:\n"
+            "  - partial observability\n"
+            "  - closed-loop control\n"
+            "evidence_norm:\n"
+            "  preprint_heavy: true\n"
+            "  benchmark_fragmentation: high\n"
+            "recommended_structure:\n"
+            "  - foundations\n"
+            "  - system model\n"
+            "  - method families\n"
+            "  - benchmark landscape\n"
+            "  - evaluation protocol\n"
+            "excluded_templates:\n"
+            "  - pure chronological history\n"
+            "section_grammar:\n"
+            "  Introduction:\n"
+            "    - field shift\n"
+            "    - gap\n"
+            "    - framework\n"
+            "    - contributions\n"
+            "  Method Families:\n"
+            "    - bottleneck\n"
+            "    - mechanism\n"
+            "    - comparison\n"
+            "    - benchmark tie\n"
+            "    - implication\n"
+            "  Benchmarks:\n"
+            "    - capability\n"
+            "    - protocol\n"
+            "    - metric\n"
+            "    - baseline\n"
+            "    - confounder\n"
+        )
+
+    def _valid_argument_graph(self) -> str:
+        return json.dumps(
+            {
+                "central_thesis": "Memory is an interface between records, operations, controllers, and evaluation.",
+                "field_shift": "Agent systems are moving from short tasks to long-horizon deployment.",
+                "gap_in_existing_surveys": "Task-first views fragment mechanisms, benchmarks, and evidence.",
+                "argument_nodes": {
+                    "A1": {
+                        "claim": "Existing task-centered views fragment memory mechanisms.",
+                        "evidence": ["related_surveys"],
+                        "leads_to": ["A2"],
+                        "section": "Tutorial Primer: Embodied Memory in One Running Example",
+                        "strength": "suggests",
+                    },
+                    "A2": {
+                        "claim": "A system model connects records, retrieval, update, and evaluation.",
+                        "evidence": ["system_node_cards"],
+                        "leads_to": ["A3"],
+                        "section": "System Model",
+                        "strength": "shows",
+                    },
+                    "A3": {
+                        "claim": "Benchmarks operationalize different memory claims.",
+                        "evidence": ["benchmark_landscape"],
+                        "leads_to": [],
+                        "section": "Benchmark Landscape",
+                        "strength": "shows",
+                    },
+                },
+                "section_order": [
+                    "Tutorial Primer: Embodied Memory in One Running Example",
+                    "System Model",
+                    "Benchmark Landscape",
+                ],
+                "takeaway_findings": ["Memory claims require causal ablations."],
+            }
+        )
+
+    def _valid_paper_mechanism_cards(self) -> list[dict]:
+        return [
+            {
+                "paper_id": "p1",
+                "title": "Foundational System Paper",
+                "venue_status": "peer-reviewed",
+                "level": "A",
+                "survey_role": "foundational",
+                "system_node": "state capture",
+                "motivation": "The paper addresses partial observability in long-horizon planning.",
+                "problem_setting": "Planning under hidden state across interactions.",
+                "task_definition": "Input observation and goal; output planner action.",
+                "benchmark_or_environment": ["planning benchmark"],
+                "method_overview": "Introduces typed memory records that are retrieved before planning.",
+                "architecture_or_pipeline": ["observe", "write typed record", "retrieve by task", "plan action"],
+                "memory_design": {
+                    "record_schema": ["observation", "action", "time", "provenance"],
+                    "write_trigger": "event boundary",
+                    "storage": "structured record store",
+                    "read_key": "task-conditioned query",
+                    "update_policy": "summarize repeated episodes",
+                    "controller_interface": "planner reads retrieved state before action selection",
+                },
+                "implementation_details": {
+                    "model_backbone": "visual encoder",
+                    "retriever_or_map": "structured memory retrieval",
+                    "planner_or_policy": "symbolic planner",
+                    "training_or_inference_setup": "inference-time retrieval",
+                },
+                "experimental_setup": {
+                    "datasets_envs": ["planning benchmark"],
+                    "metrics": ["task success"],
+                    "baselines": ["no memory"],
+                    "ablations": ["no retrieval"],
+                },
+                "main_results": [
+                    {
+                        "claim": "Typed retrieval improves task success over no memory.",
+                        "evidence": "Section 4 and Table 2 report no memory and no retrieval comparisons.",
+                        "strength": "shows",
+                    }
+                ],
+                "limitations_and_confounders": ["limited dynamic updates"],
+                "comparison_to_prior_work": "Extends unstructured recurrent state with typed records.",
+                "how_it_changes_the_survey_argument": "Shows that memory claims need a visible record and controller interface.",
+                "evidence_spans": ["Section 4 and Table 2 report no memory and no retrieval comparisons."],
+            },
+            {
+                "paper_id": "p2",
+                "title": "Benchmark System Paper",
+                "venue_status": "peer-reviewed",
+                "level": "B",
+                "survey_role": "benchmark",
+                "system_node": "evaluation",
+                "motivation": "The paper separates memory quality from aggregate task success.",
+                "problem_setting": "Diagnostic evaluation of memory correctness and freshness.",
+                "task_definition": "Input stored records and query; output answer or diagnostic score.",
+                "benchmark_or_environment": ["diagnostic benchmark"],
+                "method_overview": "Introduces benchmark conditions that perturb oracle memory, wrong memory, and stale memory.",
+                "architecture_or_pipeline": ["construct memory condition", "run task", "measure diagnostic failure"],
+                "memory_design": {
+                    "record_schema": ["record", "condition", "provenance"],
+                    "write_trigger": "controlled benchmark injection",
+                    "storage": "diagnostic memory table",
+                    "read_key": "oracle, wrong, or stale condition",
+                    "update_policy": "benchmark-controlled manipulation",
+                    "controller_interface": "evaluation harness controls memory availability",
+                },
+                "implementation_details": {
+                    "model_backbone": "benchmark harness",
+                    "retriever_or_map": "controlled retriever",
+                    "planner_or_policy": "tested system",
+                    "training_or_inference_setup": "evaluation-time perturbation",
+                },
+                "experimental_setup": {
+                    "datasets_envs": ["diagnostic benchmark"],
+                    "metrics": ["accuracy", "failure recovery"],
+                    "baselines": ["oracle memory", "wrong memory"],
+                    "ablations": ["stale memory injection"],
+                },
+                "main_results": [
+                    {
+                        "claim": "Diagnostic conditions reveal false recall and stale-memory failures.",
+                        "evidence": "Table 2 defines oracle memory, wrong memory, and stale memory injection settings.",
+                        "strength": "shows",
+                    }
+                ],
+                "limitations_and_confounders": ["synthetic benchmark scope"],
+                "comparison_to_prior_work": "Complements task success benchmarks with controlled memory perturbations.",
+                "how_it_changes_the_survey_argument": "Shows why evaluation needs memory-specific negative controls.",
+                "evidence_spans": ["Table 2 defines oracle memory, wrong memory, and stale memory injection settings."],
+            },
         ]
 
     def _rich_review_text(self, *, target: str = "full") -> str:
@@ -477,9 +658,15 @@ class SurveyAutoResearchScriptsTest(unittest.TestCase):
         )
         (task_dir / "outputs/article_plan.md").write_text(
             "# Article Plan\n\n"
+            "## Section Order\n"
+            "- Tutorial Primer: Embodied Memory in One Running Example\n"
+            "- System Model\n"
+            "- Benchmark Landscape\n\n"
             "## Article-facing selections\n"
             "- Use the tutorial primer, system model, method taxonomy, benchmark landscape, evaluation protocol, and selected case-study boxes in review.md.\n"
             "- Keep exhaustive worked examples, benchmark rows, method rows, and node-paper coverage in appendix-facing files.\n\n"
+            "## Evidence Sources\n"
+            "- Use paper mechanism cards, claim evidence spans, and benchmark evidence when selecting article-facing cases.\n\n"
             "## Section flow\n"
             "Each H2 opens with a thesis, compares mechanisms or benchmark signals in the body, and closes with a design or evaluation implication. "
             "The review should not paste structured extraction fields directly into article prose.\n\n"
@@ -512,6 +699,11 @@ class SurveyAutoResearchScriptsTest(unittest.TestCase):
             )
 
     def _write_deep_artifacts(self, task_dir: Path, *, include_csur_style: bool = False) -> None:
+        (task_dir / "state/topic_diagnosis.yml").write_text(self._valid_topic_diagnosis())
+        (task_dir / "state/argument_graph.yml").write_text(self._valid_argument_graph())
+        (task_dir / "state/paper_mechanism_cards.jsonl").write_text(
+            "".join(json.dumps(item) + "\n" for item in self._valid_paper_mechanism_cards())
+        )
         (task_dir / "state/paper_cards.jsonl").write_text(
             "".join(json.dumps(item) + "\n" for item in self._valid_paper_cards())
         )
@@ -555,7 +747,18 @@ class SurveyAutoResearchScriptsTest(unittest.TestCase):
         (task_dir / "outputs").mkdir()
         (task_dir / "logs").mkdir()
         papers = [
-            {"paper_id": f"p{i}", "verified": True, "accepted": i < 60}
+            {
+                "paper_id": f"p{i}",
+                "title": f"Verified Paper {i}",
+                "authors": [f"Author {i}"],
+                "year": 2025,
+                "venue_status": "peer-reviewed" if i < 60 else "arxiv",
+                "doi": f"10.1000/{i}",
+                "verified_sources": ["doi"],
+                "verification_status": "verified",
+                "verified": True,
+                "accepted": i < 60,
+            }
             for i in range(160)
         ]
         citation_plan = [
@@ -587,6 +790,27 @@ class SurveyAutoResearchScriptsTest(unittest.TestCase):
         )
         (task_dir / "state/claims.jsonl").write_text(
             "".join(json.dumps(item) + "\n" for item in claims)
+        )
+        (task_dir / "state/claim_evidence_spans.jsonl").write_text(
+            json.dumps(
+                {
+                    "claim_id": "c1",
+                    "claim": "A supported claim.",
+                    "claim_type": "method",
+                    "paper_ids": ["p1"],
+                    "strength": "suggests",
+                    "evidence_spans": [
+                        {
+                            "paper_id": "p1",
+                            "section_or_page": "Section 4",
+                            "evidence_summary": "Section 4 reports the mechanism and no-memory comparison.",
+                            "supports": "direct",
+                            "strength": "shows",
+                        }
+                    ],
+                }
+            )
+            + "\n"
         )
         (task_dir / "state/taxonomy.md").write_text(
             "# Taxonomy\n\nAxis 1 x Axis 2\n\n## Gap Analysis\nMissing cells reveal opportunities.\n"
@@ -665,7 +889,12 @@ class SurveyAutoResearchScriptsTest(unittest.TestCase):
                 "state/lqs_scores.jsonl",
                 "state/citation_plan.jsonl",
                 "state/claims.jsonl",
+                "state/claim_evidence_spans.jsonl",
+                "state/paper_mechanism_cards.jsonl",
                 "state/taxonomy.md",
+                "state/topic_diagnosis.yml",
+                "state/argument_graph.yml",
+                "state/paper_summary_consistency.jsonl",
                 "state/csur_imitation_plan.md",
                 "state/csur_style_patterns.yml",
                 "state/csur_paragraph_patterns.yml",
@@ -695,6 +924,7 @@ class SurveyAutoResearchScriptsTest(unittest.TestCase):
             "outputs/references.bib",
             "outputs/final_report.md",
             "outputs/coverage_matrix.md",
+            "outputs/evidence_ladder.md",
                 "outputs/conceptual_framework.md",
                 "outputs/glossary.md",
                 "outputs/running_example.md",
@@ -1457,7 +1687,18 @@ class SurveyAutoResearchScriptsTest(unittest.TestCase):
             (task_dir / "state").mkdir()
             (task_dir / "outputs").mkdir()
             papers = [
-                {"paper_id": f"p{i}", "verified": True, "accepted": i < 60}
+                {
+                    "paper_id": f"p{i}",
+                    "title": f"Verified Paper {i}",
+                    "authors": [f"Author {i}"],
+                    "year": 2025,
+                    "venue_status": "peer-reviewed" if i < 60 else "arxiv",
+                    "doi": f"10.1000/full-{i}",
+                    "verified_sources": ["doi"],
+                    "verification_status": "verified",
+                    "verified": True,
+                    "accepted": i < 60,
+                }
                 for i in range(160)
             ]
             citation_plan = [
@@ -1481,6 +1722,27 @@ class SurveyAutoResearchScriptsTest(unittest.TestCase):
             )
             (task_dir / "state/claims.jsonl").write_text(
                 "".join(json.dumps(item) + "\n" for item in claims)
+            )
+            (task_dir / "state/claim_evidence_spans.jsonl").write_text(
+                json.dumps(
+                    {
+                        "claim_id": "c1",
+                        "claim": "A supported claim.",
+                        "claim_type": "method",
+                        "paper_ids": ["p1"],
+                        "strength": "suggests",
+                        "evidence_spans": [
+                            {
+                                "paper_id": "p1",
+                                "section_or_page": "Section 4",
+                                "evidence_summary": "Section 4 provides evidence text.",
+                                "supports": "direct",
+                                "strength": "shows",
+                            }
+                        ],
+                    }
+                )
+                + "\n"
             )
             (task_dir / "state/taxonomy.md").write_text(
                 "# Taxonomy\n\nAxis 1 x Axis 2\n\n## Gap Analysis\nMissing cells reveal opportunities.\n"
@@ -1788,7 +2050,18 @@ class SurveyAutoResearchScriptsTest(unittest.TestCase):
             task_dir = Path(tmp)
             self._write_full_survey_fixture(task_dir)
             papers = [
-                {"paper_id": f"p{i}", "verified": True, "accepted": i < 10, "venue_status": "preprint"}
+                {
+                    "paper_id": f"p{i}",
+                    "title": f"Preprint Paper {i}",
+                    "authors": [f"Author {i}"],
+                    "year": 2026,
+                    "venue_status": "preprint",
+                    "arxiv_id": f"2601.{i:05d}",
+                    "verified_sources": ["arxiv"],
+                    "verification_status": "verified",
+                    "verified": True,
+                    "accepted": i < 10,
+                }
                 for i in range(160)
             ]
             (task_dir / "state/papers.jsonl").write_text(
@@ -1809,7 +2082,18 @@ class SurveyAutoResearchScriptsTest(unittest.TestCase):
             (task_dir / "state").mkdir()
             (task_dir / "outputs").mkdir()
             papers = [
-                {"paper_id": f"p{i}", "verified": True, "accepted": i < 80}
+                {
+                    "paper_id": f"p{i}",
+                    "title": f"Verified CSUR Paper {i}",
+                    "authors": [f"Author {i}"],
+                    "year": 2025,
+                    "venue_status": "peer-reviewed" if i < 80 else "arxiv",
+                    "doi": f"10.1000/csur-{i}",
+                    "verified_sources": ["doi"],
+                    "verification_status": "verified",
+                    "verified": True,
+                    "accepted": i < 80,
+                }
                 for i in range(160)
             ]
             citation_plan = [
@@ -1843,6 +2127,34 @@ class SurveyAutoResearchScriptsTest(unittest.TestCase):
             (task_dir / "state/claims.jsonl").write_text(
                 "".join(json.dumps(item) + "\n" for item in claims)
             )
+            (task_dir / "state/claim_evidence_spans.jsonl").write_text(
+                json.dumps(
+                    {
+                        "claim_id": "c1",
+                        "claim": "A supported synthesis claim.",
+                        "claim_type": "taxonomy",
+                        "paper_ids": ["p1", "p2"],
+                        "strength": "suggests",
+                        "evidence_spans": [
+                            {
+                                "paper_id": "p1",
+                                "section_or_page": "Section 4",
+                                "evidence_summary": "Section 4 supports the synthesis claim.",
+                                "supports": "direct",
+                                "strength": "shows",
+                            },
+                            {
+                                "paper_id": "p2",
+                                "section_or_page": "Table 2",
+                                "evidence_summary": "Table 2 supports the benchmark side of the claim.",
+                                "supports": "direct",
+                                "strength": "shows",
+                            },
+                        ],
+                    }
+                )
+                + "\n"
+            )
             (task_dir / "state/taxonomy.md").write_text(
                 "# Taxonomy\n\nAxis 1 x Axis 2\n\n## Gap Analysis\nMissing cells reveal opportunities.\n"
             )
@@ -1874,12 +2186,21 @@ class SurveyAutoResearchScriptsTest(unittest.TestCase):
                 + "".join(f"| S{i} | topic | gap | new taxonomy and evidence table |\n" for i in range(8))
             )
             full_cards = []
+            full_mechanism_cards = []
             for i in range(12):
                 card = dict(self._valid_paper_cards()[0])
                 card["paper_id"] = f"p{i}"
                 full_cards.append(card)
+                mechanism_card = json.loads(json.dumps(self._valid_paper_mechanism_cards()[0]))
+                mechanism_card["paper_id"] = f"p{i}"
+                mechanism_card["title"] = f"Mechanism Paper {i}"
+                mechanism_card["level"] = "A" if i < 8 else "B"
+                full_mechanism_cards.append(mechanism_card)
             (task_dir / "state/paper_cards.jsonl").write_text(
                 "".join(json.dumps(item) + "\n" for item in full_cards)
+            )
+            (task_dir / "state/paper_mechanism_cards.jsonl").write_text(
+                "".join(json.dumps(item) + "\n" for item in full_mechanism_cards)
             )
             (task_dir / "state/paper_facts.jsonl").write_text(
                 "".join(json.dumps(item) + "\n" for item in derive_paper_facts(full_cards))
@@ -1899,6 +2220,9 @@ class SurveyAutoResearchScriptsTest(unittest.TestCase):
             self._write_deep_artifacts(task_dir, include_csur_style=True)
             (task_dir / "state/paper_cards.jsonl").write_text(
                 "".join(json.dumps(item) + "\n" for item in full_cards)
+            )
+            (task_dir / "state/paper_mechanism_cards.jsonl").write_text(
+                "".join(json.dumps(item) + "\n" for item in full_mechanism_cards)
             )
             (task_dir / "state/paper_facts.jsonl").write_text(
                 "".join(json.dumps(item) + "\n" for item in derive_paper_facts(full_cards))
@@ -2194,6 +2518,208 @@ class SurveyAutoResearchScriptsTest(unittest.TestCase):
                 render_dashboard(task_dir)
 
             self.assertIn("Malformed JSON", str(raised.exception))
+
+    def test_topic_diagnosis_requires_primary_secondary_and_section_grammar(self):
+        shallow = {
+            "primary_survey_type": "system-object",
+        }
+        rich = {
+            "primary_survey_type": "system-object",
+            "secondary_lenses": ["benchmark/evaluation", "method-family"],
+            "domain_pressures": ["partial observability", "closed-loop control"],
+            "evidence_norm": {"preprint_heavy": True, "benchmark_fragmentation": "high"},
+            "recommended_structure": ["foundations", "system model", "method families", "benchmark landscape", "evaluation protocol"],
+            "excluded_templates": ["pure chronological history"],
+            "section_grammar": {
+                "Introduction": ["field shift", "gap", "framework", "contributions"],
+                "Method Families": ["bottleneck", "mechanism", "comparison", "benchmark tie", "implication"],
+                "Benchmarks": ["capability", "protocol", "metric", "baseline", "confounder"],
+            },
+        }
+
+        self.assertFalse(validate_topic_diagnosis(shallow)["valid"])
+        self.assertTrue(validate_topic_diagnosis(rich)["valid"])
+
+    def test_paper_mechanism_cards_require_scientific_contribution_chain(self):
+        shallow = [
+            {
+                "paper_id": "p1",
+                "title": "Memory System",
+                "survey_role": "method",
+                "method_overview": "Uses memory.",
+            }
+        ]
+        rich = [
+            {
+                "paper_id": "p1",
+                "title": "Memory System",
+                "venue_status": "peer-reviewed",
+                "level": "A",
+                "survey_role": "method",
+                "motivation": "The paper addresses partial observability in long-horizon control.",
+                "problem_setting": "Object-goal navigation with hidden state across episodes.",
+                "task_definition": "Input observations and goal query; output navigation action.",
+                "benchmark_or_environment": ["EnvBench"],
+                "method_overview": "The system writes typed object-location records and retrieves them before planning.",
+                "architecture_or_pipeline": ["detect object", "write record", "retrieve by goal", "plan action"],
+                "memory_design": {
+                    "record_schema": ["object", "place", "time", "confidence"],
+                    "write_trigger": "object observation",
+                    "storage": "spatial-temporal store",
+                    "read_key": "object goal plus room",
+                    "update_policy": "revise stale records",
+                    "controller_interface": "planner receives retrieved goal constraint",
+                },
+                "implementation_details": {
+                    "model_backbone": "visual encoder",
+                    "retriever_or_map": "semantic map",
+                    "planner_or_policy": "planner",
+                    "training_or_inference_setup": "inference-time retrieval",
+                },
+                "experimental_setup": {
+                    "datasets_envs": ["EnvBench"],
+                    "metrics": ["success"],
+                    "baselines": ["no memory"],
+                    "ablations": ["no retrieval"],
+                },
+                "main_results": [
+                    {
+                        "claim": "Typed retrieval improves success over no-memory baseline.",
+                        "evidence": "Table 2 compares no-memory and retrieval conditions.",
+                        "strength": "shows",
+                    }
+                ],
+                "limitations_and_confounders": ["perception quality may confound gains"],
+                "comparison_to_prior_work": "Extends map-based memory with task-conditioned retrieval.",
+                "how_it_changes_the_survey_argument": "Shows why record schema and controller interface must be compared together.",
+                "evidence_spans": ["Table 2 reports no-memory and retrieval comparison."],
+            }
+        ]
+
+        self.assertFalse(validate_paper_mechanism_cards(shallow)["valid"])
+        status = validate_paper_mechanism_cards(rich, citation_plan=[{"paper_id": "p1", "depth": "A"}])
+        self.assertTrue(status["valid"])
+        self.assertEqual(derive_paper_cards(rich)[0]["paper_id"], "p1")
+
+    def test_claim_evidence_spans_and_strength_ladder(self):
+        mechanism_cards = [
+            {
+                "paper_id": "p1",
+                "title": "Memory System",
+                "main_results": [{"claim": "Retrieval improves success.", "evidence": "Table 2.", "strength": "shows"}],
+                "evidence_spans": ["Table 2 reports no-memory and retrieval comparison."],
+            }
+        ]
+        too_strong = [
+            {
+                "claim_id": "c1",
+                "claim": "The method demonstrates causal memory contribution.",
+                "claim_type": "result",
+                "paper_ids": ["p1"],
+                "strength": "demonstrates",
+                "evidence_spans": [
+                    {
+                        "paper_id": "p1",
+                        "section_or_page": "Table 2",
+                        "evidence_summary": "No-memory comparison.",
+                        "supports": "direct",
+                        "strength": "shows",
+                    }
+                ],
+            }
+        ]
+        calibrated = [
+            {
+                **too_strong[0],
+                "strength": "shows",
+            }
+        ]
+
+        self.assertFalse(validate_claim_evidence_spans(too_strong, mechanism_cards)["valid"])
+        self.assertTrue(validate_claim_evidence_spans(calibrated, mechanism_cards)["valid"])
+
+    def test_citation_identity_blocks_unverified_a_level_support(self):
+        papers = [
+            {"paper_id": "p1", "title": "Verified", "authors": ["A"], "year": 2025, "venue_status": "peer-reviewed", "doi": "10.1/x", "verified_sources": ["doi"], "verification_status": "verified"},
+            {"paper_id": "p2", "title": "Unverified", "authors": ["B"], "year": 2026, "venue_status": "unknown", "verification_status": "unverified"},
+        ]
+        citation_plan = [{"paper_id": "p1", "depth": "A"}, {"paper_id": "p2", "depth": "A"}]
+
+        status = validate_citation_identity(papers, citation_plan, target="full")
+
+        self.assertFalse(status["valid"])
+        self.assertIn("p2", status["unverified_a_b_papers"])
+
+    def test_argument_graph_and_article_plan_alignment_are_required(self):
+        graph = {
+            "central_thesis": "Memory is an interface.",
+            "field_shift": "Agents move from short tasks to long deployment.",
+            "gap_in_existing_surveys": "Task-first views split record, retrieval, and evaluation.",
+            "argument_nodes": {
+                "A1": {"claim": "Task views fragment memory mechanisms.", "evidence": ["related_surveys"], "leads_to": ["A2"], "section": "Introduction", "strength": "suggests"},
+                "A2": {"claim": "System nodes unify methods and benchmarks.", "evidence": ["system_node_cards"], "leads_to": ["A3"], "section": "System Model", "strength": "shows"},
+                "A3": {"claim": "Benchmarks operationalize memory claims.", "evidence": ["benchmark_landscape"], "leads_to": [], "section": "Benchmarks", "strength": "shows"},
+            },
+            "section_order": ["Introduction", "System Model", "Benchmarks"],
+            "takeaway_findings": ["Memory claims require causal ablations."],
+        }
+        article_plan = (
+            "# Article Plan\n\n"
+            "## Section Order\n- Introduction\n- System Model\n- Benchmarks\n\n"
+            "## Article-facing Evidence\nUse mechanism cards, benchmark landscape, and selected prose case boxes.\n\n"
+            "## Appendix-facing Artifacts\nMove exhaustive coverage matrices to appendix.\n"
+        )
+
+        self.assertTrue(validate_argument_graph(graph)["valid"])
+        self.assertTrue(validate_article_plan_alignment(article_plan, graph)["valid"])
+        self.assertFalse(validate_article_plan_alignment("# Article Plan\n\n- Benchmarks\n", graph)["valid"])
+
+    def test_paper_summary_consistency_downgrades_unsupported_ablations(self):
+        cards = [
+            {
+                "paper_id": "p1",
+                "title": "Memory System",
+                "experimental_setup": {"benchmarks": ["EnvBench"], "baselines": ["no memory"], "ablations": ["wrong-memory"]},
+                "main_results": [{"claim": "Wrong-memory ablation proves robustness.", "evidence": "Table 2.", "strength": "demonstrates"}],
+                "evidence_spans": ["Table 2 reports no-memory baseline only."],
+            }
+        ]
+
+        status = validate_paper_summary_consistency(cards)
+
+        self.assertFalse(status["valid"])
+        self.assertIn("p1", status["invalid_papers"])
+
+    def test_gate_full_requires_topic_argument_and_mechanism_artifacts(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            task_dir = Path(tmp) / "run"
+            task_dir.mkdir()
+            self._write_full_survey_fixture(task_dir, target="full")
+            for rel in [
+                "state/topic_diagnosis.yml",
+                "state/argument_graph.yml",
+                "state/paper_mechanism_cards.jsonl",
+            ]:
+                (task_dir / rel).write_text("")
+
+            result = evaluate_gates(task_dir, "full")
+
+            self.assertFalse(result["all_blocking_gates_passed"])
+            self.assertFalse(result["gate_5_deep_synthesis"]["checks"]["topic diagnosis"])
+            self.assertFalse(result["gate_5_deep_synthesis"]["checks"]["paper mechanism depth"])
+            self.assertFalse(result["gate_5_deep_synthesis"]["checks"]["argument graph"])
+
+    def test_evidence_ladder_summarizes_claim_strengths(self):
+        claims = [
+            {"claim_id": "c1", "strength": "demonstrates"},
+            {"claim_id": "c2", "strength": "suggests"},
+            {"claim_id": "c3", "strength": "suggests"},
+        ]
+
+        ladder = derive_evidence_ladder(claims)
+
+        self.assertEqual(ladder["counts"]["suggests"], 2)
+        self.assertEqual(ladder["strongest"], "demonstrates")
 
 
 if __name__ == "__main__":

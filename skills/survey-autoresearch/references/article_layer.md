@@ -5,11 +5,11 @@ Use this reference after research and synthesis artifacts exist.
 ## Three Layers
 
 Research layer:
-- `papers.jsonl`, `citation_plan.jsonl`, `paper_cards.jsonl`, `evidence_spans`, verification logs, and coverage records.
+- `papers.jsonl`, `citation_plan.jsonl`, `paper_mechanism_cards.jsonl`, `claim_evidence_spans.jsonl`, verification logs, and coverage records.
 - Goal: comprehensive and traceable evidence.
 
 Synthesis layer:
-- `conceptual_framework.md`, `method_taxonomy.md`, `benchmark_landscape.md`, `node_paper_matrix.md`, `worked_examples.md`, `section_dossiers/`, and `coverage_matrix.md`.
+- `topic_diagnosis.yml`, `argument_graph.yml`, `conceptual_framework.md`, `method_taxonomy.md`, `benchmark_landscape.md`, `node_paper_matrix.md`, `worked_examples.md`, `section_dossiers/`, and `coverage_matrix.md`.
 - Goal: convert papers into mechanisms, comparisons, benchmarks, limitations, and agenda.
 
 Article layer:
@@ -18,11 +18,12 @@ Article layer:
 
 ## Article Plan
 
-Write `outputs/article_plan.md` before drafting `review.md`.
+Write `state/topic_diagnosis.yml` and `state/argument_graph.yml` before `outputs/article_plan.md`. Then write `outputs/article_plan.md` before drafting `review.md`.
 
 It must specify:
 - central article thesis;
-- survey type and selected skeleton;
+- primary survey type, secondary lenses, and selected skeleton;
+- how the article section order follows the argument graph;
 - H2/H3 section order and the reader function of each major section;
 - selected article-facing tables, usually 3-6;
 - selected prose case-study boxes, usually 4-8;
@@ -50,6 +51,8 @@ Internal-facing:
 ## Integration Rule
 
 `review.md` should integrate selected artifacts, not paste all artifacts.
+
+Every major section must correspond to an argument node. If the article plan cannot explain which node a section realizes, repair `state/argument_graph.yml` or remove the section.
 
 Every table in the article must have a before-paragraph that states why it exists and an after-paragraph that explains the main comparison or implication.
 

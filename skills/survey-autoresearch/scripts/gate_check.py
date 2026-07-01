@@ -27,6 +27,13 @@ try:
     from .validate_publication_prose import validate_publication_prose
     from .validate_semantic_repetition import validate_semantic_repetition
     from .validate_global_coherence import validate_global_coherence
+    from .validate_topic_diagnosis import validate_topic_diagnosis
+    from .validate_argument_graph import validate_argument_graph
+    from .validate_paper_mechanism_cards import validate_paper_mechanism_cards
+    from .validate_claim_evidence_spans import validate_claim_evidence_spans
+    from .validate_citation_identity import validate_citation_identity
+    from .validate_paper_summary_consistency import validate_paper_summary_consistency
+    from .validate_article_plan_alignment import validate_article_plan_alignment
     from .review_scorecard import score_review
 except ImportError:  # pragma: no cover - used when run as a standalone script
     from coverage_report import build_coverage
@@ -47,6 +54,13 @@ except ImportError:  # pragma: no cover - used when run as a standalone script
     from validate_publication_prose import validate_publication_prose
     from validate_semantic_repetition import validate_semantic_repetition
     from validate_global_coherence import validate_global_coherence
+    from validate_topic_diagnosis import validate_topic_diagnosis
+    from validate_argument_graph import validate_argument_graph
+    from validate_paper_mechanism_cards import validate_paper_mechanism_cards
+    from validate_claim_evidence_spans import validate_claim_evidence_spans
+    from validate_citation_identity import validate_citation_identity
+    from validate_paper_summary_consistency import validate_paper_summary_consistency
+    from validate_article_plan_alignment import validate_article_plan_alignment
     from review_scorecard import score_review
 
 
@@ -484,6 +498,9 @@ def deep_synthesis_readiness(task_dir: Path, target: str) -> dict:
     state_dir = task_dir / "state"
     outputs_dir = task_dir / "outputs"
     required_files = [
+        state_dir / "topic_diagnosis.yml",
+        state_dir / "argument_graph.yml",
+        state_dir / "paper_mechanism_cards.jsonl",
         state_dir / "paper_cards.jsonl",
         state_dir / "system_node_cards.jsonl",
         state_dir / "section_cards.jsonl",
@@ -493,16 +510,33 @@ def deep_synthesis_readiness(task_dir: Path, target: str) -> dict:
     if target == "csur":
         required_files.append(state_dir / "csur_style_patterns.yml")
 
+    citation_plan = read_jsonl(state_dir / "citation_plan.jsonl")
     missing_artifacts = [
         str(path.relative_to(task_dir))
         for path in required_files
         if not nonempty(path)
     ]
 
+    topic_status = validate_topic_diagnosis(text_or_empty(state_dir / "topic_diagnosis.yml"))
+    argument_status = validate_argument_graph(text_or_empty(state_dir / "argument_graph.yml"))
+    mechanism_cards = read_jsonl(state_dir / "paper_mechanism_cards.jsonl")
+    mechanism_status = validate_paper_mechanism_cards(
+        mechanism_cards,
+        citation_plan=citation_plan,
+    ) if mechanism_cards else {
+        "valid": False,
+        "errors": ["missing paper_mechanism_cards"],
+        "total_cards": 0,
+        "missing_paper_mechanism_cards": [],
+    }
+    consistency_status = validate_paper_summary_consistency(mechanism_cards) if mechanism_cards else {
+        "valid": False,
+        "errors": ["missing paper_mechanism_cards"],
+        "invalid_papers": [],
+    }
     paper_cards = read_jsonl(state_dir / "paper_cards.jsonl")
     node_cards = read_jsonl(state_dir / "system_node_cards.jsonl")
     section_cards = read_jsonl(state_dir / "section_cards.jsonl")
-    citation_plan = read_jsonl(state_dir / "citation_plan.jsonl")
     paper_status = validate_paper_cards(paper_cards, citation_plan=citation_plan) if paper_cards else {
         "valid": False,
         "errors": ["missing paper_cards"],
@@ -537,6 +571,10 @@ def deep_synthesis_readiness(task_dir: Path, target: str) -> dict:
         }
 
     checks = {
+        "topic diagnosis": bool(topic_status["valid"]),
+        "argument graph": bool(argument_status["valid"]),
+        "paper mechanism depth": bool(mechanism_status["valid"]),
+        "paper summary consistency": bool(consistency_status["valid"]),
         "paper-card depth": bool(paper_status["valid"]),
         "node depth": bool(node_status["valid"]),
         "section argument": bool(section_status["valid"]),
@@ -551,6 +589,10 @@ def deep_synthesis_readiness(task_dir: Path, target: str) -> dict:
         "missing_artifacts": missing_artifacts,
         "failed_checks": failed_checks,
         "checks": checks,
+        "topic_diagnosis": topic_status,
+        "argument_graph": argument_status,
+        "paper_mechanism_cards": mechanism_status,
+        "paper_summary_consistency": consistency_status,
         "paper_cards": paper_status,
         "system_node_cards": node_status,
         "section_cards": section_status,
@@ -711,6 +753,7 @@ def review_depth_readiness(task_dir: Path, target: str) -> dict:
     outputs_dir = task_dir / "outputs"
     review_text = text_or_empty(outputs_dir / "review.md")
     paper_cards = read_jsonl(state_dir / "paper_cards.jsonl")
+    argument_text = text_or_empty(state_dir / "argument_graph.yml")
     required_files = [
         outputs_dir / "article_plan.md",
         outputs_dir / "glossary.md",
@@ -766,6 +809,10 @@ def review_depth_readiness(task_dir: Path, target: str) -> dict:
         target=target,
         article_plan_text=text_or_empty(outputs_dir / "article_plan.md"),
     )
+    article_plan_alignment_status = validate_article_plan_alignment(
+        text_or_empty(outputs_dir / "article_plan.md"),
+        argument_text,
+    ) if argument_text.strip() else {"valid": False, "errors": ["missing argument_graph"]}
     scorecard_status = score_review(review_text, target=target)
 
     checks = {
@@ -780,6 +827,7 @@ def review_depth_readiness(task_dir: Path, target: str) -> dict:
         "publication prose": publication_prose_status["valid"],
         "semantic repetition": semantic_repetition_status["valid"],
         "global coherence": global_coherence_status["valid"],
+        "article plan alignment": article_plan_alignment_status["valid"],
     }
     failed_checks = [name for name, passed in checks.items() if not passed]
     return {
@@ -799,6 +847,7 @@ def review_depth_readiness(task_dir: Path, target: str) -> dict:
         "publication_prose": publication_prose_status,
         "semantic_repetition": semantic_repetition_status,
         "global_coherence": global_coherence_status,
+        "article_plan_alignment": article_plan_alignment_status,
         "review_scorecard_warning": scorecard_status,
     }
 
@@ -818,6 +867,10 @@ def evaluate_gates(task_dir: Path, target: str = "short") -> dict:
     accepted_rate = accepted_count / len(papers) if papers else 0.0
     task_spec_text = text_or_empty(state_dir / "task_spec.md")
     publication_norm = publication_norm_status(task_spec_text, papers, accepted_rate, verification_rate, target)
+    citation_identity = validate_citation_identity(papers, citation_plan, target=target) if target in {"full", "csur"} else {
+        "valid": True,
+        "required": False,
+    }
     coverage = build_coverage(citation_plan)
     all_cells_covered = coverage["summary"]["failing_cells"] == 0 and coverage["summary"]["total_cells"] > 0
 
@@ -825,6 +878,7 @@ def evaluate_gates(task_dir: Path, target: str = "short") -> dict:
         len(papers) >= target_config["min_refs"]
         and verification_rate >= 0.80
         and publication_norm["passed"]
+        and citation_identity["valid"]
         and all_cells_covered
         and coverage["summary"].get("assigned_ab_coverage_passed", True)
     )
@@ -839,12 +893,18 @@ def evaluate_gates(task_dir: Path, target: str = "short") -> dict:
     )
 
     paper_cards = read_jsonl(state_dir / "paper_cards.jsonl")
+    mechanism_cards = read_jsonl(state_dir / "paper_mechanism_cards.jsonl")
     claim_validation = validate_claim_records(
         claims,
         known_ids,
         paper_cards=paper_cards if target in {"full", "csur"} and paper_cards else None,
     )
-    gate_3_passed = bool(claims) and claim_validation["valid"]
+    claim_span_records = read_jsonl(state_dir / "claim_evidence_spans.jsonl")
+    claim_span_validation = validate_claim_evidence_spans(
+        claim_span_records,
+        mechanism_cards,
+    ) if target in {"full", "csur"} else {"valid": True, "required": False}
+    gate_3_passed = bool(claims) and claim_validation["valid"] and claim_span_validation["valid"]
 
     review_path = outputs_dir / "review.md"
     review_text = review_path.read_text(encoding="utf-8") if review_path.exists() else ""
@@ -880,9 +940,14 @@ def evaluate_gates(task_dir: Path, target: str = "short") -> dict:
             "publication_norm": publication_norm,
             "coverage": coverage["summary"],
             "citation_verification_cadence": citation_cadence,
+            "citation_identity": citation_identity,
         },
         "gate_2_taxonomy": {"passed": gate_2_passed},
-        "gate_3_evidence": {"passed": gate_3_passed, "claim_validation": claim_validation},
+        "gate_3_evidence": {
+            "passed": gate_3_passed,
+            "claim_validation": claim_validation,
+            "claim_evidence_spans": claim_span_validation,
+        },
         "gate_4_output": {
             "passed": gate_4_passed,
             "files_present": gate_4_files_present,

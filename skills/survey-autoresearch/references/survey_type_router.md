@@ -1,6 +1,12 @@
 # Survey Type Router
 
-Use this before taxonomy lock and before article planning.
+Use this before taxonomy lock and before article planning. Also write `state/topic_diagnosis.yml`; see `references/topic_diagnosis.md`.
+
+Do not choose only one rigid template. Select:
+
+- one `primary_survey_type`;
+- one or more `secondary_lenses`;
+- a section grammar that tells the writer how each section should argue.
 
 ## 1. System-Object Survey
 
@@ -16,6 +22,14 @@ Main spine:
 
 Tasks and benchmarks are evaluation settings, not the default spine.
 
+Section grammar:
+- Introduction: field shift -> fragmented existing views -> system object -> framework -> contributions.
+- Foundations: definitions -> running example -> boundary cases.
+- System model: node model -> node interactions -> why tasks are evaluation settings.
+- Method families: family bottleneck -> mechanism comparison -> representative case -> benchmark tie -> implication.
+- Benchmarks: capability -> protocol -> metric -> baseline -> confounder -> missing ablation.
+- Open problems: evidence gap -> why current methods fail -> concrete research move.
+
 ## 2. Method-Family Survey
 
 Use when the topic names a family of methods such as uncertainty quantification, prompting, multimodal learning, optimization, alignment, retrieval, or planning.
@@ -30,6 +44,12 @@ Main spine:
 
 Do not force controller/action-interface fields unless the method family actually needs them.
 
+Section grammar:
+- Introduction: field shift -> method-family gap -> taxonomy lens -> contributions.
+- Method sections: assumption -> mechanism family -> comparison -> evidence -> limitation.
+- Benchmark section: metric target -> dataset/protocol -> baseline -> confounder.
+- Open problems: unresolved assumption -> missing evidence -> testable next step.
+
 ## 3. Benchmark Or Evaluation Survey
 
 Use when the topic names datasets, benchmarks, evaluation protocols, robustness tests, safety evaluations, or leaderboards.
@@ -41,6 +61,11 @@ Main spine:
 - confounders and diagnostic controls;
 - benchmark coverage gaps;
 - recommendations for future protocols.
+
+Section grammar:
+- Capability section: capability definition -> protocol -> metric -> baseline -> confounder.
+- Comparison section: benchmark family -> coverage difference -> diagnostic limitation.
+- Recommendation section: missing test -> concrete protocol modification.
 
 ## 4. Application-Domain Survey
 
@@ -54,6 +79,11 @@ Main spine:
 - regulation, risk, and practical barriers;
 - research agenda.
 
+Section grammar:
+- Domain foundations: workflow -> data constraint -> decision point.
+- Method sections: domain need -> method family -> evidence -> deployment barrier.
+- Agenda: practical gap -> dataset/protocol/resource move.
+
 ## 5. Risk Or Threat Survey
 
 Use when the topic is security, privacy, robustness, misuse, governance, or trustworthiness.
@@ -65,11 +95,20 @@ Main spine:
 - evaluation protocols;
 - open risks and policy or deployment implications.
 
+Section grammar:
+- Threat model: asset -> adversary/failure mode -> assumption.
+- Attack/defense sections: surface -> mechanism -> evidence -> mitigation limitation.
+- Evaluation: scenario -> metric -> baseline -> residual risk.
+
 ## Routing Artifact
 
-Record the chosen route in `state/scope_audit.md`:
-- selected survey type;
-- why this type fits the topic;
-- which templates are used;
-- which templates are intentionally not used;
-- how tasks, benchmarks, and applications will appear in the outline.
+Record the chosen route in `state/topic_diagnosis.yml`:
+- primary survey type;
+- secondary lenses;
+- domain pressures;
+- evidence norm;
+- recommended structure;
+- excluded templates;
+- section grammar.
+
+Also summarize the decision in `state/scope_audit.md` for human readability.

@@ -12,6 +12,7 @@ Short target:
 Full target:
 - references >= 150;
 - verification rate >= 80%;
+- A/B papers are identity verified before supporting review-body claims;
 - accepted or peer-reviewed ratio >= 30% when field norms make this meaningful; if `task_spec.md` declares `accepted_ratio_required: false`, require stronger verification and explicit venue/preprint status labels instead;
 - every taxonomy cell has at least two A/B references or is documented as a gap.
 - long managed runs include verification evidence in `logs/verification.jsonl` for each about-20 citation batch.
@@ -46,6 +47,7 @@ Pass when:
 - claim records reference known paper IDs;
 - evidence fields are nonempty;
 - claim strength does not exceed evidence strength;
+- for full/CSUR targets, important method, result, benchmark, taxonomy, limitation, and comparison claims have `state/claim_evidence_spans.jsonl` records with evidence span, support type, and strength;
 - uncertain numbers are omitted or marked.
 
 ## Gate 4: Output
@@ -82,6 +84,9 @@ For LaTeX/PDF targets, compilation and visual checks are additional gates.
 For `target=full` and `target=csur`, pass only when these artifacts are present and substantive:
 
 - `state/paper_cards.jsonl`;
+- `state/paper_mechanism_cards.jsonl`;
+- `state/topic_diagnosis.yml`;
+- `state/argument_graph.yml`;
 - `state/system_node_cards.jsonl`;
 - `state/section_cards.jsonl`;
 - `state/research_questions_by_perspective.md`;
@@ -89,6 +94,10 @@ For `target=full` and `target=csur`, pass only when these artifacts are present 
 
 Additional checks:
 
+- topic diagnosis includes primary survey type, secondary lenses, evidence norm, recommended structure, excluded templates, and section grammar;
+- argument graph includes central thesis, field shift, related-survey gap, argument nodes, evidence dependencies, section order, and take-away findings;
+- paper mechanism cards explain motivation, problem/task, benchmark/environment, method pipeline, implementation, experiments, results, limitations/confounders, relation to prior work, and survey-argument contribution;
+- paper summary consistency checks do not find unsupported benchmark, baseline, ablation, result, or role claims;
 - paper cards include survey role, mechanism, system component or node, interface or operation fields, failure modes, limitations, evidence spans, what each A/B paper teaches the survey, and complete A/B coverage;
 - system-node cards include role, why the node matters, inputs, outputs, representative papers grounded in paper cards, failure modes, evaluation signals, open questions, and explicit gap reasons for weak/gap nodes;
 - section cards include reader question, section thesis, section structure, opening move, structured subsection moves, closing implication, and required display item;
@@ -105,6 +114,9 @@ For `target=csur`, pass only when these files are present and substantive:
 - `state/research_questions.md`;
 - `state/search_protocol.md`;
 - `state/related_surveys.md`;
+- `state/topic_diagnosis.yml`;
+- `state/argument_graph.yml`;
+- `state/paper_mechanism_cards.jsonl`;
 - `state/paper_cards.jsonl`;
 - `state/system_node_cards.jsonl`;
 - `state/section_cards.jsonl`;
@@ -128,6 +140,7 @@ Additional checks:
 - the imitation plan does not use arXiv-only, submitted, under-review, or unverified accepted claims as CSUR exemplars;
 - `state/csur_style_patterns.yml` includes abstract moves, introduction moves, section opening/body/closing patterns, table functions, paragraph patterns, forbidden surface forms, and observed evidence notes from at least two official CSUR exemplars;
 - every A/B paper in `citation_plan.jsonl` has a paper-card record;
+- every A/B paper in `citation_plan.jsonl` has a paper-mechanism-card record;
 - every A/B paper in `citation_plan.jsonl` has a derived paper-fact record;
 - paper facts include method family, task family, benchmark/dataset, metrics, mechanism or contribution, ablations, and limitations;
 - paper facts are consistent with paper cards for paper ID and mechanism/contribution;
@@ -180,6 +193,7 @@ Gate 7 also rejects artifact-dump prose:
 The full set of worked examples may live in `outputs/worked_examples.md` or `outputs/appendix.md`. `review.md` should use a smaller set of publication-facing case-study boxes. Full coverage belongs in `outputs/coverage_matrix.md`, not in a raw "core literature absorption matrix" inside the article.
 
 Gate 7 reports a review scorecard for debugging, but the blocking checks are depth, worked examples, benchmark/method/node artifacts, newcomer tutorial, card specificity, artifact absorption, publication prose, semantic repetition, and global coherence.
+Gate 7 also checks that `outputs/article_plan.md` follows `state/argument_graph.yml`; the scorecard is diagnostic and must not be used as a substitute for argument alignment.
 
 ## Qualitative Final Review
 

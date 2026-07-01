@@ -5,18 +5,33 @@ Use this reference for `target=full` and `target=csur` before drafting `outputs/
 ## Required Flow
 
 1. Triage retained papers by survey role: `foundational`, `seminal`, `system`, `benchmark`, `application`, `negative` or `failure`, `survey`, `bridge`, `frontier`.
-2. Write `state/paper_cards.jsonl` for A/B papers.
-3. Derive `state/paper_facts.jsonl` from paper cards with `scripts/derive_paper_facts.py` when CSUR tables need the compact schema.
-4. Build `state/system_node_cards.jsonl` from the paper cards.
-5. Derive taxonomy and section plan from node coverage, not from seed keywords alone.
-6. Write `outputs/conceptual_framework.md` before `outputs/review.md`.
-7. Convert deep artifacts into final-review artifacts before drafting: `worked_examples.md`, `benchmark_landscape.md`, `method_taxonomy.md`, `node_paper_matrix.md`, `glossary.md`, `running_example.md`, `evaluation_protocol.md`, `design_guidelines.md`, and `section_dossiers/`.
+2. Write `state/paper_mechanism_cards.jsonl` for A/B papers. These cards must explain motivation, task, benchmark/environment, method pipeline, implementation, experiments, results, limitations, and relation to prior work.
+3. Derive compatibility `state/paper_cards.jsonl` with `scripts/derive_paper_cards_from_mechanism_cards.py` when possible.
+4. Derive `state/paper_facts.jsonl` from paper cards with `scripts/derive_paper_facts.py` when CSUR tables need the compact schema.
+5. Write `state/claim_evidence_spans.jsonl` and calibrate claim strength against evidence spans.
+6. Build `state/system_node_cards.jsonl` from mechanism cards and paper cards.
+7. Derive taxonomy and section plan from mechanism/node coverage, not from seed keywords alone.
+8. Write `state/argument_graph.yml` and `outputs/conceptual_framework.md` before `outputs/review.md`.
+9. Convert deep artifacts into final-review artifacts before drafting: `worked_examples.md`, `benchmark_landscape.md`, `method_taxonomy.md`, `node_paper_matrix.md`, `glossary.md`, `running_example.md`, `evaluation_protocol.md`, `design_guidelines.md`, and `section_dossiers/`.
 
 `state/research_questions_by_perspective.md` is the exploration layer. `state/research_questions.md` is the converged layer. Each final research question should state which perspective questions it derives from.
 
-## Paper Cards
+## Paper Mechanism Cards
 
-Each A/B paper card must explain what the paper teaches the survey. Required content:
+Use `references/paper_mechanism_cards.md` for the canonical schema. A/B papers must be understood as scientific contributions before they become survey evidence. The card must answer:
+
+- why the paper was needed;
+- what task/problem setting it formulates;
+- which benchmark/environment/protocol it uses;
+- how the method or benchmark is implemented;
+- what baselines, ablations, metrics, and results support its claims;
+- what remains untested or confounded;
+- how it relates to prior or later work;
+- how it changes the review argument.
+
+## Compatibility Paper Cards
+
+Compatibility `state/paper_cards.jsonl` remains required for existing tables and validators. Prefer deriving it from mechanism cards. Each A/B paper card must still explain what the paper teaches the survey. Required content:
 
 ```json
 {
@@ -46,7 +61,7 @@ Each A/B paper card must explain what the paper teaches the survey. Required con
 
 Avoid generic records that only say method family, task family, and limitations. Those records cannot support a deep survey.
 
-Every A/B paper in `state/citation_plan.jsonl` must have a paper card. Missing A/B cards fail the deep-synthesis gate.
+Every A/B paper in `state/citation_plan.jsonl` must have a paper mechanism card and a compatibility paper card. Missing A/B cards fail the deep-synthesis gate.
 
 ## System Node Cards
 
@@ -65,7 +80,7 @@ Each node card must contain:
 
 The node card should teach why the component exists, not merely where it appears in an architecture diagram.
 
-Representative papers must exist in `state/paper_cards.jsonl`. Every nonempty `system_node` or `memory_node` named in paper cards must be covered by a node card. A `gap` node may have fewer than two representative papers, but it must include `gap_reason` rather than inventing coverage.
+Representative papers must exist in `state/paper_mechanism_cards.jsonl` or `state/paper_cards.jsonl`. Every nonempty `system_node` or `memory_node` named in paper cards must be covered by a node card. A `gap` node may have fewer than two representative papers, but it must include `gap_reason` rather than inventing coverage.
 
 ## Conceptual Framework
 

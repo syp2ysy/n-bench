@@ -15,6 +15,8 @@ STATE_FILES = [
     "lqs_scores.jsonl",
     "citation_plan.jsonl",
     "claims.jsonl",
+    "claim_evidence_spans.jsonl",
+    "paper_mechanism_cards.jsonl",
     "paper_cards.jsonl",
     "system_node_cards.jsonl",
     "section_cards.jsonl",
@@ -40,6 +42,7 @@ OUTPUT_FILES = {
     "article_plan.md": "",
     "appendix.md": "",
     "coverage_matrix.md": "",
+    "evidence_ladder.md": "",
     "evidence_table.csv": "claim_id,paper_id,evidence\n",
     "references.bib": "",
     "final_report.md": "",
@@ -149,6 +152,9 @@ reason: default field norm; set false only for explicitly preprint-heavy fields.
     )
     (state_dir / "research_questions.md").write_text("", encoding="utf-8")
     (state_dir / "research_questions_by_perspective.md").write_text("", encoding="utf-8")
+    (state_dir / "topic_diagnosis.yml").write_text("", encoding="utf-8")
+    (state_dir / "argument_graph.yml").write_text("", encoding="utf-8")
+    (state_dir / "paper_summary_consistency.jsonl").touch()
     (state_dir / "search_protocol.md").write_text("", encoding="utf-8")
     (state_dir / "related_surveys.md").write_text("", encoding="utf-8")
     (state_dir / "csur_imitation_plan.md").write_text("", encoding="utf-8")
