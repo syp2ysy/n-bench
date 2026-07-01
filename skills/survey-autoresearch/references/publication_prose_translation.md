@@ -10,7 +10,17 @@ Use this reference after section dossiers and synthesis artifacts exist, before 
 
 Create `outputs/review_body_draft.md` before final `outputs/review.md`.
 
+Before that, create `outputs/article_plan.md`.
+
+The article plan must decide:
+- which 3-6 tables or figures are article-facing;
+- which 4-8 case-study boxes are article-facing;
+- which exhaustive tables belong in `outputs/appendix.md` or supporting artifacts;
+- which sections should explain methods, benchmarks, evidence, and open problems;
+- which internal notes, state artifacts, and raw matrices are forbidden from the article body.
+
 The draft must be written from:
+- `outputs/article_plan.md`;
 - `outputs/section_dossiers/`;
 - selected prose case studies from `outputs/worked_examples.md`;
 - interpreted summaries of `outputs/benchmark_landscape.md`, `outputs/method_taxonomy.md`, and `outputs/node_paper_matrix.md`;
@@ -18,6 +28,8 @@ The draft must be written from:
 - CSUR paragraph patterns when `target=csur`.
 
 Move exhaustive tables, raw structured examples, and long paper-card material to `outputs/appendix.md` or supporting artifacts.
+
+Use `outputs/coverage_matrix.md` for broad literature coverage. Do not paste the full coverage matrix into `review.md`; summarize a small set of anchor works in article prose and put the full matrix in the appendix.
 
 ## Case Studies In Review
 
@@ -63,5 +75,17 @@ Keep these in state files or appendices, not in the article body:
 - "若原文没有完整报告，则将其作为证据缺口";
 - "The paper teaches that ... must be specified through record schema";
 - state filenames, draft version labels, workflow repair notes, or gate language.
+- "本节面向", "下面的表", "这个表的作用", "这个矩阵", "核心文献吸收矩阵", "本文如何使用它";
+- `artifact`, `dossier`, `paper card`, `node card`, `section card`, `state file`, or `gate check`.
 
 Publication prose can still say a study lacks a no-memory or wrong-memory control. Say it as an evidence limitation, not as an internal instruction.
+
+## Final Coherence Pass
+
+Before finalizing `review.md`, check:
+- no duplicate H2/H3 headings;
+- no repeated template paragraphs or padding-like "深入讨论" sections;
+- every major section has an opening thesis or tension;
+- every major section closes with a design, benchmark, or research implication;
+- every table is interpreted in prose;
+- the conclusion returns to the central thesis and does not introduce a new taxonomy.

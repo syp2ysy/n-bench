@@ -25,6 +25,8 @@ try:
     from .validate_card_specificity import validate_card_specificity
     from .validate_review_absorption import validate_review_absorption
     from .validate_publication_prose import validate_publication_prose
+    from .validate_semantic_repetition import validate_semantic_repetition
+    from .validate_global_coherence import validate_global_coherence
     from .review_scorecard import score_review
 except ImportError:  # pragma: no cover - used when run as a standalone script
     from coverage_report import build_coverage
@@ -43,6 +45,8 @@ except ImportError:  # pragma: no cover - used when run as a standalone script
     from validate_card_specificity import validate_card_specificity
     from validate_review_absorption import validate_review_absorption
     from validate_publication_prose import validate_publication_prose
+    from validate_semantic_repetition import validate_semantic_repetition
+    from validate_global_coherence import validate_global_coherence
     from review_scorecard import score_review
 
 
@@ -708,12 +712,14 @@ def review_depth_readiness(task_dir: Path, target: str) -> dict:
     review_text = text_or_empty(outputs_dir / "review.md")
     paper_cards = read_jsonl(state_dir / "paper_cards.jsonl")
     required_files = [
+        outputs_dir / "article_plan.md",
         outputs_dir / "glossary.md",
         outputs_dir / "running_example.md",
         outputs_dir / "worked_examples.md",
         outputs_dir / "benchmark_landscape.md",
         outputs_dir / "method_taxonomy.md",
         outputs_dir / "node_paper_matrix.md",
+        outputs_dir / "coverage_matrix.md",
         outputs_dir / "evaluation_protocol.md",
         outputs_dir / "design_guidelines.md",
     ]
@@ -754,6 +760,12 @@ def review_depth_readiness(task_dir: Path, target: str) -> dict:
     }
     absorption_status = validate_review_absorption(task_dir, target=target)
     publication_prose_status = validate_publication_prose(review_text, target=target)
+    semantic_repetition_status = validate_semantic_repetition(review_text, target=target)
+    global_coherence_status = validate_global_coherence(
+        review_text,
+        target=target,
+        article_plan_text=text_or_empty(outputs_dir / "article_plan.md"),
+    )
     scorecard_status = score_review(review_text, target=target)
 
     checks = {
@@ -766,7 +778,8 @@ def review_depth_readiness(task_dir: Path, target: str) -> dict:
         "card specificity": card_specificity_status["valid"],
         "artifact absorption": absorption_status["valid"],
         "publication prose": publication_prose_status["valid"],
-        "review scorecard": scorecard_status["passed"],
+        "semantic repetition": semantic_repetition_status["valid"],
+        "global coherence": global_coherence_status["valid"],
     }
     failed_checks = [name for name, passed in checks.items() if not passed]
     return {
@@ -784,7 +797,9 @@ def review_depth_readiness(task_dir: Path, target: str) -> dict:
         "card_specificity": card_specificity_status,
         "review_absorption": absorption_status,
         "publication_prose": publication_prose_status,
-        "review_scorecard": scorecard_status,
+        "semantic_repetition": semantic_repetition_status,
+        "global_coherence": global_coherence_status,
+        "review_scorecard_warning": scorecard_status,
     }
 
 
@@ -838,8 +853,7 @@ def evaluate_gates(task_dir: Path, target: str = "short") -> dict:
     process_leakage_status = review_process_leakage(review_text, target)
     scaffold_leakage_status = review_scaffold_leakage(review_text, target)
     multi_agent_status = multi_agent_claim_status(task_dir)
-    missing_review_artifacts = list(artifact_status["missing"])
-    missing_review_artifacts.extend(criticality_status["missing"])
+    missing_review_artifacts = list(criticality_status["missing"])
     if process_leakage_status["matches"]:
         missing_review_artifacts.append("process-leakage framing")
     if scaffold_leakage_status["matches"]:
@@ -873,6 +887,7 @@ def evaluate_gates(task_dir: Path, target: str = "short") -> dict:
             "passed": gate_4_passed,
             "files_present": gate_4_files_present,
             "reader_artifacts_required": artifact_status["required"],
+            "reader_artifact_warnings": artifact_status["missing"],
             "missing_review_artifacts": missing_review_artifacts,
             "criticality": criticality_status,
             "process_leakage_matches": process_leakage_status["matches"],

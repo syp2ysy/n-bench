@@ -29,6 +29,8 @@ from scripts.derive_paper_facts import derive_paper_facts
 from scripts.validate_case_study_prose import validate_case_study_prose
 from scripts.validate_table_interpretation import validate_table_interpretation
 from scripts.validate_publication_prose import validate_publication_prose
+from scripts.validate_semantic_repetition import validate_semantic_repetition
+from scripts.validate_global_coherence import validate_global_coherence
 
 
 class SurveyAutoResearchScriptsTest(unittest.TestCase):
@@ -242,16 +244,23 @@ class SurveyAutoResearchScriptsTest(unittest.TestCase):
 
     def _rich_review_text(self, *, target: str = "full") -> str:
         cases = []
+        evaluation_variants = [
+            "The evaluation lesson is that no-memory and no-retrieval ablations identify whether typed capture is doing useful work. The main limitation is stale state: a system can still preserve old evidence after the environment changes, so the case supports the section thesis that write policy and update policy must be evaluated together.",
+            "The evaluation lesson is that oracle-memory and wrong-memory conditions distinguish helpful retrieval from plausible but misleading recall. The main limitation is false recall under semantically similar queries, so the case supports the section thesis that read keys and evidence provenance must be discussed together.",
+            "The evaluation lesson is that latency and capacity controls matter when the retrieved state enters a planner or policy. The main limitation is that a strong controller can hide whether memory was actually consumed, so the case supports the section thesis that interface attribution must accompany final success scores.",
+            "The evaluation lesson is that stale-memory injection exposes whether maintenance policies revise contradictions rather than simply appending more context. The main limitation is weak lifecycle evidence, so the case supports the section thesis that consolidation and forgetting need their own diagnostics.",
+            "The evaluation lesson is that benchmark protocols should separate perception error, retrieval error, and action error. The main limitation is confounding among these layers, so the case supports the section thesis that mechanism, interface, and evidence must be discussed together.",
+            "The evaluation lesson is that shared-memory or long-horizon settings require provenance and permission checks in addition to task success. The main limitation is governance evidence, so the case supports the section thesis that memory quality includes lifecycle and access-control behavior.",
+        ]
         for i in range(4 if target == "full" else 6):
             paper_id = "p1" if i % 2 == 0 else "p2"
             cases.append(
                 f"### Case study {i + 1}: Paper {paper_id} as a mechanism example\n"
                 f"Paper {paper_id} is useful here because it makes one design decision observable rather than treating memory as a generic accuracy booster. "
                 "Its mechanism starts from a typed record, connects that record to a task-conditioned read operation, and passes the retrieved state to a planner or diagnostic harness. "
+                "In the taxonomy, this paper anchors a system node where representation, retrieval, and evidence meet. "
                 "Compared with a flat context buffer, this design exposes where information is written, what key retrieves it, and which downstream decision is allowed to consume it.\n\n"
-                "The evaluation lesson is equally important. No-memory, oracle-memory, wrong-memory, stale-memory, latency, and capacity conditions are needed to decide whether the memory interface caused the behavior or whether perception and policy strength explain the gain. "
-                "The main limitation is that stale state, false recall, and missing provenance can still look like successful memory use unless the benchmark perturbs the record itself. "
-                "This case therefore supports the section thesis: mechanism, interface, and evidence must be discussed together.\n"
+                f"{evaluation_variants[i]}\n"
             )
 
         def table_block(title: str, header: str, row: str) -> str:
@@ -270,7 +279,8 @@ class SurveyAutoResearchScriptsTest(unittest.TestCase):
             f"### Method family {i}: structured tutorial subsection\n"
             "This subsection opens by defining the reader question: which record is being maintained, when is it written, and how does it enter action? "
             "Compared with adjacent families, it emphasizes a different trade-off among representation fidelity, retrieval latency, update cost, and controller compatibility. "
-            "The section then uses representative systems as evidence and closes by explaining which benchmark or ablation would falsify the claimed memory benefit.\n"
+            f"Family {i} is distinguished by a specific interface emphasis: record schema, read key, update behavior, controller timing, or evidence status becomes the dominant design choice. "
+            f"The section then uses representative systems as evidence and closes by explaining which benchmark or ablation would falsify the claimed memory benefit for family {i}.\n"
             for i in range(1, method_section_count + 1)
         )
         filler = " ".join(
@@ -329,9 +339,9 @@ class SurveyAutoResearchScriptsTest(unittest.TestCase):
             )
             + "\nThe table should be read as a selection guide. "
             "If a claim is about spatial grounding, the benchmark must perturb location or map state; if it is about evidence-grounded question answering, the benchmark must distinguish correct recall from language priors; if it is about action-facing memory, latency and wrong-state tests become part of the protocol.\n"
-            + "\n## Case Studies: Translating Paper Cards Into Article Prose\n"
+            + "\n## Case Studies: From Structured Evidence to Article Prose\n"
             "The following boxes are deliberately selective. "
-            "The exhaustive paper-card material remains in the worked-example artifact, while the review body uses a smaller set of prose case studies to teach mechanism, evidence, and limitation without turning the article into a state-file dump.\n\n"
+            "The full evidence tables remain separate from the main article, while the review body uses a smaller set of prose case studies to teach mechanism, evidence, and limitation without turning the article into a catalogue.\n\n"
             + "\n".join(cases)
             + "\n## Method Design Pipeline\n"
             "The method design pipeline starts from memory pressure, selects a memory record schema, chooses a store family, defines write behavior, read behavior, update behavior, and controller interface, then designs memory-causal ablations. "
@@ -353,12 +363,12 @@ class SurveyAutoResearchScriptsTest(unittest.TestCase):
             "| term | plain explanation |\n| --- | --- |\n| memory record | typed evidence used by future actions |\n| read key | query used to retrieve memory |\n\n"
             "These terms recur throughout the review and prevent method families from being compared only by task label.\n\n"
             "## Node-Paper Matrix\n"
-            "The node-paper matrix compresses the detailed system-node cards into an article-facing synthesis. "
+            "The node-paper matrix compresses detailed system-node evidence into an article-facing synthesis. "
             "It is used here to explain which papers instantiate a mechanism, which evidence they provide, and which failure mode remains open.\n\n"
             "| system node | representative papers | mechanism pattern | evaluation signal |\n| --- | --- | --- | --- |\n| capture | p1, p2 | event record | no-memory test |\n\n"
             "This matrix is most useful when it is read together with the case studies: the matrix gives coverage, while the cases explain mechanisms.\n\n"
             "## Evidence Trace Table\n"
-            "The evidence trace keeps the review's claims grounded without exposing internal state files. "
+            "The evidence trace keeps the review's claims grounded without exposing internal notes. "
             "It summarizes the chain from claim to paper to evidence span and design lesson in article language.\n\n"
             "| claim | paper | evidence span | design lesson |\n| --- | --- | --- | --- |\n| memory changes action | p1 | no-memory ablation | expose controller interface |\n\n"
             "The trace makes clear where the evidence is strong and where the survey is proposing a design implication rather than reporting a settled result.\n\n"
@@ -464,6 +474,24 @@ class SurveyAutoResearchScriptsTest(unittest.TestCase):
         )
         (task_dir / "outputs/design_guidelines.md").write_text(
             "# Design Guidelines\n\nChoose memory schema, store family, read key, update policy, controller interface, and causal ablation before implementation claims.\n"
+        )
+        (task_dir / "outputs/article_plan.md").write_text(
+            "# Article Plan\n\n"
+            "## Article-facing selections\n"
+            "- Use the tutorial primer, system model, method taxonomy, benchmark landscape, evaluation protocol, and selected case-study boxes in review.md.\n"
+            "- Keep exhaustive worked examples, benchmark rows, method rows, and node-paper coverage in appendix-facing files.\n\n"
+            "## Section flow\n"
+            "Each H2 opens with a thesis, compares mechanisms or benchmark signals in the body, and closes with a design or evaluation implication. "
+            "The review should not paste structured extraction fields directly into article prose.\n\n"
+            "## Selected tables and boxes\n"
+            "Use one system-model table, one method-taxonomy table, one benchmark-selection table, one evaluation-protocol table, and a small number of prose case-study boxes.\n"
+        )
+        (task_dir / "outputs/coverage_matrix.md").write_text(
+            "# Coverage Matrix\n\n"
+            "| paper | level | family | article use |\n"
+            "| --- | --- | --- | --- |\n"
+            "| Foundational System Paper | A | state capture | prose case study |\n"
+            "| Benchmark System Paper | B | evaluation | benchmark context |\n"
         )
         dossier_dir = task_dir / "outputs/section_dossiers"
         dossier_dir.mkdir(exist_ok=True)
@@ -660,11 +688,13 @@ class SurveyAutoResearchScriptsTest(unittest.TestCase):
                 "logs/synthesis.jsonl",
                 "logs/verification.jsonl",
                 "outputs/review.md",
-                "outputs/review_body_draft.md",
-                "outputs/appendix.md",
-                "outputs/evidence_table.csv",
-                "outputs/references.bib",
-                "outputs/final_report.md",
+            "outputs/review_body_draft.md",
+            "outputs/article_plan.md",
+            "outputs/appendix.md",
+            "outputs/evidence_table.csv",
+            "outputs/references.bib",
+            "outputs/final_report.md",
+            "outputs/coverage_matrix.md",
                 "outputs/conceptual_framework.md",
                 "outputs/glossary.md",
                 "outputs/running_example.md",
@@ -1132,6 +1162,86 @@ class SurveyAutoResearchScriptsTest(unittest.TestCase):
 
         self.assertTrue(result["valid"])
 
+    def test_validate_publication_prose_rejects_internal_article_scaffolding(self):
+        bad = (
+            "## Tutorial Primer\n"
+            "本节面向不熟悉 embodied memory 的读者。下面的表是本文的中心方法谱系，"
+            "这个表的作用不是列术语，而是解释 artifact 如何进入 dossier。\n\n"
+            "## 核心文献吸收矩阵\n"
+            "| Core work | 本文如何使用它 |\n"
+            "| --- | --- |\n"
+            "| Paper p1 | 该工作在本文中被读作 paper card 中的一个 node card 例子 |\n\n"
+            "This table is followed by enough prose to avoid a table-only failure, but it still exposes internal scaffolding."
+        )
+
+        result = validate_publication_prose(bad, target="full")
+
+        self.assertFalse(result["valid"])
+        self.assertIn("raw_artifact_language", result["failed_checks"])
+        self.assertIn("本节面向", result["raw_artifact_phrases"])
+        self.assertIn("核心文献吸收矩阵", result["raw_artifact_phrases"])
+
+    def test_validate_semantic_repetition_rejects_repeated_headings_and_template_blocks(self):
+        repeated = (
+            "# Survey\n\n"
+            "## Cross-task Design Principles\n"
+            "### 深入讨论：record schema 的跨任务意义\n"
+            "Record schema determines what can be retrieved and acted upon. 因此，未来综述和方法论文都应把 record schema 写成一等对象。"
+            "This paragraph repeats the same design implication, evidence-status language, and benchmark move across the article to inflate depth.\n\n"
+            "### 深入讨论：record schema 的跨任务意义\n"
+            "Record schema determines what can be retrieved and acted upon. 因此，未来综述和方法论文都应把 record schema 写成一等对象。"
+            "This paragraph repeats the same design implication, evidence-status language, and benchmark move across the article to inflate depth.\n\n"
+            "### 深入讨论：read policy 的跨任务意义\n"
+            "Read policy determines what can be retrieved and acted upon. 因此，未来综述和方法论文都应把 read policy 写成一等对象。"
+            "This paragraph repeats the same design implication, evidence-status language, and benchmark move across the article to inflate depth.\n"
+        )
+
+        result = validate_semantic_repetition(repeated, target="full")
+
+        self.assertFalse(result["valid"])
+        self.assertIn("duplicate_headings", result["failed_checks"])
+        self.assertIn("repeated_templates", result["failed_checks"])
+
+    def test_validate_global_coherence_rejects_raw_matrix_and_missing_section_implications(self):
+        bad = (
+            "# Survey\n\n"
+            "## System Model\n"
+            "Short opening.\n\n"
+            "| node | paper |\n"
+            "| --- | --- |\n"
+            "| retrieval | p1 |\n\n"
+            "## 核心文献吸收矩阵\n"
+            "| Core work | Survey role | 本文如何使用它 |\n"
+            "| --- | --- | --- |\n"
+            "| Paper p1 | system | truncated abstract text |\n\n"
+            "## Conclusion\n"
+            "The article ends."
+        )
+
+        result = validate_global_coherence(bad, target="full")
+
+        self.assertFalse(result["valid"])
+        self.assertIn("raw_coverage_matrix_in_review", result["failed_checks"])
+        self.assertIn("section_flow", result["failed_checks"])
+
+    def test_validate_global_coherence_accepts_article_plan_driven_sections(self):
+        article = (
+            "# Survey\n\n"
+            "## System Model\n"
+            "A mature system-model section first states why the object must be decomposed before papers are named. "
+            "The core tension is that two systems can report the same task success while writing different records, reading them with different keys, and exposing different control interfaces. "
+            "Compared with a paper-list section, this opening tells the reader what question the section will answer and why the answer matters.\n\n"
+            "### Capture and retrieval\n"
+            "The body compares event capture and retrieval as coupled design choices. Compared with flat context, typed records expose provenance; however, retrieval still needs stale-memory and wrong-memory tests before the evidence is credible.\n\n"
+            "The closing implication is that a system-model table is useful only when it changes evaluation design: readers should know which ablation diagnoses each node and which benchmark can reveal the failure.\n\n"
+            "## Conclusion\n"
+            "The conclusion returns to the central thesis without introducing a new taxonomy."
+        )
+
+        result = validate_global_coherence(article, target="full")
+
+        self.assertTrue(result["valid"])
+
     def test_validate_worked_examples_requires_mechanism_interface_and_evidence(self):
         bad = "### Worked example: Paper p1\n\n- Problem: too short\n"
 
@@ -1233,10 +1343,56 @@ class SurveyAutoResearchScriptsTest(unittest.TestCase):
             result = validate_review_absorption(task_dir, target="full")
 
             self.assertFalse(result["valid"])
-            self.assertIn("missing_worked_paper_absorption", result["failed_checks"])
+            self.assertIn("insufficient_contextual_absorption", result["failed_checks"])
             self.assertIn("missing_newcomer_artifact_absorption", result["failed_checks"])
 
             (task_dir / "outputs/review.md").write_text(self._rich_review_text(target="full"))
+            result = validate_review_absorption(task_dir, target="full")
+
+            self.assertTrue(result["valid"])
+
+    def test_validate_review_absorption_rejects_table_only_paper_mentions(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            task_dir = Path(tmp)
+            self._write_full_survey_fixture(task_dir)
+            (task_dir / "outputs/review.md").write_text(
+                "# Survey\n\n"
+                "## Tutorial Primer\nGlossary and running example define the newcomer path.\n\n"
+                "## Method Taxonomy\nMethod taxonomy, write trigger, read key, update policy, and controller interface are listed.\n\n"
+                "## Benchmark Landscape\nBenchmark landscape, memory pressure, confounders, baselines, and metrics are discussed.\n\n"
+                "## Node Matrix\nSystem node and representative papers are shown.\n\n"
+                "| paper | role |\n"
+                "| --- | --- |\n"
+                "| Foundational System Paper | system |\n"
+                "| Benchmark System Paper | benchmark |\n"
+            )
+            (task_dir / "outputs/coverage_matrix.md").write_text(
+                "| paper | family |\n| --- | --- |\n| Foundational System Paper | mechanism |\n| Benchmark System Paper | benchmark |\n"
+            )
+
+            result = validate_review_absorption(task_dir, target="full")
+
+            self.assertFalse(result["valid"])
+            self.assertIn("insufficient_contextual_absorption", result["failed_checks"])
+            self.assertIn("p1", result["papers_without_context"])
+
+    def test_validate_review_absorption_accepts_papers_absorbed_in_prose_context(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            task_dir = Path(tmp)
+            self._write_full_survey_fixture(task_dir)
+            (task_dir / "outputs/review.md").write_text(
+                "# Survey\n\n"
+                "## Tutorial Primer\nGlossary and running example define the newcomer path.\n\n"
+                "## Method Taxonomy\n"
+                "The method taxonomy uses write trigger, read key, update policy, and controller interface to compare mechanisms. "
+                "Foundational System Paper contributes a typed event-record mechanism: it writes observation, action, time, provenance, and confidence into a structured record, reads it through a task-conditioned key, and passes the retrieved constraint to a planner. "
+                "Its evidence includes no-memory and no-retrieval ablations on a diagnostic benchmark, but its limitation is that dynamic updates and stale state remain weakly tested. "
+                "Benchmark System Paper then connects this node-level claim to evaluation by introducing oracle, wrong, and stale-memory conditions; the benchmark evidence clarifies whether memory, rather than perception or controller strength, caused the behavior.\n\n"
+                "## Benchmark Landscape\nBenchmark landscape, memory pressure, confounders, baselines, metrics, wrong-memory controls, and stale-memory controls are discussed.\n\n"
+                "## Node Matrix\nSystem node coverage is summarized after the prose case studies.\n\n"
+                "## Design Guidelines\nThe design implication is to report record schema, read key, update policy, controller interface, and memory-causal ablations together."
+            )
+
             result = validate_review_absorption(task_dir, target="full")
 
             self.assertTrue(result["valid"])
@@ -1341,7 +1497,7 @@ class SurveyAutoResearchScriptsTest(unittest.TestCase):
             gates = evaluate_gates(task_dir, target="full")
 
             self.assertFalse(gates["gate_4_output"]["passed"])
-            self.assertIn("benchmark landscape", gates["gate_4_output"]["missing_review_artifacts"])
+            self.assertIn("benchmark landscape", gates["gate_4_output"]["reader_artifact_warnings"])
             self.assertFalse(gates["all_blocking_gates_passed"])
 
             (task_dir / "outputs/review.md").write_text(
@@ -1748,8 +1904,17 @@ class SurveyAutoResearchScriptsTest(unittest.TestCase):
                 "".join(json.dumps(item) + "\n" for item in derive_paper_facts(full_cards))
             )
             self._write_depth_outputs(task_dir, target="csur")
+            anchor_context = "\n".join(
+                (
+                    f"Paper p{i} is treated as an article-facing anchor because its mechanism writes a typed record, "
+                    "reads that record through a task-conditioned key, and exposes the retrieved state to a planner interface. "
+                    "Within the taxonomy, it supports a system node that connects representation, retrieval, update policy, and evidence status. "
+                    "The benchmark evidence should be read through no-memory, wrong-memory, stale-memory, and oracle-memory ablations, while the limitation is that stale state and false recall remain possible confounders."
+                )
+                for i in range(6)
+            )
             (task_dir / "outputs/review.md").write_text(
-                self._rich_review_text(target="csur") + "\n" + " ".join(f"p{i}" for i in range(8))
+                self._rich_review_text(target="csur") + "\n\n## Additional Article-Facing Anchor Cases\n" + anchor_context
             )
 
             gates = evaluate_gates(task_dir, target="csur")

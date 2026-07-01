@@ -76,6 +76,12 @@ Calibration:
 | Tables appear without interpretation paragraphs | Table interpretation repair |
 | Case studies read like paper-card dumps | Case-study prose rewrite |
 | Review reads like state artifacts instead of an article | Publication prose translation and appendix split |
+| Review pastes full coverage or absorption matrix into the body | Article plan repair and appendix split |
+| Review repeats headings or template paragraphs to satisfy length | Semantic repetition repair and global rewrite |
+| Article lacks selected-table/case-box plan | Article plan pass |
+| Paper appears only in tables without prose mechanism context | Final-review absorption repair |
+| Review score is keyword-rich but prose is incoherent | Global coherence and publication prose pass |
+| Survey type template does not fit the topic | Survey type router and outline rewrite |
 | Missing visualizations | Figures and tables pass |
 | Process-correction language appears in review body | Section reorganization and final-report relocation |
 | Related-survey differentiation is only recency or breadth | Taxonomy redesign and related-survey matrix repair |

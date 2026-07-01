@@ -65,7 +65,7 @@ For `target=full`, `outputs/review.md` must also include CSUR/tutorial reader ar
 - multiple synthesis tables or boxes.
 - critical analysis of limitations, failure modes, disagreements, negative evidence, or counterexamples.
 
-A full survey with only a high-level conceptual framework fails Gate 4 even if all output files exist.
+A full survey with only a high-level conceptual framework fails even if all output files exist, but keyword-only reader-artifact checks are diagnostic warnings. Gate 7 is responsible for article-depth, prose, absorption, and coherence.
 
 Gate 4 also rejects review-body process leakage: user-audit narratives, scope-correction explanations, defensive framing, or statements that the review is correcting an earlier workflow. Put those notes in review rounds or `outputs/final_report.md`; rewrite the survey body as positive field synthesis.
 
@@ -154,28 +154,32 @@ CSUR target minimums:
 - at least 10 method-family entries.
 
 Required final-review artifacts:
+- `outputs/article_plan.md`;
 - `outputs/glossary.md`;
 - `outputs/running_example.md`;
 - `outputs/worked_examples.md`;
 - `outputs/benchmark_landscape.md`;
 - `outputs/method_taxonomy.md`;
 - `outputs/node_paper_matrix.md`;
+- `outputs/coverage_matrix.md`;
 - `outputs/evaluation_protocol.md`;
 - `outputs/design_guidelines.md`;
 - `outputs/section_dossiers/`.
 
-Gate 7 rejects a review that only names a framework, lists benchmarks, or contains fluent overview paragraphs. Paper cards must become structured worked examples, system-node cards must become a node-paper matrix, section cards must become section dossiers, and benchmark/method artifacts must be substantively summarized in `outputs/review.md`.
+Gate 7 rejects a review that only names a framework, lists benchmarks, or contains fluent overview paragraphs. Paper cards must become structured worked examples and selected prose case studies, system-node cards must become a node-paper matrix or interpreted system model, section cards must become section dossiers, and benchmark/method artifacts must be substantively summarized in `outputs/review.md`.
 
 Gate 7 also rejects artifact-dump prose:
 - repeated raw worked-example labels in `review.md`;
 - "该工作在本文中被读作" or equivalent state-file phrasing;
+- "本节面向", "下面的表", "这个矩阵", "核心文献吸收矩阵", or equivalent lecture/scaffold wording;
 - tables that are not introduced and interpreted;
 - sections that lack an opening thesis or closing implication;
-- article bodies that read like `state/` files or appendix material.
+- duplicate headings, repeated template paragraphs, and padding-like extended synthesis;
+- article bodies that read like `state/` files, appendices, or coverage matrices.
 
-The full set of worked examples may live in `outputs/worked_examples.md` or `outputs/appendix.md`. `review.md` should use a smaller set of publication-facing case-study boxes.
+The full set of worked examples may live in `outputs/worked_examples.md` or `outputs/appendix.md`. `review.md` should use a smaller set of publication-facing case-study boxes. Full coverage belongs in `outputs/coverage_matrix.md`, not in a raw "core literature absorption matrix" inside the article.
 
-Gate 7 also checks a review scorecard: newcomer, method-depth, benchmark-utility, and CSUR-style scores must each be at least 8/10.
+Gate 7 reports a review scorecard for debugging, but the blocking checks are depth, worked examples, benchmark/method/node artifacts, newcomer tutorial, card specificity, artifact absorption, publication prose, semantic repetition, and global coherence.
 
 ## Qualitative Final Review
 

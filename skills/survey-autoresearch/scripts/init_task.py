@@ -37,7 +37,9 @@ LOG_FILES = [
 OUTPUT_FILES = {
     "review.md": "",
     "review_body_draft.md": "",
+    "article_plan.md": "",
     "appendix.md": "",
+    "coverage_matrix.md": "",
     "evidence_table.csv": "claim_id,paper_id,evidence\n",
     "references.bib": "",
     "final_report.md": "",
@@ -122,7 +124,7 @@ reason: default field norm; set false only for explicitly preprint-heavy fields.
         "verified_refs": 0,
         "claims_total": 0,
         "gates_passed": [],
-        "next_action": "seed taxonomy and search plan",
+        "next_action": "write scope audit and mine multi-perspective research questions",
     }
     write_json(state_dir / "progress.json", progress)
     write_json(state_dir / "heartbeat.json", {"last_seen": now, "source": "init_task"})

@@ -15,6 +15,8 @@ Use these as writing-craft cues, not as default CSUR exemplars:
 
 When drafting, translate these cues into concrete artifacts: thesis, conceptual model, field map, benchmark landscape, method taxonomy, design pipeline, synthesis tables, evidence ladder, related-survey differentiation, and research agenda.
 
+Artifacts are not the article. Use `references/article_layer.md` and `references/publication_prose_translation.md` before final drafting: research artifacts support the article, synthesis artifacts organize the article, and `review.md` must read like publication-facing prose.
+
 ## What Strong Reviews Do
 
 1. **Teach a lens**: the reader should leave with a framework, not only a bibliography.
@@ -43,6 +45,8 @@ Write these before or during synthesis:
 - An evaluation protocol section with metrics, baselines, ablations, confounders, stress tests, and reporting checklist.
 - Practical design guidelines or a decision table that helps readers choose a method family for a concrete problem.
 - At least three synthesis tables or boxes for a full-length review.
+- `outputs/article_plan.md` selecting article-facing tables, case-study boxes, appendix-facing exhaustive artifacts, and section transitions.
+- `outputs/coverage_matrix.md` mapping the broad literature; summarize it in the article rather than pasting the full matrix.
 - A "take-home findings" or equivalent synthesis section.
 - An open-problem section where each problem has: evidence gap, why it matters, and a concrete research move.
 
