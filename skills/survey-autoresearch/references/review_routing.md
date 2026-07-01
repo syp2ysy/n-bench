@@ -64,6 +64,14 @@ Calibration:
 | CSUR style patterns copied, not mined | CSUR rhetoric mining repair |
 | Claims cite paper IDs but not card fields | Claim trace repair |
 | Synthesis tables not derived from cards | Table rebuild from paper cards |
+| Review reads like expanded outline or proposal | Review-depth repair and section dossier rebuild |
+| Newcomer cannot explain the field after reading | Tutorial primer, glossary, and running-example repair |
+| Major method families lack mechanism explanation | Method taxonomy rebuild and worked-example expansion |
+| Core papers are only name-dropped | Worked-paper-example pass |
+| Benchmark section lists names without metrics/baselines/confounders | Benchmark landscape rebuild |
+| Paper cards exist but do not appear in final review | Final-review absorption repair |
+| Section cards compress into short overview prose | Section dossier expansion |
+| Paper cards use template fields instead of paper-specific mechanisms | Paper-card specificity repair |
 | Missing visualizations | Figures and tables pass |
 | Process-correction language appears in review body | Section reorganization and final-report relocation |
 | Related-survey differentiation is only recency or breadth | Taxonomy redesign and related-survey matrix repair |

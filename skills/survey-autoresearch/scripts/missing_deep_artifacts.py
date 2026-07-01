@@ -24,6 +24,7 @@ def analyze_missing_deep_artifacts(
     node_cards: list[dict],
     section_cards: list[dict],
     claims: list[dict] | None = None,
+    outputs_dir: Path | None = None,
 ) -> dict:
     ab_ids = {
         item.get("paper_id")
@@ -45,12 +46,36 @@ def analyze_missing_deep_artifacts(
             if paper_id not in card_ids:
                 claims_without_card_trace.append(claim.get("claim_id") or paper_id)
                 break
+    missing_output_artifacts: list[str] = []
+    section_dossiers = 0
+    if outputs_dir is not None:
+        required_outputs = [
+            "worked_examples.md",
+            "benchmark_landscape.md",
+            "method_taxonomy.md",
+            "node_paper_matrix.md",
+            "glossary.md",
+            "running_example.md",
+            "evaluation_protocol.md",
+            "design_guidelines.md",
+        ]
+        missing_output_artifacts = [
+            f"outputs/{name}"
+            for name in required_outputs
+            if not (outputs_dir / name).exists() or not (outputs_dir / name).read_text(encoding="utf-8").strip()
+        ]
+        dossier_dir = outputs_dir / "section_dossiers"
+        section_dossiers = len(list(dossier_dir.glob("*.md"))) if dossier_dir.exists() else 0
+        if section_dossiers == 0:
+            missing_output_artifacts.append("outputs/section_dossiers")
     return {
         "missing_paper_cards": sorted(ab_ids - card_ids),
         "uncovered_system_nodes": sorted(node for node in card_nodes - node_names if node),
         "paper_cards_without_node": sorted(item.get("paper_id") for item in paper_cards if not (item.get("system_node") or item.get("memory_node"))),
         "sections_without_cards": sorted(set() if section_ids or section_titles else {"review_sections_unknown"}),
         "claims_without_card_trace": sorted(set(claims_without_card_trace)),
+        "missing_output_artifacts": missing_output_artifacts,
+        "section_dossiers": section_dossiers,
     }
 
 
@@ -66,6 +91,7 @@ def main() -> int:
         read_jsonl(state / "system_node_cards.jsonl"),
         read_jsonl(state / "section_cards.jsonl"),
         read_jsonl(state / "claims.jsonl"),
+        args.task_dir / "outputs",
     )
     text = json.dumps(result, indent=2, sort_keys=True) + "\n"
     if args.output:

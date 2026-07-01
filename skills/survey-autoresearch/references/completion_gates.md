@@ -135,6 +135,39 @@ Additional checks:
 - synthesis tables include metrics, ablations, and method/record-schema comparison, and are traceable to paper cards;
 - figure plan includes at least three planned figures or table designs.
 
+## Gate 7: Review Depth
+
+For `target=full` and `target=csur`, pass only when the final review absorbs the deep artifacts into tutorial survey prose.
+
+Full target minimums:
+- `outputs/review.md` has at least 35,000 Chinese characters or equivalent article-scale content;
+- at least 10 H3-level method/tutorial subsections;
+- at least 12 worked paper examples;
+- at least 10 benchmark landscape entries with metrics, baselines, memory pressure, ablations, and confounders;
+- at least 8 method-family entries with representation, memory record, write trigger, read key, update policy, controller interface, failure mode, representative works, and best benchmarks.
+
+CSUR target minimums:
+- `outputs/review.md` has at least 60,000 Chinese characters or equivalent article-scale content;
+- at least 18 H3-level method/tutorial subsections;
+- at least 25 worked paper examples;
+- at least 18 benchmark landscape entries;
+- at least 10 method-family entries.
+
+Required final-review artifacts:
+- `outputs/glossary.md`;
+- `outputs/running_example.md`;
+- `outputs/worked_examples.md`;
+- `outputs/benchmark_landscape.md`;
+- `outputs/method_taxonomy.md`;
+- `outputs/node_paper_matrix.md`;
+- `outputs/evaluation_protocol.md`;
+- `outputs/design_guidelines.md`;
+- `outputs/section_dossiers/`.
+
+Gate 7 rejects a review that only names a framework, lists benchmarks, or contains fluent overview paragraphs. Paper cards must become worked examples, system-node cards must become a node-paper matrix, section cards must become section dossiers, and benchmark/method artifacts must be embedded or substantively summarized in `outputs/review.md`.
+
+Gate 7 also checks a review scorecard: newcomer, method-depth, benchmark-utility, and CSUR-style scores must each be at least 8/10.
+
 ## Qualitative Final Review
 
 Record this as `final_review_status`, not as a deterministic gate. Pass when:

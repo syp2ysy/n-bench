@@ -109,7 +109,17 @@ PHASES = [
         "title": "Phase 9: Synthesis",
         "purpose": "Write review outputs from paper cards, node cards, section cards, claims, and verified citations.",
         "inputs": ["state/section_cards.jsonl", "state/paper_cards.jsonl", "state/claims.jsonl", "state/citation_plan.jsonl"],
-        "outputs": ["outputs/review.md", "outputs/evidence_table.csv", "outputs/references.bib", "outputs/synthesis_tables.md", "outputs/figures_plan.md"],
+        "outputs": [
+            "outputs/review.md",
+            "outputs/evidence_table.csv",
+            "outputs/references.bib",
+            "outputs/synthesis_tables.md",
+            "outputs/figures_plan.md",
+            "outputs/worked_examples.md",
+            "outputs/benchmark_landscape.md",
+            "outputs/method_taxonomy.md",
+            "outputs/node_paper_matrix.md",
+        ],
         "checks": ["Output files are nonempty", "claims are linked to evidence", "sections follow their cards"],
     },
     {
@@ -419,6 +429,8 @@ def render_gate_board(gates: dict) -> str:
         gate_names.append(("gate_5_deep_synthesis", "Deep Synthesis"))
     if "gate_6_csur_readiness" in gates:
         gate_names.append(("gate_6_csur_readiness", "CSUR"))
+    if "gate_7_review_depth" in gates:
+        gate_names.append(("gate_7_review_depth", "Review Depth"))
     cards = []
     for gate_id, label in gate_names:
         gate = gates.get(gate_id, {})
@@ -441,6 +453,16 @@ def render_gate_board(gates: dict) -> str:
                 total = len(checks)
                 passed = sum(1 for item in checks if isinstance(item, dict) and item.get("passed"))
             detail = f"<div class=\"muted\">checks {html_escape(passed)}/{html_escape(total)}</div>"
+        elif gate_id == "gate_7_review_depth":
+            checks = gate.get("checks", {})
+            total = len(checks)
+            passed = sum(1 for item in checks.values() if bool(item)) if isinstance(checks, dict) else 0
+            depth = gate.get("review_depth", {})
+            detail = (
+                f"<div class=\"muted\">checks {html_escape(passed)}/{html_escape(total)}</div>"
+                f"<div class=\"muted\">chars {html_escape(depth.get('chars', 0))}/"
+                f"{html_escape(depth.get('min_chars', 'n/a'))}</div>"
+            )
         cards.append(
             f'<div class="card"><h3>{html_escape(label)}</h3>{gate_label(bool(gate.get("passed")))}{detail}</div>'
         )
@@ -455,6 +477,14 @@ def artifact_links(prefix: str = "../") -> str:
         "outputs/evidence_table.csv",
         "outputs/references.bib",
         "outputs/final_report.md",
+        "outputs/glossary.md",
+        "outputs/running_example.md",
+        "outputs/worked_examples.md",
+        "outputs/benchmark_landscape.md",
+        "outputs/method_taxonomy.md",
+        "outputs/node_paper_matrix.md",
+        "outputs/evaluation_protocol.md",
+        "outputs/design_guidelines.md",
         "state/progress.json",
         "state/claims.jsonl",
         "state/citation_plan.jsonl",

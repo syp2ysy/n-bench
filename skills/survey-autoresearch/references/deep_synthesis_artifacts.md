@@ -10,6 +10,7 @@ Use this reference for `target=full` and `target=csur` before drafting `outputs/
 4. Build `state/system_node_cards.jsonl` from the paper cards.
 5. Derive taxonomy and section plan from node coverage, not from seed keywords alone.
 6. Write `outputs/conceptual_framework.md` before `outputs/review.md`.
+7. Convert deep artifacts into final-review artifacts before drafting: `worked_examples.md`, `benchmark_landscape.md`, `method_taxonomy.md`, `node_paper_matrix.md`, `glossary.md`, `running_example.md`, `evaluation_protocol.md`, `design_guidelines.md`, and `section_dossiers/`.
 
 `state/research_questions_by_perspective.md` is the exploration layer. `state/research_questions.md` is the converged layer. Each final research question should state which perspective questions it derives from.
 
@@ -78,3 +79,13 @@ Representative papers must exist in `state/paper_cards.jsonl`. Every nonempty `s
 6. what the framework explains that prior surveys do not.
 
 This file is the bridge between literature extraction and article prose.
+
+## Final-Review Absorption
+
+The cards are not the deliverable. For full and CSUR targets:
+
+- A papers must become worked examples in `outputs/worked_examples.md` and `outputs/review.md`.
+- B papers must appear in comparison tables such as method taxonomy, benchmark landscape, or node-paper matrix.
+- System-node cards must become a node-paper matrix with mechanism pattern, evidence, failure mode, and evaluation signal.
+- Section cards must become section dossiers before article prose is drafted.
+- A final review that only summarizes the cards into high-level prose fails the review-depth gate.

@@ -42,6 +42,14 @@ OUTPUT_FILES = {
     "synthesis_tables.md": "",
     "figures_plan.md": "",
     "conceptual_framework.md": "",
+    "glossary.md": "",
+    "running_example.md": "",
+    "worked_examples.md": "",
+    "benchmark_landscape.md": "",
+    "method_taxonomy.md": "",
+    "node_paper_matrix.md": "",
+    "evaluation_protocol.md": "",
+    "design_guidelines.md": "",
 }
 
 
@@ -127,6 +135,7 @@ reason: default field norm; set false only for explicitly preprint-heavy fields.
             "gate_4_output": False,
             "gate_5_deep_synthesis": False,
             "gate_6_csur_readiness": False,
+            "gate_7_review_depth": False,
             "final_review_status": False,
         },
     )
@@ -140,6 +149,7 @@ reason: default field norm; set false only for explicitly preprint-heavy fields.
     (state_dir / "related_surveys.md").write_text("", encoding="utf-8")
     (state_dir / "csur_imitation_plan.md").write_text("", encoding="utf-8")
     (state_dir / "csur_style_patterns.yml").write_text("", encoding="utf-8")
+    (state_dir / "csur_paragraph_patterns.yml").write_text("", encoding="utf-8")
     (state_dir / "paper_facts.jsonl").touch()
 
     for filename in STATE_FILES:
@@ -148,6 +158,7 @@ reason: default field norm; set false only for explicitly preprint-heavy fields.
         (logs_dir / filename).touch()
     for filename, content in OUTPUT_FILES.items():
         (outputs_dir / filename).write_text(content, encoding="utf-8")
+    (outputs_dir / "section_dossiers").mkdir(exist_ok=True)
 
     log_line = {
         "ts": now,

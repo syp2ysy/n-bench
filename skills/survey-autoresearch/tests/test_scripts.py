@@ -12,9 +12,19 @@ from scripts.render_dashboard import DashboardRenderError, render_dashboard
 from scripts.score_lqs import classify_depth, score_paper
 from scripts.validate_claims import validate_claim_records
 from scripts.validate_csur_style_patterns import validate_csur_style_patterns
+from scripts.validate_csur_paragraph_patterns import validate_csur_paragraph_patterns
 from scripts.validate_node_cards import validate_node_cards
 from scripts.validate_paper_cards import validate_paper_cards
 from scripts.validate_section_cards import validate_section_cards
+from scripts.validate_review_depth import validate_review_depth
+from scripts.validate_worked_examples import validate_worked_examples
+from scripts.validate_benchmark_landscape import validate_benchmark_landscape
+from scripts.validate_method_taxonomy import validate_method_taxonomy
+from scripts.validate_node_paper_matrix import validate_node_paper_matrix
+from scripts.validate_newcomer_tutorial import validate_newcomer_tutorial
+from scripts.validate_card_specificity import validate_card_specificity
+from scripts.validate_review_absorption import validate_review_absorption
+from scripts.review_scorecard import score_review
 from scripts.derive_paper_facts import derive_paper_facts
 
 
@@ -99,6 +109,29 @@ class SurveyAutoResearchScriptsTest(unittest.TestCase):
             "forbidden_surface_forms:\n"
             "  - Paper A proposes\n"
             "  - This section surveys\n"
+        )
+
+    def _valid_csur_paragraph_patterns(self) -> str:
+        names = [
+            "introduction_paragraph",
+            "tutorial_definition_paragraph",
+            "taxonomy_opening_paragraph",
+            "method_comparison_paragraph",
+            "benchmark_paragraph",
+            "limitation_paragraph",
+            "open_challenge_paragraph",
+            "conclusion_agenda_paragraph",
+        ]
+        return "\n".join(
+            f"{name}:\n"
+            "  when_to_use: Use when drafting the corresponding survey paragraph.\n"
+            "  paragraph_moves:\n"
+            "    - define the reader question\n"
+            "    - compare mechanisms or evidence\n"
+            "    - close with design implication\n"
+            "  evidence_from_exemplar: Observed in official ACM Computing Surveys rhetoric notes.\n"
+            "  forbidden_shortcut: Do not list papers without mechanism explanation.\n"
+            for name in names
         )
 
     def _valid_paper_cards(self) -> list[dict]:
@@ -204,6 +237,176 @@ class SurveyAutoResearchScriptsTest(unittest.TestCase):
             }
         ]
 
+    def _rich_review_text(self, *, target: str = "full") -> str:
+        examples = []
+        for i in range(12 if target == "full" else 25):
+            paper_id = "p1" if i % 2 == 0 else "p2"
+            examples.append(
+                f"### Worked example {i + 1}: Paper {paper_id}\n"
+                f"Paper ID: {paper_id}. Problem: this system explains how a typed memory record enters later decisions. "
+                "Memory record: observation, action, timestamp, provenance, confidence, and task state. "
+                "Write policy: append or revise records at event boundaries. Read policy: task-conditioned retrieval with spatial and temporal keys. "
+                "Update policy: consolidate repeated events and mark stale records. Controller interface: planner receives a retrieved constraint before action selection. "
+                "Benchmark evidence: no-memory, oracle-memory, wrong-memory, latency, and capacity conditions identify whether memory changes behavior. "
+                "Failure mode: stale state and false recall. Design lesson: record schema, access key, and control interface must be evaluated together.\n"
+            )
+        h3_sections = "\n".join(
+            f"### Method family {i}: structured tutorial subsection\n"
+            "This subsection defines the method family, explains its memory representation, contrasts write and read policies, "
+            "links controller interfaces to benchmark evidence, and closes with a design lesson about failure modes and ablations.\n"
+            for i in range(1, 11)
+        )
+        filler = " ".join(
+            [
+                "A tutorial survey must define the concept, explain the mechanism, compare method families, dissect representative papers, "
+                "describe benchmark protocols, state metrics and baselines, and connect open problems to concrete evidence gaps."
+            ]
+            * (220 if target == "full" else 380)
+        )
+        return (
+            "# Rich Tutorial Survey\n\n"
+            "## Tutorial Primer: Embodied Memory in One Running Example\n"
+            "Glossary terms: embodied memory, episodic memory, semantic memory, spatial memory, procedural memory, semantic map, topological graph, "
+            "3D scene memory, retrieval memory, VLA working memory, stale memory, oracle memory, wrong-memory injection, and memory-causal ablation. "
+            "Running example: a robot records an observation, writes an object-state tuple, stores short-term and long-term memories, retrieves by object plus time plus place, "
+            "updates stale records, sends a route constraint to the planner, and is evaluated with no-memory, wrong-memory, and oracle-memory controls.\n\n"
+            "## System Model\n"
+            "| node | input | output | representative papers | failure mode | evaluation |\n"
+            "| --- | --- | --- | --- | --- | --- |\n"
+            "| capture | frame, pose, action | typed record | p1, p2 | missing provenance | no-record ablation |\n"
+            "| retrieval | query, goal | evidence, constraint | p1, p2 | false recall | oracle/wrong-memory tests |\n\n"
+            "## Related Surveys\n"
+            "Related surveys are positioned by organizing lens, missing evidence matrix, benchmark coverage, and method taxonomy gaps.\n\n"
+            + h3_sections
+            + "\n## Method Taxonomy\n"
+            "| method family | representation | memory record | write trigger | read key | update policy | controller interface | strength | failure mode | representative works | best benchmarks |\n"
+            "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |\n"
+            + "".join(
+                f"| family {i} | structured state | record fields | event boundary | task key | revise stale records | planner or policy | interpretable | stale state | p1, p2 | benchmark {i} |\n"
+                for i in range(1, 9 if target == "full" else 11)
+            )
+            + "\n## Benchmark Landscape\n"
+            "| benchmark | task family | environment | memory pressure | required memory fields | input/output | metrics | baselines | memory-specific ablations | confounders | best-suited method families | representative papers |\n"
+            "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |\n"
+            + "".join(
+                f"| benchmark {i} | task | simulator | long-horizon record validity | object, place, time | observation/action | success, latency | no-memory, oracle-memory | wrong-memory, stale-memory | perception and planner strength | family {i} | p1, p2 |\n"
+                for i in range(1, 11 if target == "full" else 19)
+            )
+            + "\n## Worked Paper Examples\n"
+            + "\n".join(examples)
+            + "\n## Method Design Pipeline\n"
+            "The method design pipeline starts from memory pressure, selects a memory record schema, chooses a store family, defines write policy, read key, update policy, and controller interface, then designs memory-causal ablations.\n\n"
+            + "\n## Evaluation Protocol\n"
+            "| condition | purpose | expected evidence |\n| --- | --- | --- |\n| no-memory | checks reliance | success drop |\n| oracle-memory | estimates upper bound | recoverable failures |\n| wrong-memory | detects false recall | rejection or repair |\n\n"
+            "## Failure Modes\n"
+            "| failure mode | cause | diagnostic test | design response |\n| --- | --- | --- | --- |\n| stale memory | outdated state | stale injection | update or decay |\n| ignored memory | weak interface | action attribution | tighter controller interface |\n\n"
+            "## Tutorial Glossary Table\n"
+            "| term | plain explanation |\n| --- | --- |\n| memory record | typed evidence used by future actions |\n| read key | query used to retrieve memory |\n\n"
+            "## Node-Paper Matrix\n"
+            "| system node | representative papers | mechanism pattern | evaluation signal |\n| --- | --- | --- | --- |\n| capture | p1, p2 | event record | no-memory test |\n\n"
+            "## Evidence Trace Table\n"
+            "| claim | paper | evidence span | design lesson |\n| --- | --- | --- | --- |\n| memory changes action | p1 | no-memory ablation | expose controller interface |\n\n"
+            "## Design Guidelines\n"
+            "Choose schema, store, read key, update policy, controller interface, and evaluation protocol before claiming memory contribution.\n\n"
+            "## Open Problems\n"
+            "Each open problem links an evidence gap to a benchmark or method move: dynamic update tests, privacy deletion, latency-aware control, and provenance-aware shared records.\n\n"
+            "## Critical Analysis\n"
+            "Benchmark limitations, failure modes, trade-offs, and negative evidence show where method families disagree. "
+            + filler
+        )
+
+    def _write_depth_outputs(self, task_dir: Path, *, target: str = "full") -> None:
+        worked = []
+        for i in range(12 if target == "full" else 25):
+            paper_id = "p1" if i % 2 == 0 else "p2"
+            worked.append(
+                f"### Worked example: Paper {paper_id} example {i + 1}\n\n"
+                f"- Paper ID: {paper_id}\n"
+                "- Problem: Explain whether memory records change a later decision.\n"
+                "- Memory record: observation, action, timestamp, provenance, confidence, and task state.\n"
+                "- Write policy: append typed records at event boundaries and revise stale records.\n"
+                "- Read policy: task-conditioned retrieval with semantic, spatial, and temporal keys.\n"
+                "- Update / consolidation: summarize repeated episodes and mark contradictions.\n"
+                "- Controller interface: planner receives a retrieved constraint before action selection.\n"
+                "- Benchmark / task: diagnostic benchmark with task success and latency.\n"
+                "- Ablation evidence: no-memory, oracle-memory, wrong-memory, stale-memory, and capacity tests.\n"
+                "- Failure mode: stale state and false recall.\n"
+                "- Design lesson: record schema and controller interface must be evaluated together.\n"
+            )
+        (task_dir / "outputs/worked_examples.md").write_text("# Worked Examples\n\n" + "\n".join(worked))
+        (task_dir / "outputs/benchmark_landscape.md").write_text(
+            "# Benchmark Landscape\n\n"
+            "| Benchmark | Task family | Environment | Memory pressure | Required memory fields | Input / Output | Metrics | Baselines | Memory-specific ablations | Confounders | Best-suited method families | Representative papers |\n"
+            "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |\n"
+            + "".join(
+                f"| benchmark {i} | task | simulator | long-horizon record validity | object, place, time | observation/action | success, latency | no-memory, oracle-memory | wrong-memory, stale-memory | perception and planner strength | family {i} | p1, p2 |\n"
+                for i in range(1, 11 if target == "full" else 19)
+            )
+        )
+        (task_dir / "outputs/method_taxonomy.md").write_text(
+            "# Method Taxonomy\n\n"
+            "| Method family | Representation | Memory record | Write trigger | Read key | Update policy | Controller interface | Strength | Failure mode | Representative works | Best benchmarks |\n"
+            "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |\n"
+            + "".join(
+                f"| family {i} | structured state | observation, action, time | event boundary | task-conditioned key | revise stale records | planner or policy | interpretable | stale state | p1, p2 | benchmark {i} |\n"
+                for i in range(1, 9 if target == "full" else 11)
+            )
+        )
+        (task_dir / "outputs/node_paper_matrix.md").write_text(
+            "# Node Paper Matrix\n\n"
+            "| System node | What it does | Representative papers | Mechanism pattern | Evidence | Failure mode | Evaluation signal |\n"
+            "| --- | --- | --- | --- | --- | --- | --- |\n"
+            "| state capture | converts interaction history into typed records | p1, p2 | event record with provenance | no-record ablation | missing provenance | no-memory test |\n"
+            "| evaluation | diagnoses whether memory changes behavior | p1, p2 | oracle/wrong/stale tests | diagnostic benchmark | confounded gains | causal ablation |\n"
+        )
+        (task_dir / "outputs/glossary.md").write_text(
+            "# Glossary\n\n"
+            "- embodied memory: records that connect embodied experience to later action.\n"
+            "- episodic memory: event-level records of observations and actions.\n"
+            "- semantic memory: stable facts or object relations.\n"
+            "- spatial memory: map or graph-grounded state.\n"
+            "- procedural memory: reusable skills or action programs.\n"
+            "- semantic map: spatial map with semantic labels.\n"
+            "- topological graph: graph of places or states.\n"
+            "- 3D scene memory: three-dimensional scene state used for reasoning.\n"
+            "- retrieval memory: external store read by semantic, spatial, or temporal keys.\n"
+            "- VLA working memory: short-horizon memory used by vision-language-action policies.\n"
+            "- stale memory: old records that conflict with current state.\n"
+            "- oracle memory: ideal memory condition used as an upper-bound control.\n"
+            "- wrong-memory injection: negative control using incorrect memory.\n"
+            "- memory-causal ablation: experiment that isolates whether memory changes behavior.\n"
+        )
+        (task_dir / "outputs/running_example.md").write_text(
+            "# Running Example\n\n"
+            "Capture: RGB-D frame, pose, timestamp, and action are recorded. Representation: the object becomes an object-state tuple in a semantic map. "
+            "Storage: the current episode and long-term object memory are separated. Retrieval: the system reads by object, time, and place. "
+            "Update: stale records are marked or overwritten. Controller: the planner receives a navigation subgoal or manipulation precondition. "
+            "Evaluation: no-memory, wrong-memory, and oracle-memory controls test whether memory is causally used.\n"
+        )
+        (task_dir / "outputs/evaluation_protocol.md").write_text(
+            "# Evaluation Protocol\n\n| Condition | Purpose | Metric |\n| --- | --- | --- |\n| no-memory | reliance | success drop |\n| oracle-memory | upper bound | recoverable failures |\n| wrong-memory | false recall | rejection rate |\n"
+        )
+        (task_dir / "outputs/design_guidelines.md").write_text(
+            "# Design Guidelines\n\nChoose memory schema, store family, read key, update policy, controller interface, and causal ablation before implementation claims.\n"
+        )
+        dossier_dir = task_dir / "outputs/section_dossiers"
+        dossier_dir.mkdir(exist_ok=True)
+        for i in range(1, 4):
+            (dossier_dir / f"section_{i:02d}.md").write_text(
+                f"# Section Dossier {i}\n\n"
+                "1. Section thesis: explain mechanisms, not only topics.\n"
+                "2. Reader question: what should the reader learn?\n"
+                "3. Required definitions: memory record, read key, controller interface.\n"
+                "4. Running example continuation: connect the robot example to this section.\n"
+                "5. Method families or benchmark families: compare design choices.\n"
+                "6. Worked paper examples: p1 and p2.\n"
+                "7. Comparison table: mechanism versus evidence.\n"
+                "8. Benchmark tie-in: no-memory, oracle-memory, wrong-memory.\n"
+                "9. Failure modes: stale state and false recall.\n"
+                "10. Open questions: update and latency.\n"
+                "11. Required citations and evidence spans: p1, p2.\n"
+            )
+
     def _write_deep_artifacts(self, task_dir: Path, *, include_csur_style: bool = False) -> None:
         (task_dir / "state/paper_cards.jsonl").write_text(
             "".join(json.dumps(item) + "\n" for item in self._valid_paper_cards())
@@ -229,6 +432,9 @@ class SurveyAutoResearchScriptsTest(unittest.TestCase):
         if include_csur_style:
             (task_dir / "state/csur_style_patterns.yml").write_text(
                 self._valid_csur_style_patterns()
+            )
+            (task_dir / "state/csur_paragraph_patterns.yml").write_text(
+                self._valid_csur_paragraph_patterns()
             )
 
     def _write_full_survey_fixture(
@@ -262,15 +468,7 @@ class SurveyAutoResearchScriptsTest(unittest.TestCase):
                 "paper_card_fields": {"p1": ["what_it_teaches_the_survey", "mechanism_or_contribution"]},
             }
         ]
-        default_review = (
-            "# Survey\n\n"
-            "## Benchmark Landscape\n| benchmark | task | metric |\n| --- | --- | --- |\n| A | B | C |\n\n"
-            "## Method Taxonomy\n| method family | design choice |\n| --- | --- |\n| A | B |\n\n"
-            "## Method Design Pipeline\nThe design pipeline moves from problem framing to representation, integration, and evaluation.\n\n"
-            "## Evaluation Protocol\nMetrics include task success, utility, latency, resource budget, and ablations.\n\n"
-            "## Practical Design Guidelines\nGuidelines help readers choose a method family and ablation suite.\n\n"
-            "## Critical Analysis\nBenchmark limitations and failure modes show where method families disagree."
-        )
+        default_review = self._rich_review_text(target=target)
         (task_dir / "state/task_spec.md").write_text(
             f"# Task Spec\n\nTopic: {topic}\nTarget: {target}\nOutput mode: markdown\n"
         )
@@ -296,6 +494,7 @@ class SurveyAutoResearchScriptsTest(unittest.TestCase):
         (task_dir / "outputs/references.bib").write_text("@article{p1,title={X}}\n")
         (task_dir / "outputs/final_report.md").write_text("status: Complete\n")
         self._write_deep_artifacts(task_dir, include_csur_style=target == "csur")
+        self._write_depth_outputs(task_dir, target=target)
         if with_verification_log:
             (task_dir / "logs/verification.jsonl").write_text(
                 "".join(
@@ -351,6 +550,9 @@ class SurveyAutoResearchScriptsTest(unittest.TestCase):
             (task_dir / "state/csur_imitation_plan.md").write_text(
                 self._valid_csur_imitation_plan()
             )
+            (task_dir / "state/csur_paragraph_patterns.yml").write_text(
+                self._valid_csur_paragraph_patterns()
+            )
 
     def test_initialize_task_creates_state_logs_outputs(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -374,6 +576,7 @@ class SurveyAutoResearchScriptsTest(unittest.TestCase):
                 "state/taxonomy.md",
                 "state/csur_imitation_plan.md",
                 "state/csur_style_patterns.yml",
+                "state/csur_paragraph_patterns.yml",
                 "state/paper_cards.jsonl",
                 "state/coverage.json",
                 "state/directions_tried.json",
@@ -397,6 +600,15 @@ class SurveyAutoResearchScriptsTest(unittest.TestCase):
                 "outputs/references.bib",
                 "outputs/final_report.md",
                 "outputs/conceptual_framework.md",
+                "outputs/glossary.md",
+                "outputs/running_example.md",
+                "outputs/worked_examples.md",
+                "outputs/benchmark_landscape.md",
+                "outputs/method_taxonomy.md",
+                "outputs/node_paper_matrix.md",
+                "outputs/evaluation_protocol.md",
+                "outputs/design_guidelines.md",
+                "outputs/section_dossiers",
             ]:
                 self.assertTrue((task_dir / rel).exists(), rel)
 
@@ -407,6 +619,7 @@ class SurveyAutoResearchScriptsTest(unittest.TestCase):
             completion_gates = json.loads((task_dir / "state/completion_gates.json").read_text())
             self.assertIn("gate_5_deep_synthesis", completion_gates)
             self.assertIn("gate_6_csur_readiness", completion_gates)
+            self.assertIn("gate_7_review_depth", completion_gates)
             self.assertIn("final_review_status", completion_gates)
             self.assertNotIn("gate_5_review", completion_gates)
 
@@ -675,6 +888,17 @@ class SurveyAutoResearchScriptsTest(unittest.TestCase):
         self.assertFalse(result["valid"])
         self.assertIn("exemplar_evidence", result["missing"])
 
+    def test_validate_csur_paragraph_patterns_requires_all_core_paragraph_moves(self):
+        result = validate_csur_paragraph_patterns("introduction_paragraph:\n  paragraph_moves: []\n")
+
+        self.assertFalse(result["valid"])
+        self.assertIn("tutorial_definition_paragraph", result["missing_patterns"])
+        self.assertIn("evidence_from_exemplar", result["missing_fields"])
+
+        valid = validate_csur_paragraph_patterns(self._valid_csur_paragraph_patterns())
+
+        self.assertTrue(valid["valid"])
+
     def test_validate_claim_records_requires_evidence_and_known_papers(self):
         claims = [
             {
@@ -742,6 +966,145 @@ class SurveyAutoResearchScriptsTest(unittest.TestCase):
 
             self.assertNotEqual(result.returncode, 0)
             self.assertIn("paper_card trace fields unavailable", result.stdout)
+
+    def test_validate_review_depth_rejects_outline_expansion(self):
+        shallow_review = (
+            "# Survey\n\n"
+            "## System Model\nA seven-node framework is proposed.\n\n"
+            "## Benchmark Landscape\nGOAT-Bench, OpenEQA, and ALFRED are useful benchmarks.\n\n"
+            "## Method Taxonomy\nMethods include maps, retrieval, and VLA memory.\n\n"
+            "## Evaluation Protocol\nUse ablations.\n"
+        )
+
+        result = validate_review_depth(shallow_review, target="full")
+
+        self.assertFalse(result["valid"])
+        self.assertIn("length", result["failed_checks"])
+        self.assertIn("worked_examples", result["failed_checks"])
+        self.assertIn("benchmark_entries", result["failed_checks"])
+        self.assertIn("method_families", result["failed_checks"])
+
+    def test_validate_review_depth_accepts_rich_tutorial_review(self):
+        result = validate_review_depth(self._rich_review_text(target="full"), target="full")
+
+        self.assertTrue(result["valid"])
+        self.assertGreaterEqual(result["h3_count"], 10)
+        self.assertGreaterEqual(result["worked_examples"], 12)
+
+    def test_validate_worked_examples_requires_mechanism_interface_and_evidence(self):
+        bad = "### Worked example: Paper p1\n\n- Problem: too short\n"
+
+        result = validate_worked_examples(bad, self._valid_paper_cards(), target="full")
+
+        self.assertFalse(result["valid"])
+        self.assertIn("insufficient_examples", result["failed_checks"])
+        self.assertIn("incomplete_example", "\n".join(result["errors"]))
+
+        with tempfile.TemporaryDirectory() as tmp:
+            task_dir = Path(tmp)
+            (task_dir / "outputs").mkdir()
+            self._write_depth_outputs(task_dir, target="full")
+            result = validate_worked_examples(
+                (task_dir / "outputs/worked_examples.md").read_text(),
+                self._valid_paper_cards(),
+                target="full",
+            )
+
+        self.assertTrue(result["valid"])
+
+    def test_validate_benchmark_landscape_requires_metrics_baselines_and_confounders(self):
+        bad = (
+            "| Benchmark | Task |\n"
+            "| --- | --- |\n"
+            "| GOAT-Bench | navigation |\n"
+        )
+
+        result = validate_benchmark_landscape(bad, target="full")
+
+        self.assertFalse(result["valid"])
+        self.assertIn("missing_columns", result["failed_checks"])
+
+        with tempfile.TemporaryDirectory() as tmp:
+            task_dir = Path(tmp)
+            (task_dir / "outputs").mkdir()
+            self._write_depth_outputs(task_dir, target="full")
+            result = validate_benchmark_landscape(
+                (task_dir / "outputs/benchmark_landscape.md").read_text(),
+                target="full",
+            )
+
+        self.assertTrue(result["valid"])
+
+    def test_validate_method_taxonomy_rejects_concept_buckets(self):
+        bad = (
+            "| Method family | Representative works |\n"
+            "| --- | --- |\n"
+            "| maps | p1 |\n"
+            "| retrieval | p2 |\n"
+        )
+
+        result = validate_method_taxonomy(bad, target="full")
+
+        self.assertFalse(result["valid"])
+        self.assertIn("missing_columns", result["failed_checks"])
+
+    def test_validate_node_paper_matrix_requires_mechanism_and_evaluation(self):
+        bad = (
+            "| System node | What it does | Representative papers |\n"
+            "| --- | --- | --- |\n"
+            "| retrieval | reads memory | p1 |\n"
+        )
+
+        result = validate_node_paper_matrix(bad)
+
+        self.assertFalse(result["valid"])
+        self.assertIn("missing_columns", result["failed_checks"])
+
+    def test_validate_newcomer_tutorial_requires_glossary_and_running_example(self):
+        review = "# Survey\n\n## Introduction\nMemory matters."
+
+        result = validate_newcomer_tutorial(review, "", "")
+
+        self.assertFalse(result["valid"])
+        self.assertIn("missing_tutorial_section", result["failed_checks"])
+        self.assertIn("missing_glossary_terms", result["failed_checks"])
+        self.assertIn("missing_running_example_steps", result["failed_checks"])
+
+    def test_validate_card_specificity_rejects_template_cards(self):
+        cards = self._valid_paper_cards()
+        cards[0]["mechanism_or_contribution"] = "task success or answer accuracy memory ablation effect"
+        cards[0]["write_policy"] = "Records are written when available."
+        cards[0]["read_policy"] = "Memory is read when needed."
+
+        result = validate_card_specificity(cards)
+
+        self.assertFalse(result["valid"])
+        self.assertIn("generic_card", "\n".join(result["errors"]))
+
+    def test_validate_review_absorption_requires_a_papers_and_artifacts_in_review(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            task_dir = Path(tmp)
+            self._write_full_survey_fixture(task_dir)
+            (task_dir / "outputs/review.md").write_text(
+                "# Survey\n\n## Benchmark Landscape\nBenchmarks are discussed.\n\n## Method Taxonomy\nMethods are discussed."
+            )
+
+            result = validate_review_absorption(task_dir, target="full")
+
+            self.assertFalse(result["valid"])
+            self.assertIn("missing_worked_paper_absorption", result["failed_checks"])
+            self.assertIn("missing_newcomer_artifact_absorption", result["failed_checks"])
+
+            (task_dir / "outputs/review.md").write_text(self._rich_review_text(target="full"))
+            result = validate_review_absorption(task_dir, target="full")
+
+            self.assertTrue(result["valid"])
+
+    def test_review_scorecard_rejects_proposal_like_review(self):
+        result = score_review("# Survey\n\nThis proposal defines a framework.", target="full")
+
+        self.assertFalse(result["passed"])
+        self.assertLess(result["scores"]["newcomer_score"], 8)
 
     def test_evaluate_gates_uses_reference_and_evidence_thresholds(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -850,10 +1213,18 @@ class SurveyAutoResearchScriptsTest(unittest.TestCase):
                 "## Critical Analysis\nBenchmark limitations and failure modes show where method families disagree."
             )
             self._write_deep_artifacts(task_dir)
+            self._write_depth_outputs(task_dir, target="full")
 
             gates = evaluate_gates(task_dir, target="full")
 
             self.assertTrue(gates["gate_4_output"]["passed"])
+            self.assertFalse(gates["gate_7_review_depth"]["passed"])
+            self.assertIn("review depth", gates["gate_7_review_depth"]["failed_checks"])
+            self.assertFalse(gates["all_blocking_gates_passed"])
+
+            (task_dir / "outputs/review.md").write_text(self._rich_review_text(target="full"))
+            gates = evaluate_gates(task_dir, target="full")
+
             self.assertTrue(gates["all_blocking_gates_passed"])
 
     def test_full_survey_gate_requires_critical_analysis(self):
@@ -1228,6 +1599,10 @@ class SurveyAutoResearchScriptsTest(unittest.TestCase):
             )
             (task_dir / "state/paper_facts.jsonl").write_text(
                 "".join(json.dumps(item) + "\n" for item in derive_paper_facts(full_cards))
+            )
+            self._write_depth_outputs(task_dir, target="csur")
+            (task_dir / "outputs/review.md").write_text(
+                self._rich_review_text(target="csur") + "\n" + " ".join(f"p{i}" for i in range(8))
             )
 
             gates = evaluate_gates(task_dir, target="csur")

@@ -11,7 +11,7 @@ The design follows two required patterns:
 - AutoResearch runtime: zero interaction after start, persistent state, fresh work sessions, stall detection, forced pivots, heartbeat watchdog, and worker/guardian separation. See `references/autoresearch_runtime.md`.
 - Scientific survey-writing pipeline: Literature Survey, Structure and Logic, Evidence Design, Figures and Tables, Peer Review and Revision. See the matching reference files below.
 - Review-paper writing craft: thesis-driven synthesis, conceptual contribution, critical appraisal, and field agenda rather than source accumulation. See `references/review_writing_patterns.md`.
-- Deep synthesis artifacts: for `target=full` and `target=csur`, build paper cards, system-node cards, section cards, and a conceptual framework before drafting. See `references/deep_synthesis_artifacts.md` and `references/section_card_patterns.md`.
+- Deep synthesis artifacts: for `target=full` and `target=csur`, build paper cards, system-node cards, section cards, tutorial artifacts, worked examples, benchmark/method tables, section dossiers, and a conceptual framework before drafting. See `references/deep_synthesis_artifacts.md`, `references/final_review_absorption.md`, and `references/section_dossier_patterns.md`.
 - System-object survey adapter: if the topic names a system, architecture, memory, planner, world model, retrieval system, controller, interface, or comparable composed object, read `references/system_object_survey_adapter.md` before node-card construction.
 - CSUR-grade writing craft: for `target=csur`, imitate recent official ACM Computing Surveys exemplars through `references/csur_exemplar_patterns.md`, mine section rhetoric through `references/csur_rhetoric_mining.md`, then write both `state/csur_imitation_plan.md` and `state/csur_style_patterns.yml` before synthesis.
 - AutoResearch landscape discipline: use external systems as design evidence, not authority. See `references/autoresearch_landscape.md` before revising workflow architecture or claiming parity with another AutoResearch project.
@@ -60,7 +60,7 @@ The audit must name the reader contract, central thesis, conceptual contribution
 
 The synthesizer must not write a final review until the audit names a thesis and a conceptual contribution. A complete survey must teach a way to think, not only collect references.
 
-For full and CSUR targets, read `references/deep_synthesis_artifacts.md`, `references/section_card_patterns.md`, `references/review_writing_patterns.md`, `references/taxonomy_and_structure.md`, and `references/completion_gates.md` before synthesis. Use those references for section grammar, required reader artifacts, and completion gates instead of duplicating the checklists here.
+For full and CSUR targets, read `references/deep_synthesis_artifacts.md`, `references/final_review_absorption.md`, `references/worked_example_patterns.md`, `references/benchmark_landscape_schema.md`, `references/method_taxonomy_schema.md`, `references/section_dossier_patterns.md`, `references/section_card_patterns.md`, `references/review_writing_patterns.md`, `references/taxonomy_and_structure.md`, and `references/completion_gates.md` before synthesis. Use those references for section grammar, required reader artifacts, and completion gates instead of duplicating the checklists here.
 
 ## Start Protocol
 
@@ -97,6 +97,13 @@ Before final synthesis, write:
 - `state/csur_imitation_plan.md`: selected recent official CSUR exemplars, section skeleton, abstract moves, section reader functions, and internal notes excluded from the review body. Read `references/csur_exemplar_patterns.md` first.
 - `state/csur_style_patterns.yml`: mined CSUR rhetoric patterns with exemplar evidence: abstract moves, introduction moves, section opening/body/closing moves, table functions, paragraph patterns, and forbidden surface forms.
 - `outputs/conceptual_framework.md`: central thesis, system diagram in words, node interactions, taxonomy axes, running example, and prior-survey delta.
+- `outputs/glossary.md` and `outputs/running_example.md`: tutorial layer for newcomer comprehension.
+- `outputs/worked_examples.md`: paper-level worked examples for A papers.
+- `outputs/benchmark_landscape.md`: benchmark capability/protocol/metric/baseline/confounder table.
+- `outputs/method_taxonomy.md`: method-family representation/write/read/update/interface table.
+- `outputs/node_paper_matrix.md`: system-node to paper mechanism/evidence matrix.
+- `outputs/evaluation_protocol.md` and `outputs/design_guidelines.md`: reusable evaluation and design artifacts.
+- `outputs/section_dossiers/`: section-level dossiers used before drafting article prose.
 - `outputs/synthesis_tables.md`: benchmark and method tables that are traceable to `paper_cards.jsonl` and `paper_facts.jsonl`.
 - `outputs/figures_plan.md`: at least three figure/table designs such as taxonomy, method pipeline, and benchmark/evaluation matrix.
 
@@ -125,6 +132,7 @@ runs/<slug>/
     paper_facts.jsonl
     csur_imitation_plan.md
     csur_style_patterns.yml
+    csur_paragraph_patterns.yml
     related_surveys.md
     taxonomy.md
     coverage.json
@@ -150,6 +158,15 @@ runs/<slug>/
     references.bib
     final_report.md
     conceptual_framework.md
+    glossary.md
+    running_example.md
+    worked_examples.md
+    benchmark_landscape.md
+    method_taxonomy.md
+    node_paper_matrix.md
+    evaluation_protocol.md
+    design_guidelines.md
+    section_dossiers/
   dashboard/
     index.html
     phases/*.html
@@ -170,11 +187,11 @@ Run phases in this order, looping where gates fail:
 7. Phase 6: Deep evidence extraction. Convert A/B papers into `state/paper_cards.jsonl`; keep `state/paper_facts.jsonl` as a compact compatibility table.
 8. Phase 7: System-node graph. Build `state/system_node_cards.jsonl`; then repair taxonomy from node coverage, not from seed keywords alone.
 9. Phase 8: Section planning. Build `state/section_cards.jsonl`, `outputs/conceptual_framework.md`, and for CSUR `state/csur_style_patterns.yml`.
-10. Phase 9: Synthesis. Draft `review.md`, `evidence_table.csv`, `references.bib`, `outputs/synthesis_tables.md`, and `outputs/figures_plan.md` from the cards.
+10. Phase 9: Dossier-based synthesis. Build tutorial artifacts, worked examples, benchmark landscape, method taxonomy, node-paper matrix, evaluation protocol, design guidelines, section dossiers, then draft `review.md` from those dossiers and tables.
 11. Phase 10: Peer review. Run newcomer, system architect, experimentalist, and CSUR stylist review passes.
 12. Phase 11: Sprint loop. Fix routed weaknesses, rerun gates, repeat until complete.
 
-For the AutoResearch landscape and workflow borrowing rules, read `references/autoresearch_landscape.md`. For the literature pipeline, read `references/literature_pipeline.md`. For structure and taxonomy, read `references/taxonomy_and_structure.md`. For system-object topics, read `references/system_object_survey_adapter.md`. For deep synthesis artifacts, read `references/deep_synthesis_artifacts.md`. For section grammar, read `references/section_card_patterns.md`. For review-writing craft, read `references/review_writing_patterns.md`. For CSUR exemplars, read `references/csur_exemplar_patterns.md`, `references/csur_official_exemplars.yml`, and `references/csur_rhetoric_mining.md`. For claim rules, read `references/evidence_verification.md`. For reviewer routing, read `references/review_routing.md`. For completion criteria, read `references/completion_gates.md`.
+For the AutoResearch landscape and workflow borrowing rules, read `references/autoresearch_landscape.md`. For the literature pipeline, read `references/literature_pipeline.md`. For structure and taxonomy, read `references/taxonomy_and_structure.md`. For system-object topics, read `references/system_object_survey_adapter.md`. For deep synthesis artifacts, read `references/deep_synthesis_artifacts.md`. For final-review absorption, read `references/final_review_absorption.md`, `references/tutorial_survey_requirements.md`, `references/worked_example_patterns.md`, `references/benchmark_landscape_schema.md`, `references/method_taxonomy_schema.md`, and `references/section_dossier_patterns.md`. For section grammar, read `references/section_card_patterns.md`. For review-writing craft, read `references/review_writing_patterns.md`. For CSUR exemplars, read `references/csur_exemplar_patterns.md`, `references/csur_official_exemplars.yml`, and `references/csur_rhetoric_mining.md`. For claim rules, read `references/evidence_verification.md`. For reviewer routing, read `references/review_routing.md`. For completion criteria, read `references/completion_gates.md`.
 For visual progress reporting, read `references/html_dashboard.md`.
 
 ## Multi-Agent Truthfulness
@@ -264,6 +281,16 @@ Worker roles describe responsibilities. They are true separate agents only when 
 - `scripts/validate_node_cards.py`: verify system-node cards.
 - `scripts/validate_section_cards.py`: verify argument-driven section cards.
 - `scripts/validate_csur_style_patterns.py`: verify CSUR rhetoric mining.
+- `scripts/validate_csur_paragraph_patterns.py`: verify CSUR paragraph-level rhetoric mining.
+- `scripts/validate_review_depth.py`: verify final review length, section depth, worked examples, and table density.
+- `scripts/validate_review_absorption.py`: verify final review absorbs paper cards, tutorial artifacts, and comparison tables.
+- `scripts/validate_worked_examples.py`: verify paper-level worked examples.
+- `scripts/validate_benchmark_landscape.py`: verify benchmark table schema and entries.
+- `scripts/validate_method_taxonomy.py`: verify method-family table schema and entries.
+- `scripts/validate_node_paper_matrix.py`: verify node-to-paper matrix.
+- `scripts/validate_newcomer_tutorial.py`: verify glossary and running example.
+- `scripts/validate_card_specificity.py`: reject template-like paper cards.
+- `scripts/review_scorecard.py`: score newcomer, method, benchmark, and CSUR-style readiness.
 - `scripts/validate_claims.py`: verify claim records reference known paper IDs and traceable paper-card evidence.
 - `scripts/gate_check.py`: evaluate blocking gates, including `gate_6_csur_readiness` for `target=csur`.
 - `scripts/normalize_bib.py`: sort BibTeX entries for stable output.
@@ -274,9 +301,9 @@ A successful run returns:
 
 Short target: `outputs/review.md`, `outputs/evidence_table.csv`, `outputs/references.bib`, `outputs/final_report.md`, and `dashboard/index.html`.
 
-Full target: short outputs plus `outputs/conceptual_framework.md`, `outputs/synthesis_tables.md`, `outputs/figures_plan.md`, and deep cards under `state/`.
+Full target: short outputs plus `outputs/conceptual_framework.md`, `outputs/glossary.md`, `outputs/running_example.md`, `outputs/worked_examples.md`, `outputs/benchmark_landscape.md`, `outputs/method_taxonomy.md`, `outputs/node_paper_matrix.md`, `outputs/evaluation_protocol.md`, `outputs/design_guidelines.md`, `outputs/section_dossiers/`, `outputs/synthesis_tables.md`, `outputs/figures_plan.md`, and deep cards under `state/`.
 
-CSUR target: full outputs plus `state/search_protocol.md`, `state/related_surveys.md`, `state/csur_imitation_plan.md`, and `state/csur_style_patterns.yml`.
+CSUR target: full outputs plus `state/search_protocol.md`, `state/related_surveys.md`, `state/csur_imitation_plan.md`, `state/csur_style_patterns.yml`, and `state/csur_paragraph_patterns.yml`.
 
 `final_report.md` must state:
 - status: `Complete` or `Blocked`;

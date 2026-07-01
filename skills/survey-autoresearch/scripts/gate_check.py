@@ -12,16 +12,36 @@ try:
     from .coverage_report import build_coverage
     from .validate_claims import validate_claim_records
     from .validate_csur_style_patterns import validate_csur_style_patterns
+    from .validate_csur_paragraph_patterns import validate_csur_paragraph_patterns
     from .validate_node_cards import validate_node_cards
     from .validate_paper_cards import validate_paper_cards
     from .validate_section_cards import validate_section_cards
+    from .validate_review_depth import validate_review_depth
+    from .validate_worked_examples import validate_worked_examples
+    from .validate_benchmark_landscape import validate_benchmark_landscape
+    from .validate_method_taxonomy import validate_method_taxonomy
+    from .validate_node_paper_matrix import validate_node_paper_matrix
+    from .validate_newcomer_tutorial import validate_newcomer_tutorial
+    from .validate_card_specificity import validate_card_specificity
+    from .validate_review_absorption import validate_review_absorption
+    from .review_scorecard import score_review
 except ImportError:  # pragma: no cover - used when run as a standalone script
     from coverage_report import build_coverage
     from validate_claims import validate_claim_records
     from validate_csur_style_patterns import validate_csur_style_patterns
+    from validate_csur_paragraph_patterns import validate_csur_paragraph_patterns
     from validate_node_cards import validate_node_cards
     from validate_paper_cards import validate_paper_cards
     from validate_section_cards import validate_section_cards
+    from validate_review_depth import validate_review_depth
+    from validate_worked_examples import validate_worked_examples
+    from validate_benchmark_landscape import validate_benchmark_landscape
+    from validate_method_taxonomy import validate_method_taxonomy
+    from validate_node_paper_matrix import validate_node_paper_matrix
+    from validate_newcomer_tutorial import validate_newcomer_tutorial
+    from validate_card_specificity import validate_card_specificity
+    from validate_review_absorption import validate_review_absorption
+    from review_scorecard import score_review
 
 
 TARGETS = {
@@ -546,6 +566,7 @@ def csur_readiness(task_dir: Path, citation_plan: list[dict]) -> dict:
         state_dir / "paper_cards.jsonl",
         state_dir / "csur_imitation_plan.md",
         state_dir / "csur_style_patterns.yml",
+        state_dir / "csur_paragraph_patterns.yml",
         outputs_dir / "synthesis_tables.md",
         outputs_dir / "figures_plan.md",
         outputs_dir / "conceptual_framework.md",
@@ -655,6 +676,13 @@ def csur_readiness(task_dir: Path, citation_plan: list[dict]) -> dict:
         "banned_terms": [],
     }
     checks["csur_imitation_plan"] = imitation_status["passed"]
+    paragraph_text = text_or_empty(state_dir / "csur_paragraph_patterns.yml")
+    paragraph_status = validate_csur_paragraph_patterns(paragraph_text) if paragraph_text else {
+        "valid": False,
+        "missing_patterns": ["csur_paragraph_patterns"],
+        "missing_fields": [],
+    }
+    checks["csur_paragraph_patterns"] = paragraph_status["valid"]
 
     failed_checks = [name for name, passed in checks.items() if not passed]
     return {
@@ -663,8 +691,95 @@ def csur_readiness(task_dir: Path, citation_plan: list[dict]) -> dict:
         "failed_checks": failed_checks,
         "checks": checks,
         "csur_imitation_plan": imitation_status,
+        "csur_paragraph_patterns": paragraph_status,
         "a_b_papers": len(ab_ids),
         "paper_facts": len(facts),
+    }
+
+
+def review_depth_readiness(task_dir: Path, target: str) -> dict:
+    """Check whether the final review has tutorial-survey depth, not only artifacts."""
+    if target not in {"full", "csur"}:
+        return {"required": False, "passed": True}
+    state_dir = task_dir / "state"
+    outputs_dir = task_dir / "outputs"
+    review_text = text_or_empty(outputs_dir / "review.md")
+    paper_cards = read_jsonl(state_dir / "paper_cards.jsonl")
+    required_files = [
+        outputs_dir / "glossary.md",
+        outputs_dir / "running_example.md",
+        outputs_dir / "worked_examples.md",
+        outputs_dir / "benchmark_landscape.md",
+        outputs_dir / "method_taxonomy.md",
+        outputs_dir / "node_paper_matrix.md",
+        outputs_dir / "evaluation_protocol.md",
+        outputs_dir / "design_guidelines.md",
+    ]
+    dossier_dir = outputs_dir / "section_dossiers"
+    missing_artifacts = [
+        str(path.relative_to(task_dir))
+        for path in required_files
+        if not nonempty(path)
+    ]
+    if not dossier_dir.exists() or not list(dossier_dir.glob("*.md")):
+        missing_artifacts.append("outputs/section_dossiers")
+
+    depth_status = validate_review_depth(review_text, target=target)
+    worked_status = validate_worked_examples(
+        text_or_empty(outputs_dir / "worked_examples.md"),
+        paper_cards,
+        target=target,
+    )
+    benchmark_status = validate_benchmark_landscape(
+        text_or_empty(outputs_dir / "benchmark_landscape.md"),
+        target=target,
+    )
+    method_status = validate_method_taxonomy(
+        text_or_empty(outputs_dir / "method_taxonomy.md"),
+        target=target,
+    )
+    node_matrix_status = validate_node_paper_matrix(
+        text_or_empty(outputs_dir / "node_paper_matrix.md")
+    )
+    tutorial_status = validate_newcomer_tutorial(
+        review_text,
+        text_or_empty(outputs_dir / "glossary.md"),
+        text_or_empty(outputs_dir / "running_example.md"),
+    )
+    card_specificity_status = validate_card_specificity(paper_cards) if paper_cards else {
+        "valid": False,
+        "errors": ["missing paper_cards"],
+    }
+    absorption_status = validate_review_absorption(task_dir, target=target)
+    scorecard_status = score_review(review_text, target=target)
+
+    checks = {
+        "review depth": depth_status["valid"],
+        "worked examples": worked_status["valid"],
+        "benchmark landscape": benchmark_status["valid"],
+        "method taxonomy": method_status["valid"],
+        "node-paper matrix": node_matrix_status["valid"],
+        "newcomer tutorial": tutorial_status["valid"],
+        "card specificity": card_specificity_status["valid"],
+        "artifact absorption": absorption_status["valid"],
+        "review scorecard": scorecard_status["passed"],
+    }
+    failed_checks = [name for name, passed in checks.items() if not passed]
+    return {
+        "required": True,
+        "passed": not missing_artifacts and not failed_checks,
+        "missing_artifacts": missing_artifacts,
+        "failed_checks": failed_checks,
+        "checks": checks,
+        "review_depth": depth_status,
+        "worked_examples": worked_status,
+        "benchmark_landscape": benchmark_status,
+        "method_taxonomy": method_status,
+        "node_paper_matrix": node_matrix_status,
+        "newcomer_tutorial": tutorial_status,
+        "card_specificity": card_specificity_status,
+        "review_absorption": absorption_status,
+        "review_scorecard": scorecard_status,
     }
 
 
@@ -767,6 +882,9 @@ def evaluate_gates(task_dir: Path, target: str = "short") -> dict:
     if target == "csur":
         gates["gate_6_csur_readiness"] = csur_readiness(task_dir, citation_plan)
         blocking_gate_names.append("gate_6_csur_readiness")
+    if target in {"full", "csur"}:
+        gates["gate_7_review_depth"] = review_depth_readiness(task_dir, target)
+        blocking_gate_names.append("gate_7_review_depth")
 
     gates["all_blocking_gates_passed"] = all(gates[name]["passed"] for name in blocking_gate_names)
     return gates
