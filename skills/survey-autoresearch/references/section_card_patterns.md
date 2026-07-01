@@ -19,13 +19,16 @@ Every major section in a full or CSUR survey needs a `state/section_cards.jsonl`
       "subsection": "A method family or design choice",
       "claim": "What this subsection argues.",
       "papers": ["p001", "p014"],
-      "required_comparison": "What must be compared."
+      "required_comparison": "What must be compared.",
+      "implication": "What follows for design, evaluation, or theory."
     }
   ],
   "closing_move": "Design or evaluation implication and transition.",
   "required_display_item": "Table, figure, box, or checklist used by the section."
 }
 ```
+
+Each `subsection_moves` entry must be an object. It needs `subsection`, `claim`, `required_comparison`, and `implication`. It also needs at least two paper IDs, unless the move is explicitly about a gap and includes `gap_reason`.
 
 ## Section Grammar
 

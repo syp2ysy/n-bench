@@ -96,11 +96,13 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--claims", required=True, type=Path)
     parser.add_argument("--papers", required=True, type=Path)
+    parser.add_argument("--paper-cards", type=Path)
     parser.add_argument("--output", type=Path)
     args = parser.parse_args()
     papers = read_jsonl(args.papers)
     known_ids = {item["paper_id"] for item in papers if item.get("paper_id")}
-    result = validate_claim_records(read_jsonl(args.claims), known_ids)
+    paper_cards = read_jsonl(args.paper_cards) if args.paper_cards else None
+    result = validate_claim_records(read_jsonl(args.claims), known_ids, paper_cards=paper_cards)
     text = json.dumps(result, indent=2, sort_keys=True) + "\n"
     if args.output:
         args.output.write_text(text, encoding="utf-8")

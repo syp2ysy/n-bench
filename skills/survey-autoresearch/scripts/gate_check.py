@@ -30,6 +30,8 @@ TARGETS = {
     "csur": {"min_refs": 150},
 }
 
+CSUR_EXEMPLARS_PATH = Path(__file__).resolve().parents[1] / "references" / "csur_official_exemplars.yml"
+
 
 def read_jsonl(path: Path) -> list[dict]:
     if not path.exists():
@@ -289,18 +291,17 @@ def related_survey_differentiation(related_text: str) -> bool:
     return strong_rows >= max(1, len(body_rows) // 2)
 
 
-CSUR_ACCEPTED_EXEMPLARS = {
-    "10.1145/3711118": 2025,
-    "10.1145/3704262": 2025,
-    "10.1145/3665926": 2025,
-    "10.1145/3713070": 2025,
-    "10.1145/3716628": 2025,
-    "10.1145/3744238": 2026,
-    "10.1145/3769292": 2026,
-    "10.1145/3787585": 2026,
-    "10.1145/3789261": 2026,
-    "10.1145/3789253": 2026,
-}
+def load_csur_exemplar_dois(path: Path = CSUR_EXEMPLARS_PATH) -> dict[str, int | None]:
+    """Load official/custom CSUR DOI allow-list from a simple YAML reference."""
+    if not path.exists():
+        return {}
+    text = path.read_text(encoding="utf-8")
+    dois = sorted(set(re.findall(r"10\.1145/\d+", text)))
+    records: dict[str, int | None] = {}
+    for doi in dois:
+        match = re.search(rf"{re.escape(doi)}[\s\S]{{0,160}}?year:\s*(\d{{4}})", text)
+        records[doi] = int(match.group(1)) if match else None
+    return records
 
 
 UNACCEPTED_SURVEY_STATUS_TERMS = ["under review", "submitted", "arxiv only"]
@@ -326,9 +327,10 @@ def csur_imitation_plan_status(plan_text: str) -> dict:
         for term in [*UNACCEPTED_SURVEY_STATUS_TERMS, "accepted claim without acm", "non-csur"]
         if term in lower
     ]
+    accepted_exemplars = load_csur_exemplar_dois()
     dois = sorted(set(re.findall(r"10\.1145/\d+", plan_text)))
-    official_dois = [doi for doi in dois if doi in CSUR_ACCEPTED_EXEMPLARS]
-    rejected_dois = [doi for doi in dois if doi not in CSUR_ACCEPTED_EXEMPLARS]
+    official_dois = [doi for doi in dois if doi in accepted_exemplars]
+    rejected_dois = [doi for doi in dois if doi not in accepted_exemplars]
     has_recent_official = len(official_dois) >= 2
     has_acm_context = "acm computing surveys" in lower and "dl.acm.org/doi/" in lower
     passed = (
@@ -377,17 +379,75 @@ def multi_agent_claim_status(task_dir: Path) -> dict:
 
 
 def conceptual_framework_status(text: str) -> dict:
-    lower = text.lower()
-    required_terms = [
-        "central thesis",
-        "system diagram",
-        "node",
-        "taxonomy",
-        "running example",
-        "prior-survey",
-    ]
-    missing = [term for term in required_terms if term not in lower]
-    return {"passed": bool(text.strip()) and not missing, "missing_terms": missing}
+    groups = {
+        "central_thesis": ["central thesis", "中心论点", "核心论点"],
+        "system_model": ["system diagram", "system model", "system diagram in words", "系统图", "系统模型"],
+        "node_interactions": ["node interactions", "节点交互", "组件交互"],
+        "taxonomy_axes": ["taxonomy axes", "分类轴", "taxonomy", "分类"],
+        "running_example": ["running example", "贯穿例子", "示例"],
+        "prior_survey_delta": ["prior-survey", "prior survey", "prior-survey delta", "已有综述", "相关综述差异", "与已有综述"],
+    }
+    sections: list[tuple[str, str]] = []
+    current_heading = ""
+    current_lines: list[str] = []
+    for line in text.splitlines():
+        heading = re.match(r"^\s*#{1,6}\s+(.+?)\s*$", line)
+        if heading:
+            if current_heading:
+                sections.append((current_heading, "\n".join(current_lines).strip()))
+            current_heading = heading.group(1)
+            current_lines = []
+        else:
+            current_lines.append(line)
+    if current_heading:
+        sections.append((current_heading, "\n".join(current_lines).strip()))
+
+    missing: list[str] = []
+    too_thin: list[str] = []
+    for group, terms in groups.items():
+        matched_body = None
+        for heading, body in sections:
+            heading_lower = heading.lower()
+            if any(term in heading_lower or term in heading for term in terms):
+                matched_body = body
+                break
+        if matched_body is None:
+            missing.append(group)
+        elif len("".join(matched_body.split())) < 40:
+            too_thin.append(group)
+    return {
+        "passed": bool(text.strip()) and not missing and not too_thin,
+        "missing_terms": missing,
+        "too_thin": too_thin,
+    }
+
+
+def publication_norm_status(task_spec_text: str, papers: list[dict], accepted_rate: float, verification_rate: float, target: str) -> dict:
+    lower = task_spec_text.lower()
+    preprint_heavy = "accepted_ratio_required: false" in lower or "preprint-heavy" in lower or "preprint heavy" in lower
+    if target not in {"full", "csur"}:
+        return {
+            "passed": True,
+            "accepted_required": False,
+            "preprint_heavy": False,
+            "venue_labeled": True,
+        }
+    else:
+        accepted_required = not preprint_heavy
+    venue_labeled = all(
+        item.get("accepted") or item.get("venue_status") or item.get("preprint_status") or item.get("acceptance_status")
+        for item in papers
+    ) if papers else False
+    if accepted_required:
+        passed = accepted_rate >= 0.30
+    else:
+        passed = verification_rate >= (0.95 if preprint_heavy else 0.80) and (venue_labeled or not papers)
+    return {
+        "passed": passed,
+        "accepted_required": accepted_required,
+        "preprint_heavy": preprint_heavy,
+        "venue_labeled": venue_labeled,
+    }
 
 
 def deep_synthesis_readiness(task_dir: Path, target: str) -> dict:
@@ -416,12 +476,14 @@ def deep_synthesis_readiness(task_dir: Path, target: str) -> dict:
     paper_cards = read_jsonl(state_dir / "paper_cards.jsonl")
     node_cards = read_jsonl(state_dir / "system_node_cards.jsonl")
     section_cards = read_jsonl(state_dir / "section_cards.jsonl")
-    paper_status = validate_paper_cards(paper_cards) if paper_cards else {
+    citation_plan = read_jsonl(state_dir / "citation_plan.jsonl")
+    paper_status = validate_paper_cards(paper_cards, citation_plan=citation_plan) if paper_cards else {
         "valid": False,
         "errors": ["missing paper_cards"],
         "total_cards": 0,
+        "missing_paper_cards": [],
     }
-    node_status = validate_node_cards(node_cards) if node_cards else {
+    node_status = validate_node_cards(node_cards, paper_cards=paper_cards) if node_cards else {
         "valid": False,
         "errors": ["missing system_node_cards"],
         "total_cards": 0,
@@ -532,13 +594,16 @@ def csur_readiness(task_dir: Path, citation_plan: list[dict]) -> dict:
     )
 
     facts = read_jsonl(state_dir / "paper_facts.jsonl")
+    paper_cards = read_jsonl(state_dir / "paper_cards.jsonl")
     ab_ids = {
         item.get("paper_id")
         for item in citation_plan
         if item.get("depth") in {"A", "B"} and item.get("paper_id")
     }
     fact_ids = {item.get("paper_id") for item in facts if item.get("paper_id")}
+    card_ids = {item.get("paper_id") for item in paper_cards if item.get("paper_id")}
     checks["paper_fact_coverage"] = bool(ab_ids) and len(ab_ids - fact_ids) == 0
+    checks["paper_card_coverage"] = bool(ab_ids) and len(ab_ids - card_ids) == 0
     required_fact_fields = {
         "paper_id",
         "method_family",
@@ -555,6 +620,14 @@ def csur_readiness(task_dir: Path, citation_plan: list[dict]) -> dict:
         and item.get("mechanism_or_contribution")
         for item in facts
     )
+    card_by_id = {item.get("paper_id"): item for item in paper_cards if item.get("paper_id")}
+    facts_consistent = bool(facts) and all(
+        not fact.get("paper_id")
+        or fact.get("paper_id") not in card_by_id
+        or fact.get("mechanism_or_contribution") == card_by_id[fact.get("paper_id")].get("mechanism_or_contribution")
+        for fact in facts
+    )
+    checks["paper_fact_consistency"] = facts_consistent
 
     synthesis_text = (outputs_dir / "synthesis_tables.md").read_text(encoding="utf-8") if (outputs_dir / "synthesis_tables.md").exists() else ""
     synthesis_lower = synthesis_text.lower()
@@ -608,13 +681,15 @@ def evaluate_gates(task_dir: Path, target: str = "short") -> dict:
     accepted_count = sum(1 for item in papers if item.get("accepted"))
     verification_rate = verified_count / len(papers) if papers else 0.0
     accepted_rate = accepted_count / len(papers) if papers else 0.0
+    task_spec_text = text_or_empty(state_dir / "task_spec.md")
+    publication_norm = publication_norm_status(task_spec_text, papers, accepted_rate, verification_rate, target)
     coverage = build_coverage(citation_plan)
     all_cells_covered = coverage["summary"]["failing_cells"] == 0 and coverage["summary"]["total_cells"] > 0
 
     gate_1_passed = (
         len(papers) >= target_config["min_refs"]
         and verification_rate >= 0.80
-        and accepted_rate >= 0.30
+        and publication_norm["passed"]
         and all_cells_covered
         and coverage["summary"].get("assigned_ab_coverage_passed", True)
     )
@@ -668,6 +743,7 @@ def evaluate_gates(task_dir: Path, target: str = "short") -> dict:
             "min_refs": target_config["min_refs"],
             "verification_rate": round(verification_rate, 3),
             "accepted_rate": round(accepted_rate, 3),
+            "publication_norm": publication_norm,
             "coverage": coverage["summary"],
             "citation_verification_cadence": citation_cadence,
         },

@@ -55,6 +55,15 @@ Calibration:
 | No failure modes, disagreements, or negative evidence | Contradiction-first search and synthesis repair |
 | Claims too strong | Evidence verification and hedge downgrade |
 | Tables incomparable | Synthesis table rebuild |
+| Paper cards generic or missing mechanism | Paper-card extraction repair |
+| A/B papers missing paper cards | Paper-card coverage repair |
+| Node cards not grounded in paper cards | Node graph repair |
+| Important system node missing | System-object adapter pass |
+| Section cards are headings, not arguments | Section-card rewrite |
+| Conceptual framework lacks running example | Framework repair |
+| CSUR style patterns copied, not mined | CSUR rhetoric mining repair |
+| Claims cite paper IDs but not card fields | Claim trace repair |
+| Synthesis tables not derived from cards | Table rebuild from paper cards |
 | Missing visualizations | Figures and tables pass |
 | Process-correction language appears in review body | Section reorganization and final-report relocation |
 | Related-survey differentiation is only recency or breadth | Taxonomy redesign and related-survey matrix repair |

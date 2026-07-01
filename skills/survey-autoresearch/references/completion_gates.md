@@ -12,7 +12,7 @@ Short target:
 Full target:
 - references >= 150;
 - verification rate >= 80%;
-- accepted or peer-reviewed ratio >= 30% when field norms make this meaningful;
+- accepted or peer-reviewed ratio >= 30% when field norms make this meaningful; if `task_spec.md` declares `accepted_ratio_required: false`, require stronger verification and explicit venue/preprint status labels instead;
 - every taxonomy cell has at least two A/B references or is documented as a gap.
 - long managed runs include verification evidence in `logs/verification.jsonl` for each about-20 citation batch.
 - A/B coverage is not entirely `unassigned`; at least one taxonomy cell or system-node assignment must carry the A/B evidence.
@@ -89,25 +89,16 @@ For `target=full` and `target=csur`, pass only when these artifacts are present 
 
 Additional checks:
 
-- paper cards include survey role, mechanism, system component or node, interface or operation fields, failure modes, limitations, evidence spans, and what each A/B paper teaches the survey;
-- system-node cards include role, why the node matters, inputs, outputs, representative papers, failure modes, and evaluation signals;
-- section cards include reader question, section thesis, section structure, opening move, subsection moves, closing implication, and required display item;
-- the conceptual framework includes central thesis, system model or framework description, node/component interactions, taxonomy axes, running example, and how the framework differs from prior survey views;
+- paper cards include survey role, mechanism, system component or node, interface or operation fields, failure modes, limitations, evidence spans, what each A/B paper teaches the survey, and complete A/B coverage;
+- system-node cards include role, why the node matters, inputs, outputs, representative papers grounded in paper cards, failure modes, evaluation signals, open questions, and explicit gap reasons for weak/gap nodes;
+- section cards include reader question, section thesis, section structure, opening move, structured subsection moves, closing implication, and required display item;
+- the conceptual framework includes substantive English or Chinese sections for central thesis, system model, node/component interactions, taxonomy axes, running example, and how the framework differs from prior survey views;
 - perspective questions include multiple reader or expert viewpoints before taxonomy lock;
 - major claims trace to paper-card fields, not only to paper IDs.
 
 Keyword-rich prose, table counts, or generic method-family headings cannot substitute for these artifacts.
 
-## Gate 6: Final Review
-
-Pass when:
-- Gates 1-5 pass for full/CSUR targets, and Gates 1-4 pass for short targets;
-- multi-persona review reaches the target score or two sprint rounds improve by <= 0.3;
-- all major weaknesses are resolved or explicitly accepted as limitations;
-- no previously fixed weakness regressed;
-- final report states `Complete`.
-
-## Gate 7: CSUR Readiness
+## Gate 6: CSUR Readiness
 
 For `target=csur`, pass only when these files are present and substantive:
 
@@ -135,13 +126,23 @@ Additional checks:
 - `state/csur_imitation_plan.md` cites at least two recent official ACM Computing Surveys exemplars from ACM DL, using 2025-2026 DOI records by default;
 - `state/csur_imitation_plan.md` includes selected exemplars, section skeleton, abstract moves, reader function by major section, and internal notes excluded from the review body;
 - the imitation plan does not use arXiv-only, submitted, under-review, or unverified accepted claims as CSUR exemplars;
-- `state/csur_style_patterns.yml` includes abstract moves, introduction moves, section opening/body/closing patterns, table functions, paragraph patterns, and forbidden surface forms mined from the selected exemplars;
-- every A/B paper in `citation_plan.jsonl` has a paper-fact record;
-- paper facts include method family, task family, benchmark/dataset, metrics, mechanism or contribution, ablations, and limitations;
+- `state/csur_style_patterns.yml` includes abstract moves, introduction moves, section opening/body/closing patterns, table functions, paragraph patterns, forbidden surface forms, and observed evidence notes from at least two official CSUR exemplars;
 - every A/B paper in `citation_plan.jsonl` has a paper-card record;
+- every A/B paper in `citation_plan.jsonl` has a derived paper-fact record;
+- paper facts include method family, task family, benchmark/dataset, metrics, mechanism or contribution, ablations, and limitations;
+- paper facts are consistent with paper cards for paper ID and mechanism/contribution;
 - paper cards include survey role, mechanism, system node or component, interface, evidence spans, failure modes, limitations, and what the paper teaches the survey;
 - synthesis tables include metrics, ablations, and method/record-schema comparison, and are traceable to paper cards;
 - figure plan includes at least three planned figures or table designs.
+
+## Qualitative Final Review
+
+Record this as `final_review_status`, not as a deterministic gate. Pass when:
+- deterministic gates pass for the target;
+- multi-persona review reaches the target score or two sprint rounds improve by <= 0.3;
+- all major weaknesses are resolved or explicitly accepted as limitations;
+- no previously fixed weakness regressed;
+- final report states `Complete`.
 
 ## CSUR Style Gate
 
@@ -172,4 +173,4 @@ python3 scripts/gate_check.py --task-dir <run_dir> --target short
 python3 scripts/gate_check.py --task-dir <run_dir> --target csur
 ```
 
-The helper checks deterministic parts of literature, taxonomy, evidence, output, deep-synthesis, and CSUR-readiness gates. The orchestrator still performs qualitative final review.
+The helper checks deterministic Gates 1-6. The orchestrator records qualitative final review separately as `final_review_status`.

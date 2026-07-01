@@ -1,0 +1,43 @@
+official_exemplars:
+  - doi: "10.1145/3711118"
+    title: "Data-centric Artificial Intelligence: A Survey"
+    year: 2025
+    acm_dl_url: "https://dl.acm.org/doi/10.1145/3711118"
+  - doi: "10.1145/3704262"
+    title: "A Survey of AI-Generated Content"
+    year: 2025
+    acm_dl_url: "https://dl.acm.org/doi/10.1145/3704262"
+  - doi: "10.1145/3665926"
+    title: "A.I. Robustness: a Human-Centered Perspective on Technological Challenges and Opportunities"
+    year: 2025
+    acm_dl_url: "https://dl.acm.org/doi/10.1145/3665926"
+  - doi: "10.1145/3713070"
+    title: "A Survey of Multimodal Learning: Methods, Applications, and Future Directions"
+    year: 2025
+    acm_dl_url: "https://dl.acm.org/doi/10.1145/3713070"
+  - doi: "10.1145/3716628"
+    title: "AI Agents Under Threat: A Survey of Key Security Challenges and Future Pathways"
+    year: 2025
+    acm_dl_url: "https://dl.acm.org/doi/10.1145/3716628"
+  - doi: "10.1145/3744238"
+    title: "A Survey on Uncertainty Quantification of Large Language Models"
+    year: 2026
+    acm_dl_url: "https://dl.acm.org/doi/10.1145/3744238"
+  - doi: "10.1145/3769292"
+    title: "Machine Learning Systems: A Survey from a Data-Oriented Perspective"
+    year: 2026
+    acm_dl_url: "https://dl.acm.org/doi/10.1145/3769292"
+  - doi: "10.1145/3787585"
+    title: "A Systematic Survey on Large Language Models for Algorithm Design"
+    year: 2026
+    acm_dl_url: "https://dl.acm.org/doi/10.1145/3787585"
+  - doi: "10.1145/3789261"
+    title: "A Survey on the Optimization of Large Language Model-based Agents"
+    year: 2026
+    acm_dl_url: "https://dl.acm.org/doi/10.1145/3789261"
+  - doi: "10.1145/3789253"
+    title: "Prompting Frameworks for Large Language Models: A Survey"
+    year: 2026
+    acm_dl_url: "https://dl.acm.org/doi/10.1145/3789253"
+
+custom_verified_exemplars: []

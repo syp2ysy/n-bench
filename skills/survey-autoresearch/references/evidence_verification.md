@@ -25,7 +25,7 @@ For `target=full` and `target=csur`, every A/B paper in `state/citation_plan.jso
 ```json
 {
   "paper_id": "paper_001",
-  "survey_role": "foundational | system | benchmark | application | negative | survey | bridge | frontier",
+  "survey_role": "foundational | seminal | system | benchmark | application | negative | survey | bridge | frontier",
   "problem": "What problem the paper makes visible for the review.",
   "method_summary": "One concise mechanism-level summary.",
   "system_node": "capture | representation | storage | retrieval | update | interface | evaluation",
@@ -53,7 +53,13 @@ The extractor may adapt field names to the topic, but the card must still captur
 
 ## CSUR Paper-Fact Schema
 
-For compatibility and compact tables, keep `state/paper_facts.jsonl`. For `target=csur`, every A/B paper must have both a paper card and a paper-fact summary:
+For compatibility and compact tables, keep `state/paper_facts.jsonl`. It is a derived artifact, not a second source of truth. Prefer:
+
+```bash
+python3 scripts/derive_paper_facts.py --paper-cards state/paper_cards.jsonl --output state/paper_facts.jsonl
+```
+
+For `target=csur`, every A/B paper must have both a paper card and a paper-fact summary:
 
 ```json
 {
@@ -79,6 +85,12 @@ Use paper facts as compact sources for benchmark and method synthesis tables. Do
 - If a number cannot be verified, omit it or mark it source-limited.
 - Do not cite a paper for a claim it does not support.
 - For `target=csur`, do not use an A/B paper in a synthesis table unless its `paper_cards.jsonl` and `paper_facts.jsonl` records have the required fields.
+
+For standalone claim validation in full/CSUR runs, pass paper cards:
+
+```bash
+python3 scripts/validate_claims.py --claims state/claims.jsonl --papers state/papers.jsonl --paper-cards state/paper_cards.jsonl
+```
 
 ## Strength Ladder
 

@@ -27,6 +27,14 @@ def _nonempty(value) -> bool:
     return True
 
 
+def _as_list(value) -> list:
+    if isinstance(value, list):
+        return value
+    if value is None:
+        return []
+    return [value]
+
+
 def validate_section_cards(cards: list[dict]) -> dict:
     errors: list[str] = []
     valid_cards = 0
@@ -47,8 +55,22 @@ def validate_section_cards(cards: list[dict]) -> dict:
         structure = str(card.get("structure") or "").lower()
         if not any(pattern.lower() in structure for pattern in ACCEPTED_STRUCTURES):
             card_errors.append("structure must be 总-分-总 or an accepted argument pattern")
-        if not _nonempty(card.get("subsection_moves")):
+        moves = card.get("subsection_moves")
+        if not _nonempty(moves):
             card_errors.append("missing subsection_moves")
+        elif not isinstance(moves, list):
+            card_errors.append("subsection_moves must be a list")
+        else:
+            for move_idx, move in enumerate(moves, start=1):
+                if not isinstance(move, dict):
+                    card_errors.append(f"subsection_moves[{move_idx}] must be an object")
+                    continue
+                for field in ["subsection", "claim", "required_comparison", "implication"]:
+                    if not _nonempty(move.get(field)):
+                        card_errors.append(f"subsection_moves[{move_idx}] missing {field}")
+                papers = [paper for paper in _as_list(move.get("papers")) if _nonempty(paper)]
+                if len(papers) < 2 and not _nonempty(move.get("gap_reason")):
+                    card_errors.append(f"subsection_moves[{move_idx}] needs at least 2 papers or gap_reason")
         if card_errors:
             errors.append(f"{card_id}: " + "; ".join(card_errors))
         else:

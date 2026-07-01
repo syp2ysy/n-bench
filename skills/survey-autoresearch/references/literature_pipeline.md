@@ -6,7 +6,7 @@ Use this reference for recall, scoring, citation-depth planning, and venue upgra
 
 Target 200-500 raw candidates for a full survey and 80-200 for a short review.
 
-For each taxonomy cell, run at least three query variants:
+For each provisional search cell, run at least three query variants. Search cells may come from perspective questions, system-node hypotheses, related-survey gaps, benchmark families, or method families; they are not the final taxonomy.
 - core terms;
 - synonyms and adjacent terms;
 - method names, benchmark names, dataset names, or system names.

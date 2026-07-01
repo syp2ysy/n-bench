@@ -32,6 +32,7 @@ MECHANISM_FIELDS = [
 
 ALLOWED_ROLES = {
     "foundational",
+    "seminal",
     "system",
     "benchmark",
     "application",
@@ -62,7 +63,15 @@ def _as_list(value) -> list:
     return [value]
 
 
-def validate_paper_cards(cards: list[dict]) -> dict:
+def ab_paper_ids(citation_plan: list[dict] | None) -> set[str]:
+    return {
+        item.get("paper_id")
+        for item in (citation_plan or [])
+        if (item.get("depth") or "").upper() in {"A", "B"} and item.get("paper_id")
+    }
+
+
+def validate_paper_cards(cards: list[dict], citation_plan: list[dict] | None = None) -> dict:
     errors: list[str] = []
     valid_cards = 0
     seen: set[str] = set()
@@ -94,11 +103,16 @@ def validate_paper_cards(cards: list[dict]) -> dict:
             errors.append(f"{card_id}: " + "; ".join(card_errors))
         else:
             valid_cards += 1
+    missing_paper_cards = sorted(ab_paper_ids(citation_plan) - seen)
+    for paper_id in missing_paper_cards:
+        errors.append(f"{paper_id}: missing paper_card for A/B paper")
+
     return {
         "valid": bool(cards) and not errors,
         "total_cards": len(cards),
         "valid_cards": valid_cards,
         "invalid_cards": len(cards) - valid_cards,
+        "missing_paper_cards": missing_paper_cards,
         "errors": errors,
     }
 
@@ -112,9 +126,11 @@ def read_jsonl(path: Path) -> list[dict]:
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--paper-cards", required=True, type=Path)
+    parser.add_argument("--citation-plan", type=Path)
     parser.add_argument("--output", type=Path)
     args = parser.parse_args()
-    result = validate_paper_cards(read_jsonl(args.paper_cards))
+    citation_plan = read_jsonl(args.citation_plan) if args.citation_plan else None
+    result = validate_paper_cards(read_jsonl(args.paper_cards), citation_plan=citation_plan)
     text = json.dumps(result, indent=2, sort_keys=True) + "\n"
     if args.output:
         args.output.write_text(text, encoding="utf-8")

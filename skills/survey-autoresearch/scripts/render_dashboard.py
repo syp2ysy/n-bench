@@ -441,7 +441,7 @@ def render_gate_board(gates: dict) -> str:
             f'<div class="card"><h3>{html_escape(label)}</h3>{gate_label(bool(gate.get("passed")))}{detail}</div>'
         )
     final_passed = bool(gates.get("all_blocking_gates_passed"))
-    cards.append(f'<div class="card"><h3>Final Review</h3>{gate_label(final_passed)}</div>')
+    cards.append(f'<div class="card"><h3>Blocking Gates</h3>{gate_label(final_passed)}</div>')
     return '<div class="grid">' + "".join(cards) + "</div>"
 
 

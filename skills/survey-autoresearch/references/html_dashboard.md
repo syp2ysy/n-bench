@@ -46,6 +46,7 @@ Missing optional JSONL files render as `not available yet`. Malformed required J
 - topic, status, target, current phase, iteration, last heartbeat;
 - 12-phase timeline;
 - gate board;
+- deterministic gate status separately from qualitative `final_review_status`;
 - current conclusions grouped by taxonomy cell;
 - latest review or synthesis summary;
 - next action;

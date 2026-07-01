@@ -1,4 +1,5 @@
 import json
+import subprocess
 import tempfile
 import unittest
 from pathlib import Path
@@ -14,6 +15,7 @@ from scripts.validate_csur_style_patterns import validate_csur_style_patterns
 from scripts.validate_node_cards import validate_node_cards
 from scripts.validate_paper_cards import validate_paper_cards
 from scripts.validate_section_cards import validate_section_cards
+from scripts.derive_paper_facts import derive_paper_facts
 
 
 class SurveyAutoResearchScriptsTest(unittest.TestCase):
@@ -36,6 +38,41 @@ class SurveyAutoResearchScriptsTest(unittest.TestCase):
 
     def _valid_csur_style_patterns(self) -> str:
         return (
+            "exemplar_evidence:\n"
+            "  - doi: 10.1145/3711118\n"
+            "    exemplar: Data-centric Artificial Intelligence: A Survey\n"
+            "    abstract_moves_observed:\n"
+            "      - move: field importance\n"
+            "        evidence_note: Abstract frames data as central to the AI lifecycle.\n"
+            "    introduction_moves_observed:\n"
+            "      - move: lifecycle scope\n"
+            "        evidence_note: Introduction motivates lifecycle organization and survey scope.\n"
+            "    section_rhetoric_observed:\n"
+            "      - section_type: lifecycle stage\n"
+            "        opening_move: opens with the problem solved by the stage\n"
+            "        body_move: compares method and resource families\n"
+            "        closing_move: closes with limitations and directions\n"
+            "    table_functions_observed:\n"
+            "      - compares resources by lifecycle role\n"
+            "    conclusion_moves_observed:\n"
+            "      - synthesizes findings into future directions\n"
+            "  - doi: 10.1145/3769292\n"
+            "    exemplar: Machine Learning Systems: A Survey from a Data-Oriented Perspective\n"
+            "    abstract_moves_observed:\n"
+            "      - move: system lens\n"
+            "        evidence_note: Abstract uses a data-oriented lens to reorganize ML systems.\n"
+            "    introduction_moves_observed:\n"
+            "      - move: why existing views are incomplete\n"
+            "        evidence_note: Introduction motivates why a systems lens changes organization.\n"
+            "    section_rhetoric_observed:\n"
+            "      - section_type: system lens\n"
+            "        opening_move: defines the lens before listing systems\n"
+            "        body_move: compares components through the lens\n"
+            "        closing_move: derives design and evaluation implications\n"
+            "    table_functions_observed:\n"
+            "      - compares system components and design concerns\n"
+            "    conclusion_moves_observed:\n"
+            "      - returns to research agenda\n"
             "abstract_moves:\n"
             "  - field_importance\n"
             "  - fragmentation_or_gap\n"
@@ -159,6 +196,7 @@ class SurveyAutoResearchScriptsTest(unittest.TestCase):
                         "claim": "Typed records make later retrieval and evaluation meaningful.",
                         "papers": ["p1", "p2"],
                         "required_comparison": "Compare event logs with structured records.",
+                        "implication": "Record design changes both retrieval validity and evaluation interpretation.",
                     }
                 ],
                 "closing_move": "Return to design and evaluation implications for later method sections.",
@@ -366,6 +404,11 @@ class SurveyAutoResearchScriptsTest(unittest.TestCase):
             self.assertEqual(progress["status"], "running")
             self.assertEqual(progress["phase"], "phase_0_task_initialization")
             self.assertEqual(progress["target"], "full")
+            completion_gates = json.loads((task_dir / "state/completion_gates.json").read_text())
+            self.assertIn("gate_5_deep_synthesis", completion_gates)
+            self.assertIn("gate_6_csur_readiness", completion_gates)
+            self.assertIn("final_review_status", completion_gates)
+            self.assertNotIn("gate_5_review", completion_gates)
 
     def test_lqs_scoring_and_depth_classification(self):
         paper = {
@@ -405,6 +448,18 @@ class SurveyAutoResearchScriptsTest(unittest.TestCase):
         self.assertGreaterEqual(scored["lqs"], 7.0)
         self.assertEqual(scored["lqs_bucket"], "must-cite")
         self.assertEqual(scored["lqs_model"], "survey-role")
+
+    def test_derive_paper_facts_from_paper_cards(self):
+        facts = derive_paper_facts(self._valid_paper_cards())
+
+        self.assertEqual(len(facts), 2)
+        self.assertEqual(facts[0]["paper_id"], "p1")
+        self.assertEqual(facts[0]["method_family"], "state capture")
+        self.assertEqual(
+            facts[0]["mechanism_or_contribution"],
+            self._valid_paper_cards()[0]["mechanism_or_contribution"],
+        )
+        self.assertIn("task success", facts[0]["metrics"])
 
     def test_coverage_counts_ab_refs_per_taxonomy_cell(self):
         citation_plan = [
@@ -448,6 +503,22 @@ class SurveyAutoResearchScriptsTest(unittest.TestCase):
         self.assertIn("missing survey_role", result["errors"][0])
         self.assertIn("missing what_it_teaches_the_survey", result["errors"][0])
 
+    def test_validate_paper_cards_allows_seminal_role_and_checks_ab_coverage(self):
+        cards = self._valid_paper_cards()
+        cards[0]["survey_role"] = "seminal"
+        citation_plan = [
+            {"paper_id": "p1", "taxonomy_cell": "cell/a", "depth": "A"},
+            {"paper_id": "p2", "taxonomy_cell": "cell/a", "depth": "B"},
+            {"paper_id": "p3", "taxonomy_cell": "cell/a", "depth": "B"},
+            {"paper_id": "p4", "taxonomy_cell": "cell/a", "depth": "C"},
+        ]
+
+        result = validate_paper_cards(cards, citation_plan=citation_plan)
+
+        self.assertFalse(result["valid"])
+        self.assertIn("p3", result["missing_paper_cards"])
+        self.assertNotIn("unknown survey_role seminal", "\n".join(result["errors"]))
+
     def test_validate_node_cards_requires_role_meaning_papers_failure_and_eval(self):
         node_cards = [
             {
@@ -464,6 +535,54 @@ class SurveyAutoResearchScriptsTest(unittest.TestCase):
         self.assertFalse(result["valid"])
         self.assertIn("missing why_it_matters", result["errors"][0])
         self.assertIn("representative_papers needs at least 2 entries", result["errors"][0])
+
+    def test_validate_node_cards_grounding_and_gap_nodes(self):
+        node_cards = [
+            {
+                "node": "state capture",
+                "status": "covered",
+                "role_in_system": "Converts events into records.",
+                "why_it_matters": "It creates the substrate for retrieval.",
+                "inputs": ["event"],
+                "outputs": ["record"],
+                "main_design_families": ["event log"],
+                "representative_papers": ["p1", "missing"],
+                "failure_modes": ["lost provenance"],
+                "evaluation_signals": ["no-record ablation"],
+                "open_questions": ["what to retain"],
+            },
+            {
+                "node": "evaluation",
+                "status": "gap",
+                "role_in_system": "Tests whether state changes behavior.",
+                "why_it_matters": "It separates memory effects from policy effects.",
+                "inputs": ["protocol"],
+                "outputs": ["diagnosis"],
+                "main_design_families": ["oracle test"],
+                "representative_papers": ["p2"],
+                "failure_modes": ["confounded gains"],
+                "evaluation_signals": ["stale-state injection"],
+                "open_questions": ["how to standardize tests"],
+                "gap_reason": "Only one A/B paper isolates this node.",
+            },
+        ]
+        result = validate_node_cards(node_cards, paper_cards=self._valid_paper_cards())
+
+        self.assertFalse(result["valid"])
+        self.assertIn("unknown representative_paper missing", "\n".join(result["errors"]))
+
+        node_cards[0]["representative_papers"] = ["p1", "p2"]
+        result = validate_node_cards(node_cards, paper_cards=self._valid_paper_cards())
+
+        self.assertTrue(result["valid"])
+
+    def test_validate_node_cards_requires_paper_card_nodes_to_be_covered(self):
+        node_cards = [self._valid_node_cards()[0]]
+
+        result = validate_node_cards(node_cards, paper_cards=self._valid_paper_cards())
+
+        self.assertFalse(result["valid"])
+        self.assertIn("uncovered paper_card node evaluation", "\n".join(result["errors"]))
 
     def test_validate_section_cards_requires_argument_structure(self):
         section_cards = [
@@ -484,6 +603,33 @@ class SurveyAutoResearchScriptsTest(unittest.TestCase):
         self.assertIn("structure must be 总-分-总 or an accepted argument pattern", result["errors"][0])
         self.assertIn("missing opening_move", result["errors"][0])
 
+    def test_validate_section_cards_rejects_unstructured_subsection_moves(self):
+        section_cards = self._valid_section_cards()
+        section_cards[0]["subsection_moves"] = ["介绍相关工作"]
+
+        result = validate_section_cards(section_cards)
+
+        self.assertFalse(result["valid"])
+        self.assertIn("subsection_moves[1] must be an object", "\n".join(result["errors"]))
+
+    def test_validate_section_cards_requires_subsection_claim_papers_comparison_and_implication(self):
+        section_cards = self._valid_section_cards()
+        section_cards[0]["subsection_moves"] = [
+            {
+                "subsection": "State capture",
+                "claim": "Typed records matter.",
+                "papers": ["p1"],
+                "required_comparison": "Compare event logs with structured records.",
+            }
+        ]
+
+        result = validate_section_cards(section_cards)
+
+        self.assertFalse(result["valid"])
+        joined = "\n".join(result["errors"])
+        self.assertIn("subsection_moves[1] needs at least 2 papers or gap_reason", joined)
+        self.assertIn("subsection_moves[1] missing implication", joined)
+
     def test_validate_csur_style_patterns_rejects_doi_only_skeleton(self):
         skeleton_only = (
             "# CSUR Plan\n\n"
@@ -500,6 +646,34 @@ class SurveyAutoResearchScriptsTest(unittest.TestCase):
         valid = validate_csur_style_patterns(self._valid_csur_style_patterns())
 
         self.assertTrue(valid["valid"])
+
+    def test_validate_csur_style_patterns_requires_exemplar_evidence(self):
+        template_only = (
+            "abstract_moves:\n"
+            "  - field_importance\n"
+            "  - fragmentation_or_gap\n"
+            "  - organizing_framework\n"
+            "introduction_moves:\n"
+            "  - broad_problem\n"
+            "  - roadmap\n"
+            "section_patterns:\n"
+            "  system_model:\n"
+            "    structure: 总-分-总\n"
+            "    opening: define object\n"
+            "    body: compare methods\n"
+            "    closing: agenda\n"
+            "table_functions:\n"
+            "  - compare methods\n"
+            "paragraph_patterns:\n"
+            "  - claim -> evidence -> implication\n"
+            "forbidden_surface_forms:\n"
+            "  - Paper A proposes\n"
+        )
+
+        result = validate_csur_style_patterns(template_only)
+
+        self.assertFalse(result["valid"])
+        self.assertIn("exemplar_evidence", result["missing"])
 
     def test_validate_claim_records_requires_evidence_and_known_papers(self):
         claims = [
@@ -526,6 +700,48 @@ class SurveyAutoResearchScriptsTest(unittest.TestCase):
         self.assertEqual(result["valid_claims"], 1)
         self.assertEqual(result["invalid_claims"], 1)
         self.assertIn("unknown paper_id missing", result["errors"][0])
+
+    def test_validate_claims_cli_accepts_paper_cards_and_detects_missing_trace(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp_path = Path(tmp)
+            papers_path = tmp_path / "papers.jsonl"
+            claims_path = tmp_path / "claims.jsonl"
+            cards_path = tmp_path / "paper_cards.jsonl"
+            papers_path.write_text(json.dumps({"paper_id": "p1"}) + "\n")
+            claims_path.write_text(
+                json.dumps(
+                    {
+                        "claim_id": "c1",
+                        "claim": "A claim needs a card trace.",
+                        "paper_ids": ["p1"],
+                        "evidence": "Evidence.",
+                        "paper_card_fields": {"p1": ["what_it_teaches_the_survey"]},
+                    }
+                )
+                + "\n"
+            )
+            bad_card = self._valid_paper_cards()[0]
+            bad_card["what_it_teaches_the_survey"] = ""
+            cards_path.write_text(json.dumps(bad_card) + "\n")
+
+            result = subprocess.run(
+                [
+                    "python3",
+                    "scripts/validate_claims.py",
+                    "--claims",
+                    str(claims_path),
+                    "--papers",
+                    str(papers_path),
+                    "--paper-cards",
+                    str(cards_path),
+                ],
+                cwd="/Users/sunyanpeng/.codex/skills/survey-autoresearch",
+                text=True,
+                capture_output=True,
+            )
+
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn("paper_card trace fields unavailable", result.stdout)
 
     def test_evaluate_gates_uses_reference_and_evidence_thresholds(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -673,6 +889,51 @@ class SurveyAutoResearchScriptsTest(unittest.TestCase):
             self.assertIn("state/system_node_cards.jsonl", gates["gate_5_deep_synthesis"]["missing_artifacts"])
             self.assertIn("state/section_cards.jsonl", gates["gate_5_deep_synthesis"]["missing_artifacts"])
             self.assertFalse(gates["all_blocking_gates_passed"])
+
+    def test_full_survey_gate_requires_ab_paper_card_coverage(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            task_dir = Path(tmp)
+            self._write_full_survey_fixture(task_dir)
+            paper_cards = self._valid_paper_cards()[:1]
+            (task_dir / "state/paper_cards.jsonl").write_text(
+                "".join(json.dumps(item) + "\n" for item in paper_cards)
+            )
+
+            gates = evaluate_gates(task_dir, target="full")
+
+            self.assertFalse(gates["gate_5_deep_synthesis"]["passed"])
+            self.assertIn("paper-card depth", gates["gate_5_deep_synthesis"]["failed_checks"])
+            self.assertIn("p2", gates["gate_5_deep_synthesis"]["paper_cards"]["missing_paper_cards"])
+
+    def test_full_survey_gate_accepts_chinese_conceptual_framework_headings(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            task_dir = Path(tmp)
+            self._write_full_survey_fixture(task_dir)
+            (task_dir / "outputs/conceptual_framework.md").write_text(
+                "# 概念框架\n\n"
+                "## 中心论点\n具备研究价值的综述需要把系统对象解释为一组相互作用的机制，而不是把论文按任务堆叠。这里说明核心论点如何贯穿全文。\n\n"
+                "## 系统模型\n系统模型描述输入如何被记录、表示、检索、更新并进入控制接口，同时说明每个组件承担的功能边界和证据要求。\n\n"
+                "## 节点交互\n节点交互解释记录生成、表示选择、读取策略、更新策略和控制接口之间如何相互约束，并说明错误如何传播到评测。\n\n"
+                "## 分类轴\n分类轴从表示、接口、生命周期操作和证据强度组织方法，使读者能比较设计选择而不是只记住论文名称。\n\n"
+                "## 贯穿例子\n贯穿例子展示一个系统如何写入事件、检索记录、根据反馈修正状态，并用扰动实验验证记忆是否真正改变决策。\n\n"
+                "## 与已有综述的区别\n相关综述差异在于本文把系统节点和证据链作为组织对象，因此能解释已有分类无法揭示的设计与评测缺口。\n"
+            )
+
+            gates = evaluate_gates(task_dir, target="full")
+
+            self.assertTrue(gates["gate_5_deep_synthesis"]["conceptual_framework"]["passed"])
+
+    def test_full_survey_gate_rejects_empty_conceptual_framework_headings(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            task_dir = Path(tmp)
+            self._write_full_survey_fixture(task_dir)
+            (task_dir / "outputs/conceptual_framework.md").write_text(
+                "## Central Thesis\n\n## System Model\n\n## Node Interactions\n\n## Taxonomy Axes\n\n## Running Example\n\n## Prior-Survey Delta\n"
+            )
+
+            gates = evaluate_gates(task_dir, target="full")
+
+            self.assertFalse(gates["gate_5_deep_synthesis"]["conceptual_framework"]["passed"])
 
     def test_full_survey_gate_rejects_keyword_rich_review_without_node_and_section_logic(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -848,6 +1109,26 @@ class SurveyAutoResearchScriptsTest(unittest.TestCase):
             self.assertFalse(gates["gate_1_literature"]["citation_verification_cadence"]["passed"])
             self.assertFalse(gates["all_blocking_gates_passed"])
 
+    def test_full_survey_gate_allows_preprint_heavy_publication_norm_with_stronger_verification(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            task_dir = Path(tmp)
+            self._write_full_survey_fixture(task_dir)
+            papers = [
+                {"paper_id": f"p{i}", "verified": True, "accepted": i < 10, "venue_status": "preprint"}
+                for i in range(160)
+            ]
+            (task_dir / "state/papers.jsonl").write_text(
+                "".join(json.dumps(item) + "\n" for item in papers)
+            )
+            (task_dir / "state/task_spec.md").write_text(
+                "# Task Spec\n\nTarget: full\n\nPublication norm:\naccepted_ratio_required: false\nreason: preprint-heavy field\n"
+            )
+
+            gates = evaluate_gates(task_dir, target="full")
+
+            self.assertTrue(gates["gate_1_literature"]["publication_norm"]["preprint_heavy"])
+            self.assertTrue(gates["gate_1_literature"]["passed"])
+
     def test_csur_gate_requires_protocol_related_surveys_and_paper_facts(self):
         with tempfile.TemporaryDirectory() as tmp:
             task_dir = Path(tmp)
@@ -918,22 +1199,16 @@ class SurveyAutoResearchScriptsTest(unittest.TestCase):
                 "| --- | --- | --- | --- |\n"
                 + "".join(f"| S{i} | topic | gap | new taxonomy and evidence table |\n" for i in range(8))
             )
-            fact_rows = []
+            full_cards = []
             for i in range(12):
-                fact_rows.append(
-                    {
-                        "paper_id": f"p{i}",
-                        "method_family": "retrieval",
-                        "task_family": "agents",
-                        "benchmark_or_dataset": "Benchmark",
-                        "metrics": ["success"],
-                        "mechanism_or_contribution": "retrieval system",
-                        "ablations": ["no retrieval"],
-                        "limitations": "Limited scope.",
-                    }
-                )
+                card = dict(self._valid_paper_cards()[0])
+                card["paper_id"] = f"p{i}"
+                full_cards.append(card)
+            (task_dir / "state/paper_cards.jsonl").write_text(
+                "".join(json.dumps(item) + "\n" for item in full_cards)
+            )
             (task_dir / "state/paper_facts.jsonl").write_text(
-                "".join(json.dumps(item) + "\n" for item in fact_rows)
+                "".join(json.dumps(item) + "\n" for item in derive_paper_facts(full_cards))
             )
             (task_dir / "outputs/synthesis_tables.md").write_text(
                 "# Synthesis Tables\n\n| benchmark | protocol | metrics | ablations |\n"
@@ -948,6 +1223,12 @@ class SurveyAutoResearchScriptsTest(unittest.TestCase):
                 self._valid_csur_imitation_plan()
             )
             self._write_deep_artifacts(task_dir, include_csur_style=True)
+            (task_dir / "state/paper_cards.jsonl").write_text(
+                "".join(json.dumps(item) + "\n" for item in full_cards)
+            )
+            (task_dir / "state/paper_facts.jsonl").write_text(
+                "".join(json.dumps(item) + "\n" for item in derive_paper_facts(full_cards))
+            )
 
             gates = evaluate_gates(task_dir, target="csur")
 

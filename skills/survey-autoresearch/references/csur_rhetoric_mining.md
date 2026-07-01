@@ -7,6 +7,24 @@ Use this reference for `target=csur` after reading `references/csur_exemplar_pat
 Write `state/csur_style_patterns.yml` before synthesis. It must include:
 
 ```yaml
+exemplar_evidence:
+  - doi: "10.1145/3711118"
+    exemplar: "Data-centric Artificial Intelligence: A Survey"
+    abstract_moves_observed:
+      - move: "field importance"
+        evidence_note: "Short paraphrase of the observed abstract move."
+    introduction_moves_observed:
+      - move: "scope and lifecycle framing"
+        evidence_note: "Short paraphrase of the observed introduction move."
+    section_rhetoric_observed:
+      - section_type: "lifecycle stage"
+        opening_move: "How the section opens."
+        body_move: "How comparisons are developed."
+        closing_move: "How the section closes."
+    table_functions_observed:
+      - "What a table helps the reader compare."
+    conclusion_moves_observed:
+      - "How the conclusion turns findings into agenda."
 abstract_moves:
   - field_importance
   - fragmentation_or_gap
@@ -47,3 +65,5 @@ For each selected official ACM Computing Surveys exemplar, record:
 - how the conclusion states take-home findings rather than repeating the abstract.
 
 Do not stop at DOI, year, section skeleton, or article title. CSUR imitation means learning argument moves and section rhetoric.
+
+The gate requires observed evidence from at least two official CSUR DOI records. Do not copy only the generic template above.

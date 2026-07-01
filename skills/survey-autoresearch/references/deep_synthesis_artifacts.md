@@ -4,11 +4,14 @@ Use this reference for `target=full` and `target=csur` before drafting `outputs/
 
 ## Required Flow
 
-1. Triage retained papers by survey role: `foundational`, `system`, `benchmark`, `application`, `negative` or `failure`, `survey`, `bridge`, `frontier`.
+1. Triage retained papers by survey role: `foundational`, `seminal`, `system`, `benchmark`, `application`, `negative` or `failure`, `survey`, `bridge`, `frontier`.
 2. Write `state/paper_cards.jsonl` for A/B papers.
-3. Build `state/system_node_cards.jsonl` from the paper cards.
-4. Derive taxonomy and section plan from node coverage, not from seed keywords alone.
-5. Write `outputs/conceptual_framework.md` before `outputs/review.md`.
+3. Derive `state/paper_facts.jsonl` from paper cards with `scripts/derive_paper_facts.py` when CSUR tables need the compact schema.
+4. Build `state/system_node_cards.jsonl` from the paper cards.
+5. Derive taxonomy and section plan from node coverage, not from seed keywords alone.
+6. Write `outputs/conceptual_framework.md` before `outputs/review.md`.
+
+`state/research_questions_by_perspective.md` is the exploration layer. `state/research_questions.md` is the converged layer. Each final research question should state which perspective questions it derives from.
 
 ## Paper Cards
 
@@ -17,7 +20,7 @@ Each A/B paper card must explain what the paper teaches the survey. Required con
 ```json
 {
   "paper_id": "p001",
-  "survey_role": "foundational | system | benchmark | application | negative | failure | survey | bridge | frontier",
+  "survey_role": "foundational | seminal | system | benchmark | application | negative | failure | survey | bridge | frontier",
   "problem": "What problem this paper makes visible.",
   "method_summary": "How the paper's mechanism works.",
   "system_node": "The system node this paper clarifies.",
@@ -42,6 +45,8 @@ Each A/B paper card must explain what the paper teaches the survey. Required con
 
 Avoid generic records that only say method family, task family, and limitations. Those records cannot support a deep survey.
 
+Every A/B paper in `state/citation_plan.jsonl` must have a paper card. Missing A/B cards fail the deep-synthesis gate.
+
 ## System Node Cards
 
 Each node card must contain:
@@ -54,9 +59,12 @@ Each node card must contain:
 - at least two `representative_papers`;
 - `failure_modes`;
 - `evaluation_signals`;
-- `open_questions`.
+- `open_questions`;
+- `status`: `covered`, `weak`, or `gap`.
 
 The node card should teach why the component exists, not merely where it appears in an architecture diagram.
+
+Representative papers must exist in `state/paper_cards.jsonl`. Every nonempty `system_node` or `memory_node` named in paper cards must be covered by a node card. A `gap` node may have fewer than two representative papers, but it must include `gap_reason` rather than inventing coverage.
 
 ## Conceptual Framework
 

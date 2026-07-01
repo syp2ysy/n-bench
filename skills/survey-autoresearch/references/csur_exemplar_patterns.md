@@ -4,6 +4,8 @@ Use this reference before drafting `outputs/review.md` for `target=csur`.
 
 The exemplar set is restricted to recent official ACM Computing Surveys records. Do not use arXiv-only, submitted, under-review, or unverified accepted claims as default style exemplars. Use 2025-2026 ACM DL records by default; use 2024 only as an explicitly labeled fallback.
 
+The maintained DOI pool lives in `references/csur_official_exemplars.yml`. Add a new record there only when an official ACM DL DOI page verifies the paper as an ACM Computing Surveys publication. Custom verified exemplars must include DOI, ACM DL URL, verification date, and reason for use.
+
 ## Official Exemplar Pool
 
 | Pattern | Official CSUR exemplars | Use for |

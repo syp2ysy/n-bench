@@ -90,6 +90,10 @@ Success criteria:
 - Literature recall, LQS scoring, citation-depth classification, venue/status verification, taxonomy design, evidence extraction, synthesis, and peer-review routing are completed.
 - Full/CSUR runs build paper cards, system node cards, section cards, and a conceptual framework before drafting.
 - Final outputs include review.md, evidence_table.csv, references.bib, and final_report.md.
+
+Publication norm:
+accepted_ratio_required: true
+reason: default field norm; set false only for explicitly preprint-heavy fields.
 """
     (state_dir / "task_spec.md").write_text(task_spec, encoding="utf-8")
 
@@ -121,7 +125,9 @@ Success criteria:
             "gate_2_taxonomy": False,
             "gate_3_evidence": False,
             "gate_4_output": False,
-            "gate_5_review": False,
+            "gate_5_deep_synthesis": False,
+            "gate_6_csur_readiness": False,
+            "final_review_status": False,
         },
     )
     (state_dir / "taxonomy.md").write_text(
