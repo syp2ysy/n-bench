@@ -32,13 +32,13 @@ PHASES = [
         "checks": ["Task spec exists", "target is recorded", "next action is set"],
     },
     {
-        "id": "phase_1_taxonomy_seed",
-        "file": "phase_01_taxonomy_seed.html",
-        "title": "Phase 1: Taxonomy Seed",
-        "purpose": "Create initial taxonomy axes and search cells.",
+        "id": "phase_1_question_mining",
+        "file": "phase_01_question_mining.html",
+        "title": "Phase 1: Question Mining",
+        "purpose": "Mine research questions from multiple reader and expert perspectives before locking taxonomy.",
         "inputs": ["state/task_spec.md"],
-        "outputs": ["state/taxonomy.md", "state/coverage.json"],
-        "checks": ["Taxonomy has axes", "search cells are visible"],
+        "outputs": ["state/research_questions_by_perspective.md", "state/research_questions.md"],
+        "checks": ["Multiple perspectives are recorded", "taxonomy remains provisional"],
     },
     {
         "id": "phase_2_recall",
@@ -50,13 +50,13 @@ PHASES = [
         "checks": ["Candidates appended", "search routes logged"],
     },
     {
-        "id": "phase_3_lqs_scoring",
+        "id": "phase_3_survey_role_scoring",
         "file": "phase_03_lqs_scoring.html",
-        "title": "Phase 3: LQS Scoring",
-        "purpose": "Score candidates by recency, citation impact, venue, institution, and acceptance status.",
+        "title": "Phase 3: Survey-Role Scoring",
+        "purpose": "Score candidates by conceptual centrality, mechanism clarity, evidence strength, coverage value, benchmark/ablation value, and verification.",
         "inputs": ["state/papers.jsonl"],
         "outputs": ["state/lqs_scores.jsonl"],
-        "checks": ["Papers scored", "must-cite and conditional buckets exist"],
+        "checks": ["Papers scored", "survey roles assigned", "foundational work is not dropped by age"],
     },
     {
         "id": "phase_4_citation_depth",
@@ -77,45 +77,54 @@ PHASES = [
         "checks": ["Verification rate improves", "hallucinated citations remain zero"],
     },
     {
-        "id": "phase_6_evidence_extraction",
+        "id": "phase_6_deep_evidence_extraction",
         "file": "phase_06_evidence_extraction.html",
-        "title": "Phase 6: Evidence Extraction",
-        "purpose": "Convert paper notes into evidence-backed claim records.",
+        "title": "Phase 6: Deep Evidence Extraction",
+        "purpose": "Convert A/B papers into paper cards and evidence-backed claim records.",
         "inputs": ["state/papers.jsonl", "state/citation_plan.jsonl"],
-        "outputs": ["state/claims.jsonl"],
-        "checks": ["Major claims have paper IDs", "evidence fields are nonempty"],
+        "outputs": ["state/paper_cards.jsonl", "state/paper_facts.jsonl", "state/claims.jsonl"],
+        "checks": ["A/B papers have paper cards", "major claims trace to card fields", "evidence spans are nonempty"],
     },
     {
-        "id": "phase_7_taxonomy_repair",
-        "file": "phase_07_taxonomy_repair.html",
-        "title": "Phase 7: Taxonomy Repair",
-        "purpose": "Fill weak cells, record gaps, and redesign axes when needed.",
-        "inputs": ["state/coverage.json", "state/claims.jsonl"],
-        "outputs": ["state/taxonomy.md", "state/coverage.json"],
-        "checks": ["Weak cells are visible", "gap analysis exists"],
+        "id": "phase_7_system_node_graph",
+        "file": "phase_07_system_node_graph.html",
+        "title": "Phase 7: System-Node Graph",
+        "purpose": "Build component or system-node cards, then repair taxonomy from node coverage.",
+        "inputs": ["state/paper_cards.jsonl", "state/coverage.json"],
+        "outputs": ["state/system_node_cards.jsonl", "state/taxonomy.md", "state/coverage.json"],
+        "checks": ["System nodes have representative papers", "failure modes and evaluation signals are visible", "weak cells are repaired"],
     },
     {
-        "id": "phase_8_synthesis",
-        "file": "phase_08_synthesis.html",
-        "title": "Phase 8: Synthesis",
-        "purpose": "Write the review, evidence table, and BibTeX from verified state.",
-        "inputs": ["state/claims.jsonl", "state/citation_plan.jsonl"],
-        "outputs": ["outputs/review.md", "outputs/evidence_table.csv", "outputs/references.bib"],
-        "checks": ["Output files are nonempty", "claims are linked to evidence"],
+        "id": "phase_8_section_planning",
+        "file": "phase_08_section_planning.html",
+        "title": "Phase 8: Section Planning",
+        "purpose": "Plan major sections from reader questions, section theses, rhetoric patterns, and required display items.",
+        "inputs": ["state/system_node_cards.jsonl", "state/paper_cards.jsonl"],
+        "outputs": ["state/section_cards.jsonl", "outputs/conceptual_framework.md", "state/csur_style_patterns.yml"],
+        "checks": ["Section cards exist", "conceptual framework exists", "CSUR rhetoric patterns exist when target=csur"],
     },
     {
-        "id": "phase_9_peer_review",
-        "file": "phase_09_peer_review.html",
-        "title": "Phase 9: Peer Review",
-        "purpose": "Run independent reviewer personas and route weaknesses.",
-        "inputs": ["outputs/review.md"],
+        "id": "phase_9_synthesis",
+        "file": "phase_09_synthesis.html",
+        "title": "Phase 9: Synthesis",
+        "purpose": "Write review outputs from paper cards, node cards, section cards, claims, and verified citations.",
+        "inputs": ["state/section_cards.jsonl", "state/paper_cards.jsonl", "state/claims.jsonl", "state/citation_plan.jsonl"],
+        "outputs": ["outputs/review.md", "outputs/evidence_table.csv", "outputs/references.bib", "outputs/synthesis_tables.md", "outputs/figures_plan.md"],
+        "checks": ["Output files are nonempty", "claims are linked to evidence", "sections follow their cards"],
+    },
+    {
+        "id": "phase_10_peer_review",
+        "file": "phase_10_peer_review.html",
+        "title": "Phase 10: Peer Review",
+        "purpose": "Run newcomer, system architect, experimentalist, and CSUR stylist review passes.",
+        "inputs": ["outputs/review.md", "state/section_cards.jsonl"],
         "outputs": ["state/review_rounds.jsonl"],
         "checks": ["Reviewer summaries exist", "major weaknesses are routed"],
     },
     {
-        "id": "phase_10_sprint_loop",
-        "file": "phase_10_sprint_loop.html",
-        "title": "Phase 10: Sprint Loop",
+        "id": "phase_11_sprint_loop",
+        "file": "phase_11_sprint_loop.html",
+        "title": "Phase 11: Sprint Loop",
         "purpose": "Fix routed weaknesses, rerun gates, and stop only when complete or blocked.",
         "inputs": ["state/review_rounds.jsonl", "state/completion_gates.json"],
         "outputs": ["outputs/final_report.md", "dashboard/index.html"],
@@ -406,6 +415,10 @@ def render_gate_board(gates: dict) -> str:
         ("gate_3_evidence", "Evidence"),
         ("gate_4_output", "Output"),
     ]
+    if "gate_5_deep_synthesis" in gates:
+        gate_names.append(("gate_5_deep_synthesis", "Deep Synthesis"))
+    if "gate_6_csur_readiness" in gates:
+        gate_names.append(("gate_6_csur_readiness", "CSUR"))
     cards = []
     for gate_id, label in gate_names:
         gate = gates.get(gate_id, {})
@@ -419,6 +432,11 @@ def render_gate_board(gates: dict) -> str:
         elif gate_id == "gate_3_evidence":
             validation = gate.get("claim_validation", {})
             detail = f"<div class=\"muted\">valid claims {html_escape(validation.get('valid_claims', 0))}</div>"
+        elif gate_id == "gate_5_deep_synthesis":
+            checks = gate.get("checks", [])
+            total = len(checks)
+            passed = sum(1 for item in checks if item.get("passed"))
+            detail = f"<div class=\"muted\">checks {html_escape(passed)}/{html_escape(total)}</div>"
         cards.append(
             f'<div class="card"><h3>{html_escape(label)}</h3>{gate_label(bool(gate.get("passed")))}{detail}</div>'
         )

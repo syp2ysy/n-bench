@@ -15,6 +15,9 @@ STATE_FILES = [
     "lqs_scores.jsonl",
     "citation_plan.jsonl",
     "claims.jsonl",
+    "paper_cards.jsonl",
+    "system_node_cards.jsonl",
+    "section_cards.jsonl",
     "review_rounds.jsonl",
     "phase_summaries.jsonl",
     "agent_rounds.jsonl",
@@ -38,6 +41,7 @@ OUTPUT_FILES = {
     "final_report.md": "",
     "synthesis_tables.md": "",
     "figures_plan.md": "",
+    "conceptual_framework.md": "",
 }
 
 
@@ -84,6 +88,7 @@ Run an unattended survey-autoresearch workflow until the completion gates pass o
 Success criteria:
 - Persistent state is updated every iteration.
 - Literature recall, LQS scoring, citation-depth classification, venue/status verification, taxonomy design, evidence extraction, synthesis, and peer-review routing are completed.
+- Full/CSUR runs build paper cards, system node cards, section cards, and a conceptual framework before drafting.
 - Final outputs include review.md, evidence_table.csv, references.bib, and final_report.md.
 """
     (state_dir / "task_spec.md").write_text(task_spec, encoding="utf-8")
@@ -124,9 +129,11 @@ Success criteria:
         encoding="utf-8",
     )
     (state_dir / "research_questions.md").write_text("", encoding="utf-8")
+    (state_dir / "research_questions_by_perspective.md").write_text("", encoding="utf-8")
     (state_dir / "search_protocol.md").write_text("", encoding="utf-8")
     (state_dir / "related_surveys.md").write_text("", encoding="utf-8")
     (state_dir / "csur_imitation_plan.md").write_text("", encoding="utf-8")
+    (state_dir / "csur_style_patterns.yml").write_text("", encoding="utf-8")
     (state_dir / "paper_facts.jsonl").touch()
 
     for filename in STATE_FILES:

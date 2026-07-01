@@ -29,6 +29,8 @@ Before synthesis, write a short plan with these headings:
 4. `Reader Function By Major Section`: explain what each section teaches the reader.
 5. `Internal Notes Excluded From Review Body`: name scaffold notes, logs, and state-file details that cannot enter `outputs/review.md`.
 
+Then write `state/csur_style_patterns.yml` using `references/csur_rhetoric_mining.md`. A CSUR plan that only lists DOI records, section titles, or a skeleton is not enough; it must also mine abstract moves, introduction moves, section opening/body/closing habits, table functions, paragraph patterns, and forbidden surface forms.
+
 ## Pattern Prompts
 
 ### Lifecycle-Style Survey

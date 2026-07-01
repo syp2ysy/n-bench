@@ -11,9 +11,17 @@ from pathlib import Path
 try:
     from .coverage_report import build_coverage
     from .validate_claims import validate_claim_records
+    from .validate_csur_style_patterns import validate_csur_style_patterns
+    from .validate_node_cards import validate_node_cards
+    from .validate_paper_cards import validate_paper_cards
+    from .validate_section_cards import validate_section_cards
 except ImportError:  # pragma: no cover - used when run as a standalone script
     from coverage_report import build_coverage
     from validate_claims import validate_claim_records
+    from validate_csur_style_patterns import validate_csur_style_patterns
+    from validate_node_cards import validate_node_cards
+    from validate_paper_cards import validate_paper_cards
+    from validate_section_cards import validate_section_cards
 
 
 TARGETS = {
@@ -368,6 +376,102 @@ def multi_agent_claim_status(task_dir: Path) -> dict:
     }
 
 
+def conceptual_framework_status(text: str) -> dict:
+    lower = text.lower()
+    required_terms = [
+        "central thesis",
+        "system diagram",
+        "node",
+        "taxonomy",
+        "running example",
+        "prior-survey",
+    ]
+    missing = [term for term in required_terms if term not in lower]
+    return {"passed": bool(text.strip()) and not missing, "missing_terms": missing}
+
+
+def deep_synthesis_readiness(task_dir: Path, target: str) -> dict:
+    """Check required deep-synthesis artifacts for full and CSUR runs."""
+    if target not in {"full", "csur"}:
+        return {"required": False, "passed": True}
+
+    state_dir = task_dir / "state"
+    outputs_dir = task_dir / "outputs"
+    required_files = [
+        state_dir / "paper_cards.jsonl",
+        state_dir / "system_node_cards.jsonl",
+        state_dir / "section_cards.jsonl",
+        state_dir / "research_questions_by_perspective.md",
+        outputs_dir / "conceptual_framework.md",
+    ]
+    if target == "csur":
+        required_files.append(state_dir / "csur_style_patterns.yml")
+
+    missing_artifacts = [
+        str(path.relative_to(task_dir))
+        for path in required_files
+        if not nonempty(path)
+    ]
+
+    paper_cards = read_jsonl(state_dir / "paper_cards.jsonl")
+    node_cards = read_jsonl(state_dir / "system_node_cards.jsonl")
+    section_cards = read_jsonl(state_dir / "section_cards.jsonl")
+    paper_status = validate_paper_cards(paper_cards) if paper_cards else {
+        "valid": False,
+        "errors": ["missing paper_cards"],
+        "total_cards": 0,
+    }
+    node_status = validate_node_cards(node_cards) if node_cards else {
+        "valid": False,
+        "errors": ["missing system_node_cards"],
+        "total_cards": 0,
+    }
+    section_status = validate_section_cards(section_cards) if section_cards else {
+        "valid": False,
+        "errors": ["missing section_cards"],
+        "total_cards": 0,
+    }
+    framework_status = conceptual_framework_status(
+        text_or_empty(outputs_dir / "conceptual_framework.md")
+    )
+    perspective_text = text_or_empty(state_dir / "research_questions_by_perspective.md")
+    perspective_status = {
+        "passed": bool(perspective_text.strip()) and len(
+            [line for line in perspective_text.splitlines() if line.strip().startswith(("-", "*", "RQ"))]
+        ) >= 2
+    }
+    csur_style_status = {"valid": True}
+    if target == "csur":
+        csur_style_text = text_or_empty(state_dir / "csur_style_patterns.yml")
+        csur_style_status = validate_csur_style_patterns(csur_style_text) if csur_style_text else {
+            "valid": False,
+            "missing": ["csur_style_patterns"],
+        }
+
+    checks = {
+        "paper-card depth": bool(paper_status["valid"]),
+        "node depth": bool(node_status["valid"]),
+        "section argument": bool(section_status["valid"]),
+        "newcomer comprehension": bool(framework_status["passed"]) and perspective_status["passed"],
+    }
+    if target == "csur":
+        checks["CSUR rhetoric"] = bool(csur_style_status["valid"])
+    failed_checks = [name for name, passed in checks.items() if not passed]
+    return {
+        "required": True,
+        "passed": not missing_artifacts and not failed_checks,
+        "missing_artifacts": missing_artifacts,
+        "failed_checks": failed_checks,
+        "checks": checks,
+        "paper_cards": paper_status,
+        "system_node_cards": node_status,
+        "section_cards": section_status,
+        "conceptual_framework": framework_status,
+        "perspective_questions": perspective_status,
+        "csur_style_patterns": csur_style_status,
+    }
+
+
 def csur_readiness(task_dir: Path, citation_plan: list[dict]) -> dict:
     """Check deterministic artifacts needed before claiming CSUR readiness."""
     state_dir = task_dir / "state"
@@ -377,9 +481,12 @@ def csur_readiness(task_dir: Path, citation_plan: list[dict]) -> dict:
         state_dir / "search_protocol.md",
         state_dir / "related_surveys.md",
         state_dir / "paper_facts.jsonl",
+        state_dir / "paper_cards.jsonl",
         state_dir / "csur_imitation_plan.md",
+        state_dir / "csur_style_patterns.yml",
         outputs_dir / "synthesis_tables.md",
         outputs_dir / "figures_plan.md",
+        outputs_dir / "conceptual_framework.md",
     ]
     missing_artifacts = [
         str(path.relative_to(task_dir))
@@ -509,6 +616,7 @@ def evaluate_gates(task_dir: Path, target: str = "short") -> dict:
         and verification_rate >= 0.80
         and accepted_rate >= 0.30
         and all_cells_covered
+        and coverage["summary"].get("assigned_ab_coverage_passed", True)
     )
     citation_cadence = citation_verification_cadence(task_dir, papers, target)
     gate_1_passed = gate_1_passed and citation_cadence["passed"]
@@ -520,7 +628,12 @@ def evaluate_gates(task_dir: Path, target: str = "short") -> dict:
         and len(taxonomy_text.strip()) > 40
     )
 
-    claim_validation = validate_claim_records(claims, known_ids)
+    paper_cards = read_jsonl(state_dir / "paper_cards.jsonl")
+    claim_validation = validate_claim_records(
+        claims,
+        known_ids,
+        paper_cards=paper_cards if target in {"full", "csur"} and paper_cards else None,
+    )
     gate_3_passed = bool(claims) and claim_validation["valid"]
 
     review_path = outputs_dir / "review.md"
@@ -572,6 +685,9 @@ def evaluate_gates(task_dir: Path, target: str = "short") -> dict:
         },
     }
     blocking_gate_names = ["gate_1_literature", "gate_2_taxonomy", "gate_3_evidence", "gate_4_output"]
+    if target in {"full", "csur"}:
+        gates["gate_5_deep_synthesis"] = deep_synthesis_readiness(task_dir, target)
+        blocking_gate_names.append("gate_5_deep_synthesis")
     if target == "csur":
         gates["gate_6_csur_readiness"] = csur_readiness(task_dir, citation_plan)
         blocking_gate_names.append("gate_6_csur_readiness")

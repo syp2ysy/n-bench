@@ -20,7 +20,7 @@ This overwrites:
 <run_dir>/dashboard/index.html
 <run_dir>/dashboard/phases/phase_00_task_lock.html
 ...
-<run_dir>/dashboard/phases/phase_10_sprint_loop.html
+<run_dir>/dashboard/phases/phase_11_sprint_loop.html
 ```
 
 ## Dashboard Source Files
@@ -44,7 +44,7 @@ Missing optional JSONL files render as `not available yet`. Malformed required J
 
 `dashboard/index.html` shows:
 - topic, status, target, current phase, iteration, last heartbeat;
-- 11-phase timeline;
+- 12-phase timeline;
 - gate board;
 - current conclusions grouped by taxonomy cell;
 - latest review or synthesis summary;

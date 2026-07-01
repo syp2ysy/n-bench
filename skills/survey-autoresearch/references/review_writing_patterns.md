@@ -31,6 +31,10 @@ When drafting, translate these cues into concrete artifacts: thesis, conceptual 
 Write these before or during synthesis:
 
 - `state/review_style_audit.md`: reader contract, central thesis, conceptual contribution, related-survey differentiation, anti-dump check.
+- `state/paper_cards.jsonl`: A/B paper extraction with survey role, mechanism, system component or node, interface, evidence spans, failure modes, limitations, and what the paper teaches the survey.
+- `state/system_node_cards.jsonl`: system or method components with role, why they matter, inputs, outputs, representative papers, failure modes, and evaluation signals.
+- `state/section_cards.jsonl`: reader question, section thesis, section structure, opening move, subsection moves, closing implication, and required display item for every major section.
+- `outputs/conceptual_framework.md`: central thesis, system model, node/component interactions, taxonomy axes, running example, and related-survey delta.
 - `outputs/review.md`: thesis-driven review, not workflow report.
 - A field map that tells a new reader what tasks, benchmarks, method families, and evaluation settings define the area.
 - A benchmark landscape table with representative benchmarks/datasets, task type, capability pressure, metrics, and limitations.
@@ -52,6 +56,8 @@ Each major section should pass:
 - The section compares at least two families, designs, or assumptions.
 - Citations support claims instead of replacing analysis.
 - The final paragraph tells the reader what follows for system design, benchmark design, or theory.
+
+Draft major sections from `state/section_cards.jsonl`. The opening paragraph should answer the reader question and establish the section thesis before papers appear. The middle paragraphs compare families using paper-card evidence. The closing paragraph should state the design, evaluation, or research implication.
 
 Rewrite the section if:
 

@@ -10,6 +10,10 @@ from scripts.patrol import inspect_task
 from scripts.render_dashboard import DashboardRenderError, render_dashboard
 from scripts.score_lqs import classify_depth, score_paper
 from scripts.validate_claims import validate_claim_records
+from scripts.validate_csur_style_patterns import validate_csur_style_patterns
+from scripts.validate_node_cards import validate_node_cards
+from scripts.validate_paper_cards import validate_paper_cards
+from scripts.validate_section_cards import validate_section_cards
 
 
 class SurveyAutoResearchScriptsTest(unittest.TestCase):
@@ -29,6 +33,165 @@ class SurveyAutoResearchScriptsTest(unittest.TestCase):
             "## Internal Notes Excluded From Review Body\n"
             "Do not include workflow logs, draft version labels, state file names, audit language, or scaffold sentences.\n"
         )
+
+    def _valid_csur_style_patterns(self) -> str:
+        return (
+            "abstract_moves:\n"
+            "  - field_importance\n"
+            "  - fragmentation_or_gap\n"
+            "  - organizing_framework\n"
+            "  - evidence_artifacts\n"
+            "  - agenda\n"
+            "introduction_moves:\n"
+            "  - broad_problem\n"
+            "  - why_existing_views_fail\n"
+            "  - survey_object_definition\n"
+            "  - contributions\n"
+            "  - roadmap\n"
+            "section_patterns:\n"
+            "  system_model:\n"
+            "    structure: 总-分-总\n"
+            "    opening: define the system object and tension\n"
+            "    body: node-by-node explanation with representative systems\n"
+            "    closing: design implication and evaluation consequence\n"
+            "table_functions:\n"
+            "  - compare mechanism, interface, evidence, and limitation\n"
+            "paragraph_patterns:\n"
+            "  - claim -> contrast -> evidence -> implication\n"
+            "  - framework element -> representative systems -> failure mode -> design lesson\n"
+            "forbidden_surface_forms:\n"
+            "  - Paper A proposes\n"
+            "  - This section surveys\n"
+        )
+
+    def _valid_paper_cards(self) -> list[dict]:
+        return [
+            {
+                "paper_id": "p1",
+                "title": "Foundational System Paper",
+                "survey_role": "foundational",
+                "problem": "Defines why a system needs explicit state across interactions.",
+                "method_summary": "Introduces a structured memory layer used by planning.",
+                "system_node": "state capture",
+                "mechanism_or_contribution": "Records interaction state and makes it available to a downstream controller.",
+                "representation": "structured records",
+                "inputs": ["observation", "action history"],
+                "outputs": ["retrieved state", "planner constraint"],
+                "write_policy": "append important events",
+                "read_policy": "task-conditioned retrieval",
+                "update_or_consolidation": "summarize repeated episodes",
+                "controller_interface": "planner reads retrieved state before action selection",
+                "evaluation_tasks": ["planning"],
+                "metrics": ["task success"],
+                "baselines": ["no memory"],
+                "ablations": ["no retrieval"],
+                "failure_modes": ["stale state"],
+                "limitations": ["limited dynamic updates"],
+                "what_it_teaches_the_survey": "A memory claim becomes meaningful only when stored records change a later decision.",
+                "evidence_spans": ["Section 4 reports no-memory and no-retrieval ablations."],
+            },
+            {
+                "paper_id": "p2",
+                "title": "Benchmark System Paper",
+                "survey_role": "benchmark",
+                "problem": "Separates memory quality from downstream task success.",
+                "method_summary": "Introduces diagnostic tasks for record validity and retrieval failures.",
+                "system_node": "evaluation",
+                "mechanism_or_contribution": "Benchmarks wrong, stale, and oracle memory conditions.",
+                "representation": "diagnostic records",
+                "inputs": ["stored records", "queries"],
+                "outputs": ["diagnostic score"],
+                "write_policy": "controlled benchmark injection",
+                "read_policy": "oracle, wrong, and stale retrieval conditions",
+                "update_or_consolidation": "not applicable; benchmark manipulation",
+                "controller_interface": "evaluation harness controls memory availability",
+                "evaluation_tasks": ["diagnostic evaluation"],
+                "metrics": ["accuracy", "failure recovery"],
+                "baselines": ["oracle memory", "wrong memory"],
+                "ablations": ["stale memory injection"],
+                "failure_modes": ["false recall"],
+                "limitations": ["synthetic benchmark scope"],
+                "what_it_teaches_the_survey": "Strong evaluation requires perturbing memory contents, not only comparing final success.",
+                "evidence_spans": ["Table 2 defines oracle, wrong, and stale-memory settings."],
+            },
+        ]
+
+    def _valid_node_cards(self) -> list[dict]:
+        return [
+            {
+                "node": "state capture",
+                "role_in_system": "Converts interaction history into records that later modules can inspect.",
+                "why_it_matters": "Without typed records, later retrieval and planning cannot distinguish evidence from generic context.",
+                "inputs": ["observation", "action", "time"],
+                "outputs": ["typed record", "provenance"],
+                "main_design_families": ["event log", "structured record"],
+                "representative_papers": ["p1", "p2"],
+                "failure_modes": ["missing provenance"],
+                "evaluation_signals": ["no-memory ablation"],
+                "open_questions": ["how much raw context should be retained"],
+            },
+            {
+                "node": "evaluation",
+                "role_in_system": "Tests whether memory changes behavior for the right reason.",
+                "why_it_matters": "Task success alone can hide perception, policy, or language-prior confounds.",
+                "inputs": ["memory condition", "task protocol"],
+                "outputs": ["causal evidence", "failure diagnosis"],
+                "main_design_families": ["oracle test", "wrong-memory injection"],
+                "representative_papers": ["p1", "p2"],
+                "failure_modes": ["unattributed success gain"],
+                "evaluation_signals": ["oracle/wrong/stale memory tests"],
+                "open_questions": ["how to standardize lifecycle tests"],
+            },
+        ]
+
+    def _valid_section_cards(self) -> list[dict]:
+        return [
+            {
+                "section_id": "S1",
+                "title": "System Model",
+                "reader_question": "What are the key nodes of the surveyed system?",
+                "section_thesis": "A survey must explain how records, interfaces, lifecycle operations, and evaluation interact.",
+                "structure": "总-分-总",
+                "opening_move": "Define the system object and the central tension before naming papers.",
+                "subsection_moves": [
+                    {
+                        "subsection": "State capture",
+                        "claim": "Typed records make later retrieval and evaluation meaningful.",
+                        "papers": ["p1", "p2"],
+                        "required_comparison": "Compare event logs with structured records.",
+                    }
+                ],
+                "closing_move": "Return to design and evaluation implications for later method sections.",
+                "required_display_item": "System node table",
+            }
+        ]
+
+    def _write_deep_artifacts(self, task_dir: Path, *, include_csur_style: bool = False) -> None:
+        (task_dir / "state/paper_cards.jsonl").write_text(
+            "".join(json.dumps(item) + "\n" for item in self._valid_paper_cards())
+        )
+        (task_dir / "state/system_node_cards.jsonl").write_text(
+            "".join(json.dumps(item) + "\n" for item in self._valid_node_cards())
+        )
+        (task_dir / "state/section_cards.jsonl").write_text(
+            "".join(json.dumps(item) + "\n" for item in self._valid_section_cards())
+        )
+        (task_dir / "state/research_questions_by_perspective.md").write_text(
+            "# Questions By Perspective\n\n- System architect: what are the nodes?\n- Experimentalist: what evidence isolates the claim?\n"
+        )
+        (task_dir / "outputs/conceptual_framework.md").write_text(
+            "# Conceptual Framework\n\n"
+            "## Central Thesis\nMemory-like systems should be analyzed as interfaces between records, operations, and evaluation.\n\n"
+            "## System Diagram In Words\nRecords flow into retrieval, maintenance, control, and evaluation.\n\n"
+            "## Node Interactions\nState capture constrains retrieval; evaluation diagnoses whether retrieval changed action.\n\n"
+            "## Taxonomy Axes\nRepresentation, interface, lifecycle operation, and evidence strength.\n\n"
+            "## Running Example\nA system stores an event, retrieves it for planning, updates it after failure, and is tested with wrong-memory injection.\n\n"
+            "## Prior-Survey Delta\nThe framework explains how design choices change evaluation claims.\n"
+        )
+        if include_csur_style:
+            (task_dir / "state/csur_style_patterns.yml").write_text(
+                self._valid_csur_style_patterns()
+            )
 
     def _write_full_survey_fixture(
         self,
@@ -58,6 +221,7 @@ class SurveyAutoResearchScriptsTest(unittest.TestCase):
                 "paper_ids": ["p1"],
                 "evidence": "Evidence text.",
                 "strength": "suggests",
+                "paper_card_fields": {"p1": ["what_it_teaches_the_survey", "mechanism_or_contribution"]},
             }
         ]
         default_review = (
@@ -93,6 +257,7 @@ class SurveyAutoResearchScriptsTest(unittest.TestCase):
         )
         (task_dir / "outputs/references.bib").write_text("@article{p1,title={X}}\n")
         (task_dir / "outputs/final_report.md").write_text("status: Complete\n")
+        self._write_deep_artifacts(task_dir, include_csur_style=target == "csur")
         if with_verification_log:
             (task_dir / "logs/verification.jsonl").write_text(
                 "".join(
@@ -170,8 +335,13 @@ class SurveyAutoResearchScriptsTest(unittest.TestCase):
                 "state/claims.jsonl",
                 "state/taxonomy.md",
                 "state/csur_imitation_plan.md",
+                "state/csur_style_patterns.yml",
+                "state/paper_cards.jsonl",
                 "state/coverage.json",
                 "state/directions_tried.json",
+                "state/research_questions_by_perspective.md",
+                "state/section_cards.jsonl",
+                "state/system_node_cards.jsonl",
                 "state/review_rounds.jsonl",
                 "state/phase_summaries.jsonl",
                 "state/agent_rounds.jsonl",
@@ -188,6 +358,7 @@ class SurveyAutoResearchScriptsTest(unittest.TestCase):
                 "outputs/evidence_table.csv",
                 "outputs/references.bib",
                 "outputs/final_report.md",
+                "outputs/conceptual_framework.md",
             ]:
                 self.assertTrue((task_dir / rel).exists(), rel)
 
@@ -213,11 +384,33 @@ class SurveyAutoResearchScriptsTest(unittest.TestCase):
         self.assertEqual(classify_depth(scored, role="section_protagonist"), "A")
         self.assertEqual(classify_depth(scored, role="supporting_context"), "C")
 
+    def test_survey_role_scoring_keeps_old_foundational_work(self):
+        paper = {
+            "title": "An old but foundational system paper",
+            "recency_months": 96,
+            "citations_per_month": 0,
+            "venue_tier": "preprint",
+            "acceptance_status": "preprint",
+            "survey_role": "foundational",
+            "conceptual_centrality": 10,
+            "mechanism_clarity": 9,
+            "evidence_strength": 7,
+            "taxonomy_coverage_value": 9,
+            "benchmark_or_ablation_value": 6,
+            "venue_or_verification": 6,
+        }
+
+        scored = score_paper(paper)
+
+        self.assertGreaterEqual(scored["lqs"], 7.0)
+        self.assertEqual(scored["lqs_bucket"], "must-cite")
+        self.assertEqual(scored["lqs_model"], "survey-role")
+
     def test_coverage_counts_ab_refs_per_taxonomy_cell(self):
         citation_plan = [
-            {"paper_id": "p1", "taxonomy_cell": "agents/tool-use", "depth": "A"},
-            {"paper_id": "p2", "taxonomy_cell": "agents/tool-use", "depth": "B"},
-            {"paper_id": "p3", "taxonomy_cell": "agents/planning", "depth": "C"},
+            {"paper_id": "p1", "taxonomy_cell": "agents/tool-use", "system_node": "retrieval", "depth": "A"},
+            {"paper_id": "p2", "taxonomy_cell": "agents/tool-use", "system_node": "retrieval", "depth": "B"},
+            {"paper_id": "p3", "taxonomy_cell": "agents/planning", "system_node": "planning", "depth": "C"},
         ]
 
         coverage = build_coverage(citation_plan)
@@ -226,6 +419,87 @@ class SurveyAutoResearchScriptsTest(unittest.TestCase):
         self.assertTrue(coverage["cells"]["agents/tool-use"]["passes_min_ab_refs"])
         self.assertEqual(coverage["cells"]["agents/planning"]["ab_refs"], 0)
         self.assertFalse(coverage["cells"]["agents/planning"]["passes_min_ab_refs"])
+        self.assertEqual(coverage["system_nodes"]["retrieval"]["ab_refs"], 2)
+
+    def test_coverage_rejects_all_unassigned_ab_refs(self):
+        citation_plan = [
+            {"paper_id": "p1", "taxonomy_cell": "unassigned", "system_node": "unassigned", "depth": "A"},
+            {"paper_id": "p2", "taxonomy_cell": "unassigned", "system_node": "unassigned", "depth": "B"},
+        ]
+
+        coverage = build_coverage(citation_plan)
+
+        self.assertFalse(coverage["summary"]["assigned_ab_coverage_passed"])
+        self.assertIn("unassigned", coverage["summary"]["coverage_warnings"])
+
+    def test_validate_paper_cards_rejects_shallow_template_cards(self):
+        shallow_cards = [
+            {
+                "paper_id": "p1",
+                "method_family": "retrieval",
+                "task_family": "agents",
+                "limitations": "limited",
+            }
+        ]
+
+        result = validate_paper_cards(shallow_cards)
+
+        self.assertFalse(result["valid"])
+        self.assertIn("missing survey_role", result["errors"][0])
+        self.assertIn("missing what_it_teaches_the_survey", result["errors"][0])
+
+    def test_validate_node_cards_requires_role_meaning_papers_failure_and_eval(self):
+        node_cards = [
+            {
+                "node": "retrieval",
+                "role_in_system": "Finds records.",
+                "inputs": ["query"],
+                "outputs": ["record"],
+                "representative_papers": ["p1"],
+            }
+        ]
+
+        result = validate_node_cards(node_cards)
+
+        self.assertFalse(result["valid"])
+        self.assertIn("missing why_it_matters", result["errors"][0])
+        self.assertIn("representative_papers needs at least 2 entries", result["errors"][0])
+
+    def test_validate_section_cards_requires_argument_structure(self):
+        section_cards = [
+            {
+                "section_id": "S1",
+                "title": "Methods",
+                "reader_question": "What are the methods?",
+                "section_thesis": "Methods differ.",
+                "structure": "list",
+                "opening_move": "",
+                "closing_move": "",
+            }
+        ]
+
+        result = validate_section_cards(section_cards)
+
+        self.assertFalse(result["valid"])
+        self.assertIn("structure must be 总-分-总 or an accepted argument pattern", result["errors"][0])
+        self.assertIn("missing opening_move", result["errors"][0])
+
+    def test_validate_csur_style_patterns_rejects_doi_only_skeleton(self):
+        skeleton_only = (
+            "# CSUR Plan\n\n"
+            "Selected CSUR Exemplars: https://dl.acm.org/doi/10.1145/3769292\n\n"
+            "Section Skeleton: intro, methods, benchmarks, conclusion.\n"
+        )
+
+        result = validate_csur_style_patterns(skeleton_only)
+
+        self.assertFalse(result["valid"])
+        self.assertIn("abstract_moves", result["missing"])
+        self.assertIn("section_patterns", result["missing"])
+
+        valid = validate_csur_style_patterns(self._valid_csur_style_patterns())
+
+        self.assertTrue(valid["valid"])
 
     def test_validate_claim_records_requires_evidence_and_known_papers(self):
         claims = [
@@ -359,6 +633,7 @@ class SurveyAutoResearchScriptsTest(unittest.TestCase):
                 "## Practical Design Guidelines\nGuidelines help readers choose a method family and ablation suite.\n\n"
                 "## Critical Analysis\nBenchmark limitations and failure modes show where method families disagree."
             )
+            self._write_deep_artifacts(task_dir)
 
             gates = evaluate_gates(task_dir, target="full")
 
@@ -382,6 +657,40 @@ class SurveyAutoResearchScriptsTest(unittest.TestCase):
 
             self.assertFalse(gates["gate_4_output"]["passed"])
             self.assertIn("critical analysis", gates["gate_4_output"]["missing_review_artifacts"])
+
+    def test_full_survey_gate_requires_deep_synthesis_artifacts(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            task_dir = Path(tmp)
+            self._write_full_survey_fixture(task_dir)
+            (task_dir / "state/paper_cards.jsonl").unlink()
+            (task_dir / "state/system_node_cards.jsonl").unlink()
+            (task_dir / "state/section_cards.jsonl").unlink()
+
+            gates = evaluate_gates(task_dir, target="full")
+
+            self.assertFalse(gates["gate_5_deep_synthesis"]["passed"])
+            self.assertIn("state/paper_cards.jsonl", gates["gate_5_deep_synthesis"]["missing_artifacts"])
+            self.assertIn("state/system_node_cards.jsonl", gates["gate_5_deep_synthesis"]["missing_artifacts"])
+            self.assertIn("state/section_cards.jsonl", gates["gate_5_deep_synthesis"]["missing_artifacts"])
+            self.assertFalse(gates["all_blocking_gates_passed"])
+
+    def test_full_survey_gate_rejects_keyword_rich_review_without_node_and_section_logic(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            task_dir = Path(tmp)
+            self._write_full_survey_fixture(task_dir)
+            (task_dir / "state/system_node_cards.jsonl").write_text(
+                json.dumps({"node": "retrieval", "role_in_system": "Find records."}) + "\n"
+            )
+            (task_dir / "state/section_cards.jsonl").write_text(
+                json.dumps({"section_id": "S1", "title": "Methods", "structure": "list"}) + "\n"
+            )
+
+            gates = evaluate_gates(task_dir, target="full")
+
+            self.assertTrue(gates["gate_4_output"]["passed"])
+            self.assertFalse(gates["gate_5_deep_synthesis"]["passed"])
+            self.assertIn("node depth", gates["gate_5_deep_synthesis"]["failed_checks"])
+            self.assertIn("section argument", gates["gate_5_deep_synthesis"]["failed_checks"])
 
     def test_gate_rejects_unsubstantiated_multi_agent_claim(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -638,6 +947,7 @@ class SurveyAutoResearchScriptsTest(unittest.TestCase):
             (task_dir / "state/csur_imitation_plan.md").write_text(
                 self._valid_csur_imitation_plan()
             )
+            self._write_deep_artifacts(task_dir, include_csur_style=True)
 
             gates = evaluate_gates(task_dir, target="csur")
 
@@ -674,6 +984,21 @@ class SurveyAutoResearchScriptsTest(unittest.TestCase):
 
             self.assertFalse(gates["gate_6_csur_readiness"]["passed"])
             self.assertIn("csur_imitation_plan", gates["gate_6_csur_readiness"]["failed_checks"])
+
+    def test_csur_gate_requires_rhetoric_patterns_not_only_exemplar_dois(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            task_dir = Path(tmp)
+            self._write_full_survey_fixture(task_dir, target="csur")
+            (task_dir / "state/csur_style_patterns.yml").write_text(
+                "selected_exemplars:\n"
+                "  - https://dl.acm.org/doi/10.1145/3769292\n"
+                "section_skeleton: intro, taxonomy, methods, benchmarks, conclusion\n"
+            )
+
+            gates = evaluate_gates(task_dir, target="csur")
+
+            self.assertFalse(gates["gate_5_deep_synthesis"]["passed"])
+            self.assertIn("CSUR rhetoric", gates["gate_5_deep_synthesis"]["failed_checks"])
 
     def test_csur_gate_rejects_related_surveys_with_only_recency_claim(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -855,7 +1180,7 @@ class SurveyAutoResearchScriptsTest(unittest.TestCase):
             result = render_dashboard(task_dir)
 
             self.assertTrue((task_dir / "dashboard/index.html").exists())
-            self.assertEqual(len(result["phase_pages"]), 11)
+            self.assertEqual(len(result["phase_pages"]), 12)
             for page in result["phase_pages"]:
                 self.assertTrue(Path(page).exists(), page)
             overview = (task_dir / "dashboard/index.html").read_text()

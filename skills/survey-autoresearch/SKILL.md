@@ -11,7 +11,8 @@ The design follows two required patterns:
 - AutoResearch runtime: zero interaction after start, persistent state, fresh work sessions, stall detection, forced pivots, heartbeat watchdog, and worker/guardian separation. See `references/autoresearch_runtime.md`.
 - Scientific survey-writing pipeline: Literature Survey, Structure and Logic, Evidence Design, Figures and Tables, Peer Review and Revision. See the matching reference files below.
 - Review-paper writing craft: thesis-driven synthesis, conceptual contribution, critical appraisal, and field agenda rather than source accumulation. See `references/review_writing_patterns.md`.
-- CSUR-grade writing craft: for `target=csur`, imitate recent official ACM Computing Surveys exemplars through `references/csur_exemplar_patterns.md`, then write `state/csur_imitation_plan.md` before synthesis.
+- Deep synthesis artifacts: for `target=full` and `target=csur`, build paper cards, system-node cards, section cards, and a conceptual framework before drafting. See `references/deep_synthesis_artifacts.md` and `references/section_card_patterns.md`.
+- CSUR-grade writing craft: for `target=csur`, imitate recent official ACM Computing Surveys exemplars through `references/csur_exemplar_patterns.md`, mine section rhetoric through `references/csur_rhetoric_mining.md`, then write both `state/csur_imitation_plan.md` and `state/csur_style_patterns.yml` before synthesis.
 - AutoResearch landscape discipline: use external systems as design evidence, not authority. See `references/autoresearch_landscape.md` before revising workflow architecture or claiming parity with another AutoResearch project.
 
 ## Non-Negotiable Behavior
@@ -52,7 +53,7 @@ Task axes are allowed, but they cannot be the only organizing axis unless the us
 
 ## Review Quality Guardrails
 
-Before Phase 8 synthesis, write `state/review_style_audit.md`.
+Before synthesis, write `state/review_style_audit.md`.
 
 The audit must contain:
 - **Reader contract**: target reader, what they already know, and what the review teaches them that a paper list would not.
@@ -68,7 +69,7 @@ The audit must contain:
 
 The synthesizer must not write a final review until the audit names a thesis and a conceptual contribution. A complete survey must teach a way to think, not only collect references.
 
-For full and CSUR targets, read `references/review_writing_patterns.md`, `references/taxonomy_and_structure.md`, and `references/completion_gates.md` before synthesis. Use those references for section grammar, required reader artifacts, and completion gates instead of duplicating the checklists here.
+For full and CSUR targets, read `references/deep_synthesis_artifacts.md`, `references/section_card_patterns.md`, `references/review_writing_patterns.md`, `references/taxonomy_and_structure.md`, and `references/completion_gates.md` before synthesis. Use those references for section grammar, required reader artifacts, and completion gates instead of duplicating the checklists here.
 
 ## Start Protocol
 
@@ -84,8 +85,8 @@ python3 scripts/init_task.py \
 
 Default targets:
 - `short`: 80+ references, Markdown review, evidence table, BibTeX.
-- `full`: 150+ references, full survey-style draft, evidence table, BibTeX, synthesis tables.
-- `csur`: `full` plus systematic review protocol, related-survey matrix, paper-level fact extraction for every A/B paper, evidence-backed synthesis tables, figure plan, and CSUR-readiness gate.
+- `full`: 150+ references, full survey-style draft, evidence table, BibTeX, synthesis tables, paper cards, system-node cards, section cards, and conceptual framework.
+- `csur`: `full` plus systematic review protocol, related-survey matrix, CSUR rhetoric mining, evidence-backed synthesis tables, figure plan, and CSUR-readiness gate.
 
 If the user asks for an ACM Computing Surveys, CSUR-grade, publication-grade, or tutorial survey, use `csur`. If the user does not specify the target, default to `full` for "survey paper" and `short` for "literature review" or "related work".
 
@@ -98,12 +99,17 @@ Before final synthesis, write:
 - `state/search_protocol.md`: databases, search strings or routes, inclusion criteria, exclusion criteria, screening counts, and source limitations.
 - `state/search_protocol.md` must include at least three discovery routes, such as database search, venue sweep, citation snowball, related-survey bibliography expansion, and explicit query variants.
 - `state/related_surveys.md`: matrix of related surveys with what they organize around, what they miss, and what this review adds.
-- `state/paper_facts.jsonl`: for every A/B paper, extract `paper_id`, `method_family`, `task_family`, `benchmark_or_dataset`, `metrics`, `mechanism_or_contribution`, `ablations`, and `limitations`.
+- `state/paper_cards.jsonl`: canonical deep extraction for every A/B paper. Include survey role, system node, mechanism, interface, evidence spans, failure modes, limitations, and what the paper teaches the survey.
+- `state/paper_facts.jsonl`: legacy compatibility summary for benchmark/method tables; do not rely on this alone for deep CSUR synthesis.
+- `state/system_node_cards.jsonl`: system nodes with role, why they matter, inputs, outputs, design families, representative papers, failure modes, evaluation signals, and open questions.
+- `state/section_cards.jsonl`: section reader question, thesis, structure, opening move, subsection moves, closing implication, and required display item.
 - `state/csur_imitation_plan.md`: selected recent official CSUR exemplars, section skeleton, abstract moves, section reader functions, and internal notes excluded from the review body. Read `references/csur_exemplar_patterns.md` first.
-- `outputs/synthesis_tables.md`: benchmark and method tables that are traceable to `paper_facts.jsonl`.
+- `state/csur_style_patterns.yml`: mined CSUR rhetoric patterns: abstract moves, introduction moves, section opening/body/closing moves, table functions, paragraph patterns, and forbidden surface forms.
+- `outputs/conceptual_framework.md`: central thesis, system diagram in words, node interactions, taxonomy axes, running example, and prior-survey delta.
+- `outputs/synthesis_tables.md`: benchmark and method tables that are traceable to `paper_cards.jsonl` and `paper_facts.jsonl`.
 - `outputs/figures_plan.md`: at least three figure/table designs such as taxonomy, method pipeline, and benchmark/evaluation matrix.
 
-Do not claim CSUR readiness merely because the review has section headings or tables. The review must be supported by paper-level facts, a systematic search protocol, explicit positioning against related surveys, and a CSUR imitation plan grounded in official ACM DL records from 2025-2026 unless a fallback is clearly documented.
+Do not claim CSUR readiness merely because the review has section headings or tables. The review must be supported by paper cards, system-node cards, section cards, a systematic search protocol, explicit positioning against related surveys, and a CSUR imitation/rhetoric plan grounded in official ACM DL records from 2025-2026 unless a fallback is clearly documented.
 
 ## Runtime State
 
@@ -114,6 +120,7 @@ runs/<slug>/
   state/
     task_spec.md
     research_questions.md
+    research_questions_by_perspective.md
     search_protocol.md
     progress.json
     heartbeat.json
@@ -121,8 +128,12 @@ runs/<slug>/
     lqs_scores.jsonl
     citation_plan.jsonl
     claims.jsonl
+    paper_cards.jsonl
+    system_node_cards.jsonl
+    section_cards.jsonl
     paper_facts.jsonl
     csur_imitation_plan.md
+    csur_style_patterns.yml
     related_surveys.md
     taxonomy.md
     coverage.json
@@ -147,6 +158,7 @@ runs/<slug>/
     evidence_table.csv
     references.bib
     final_report.md
+    conceptual_framework.md
   dashboard/
     index.html
     phases/*.html
@@ -159,18 +171,19 @@ Use append-only JSONL for papers, claims, reviews, and logs. Rewrite summary JSO
 Run phases in this order, looping where gates fail:
 
 1. Phase 0: Task lock. Write scope, angle, audience, target, and assumptions to `task_spec.md`.
-2. Phase 1: Taxonomy seed. Create initial axes and search cells after completing `scope_audit.md`; if the survey object is a system/method concept, make the primary taxonomy system-first. Use a multi-perspective question pass to expose blind spots before locking the taxonomy.
-3. Phase 2: Recall. Retrieve broad candidates with multiple query variants per cell.
-4. Phase 3: LQS scoring. Score papers and assign `must-cite`, `conditional`, or `drop`.
-5. Phase 4: Citation depth. Classify each retained paper as A, B, C, or D.
+2. Phase 1: Multi-perspective question mining. Write `state/research_questions_by_perspective.md` before locking taxonomy.
+3. Phase 2: Broad recall by discovery route: related surveys, seminal papers, benchmarks, systems, applications, and failure/negative cases.
+4. Phase 3: Survey-role scoring. Use `scripts/score_lqs.py`; classify papers by foundational, system, benchmark, application, negative/failure, survey, bridge, or frontier role.
+5. Phase 4: Citation depth. Classify retained papers as A, B, C, or D and include taxonomy cell plus system-node hints where possible.
 6. Phase 5: Venue and citation verification. Check title, authors, year, venue, DOI/arXiv/OpenReview/DBLP.
-7. Phase 6: Evidence extraction. Convert paper notes into `claims.jsonl`; for `target=csur`, also write `paper_facts.jsonl` before synthesis.
-8. Phase 7: Taxonomy repair. Fill weak cells, record gap analysis, redesign axes if needed.
-9. Phase 8: Synthesis. For `target=csur`, first write `state/csur_imitation_plan.md`; then write `review.md`, `evidence_table.csv`, and `references.bib`.
-10. Phase 9: Peer review. Run independent reviewer personas and route weaknesses.
-11. Phase 10: Sprint loop. Fix routed weaknesses, rerun gates, repeat until complete.
+7. Phase 6: Deep evidence extraction. Convert A/B papers into `state/paper_cards.jsonl`; keep `state/paper_facts.jsonl` as a compact compatibility table.
+8. Phase 7: System-node graph. Build `state/system_node_cards.jsonl`; then repair taxonomy from node coverage, not from seed keywords alone.
+9. Phase 8: Section planning. Build `state/section_cards.jsonl`, `outputs/conceptual_framework.md`, and for CSUR `state/csur_style_patterns.yml`.
+10. Phase 9: Synthesis. Draft `review.md`, `evidence_table.csv`, `references.bib`, `outputs/synthesis_tables.md`, and `outputs/figures_plan.md` from the cards.
+11. Phase 10: Peer review. Run newcomer, system architect, experimentalist, and CSUR stylist review passes.
+12. Phase 11: Sprint loop. Fix routed weaknesses, rerun gates, repeat until complete.
 
-For the AutoResearch landscape and workflow borrowing rules, read `references/autoresearch_landscape.md`. For the literature pipeline, read `references/literature_pipeline.md`. For structure and taxonomy, read `references/taxonomy_and_structure.md`. For review-writing craft, read `references/review_writing_patterns.md`. For CSUR exemplars, read `references/csur_exemplar_patterns.md`. For claim rules, read `references/evidence_verification.md`. For reviewer routing, read `references/review_routing.md`. For completion criteria, read `references/completion_gates.md`.
+For the AutoResearch landscape and workflow borrowing rules, read `references/autoresearch_landscape.md`. For the literature pipeline, read `references/literature_pipeline.md`. For structure and taxonomy, read `references/taxonomy_and_structure.md`. For deep synthesis artifacts, read `references/deep_synthesis_artifacts.md`. For section grammar, read `references/section_card_patterns.md`. For review-writing craft, read `references/review_writing_patterns.md`. For CSUR exemplars, read `references/csur_exemplar_patterns.md` and `references/csur_rhetoric_mining.md`. For claim rules, read `references/evidence_verification.md`. For reviewer routing, read `references/review_routing.md`. For completion criteria, read `references/completion_gates.md`.
 For visual progress reporting, read `references/html_dashboard.md`.
 
 ## Multi-Agent Truthfulness
@@ -247,8 +260,12 @@ Worker roles describe responsibilities. They are true separate agents only when 
 - `scripts/patrol.py`: inspect runs for stale heartbeat state and recommend nudge, restart, pivot, or blocked report.
 - `scripts/render_dashboard.py`: regenerate `dashboard/index.html` and per-phase progress pages from state files.
 - `scripts/score_lqs.py`: score candidate papers.
-- `scripts/coverage_report.py`: count A/B papers per taxonomy cell.
-- `scripts/validate_claims.py`: verify claim records reference known paper IDs and evidence.
+- `scripts/coverage_report.py`: count A/B papers per taxonomy cell and system node; warn on unassigned A/B coverage.
+- `scripts/validate_paper_cards.py`: verify deep paper-card schema.
+- `scripts/validate_node_cards.py`: verify system-node cards.
+- `scripts/validate_section_cards.py`: verify argument-driven section cards.
+- `scripts/validate_csur_style_patterns.py`: verify CSUR rhetoric mining.
+- `scripts/validate_claims.py`: verify claim records reference known paper IDs and traceable paper-card evidence.
 - `scripts/gate_check.py`: evaluate blocking gates, including `gate_6_csur_readiness` for `target=csur`.
 - `scripts/normalize_bib.py`: sort BibTeX entries for stable output.
 

@@ -25,22 +25,25 @@ After every batch of about 20 retained candidates or citation-like records, writ
 
 ## Stage 2: LQS Scoring
 
-Score each candidate with:
+Prefer survey-role scoring whenever the candidate has enough metadata. This keeps older foundational work and negative evidence from being dropped only because it is not recent.
 
 | Dimension | Weight | Default scoring |
 | --- | ---: | --- |
-| Recency | 30% | 6mo=10, 1yr=8, 2yr=5, 3yr=3 |
-| Citation impact | 25% | cites/mo >=50=10, >=10=8, >=3=6 |
-| Venue | 20% | top-tier=10, strong=7, workshop=4, preprint=3 |
-| Institution or author signal | 10% | top lab=10, top university=9, known=6 |
-| Acceptance status | 15% | accepted=10, under review=5, preprint=3 |
+| Conceptual centrality | 25% | Does this paper define, reframe, or anchor the survey object? |
+| Mechanism clarity | 20% | Are inputs, outputs, assumptions, and interface clear enough for synthesis? |
+| Evidence strength | 20% | Are claims backed by experiments, ablations, benchmarks, or formal analysis? |
+| Taxonomy coverage value | 15% | Does the paper fill a node, family, gap, or bridge needed by the framework? |
+| Benchmark or ablation value | 10% | Does it provide reusable evaluation evidence or controlled comparisons? |
+| Venue or verification | 10% | Is identity, venue/preprint status, and source provenance verified? |
 
-Use `scripts/score_lqs.py` for deterministic scoring where metadata is available.
+Use `scripts/score_lqs.py` for deterministic scoring. If survey-role fields are absent, the script falls back to legacy metadata scoring based on recency, citation impact, venue, institution/author signal, and acceptance status.
 
 Thresholds:
 - LQS >= 7.0: must-cite;
 - 5.0 <= LQS < 7.0: conditional;
-- LQS < 5.0: drop unless it fills a critical historical or taxonomy gap.
+- LQS < 5.0: drop unless it fills a critical historical, system-node, negative-evidence, benchmark, or taxonomy gap.
+
+Do not penalize a `foundational` or `seminal` paper for age when it is central to the survey's conceptual object. Mark the reason in `lqs_scores.jsonl`.
 
 ## Stage 3: Citation Depth
 
@@ -54,6 +57,8 @@ Assign depth in `state/citation_plan.jsonl`:
 | D | excluded from the review |
 
 Do not let C-level papers dominate the intellectual structure. A and B papers carry the analysis.
+
+For `target=full` and `target=csur`, every A/B paper must later receive a `state/paper_cards.jsonl` record. Assign A/B depth only when the paper can support a mechanism, benchmark, failure-mode, or conceptual claim.
 
 ## Stage 4: Venue Upgrade
 

@@ -72,6 +72,80 @@ def acceptance_score(status: str | None) -> float:
     }.get(status, 5.0)
 
 
+def numeric_score(value, default: float = 5.0) -> float:
+    if value is None:
+        return default
+    if isinstance(value, bool):
+        return 10.0 if value else 3.0
+    try:
+        return max(0.0, min(10.0, float(value)))
+    except (TypeError, ValueError):
+        text = str(value).strip().lower()
+        return {
+            "high": 9.0,
+            "strong": 8.0,
+            "medium": 6.0,
+            "low": 3.0,
+            "none": 0.0,
+        }.get(text, default)
+
+
+def role_centrality(role: str | None) -> float:
+    role = (role or "").lower()
+    if role in {"foundational", "seminal"}:
+        return 10.0
+    if role in {"system", "bridge"}:
+        return 8.0
+    if role in {"benchmark", "ablation", "negative", "failure"}:
+        return 7.5
+    if role in {"survey", "frontier"}:
+        return 7.0
+    if role == "application":
+        return 5.5
+    return 5.0
+
+
+def has_survey_role_fields(paper: dict) -> bool:
+    return any(
+        field in paper
+        for field in [
+            "survey_role",
+            "conceptual_centrality",
+            "mechanism_clarity",
+            "evidence_strength",
+            "taxonomy_coverage_value",
+            "benchmark_or_ablation_value",
+            "venue_or_verification",
+        ]
+    )
+
+
+def survey_role_components(paper: dict) -> dict:
+    role = paper.get("survey_role")
+    mechanism_default = 8.0 if paper.get("method_summary") or paper.get("mechanism_or_contribution") else 5.0
+    evidence_default = 8.0 if paper.get("accepted") or paper.get("verified") or paper.get("ablations") else 5.0
+    taxonomy_default = 8.0 if paper.get("taxonomy_cell") or paper.get("system_node") or paper.get("memory_node") else 5.0
+    benchmark_default = 8.0 if paper.get("benchmark_or_dataset") or paper.get("metrics") or paper.get("ablations") else 5.0
+    venue_default = acceptance_score(paper.get("acceptance_status") or ("accepted" if paper.get("accepted") else None))
+    return {
+        "conceptual_centrality": numeric_score(
+            paper.get("conceptual_centrality"),
+            default=role_centrality(role),
+        ),
+        "mechanism_clarity": numeric_score(paper.get("mechanism_clarity"), default=mechanism_default),
+        "evidence_strength": numeric_score(paper.get("evidence_strength"), default=evidence_default),
+        "taxonomy_coverage_value": numeric_score(
+            paper.get("taxonomy_coverage_value"),
+            default=taxonomy_default,
+        ),
+        "benchmark_or_ablation_value": numeric_score(
+            paper.get("benchmark_or_ablation_value"),
+            default=benchmark_default,
+        ),
+        "venue_or_verification": numeric_score(paper.get("venue_or_verification"), default=venue_default),
+    }
+
+
 def lqs_bucket(lqs: float) -> str:
     if lqs >= 7.0:
         return "must-cite"
@@ -81,24 +155,38 @@ def lqs_bucket(lqs: float) -> str:
 
 
 def score_paper(paper: dict) -> dict:
-    components = {
-        "recency": recency_score(paper.get("recency_months")),
-        "citation_impact": citation_score(paper.get("citations_per_month")),
-        "venue": venue_score(paper.get("venue_tier")),
-        "institution": institution_score(paper.get("institution_tier")),
-        "acceptance": acceptance_score(paper.get("acceptance_status")),
-    }
-    lqs = (
-        components["recency"] * 0.30
-        + components["citation_impact"] * 0.25
-        + components["venue"] * 0.20
-        + components["institution"] * 0.10
-        + components["acceptance"] * 0.15
-    )
+    if has_survey_role_fields(paper):
+        components = survey_role_components(paper)
+        lqs = (
+            components["conceptual_centrality"] * 0.25
+            + components["mechanism_clarity"] * 0.20
+            + components["evidence_strength"] * 0.20
+            + components["taxonomy_coverage_value"] * 0.15
+            + components["benchmark_or_ablation_value"] * 0.10
+            + components["venue_or_verification"] * 0.10
+        )
+        model = "survey-role"
+    else:
+        components = {
+            "recency": recency_score(paper.get("recency_months")),
+            "citation_impact": citation_score(paper.get("citations_per_month")),
+            "venue": venue_score(paper.get("venue_tier")),
+            "institution": institution_score(paper.get("institution_tier")),
+            "acceptance": acceptance_score(paper.get("acceptance_status")),
+        }
+        lqs = (
+            components["recency"] * 0.30
+            + components["citation_impact"] * 0.25
+            + components["venue"] * 0.20
+            + components["institution"] * 0.10
+            + components["acceptance"] * 0.15
+        )
+        model = "legacy-metadata"
     scored = dict(paper)
     scored["lqs_components"] = components
     scored["lqs"] = round(lqs, 2)
     scored["lqs_bucket"] = lqs_bucket(lqs)
+    scored["lqs_model"] = model
     return scored
 
 

@@ -19,6 +19,12 @@ If a topic is broad, narrow it through the written task spec rather than asking 
 
 Use a multi-axis taxonomy, not a flat list.
 
+Early taxonomy axes are hypotheses for search, not the final structure. For `target=full` and `target=csur`, lock the final taxonomy only after:
+- multi-perspective questions are written;
+- A/B papers have `state/paper_cards.jsonl` records;
+- major components or nodes have `state/system_node_cards.jsonl` records;
+- weak or over-dominant cells have been repaired.
+
 First decide the survey spine:
 - system-first: for architectures, planners, world models, retrieval systems, tool-use systems, or other composed systems;
 - method-first: for algorithms or model families;
@@ -43,6 +49,7 @@ Good axes include:
 
 Requirements:
 - Each taxonomy cell should eventually have at least two A/B references or be marked as a gap.
+- System-node or component coverage should also be tracked for system-object topics.
 - Empty cells are useful gap-analysis material.
 - Spanning methods are not errors; they reveal taxonomy tension.
 - A taxonomy should be redesigned if review feedback says it is only a list.
@@ -105,6 +112,10 @@ Before drafting, write:
 For CSUR-grade drafts, also write:
 - research questions before taxonomy;
 - related-survey positioning before claiming novelty;
+- paper cards before taxonomy lock and synthesis;
+- system-node cards before method sections;
+- section cards before drafting `outputs/review.md`;
+- `outputs/conceptual_framework.md` before final synthesis;
 - paper-level facts for all A/B papers before synthesis tables;
 - threats to validity before final completion.
 

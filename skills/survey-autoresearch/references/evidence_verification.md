@@ -18,9 +18,42 @@ Each major claim belongs in `state/claims.jsonl`:
 }
 ```
 
+## Paper-Card Schema
+
+For `target=full` and `target=csur`, every A/B paper in `state/citation_plan.jsonl` needs a deep record in `state/paper_cards.jsonl`. This is the canonical extraction layer for synthesis:
+
+```json
+{
+  "paper_id": "paper_001",
+  "survey_role": "foundational | system | benchmark | application | negative | survey | bridge | frontier",
+  "problem": "What problem the paper makes visible for the review.",
+  "method_summary": "One concise mechanism-level summary.",
+  "system_node": "capture | representation | storage | retrieval | update | interface | evaluation",
+  "mechanism_or_contribution": "The concrete contribution used by the review.",
+  "inputs": ["observations", "queries", "feedback"],
+  "outputs": ["records", "retrieved evidence", "planner constraints"],
+  "representation": "text | vector | graph | map | program | hybrid",
+  "write_policy": "when and how records are added",
+  "read_policy": "when and how records are retrieved",
+  "update_or_consolidation": "append, summarize, revise, merge, forget, or relink",
+  "controller_interface": "how the method affects decisions, actions, or evaluation",
+  "evaluation_tasks": ["representative task or protocol"],
+  "datasets_or_envs": ["benchmark or environment"],
+  "metrics": ["metric"],
+  "baselines": ["baseline"],
+  "ablations": ["ablation"],
+  "failure_modes": ["failure mode"],
+  "limitations": ["limitation"],
+  "what_it_teaches_the_survey": "The conceptual lesson this paper contributes.",
+  "evidence_spans": ["section, table, page, or quoted-free evidence note"]
+}
+```
+
+The extractor may adapt field names to the topic, but the card must still capture role, mechanism, system node or component, interface, evaluation signal, failure/limitation, and the lesson used by the survey.
+
 ## CSUR Paper-Fact Schema
 
-For `target=csur`, every A/B paper in `state/citation_plan.jsonl` must also have a record in `state/paper_facts.jsonl`:
+For compatibility and compact tables, keep `state/paper_facts.jsonl`. For `target=csur`, every A/B paper must have both a paper card and a paper-fact summary:
 
 ```json
 {
@@ -35,16 +68,17 @@ For `target=csur`, every A/B paper in `state/citation_plan.jsonl` must also have
 }
 ```
 
-Use paper facts as the source for benchmark and method synthesis tables. Do not generate CSUR-grade synthesis tables directly from prose impressions.
+Use paper facts as compact sources for benchmark and method synthesis tables. Do not generate full or CSUR-grade synthesis directly from prose impressions or paper facts alone; use paper cards for the mechanism and argument layer.
 
 ## Evidence Rules
 
 - Every important claim in `review.md` must map to at least one claim record.
+- For `target=full` and `target=csur`, claim records must trace to paper-card fields such as mechanism, interface, evidence spans, or `what_it_teaches_the_survey`; a bare paper ID is not enough.
 - Claim strength must not exceed evidence strength.
 - Numbers, dates, venues, benchmark scores, and model names must be source-backed.
 - If a number cannot be verified, omit it or mark it source-limited.
 - Do not cite a paper for a claim it does not support.
-- For `target=csur`, do not use an A/B paper in a synthesis table unless its `paper_facts.jsonl` record has the required fields.
+- For `target=csur`, do not use an A/B paper in a synthesis table unless its `paper_cards.jsonl` and `paper_facts.jsonl` records have the required fields.
 
 ## Strength Ladder
 

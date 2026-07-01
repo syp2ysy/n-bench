@@ -15,13 +15,14 @@ Full target:
 - accepted or peer-reviewed ratio >= 30% when field norms make this meaningful;
 - every taxonomy cell has at least two A/B references or is documented as a gap.
 - long managed runs include verification evidence in `logs/verification.jsonl` for each about-20 citation batch.
+- A/B coverage is not entirely `unassigned`; at least one taxonomy cell or system-node assignment must carry the A/B evidence.
 
 CSUR target:
 - satisfies the full target;
 - includes systematic review protocol artifacts;
-- extracts paper-level facts for every A/B paper;
+- extracts paper cards and paper-level facts for every A/B paper;
 - positions the review against related surveys;
-- backs synthesis tables from paper-level facts.
+- backs synthesis tables from paper cards and paper-level facts.
 
 All targets:
 - hallucinated citation = 0;
@@ -66,7 +67,7 @@ For `target=full`, `outputs/review.md` must also include CSUR/tutorial reader ar
 
 A full survey with only a high-level conceptual framework fails Gate 4 even if all output files exist.
 
-Gate 4 also rejects review-body process leakage: user-audit narratives, scope-correction explanations, defensive "not task X" framing, or statements that the review is not a paper/task list. Put those notes in review rounds or `outputs/final_report.md`; rewrite the survey body as positive field synthesis.
+Gate 4 also rejects review-body process leakage: user-audit narratives, scope-correction explanations, defensive framing, or statements that the review is correcting an earlier workflow. Put those notes in review rounds or `outputs/final_report.md`; rewrite the survey body as positive field synthesis.
 
 Gate 4 also rejects scaffold leakage: draft-version labels, internal state filenames, "good survey/method/benchmark" meta-commentary, compressed "X exposes Y; A exposes B" notes, and "map everything back to the framework" phrasing. Put those notes in `state/` files and translate them into publication-facing prose before writing `outputs/review.md`.
 
@@ -76,24 +77,50 @@ Gate 4 also rejects unsubstantiated multi-agent claims. A final report or review
 
 For LaTeX/PDF targets, compilation and visual checks are additional gates.
 
-## Gate 5: Final Review
+## Gate 5: Deep Synthesis
+
+For `target=full` and `target=csur`, pass only when these artifacts are present and substantive:
+
+- `state/paper_cards.jsonl`;
+- `state/system_node_cards.jsonl`;
+- `state/section_cards.jsonl`;
+- `state/research_questions_by_perspective.md`;
+- `outputs/conceptual_framework.md`.
+
+Additional checks:
+
+- paper cards include survey role, mechanism, system component or node, interface or operation fields, failure modes, limitations, evidence spans, and what each A/B paper teaches the survey;
+- system-node cards include role, why the node matters, inputs, outputs, representative papers, failure modes, and evaluation signals;
+- section cards include reader question, section thesis, section structure, opening move, subsection moves, closing implication, and required display item;
+- the conceptual framework includes central thesis, system model or framework description, node/component interactions, taxonomy axes, running example, and how the framework differs from prior survey views;
+- perspective questions include multiple reader or expert viewpoints before taxonomy lock;
+- major claims trace to paper-card fields, not only to paper IDs.
+
+Keyword-rich prose, table counts, or generic method-family headings cannot substitute for these artifacts.
+
+## Gate 6: Final Review
 
 Pass when:
-- Gates 1-4 pass;
+- Gates 1-5 pass for full/CSUR targets, and Gates 1-4 pass for short targets;
 - multi-persona review reaches the target score or two sprint rounds improve by <= 0.3;
 - all major weaknesses are resolved or explicitly accepted as limitations;
 - no previously fixed weakness regressed;
 - final report states `Complete`.
 
-## Gate 6: CSUR Readiness
+## Gate 7: CSUR Readiness
 
 For `target=csur`, pass only when these files are present and substantive:
 
 - `state/research_questions.md`;
 - `state/search_protocol.md`;
 - `state/related_surveys.md`;
+- `state/paper_cards.jsonl`;
+- `state/system_node_cards.jsonl`;
+- `state/section_cards.jsonl`;
 - `state/paper_facts.jsonl`;
 - `state/csur_imitation_plan.md`;
+- `state/csur_style_patterns.yml`;
+- `outputs/conceptual_framework.md`;
 - `outputs/synthesis_tables.md`;
 - `outputs/figures_plan.md`.
 
@@ -108,9 +135,12 @@ Additional checks:
 - `state/csur_imitation_plan.md` cites at least two recent official ACM Computing Surveys exemplars from ACM DL, using 2025-2026 DOI records by default;
 - `state/csur_imitation_plan.md` includes selected exemplars, section skeleton, abstract moves, reader function by major section, and internal notes excluded from the review body;
 - the imitation plan does not use arXiv-only, submitted, under-review, or unverified accepted claims as CSUR exemplars;
+- `state/csur_style_patterns.yml` includes abstract moves, introduction moves, section opening/body/closing patterns, table functions, paragraph patterns, and forbidden surface forms mined from the selected exemplars;
 - every A/B paper in `citation_plan.jsonl` has a paper-fact record;
 - paper facts include method family, task family, benchmark/dataset, metrics, mechanism or contribution, ablations, and limitations;
-- synthesis tables include metrics, ablations, and method/record-schema comparison;
+- every A/B paper in `citation_plan.jsonl` has a paper-card record;
+- paper cards include survey role, mechanism, system node or component, interface, evidence spans, failure modes, limitations, and what the paper teaches the survey;
+- synthesis tables include metrics, ablations, and method/record-schema comparison, and are traceable to paper cards;
 - figure plan includes at least three planned figures or table designs.
 
 ## CSUR Style Gate
@@ -142,4 +172,4 @@ python3 scripts/gate_check.py --task-dir <run_dir> --target short
 python3 scripts/gate_check.py --task-dir <run_dir> --target csur
 ```
 
-The helper checks deterministic parts of Gates 1-4. The orchestrator still performs qualitative review for Gate 5.
+The helper checks deterministic parts of literature, taxonomy, evidence, output, deep-synthesis, and CSUR-readiness gates. The orchestrator still performs qualitative final review.

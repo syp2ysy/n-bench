@@ -8,9 +8,41 @@ import json
 from pathlib import Path
 
 
-def validate_claim_records(claims: list[dict], known_paper_ids: set[str]) -> dict:
+TRACE_FIELDS = {
+    "what_it_teaches_the_survey",
+    "mechanism_or_contribution",
+    "method_summary",
+    "evidence_spans",
+}
+
+
+def _nonempty(value) -> bool:
+    if value is None:
+        return False
+    if isinstance(value, str):
+        return bool(value.strip())
+    if isinstance(value, (list, tuple, set, dict)):
+        return bool(value)
+    return True
+
+
+def _paper_cards_by_id(paper_cards: list[dict] | None) -> dict[str, dict]:
+    return {
+        item["paper_id"]: item
+        for item in (paper_cards or [])
+        if item.get("paper_id")
+    }
+
+
+def validate_claim_records(
+    claims: list[dict],
+    known_paper_ids: set[str],
+    paper_cards: list[dict] | None = None,
+) -> dict:
     errors: list[str] = []
     valid_claims = 0
+    card_by_id = _paper_cards_by_id(paper_cards)
+    require_card_trace = paper_cards is not None
     for idx, claim in enumerate(claims, start=1):
         claim_id = claim.get("claim_id") or f"claim_{idx}"
         claim_errors = []
@@ -24,6 +56,23 @@ def validate_claim_records(claims: list[dict], known_paper_ids: set[str]) -> dic
         for paper_id in paper_ids:
             if paper_id not in known_paper_ids:
                 claim_errors.append(f"unknown paper_id {paper_id}")
+            if require_card_trace:
+                card = card_by_id.get(paper_id)
+                if not card:
+                    claim_errors.append(f"missing paper_card for {paper_id}")
+                    continue
+                declared_fields = (claim.get("paper_card_fields") or {}).get(paper_id, [])
+                if declared_fields:
+                    missing_fields = [
+                        field for field in declared_fields
+                        if field not in TRACE_FIELDS or not _nonempty(card.get(field))
+                    ]
+                    if missing_fields:
+                        claim_errors.append(
+                            f"paper_card trace fields unavailable for {paper_id}: {','.join(missing_fields)}"
+                        )
+                elif not any(_nonempty(card.get(field)) for field in TRACE_FIELDS):
+                    claim_errors.append(f"paper_card for {paper_id} lacks trace fields")
         if claim_errors:
             errors.append(f"{claim_id}: " + "; ".join(claim_errors))
         else:
