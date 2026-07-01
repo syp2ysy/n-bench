@@ -1,0 +1,7 @@
+interface:
+  display_name: "Survey AutoResearch"
+  short_description: "Unattended survey-writing research loop"
+  default_prompt: "Use $survey-autoresearch to run an unattended survey-writing task on this topic until the completion gates pass."
+
+policy:
+  allow_implicit_invocation: true
