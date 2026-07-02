@@ -9,7 +9,7 @@ Use this skill when the user asks for a literature review, survey paper, researc
 
 The workflow has one core chain:
 
-`source truth -> paper understanding -> claim evidence -> coverage -> argument graph -> publication article`
+`source truth -> paper mechanism understanding -> scenario definitions -> field synthesis -> argument graph -> section evidence re-check -> publication article`
 
 The final `outputs/review.md` is an article. It must not read like a workflow report, evidence report, appendix, checklist, or state-file dump.
 
@@ -29,18 +29,19 @@ Read `references/runtime_contract.md` before long-running work.
 
 1. **Task lock and survey type**: write `state/task_spec.md` and `state/survey_type_plan.yml`.
 2. **High-recall discovery**: collect broad candidates in `state/raw_candidates.jsonl`.
-3. **Source verification and citation planning**: write `state/papers.jsonl` and `state/citation_plan.jsonl`.
-4. **Paper understanding**: write `state/paper_mechanism_cards.jsonl` for A/B papers.
-5. **Claim evidence**: write `state/claim_evidence_spans.jsonl`; calibrate claim strength.
-6. **Coverage repair**: write `outputs/coverage_matrix.md`; fill missing families, benchmarks, and related surveys.
-7. **Synthesis construction**: write `outputs/method_family_dossiers/`, `outputs/benchmark_dossiers/`, and `outputs/related_survey_matrix.md`.
-8. **Argument and article plan**: write `state/argument_graph.yml` and `outputs/article_plan.md`.
-9. **Publication drafting**: write `outputs/review_body_draft.md`, then final `outputs/review.md` and `outputs/appendix.md`.
+3. **Source verification and citation depth**: write `state/papers.jsonl` and `state/citation_plan.jsonl`.
+4. **Paper mechanism understanding**: write `state/paper_mechanism_cards.jsonl` for A/B papers.
+5. **Scenario/domain definitions**: write `state/scenario_definitions.yml`.
+6. **Field synthesis**: write method-family dossiers, benchmark dossiers, related-survey matrix, and `state/claim_evidence_spans.jsonl`.
+7. **Story skeleton**: write `state/argument_graph.yml`.
+8. **Section source re-check**: write `state/section_evidence_plans.jsonl`.
+9. **Publication drafting**: write `outputs/article_plan.md`, `outputs/review_body_draft.md`, final `outputs/review.md`, and `outputs/appendix.md`.
 10. **Review and repair**: write `state/review_rounds.jsonl` and `outputs/final_report.md`; rerun gates until complete or precisely blocked.
 
 ## Required Contracts
 
 - Survey type and topic-specific artifact selection: `references/survey_type_contract.md`.
+- Scenario/domain definitions for topic-specific meanings: `references/scenario_definition_contract.md`.
 - Source identity, evidence spans, and coverage: `references/evidence_contract.md`.
 - Paper-level scientific contribution extraction: `references/paper_understanding_contract.md`.
 - Synthesis dossiers and argument graph: `references/synthesis_contract.md`.
@@ -53,10 +54,10 @@ Read `references/runtime_contract.md` before long-running work.
 For `target=full` and `target=csur`, completion requires:
 
 1. **Source Identity Gate**: A/B papers are fully verified; C papers meet the target verification rate; unverified papers do not support article claims.
-2. **Paper Understanding Gate**: every A/B paper has motivation, task/problem, benchmark/environment, method pipeline, implementation details, experimental setup, main results, limitations, and relation to prior work.
-3. **Claim-Evidence Gate**: every important claim traces to an evidence span and verified paper mechanism record; claim strength does not exceed evidence strength.
-4. **Coverage Gate**: the literature map meets target breadth and records coverage gaps honestly.
-5. **Argument Graph Gate**: each article section advances an argument node with evidence and implication.
+2. **Paper Understanding Gate**: every A/B paper has motivation, task/problem, benchmark/environment, implementation, experiment, result, limitation, relation-to-prior-work, and overclaim boundaries.
+3. **Claim-Evidence Gate**: every important claim traces to evidence spans and section evidence plans; claim strength does not exceed evidence strength.
+4. **Coverage Gate**: the literature map meets target breadth and records family, benchmark, related-survey, and scenario gaps honestly.
+5. **Argument Graph Gate**: scenario definitions, synthesis dossiers, story skeleton, and section evidence plans jointly support the article.
 6. **Article Quality Gate**: `review.md` is publication prose with no raw artifacts, internal methodology, run metadata, unsupported factual claims, repeated template sections, or un-interpreted tables.
 
 `short` targets may use a lighter workflow, but must still avoid fabricated citations and unsupported claims.
@@ -91,7 +92,10 @@ Transparent search protocol, broad coverage tables, and evidence logistics belon
 - `scripts/validate_paper_understanding.py`: paper mechanism-card validation.
 - `scripts/validate_claim_evidence.py`: claim-to-evidence validation.
 - `scripts/build_coverage_matrix.py`: coverage summary builder and validator.
+- `scripts/validate_scenario_definitions.py`: scenario/domain definition validation.
+- `scripts/validate_synthesis_dossiers.py`: method-family and benchmark dossier validation.
 - `scripts/validate_argument_graph.py`: argument graph validation.
+- `scripts/validate_section_evidence_plans.py`: section source re-check validation.
 - `scripts/validate_article_quality.py`: article boundary, prose, repetition, section, table, and factual-support checks.
 - `scripts/gate_check.py`: six-gate orchestrator.
 - `scripts/render_dashboard.py`: HTML progress dashboard.

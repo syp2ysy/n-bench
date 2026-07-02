@@ -21,3 +21,5 @@ Topic-specific defaults:
 - `application-domain`: tasks, data, workflows, methods, deployment, evaluation.
 
 Do not force system-component artifacts onto non-system topics. Do not organize a system-object topic as a task list unless explicitly requested.
+
+Every full or CSUR run also writes `state/scenario_definitions.yml`. The definitions follow the primary survey type and secondary lenses rather than forcing a system-component schema onto all topics.

@@ -21,4 +21,8 @@ Every A/B paper needs:
 
 The card explains a scientific contribution, not a survey bucket. It must answer why the paper exists, what task it studies, how the method works, how it was evaluated, what the results support, what they do not support, and how the paper changes the survey argument.
 
-A/B papers without results, baselines, ablations, or limitations must be downgraded or marked as evidence-limited.
+A/B papers without concrete results, baselines, ablations, limitations, or benchmark/environment details must be downgraded or marked as evidence-limited.
+
+`relation_to_prior_work` must name the relationship type, such as extends, replaces, contradicts, benchmarks, reframes, surveys, predecessor, successor, alternative, or conflict. Generic prose such as "related to prior work" is not enough.
+
+Benchmark papers should not be treated as method systems. Survey papers should not be used as experimental-result evidence. Main results must cite evidence spans beyond a paper title.

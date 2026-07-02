@@ -26,6 +26,31 @@ REQUIRED_FIELDS = [
     "evidence_spans",
 ]
 
+RELATION_TERMS = {
+    "extends",
+    "replaces",
+    "contradicts",
+    "benchmarks",
+    "reframes",
+    "surveys",
+    "alternative",
+    "predecessor",
+    "successor",
+    "conflict",
+    "扩展",
+    "替代",
+    "冲突",
+    "基准",
+    "重构",
+    "综述",
+}
+
+GENERIC_RELATIONS = {
+    "this is related to prior work",
+    "related to prior work",
+    "positions the work relative to adjacent embodied-memory designs in the mechanism taxonomy",
+}
+
 
 def read_jsonl(path: Path) -> list[dict]:
     if not path.exists():
@@ -56,11 +81,25 @@ def _has_benchmark(card: dict) -> bool:
 
 
 def _valid_result(result: dict) -> bool:
-    return (
+    evidence = str(result.get("evidence_span") or result.get("evidence") or "")
+    if not (
         _nonempty(result.get("result") or result.get("claim"))
-        and _nonempty(result.get("evidence_span") or result.get("evidence"))
+        and _nonempty(evidence)
         and str(result.get("claim_strength") or result.get("strength") or "") in {"demonstrates", "shows", "suggests", "may indicate"}
-    )
+    ):
+        return False
+    lowered = evidence.lower()
+    return not any(term in lowered for term in ["title only", "title/abstract only", "paper title alone"])
+
+
+def _has_relation_type(value) -> bool:
+    text = str(value or "").strip()
+    if not text:
+        return False
+    lowered = text.lower().rstrip(".")
+    if lowered in GENERIC_RELATIONS:
+        return False
+    return any(term in lowered for term in RELATION_TERMS)
 
 
 def validate_paper_understanding(cards: list[dict], citation_plan: list[dict] | None = None) -> dict:
@@ -84,9 +123,29 @@ def validate_paper_understanding(cards: list[dict], citation_plan: list[dict] | 
             card_errors.append("implementation_details_too_thin")
         if not isinstance(card.get("experimental_setup"), dict) or len(card.get("experimental_setup", {})) < 2:
             card_errors.append("experimental_setup_too_thin")
+        experiment = card.get("experimental_setup") if isinstance(card.get("experimental_setup"), dict) else {}
+        if not _nonempty(experiment.get("metrics")):
+            card_errors.append("missing_metrics")
+        if not _nonempty(experiment.get("baselines")):
+            card_errors.append("missing_baselines")
+        if not _nonempty(experiment.get("ablations")):
+            card_errors.append("missing_ablations")
+        if not _nonempty(experiment.get("evaluation_protocol")):
+            card_errors.append("missing_evaluation_protocol")
         results = card.get("main_results") or []
         if not isinstance(results, list) or not results or not all(isinstance(r, dict) and _valid_result(r) for r in results):
             card_errors.append("invalid_main_results")
+        limitations = card.get("limitations_and_confounders") or []
+        if not isinstance(limitations, list) or len(limitations) < 2:
+            card_errors.append("limitations_too_thin")
+        if not _has_relation_type(card.get("relation_to_prior_work")):
+            card_errors.append("generic_relation_to_prior_work")
+        role = str(card.get("survey_role") or "").lower()
+        result_text = " ".join(str((r or {}).get("result") or (r or {}).get("claim") or "") for r in results if isinstance(r, dict)).lower()
+        if role == "survey" and any(term in result_text for term in ["outperforms", "improves", "beats", "提升", "优于"]):
+            card_errors.append("survey_used_as_experimental_result")
+        if role == "benchmark" and any(term in result_text for term in ["our method", "the method improves", "proposed system", "新方法"]):
+            card_errors.append("benchmark_used_as_method_result")
         if card_errors:
             invalid_cards[pid] = card_errors
     if invalid_cards:

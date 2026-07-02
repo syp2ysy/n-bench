@@ -39,13 +39,16 @@ def _plain(text: str) -> str:
 def validate_argument_graph(graph_or_text, article_plan: str = "") -> dict:
     graph = parse_structured_text(graph_or_text) if isinstance(graph_or_text, str) else (graph_or_text or {})
     errors: list[str] = []
-    for field in ["central_thesis", "field_shift", "gap_in_existing_surveys", "argument_nodes", "section_order"]:
+    for field in ["central_thesis", "field_shift", "gap_in_existing_surveys", "story_skeleton", "argument_nodes", "section_order"]:
         if not graph.get(field):
             errors.append(f"missing_{field}")
     nodes = graph.get("argument_nodes") or {}
     if not isinstance(nodes, dict) or not nodes:
         errors.append("invalid_argument_nodes")
         nodes = {}
+    has_scenario_node = False
+    has_method_node = False
+    has_benchmark_limit_node = False
     for node_id, node in nodes.items():
         if not isinstance(node, dict):
             errors.append(f"{node_id}:invalid_node")
@@ -53,6 +56,24 @@ def validate_argument_graph(graph_or_text, article_plan: str = "") -> dict:
         for field in ["claim", "evidence", "implication", "section"]:
             if not node.get(field):
                 errors.append(f"{node_id}:missing_{field}")
+        if node.get("scenario_links"):
+            has_scenario_node = True
+        if node.get("method_family_links"):
+            has_method_node = True
+        benchmark_text = " ".join([
+            str(node.get("benchmark_limit") or ""),
+            str(node.get("claim") or ""),
+            str(node.get("implication") or ""),
+        ]).lower()
+        if node.get("benchmark_links") and any(term in benchmark_text for term in ["cannot", "不能", "limit", "confound", "diagnostic", "causal"]):
+            has_benchmark_limit_node = True
+    if nodes:
+        if not has_scenario_node:
+            errors.append("missing_scenario_argument_node")
+        if not has_method_node:
+            errors.append("missing_method_family_argument_node")
+        if not has_benchmark_limit_node:
+            errors.append("missing_benchmark_limit_argument_node")
     section_order = [str(section) for section in (graph.get("section_order") or [])]
     if section_order and nodes:
         node_sections = {str(node.get("section")) for node in nodes.values() if isinstance(node, dict)}
@@ -64,12 +85,35 @@ def validate_argument_graph(graph_or_text, article_plan: str = "") -> dict:
         missing_in_plan = [section for section in section_order if section.lower() not in plan]
         if missing_in_plan:
             errors.append("article_plan_missing_sections:" + ",".join(missing_in_plan))
+    if nodes and _has_dependency_cycle(nodes):
+        errors.append("argument_graph_dependency_cycle")
     return {
         "valid": not errors,
         "errors": errors,
         "nodes": len(nodes),
         "sections": len(section_order),
     }
+
+
+def _has_dependency_cycle(nodes: dict) -> bool:
+    visiting: set[str] = set()
+    visited: set[str] = set()
+
+    def visit(node_id: str) -> bool:
+        if node_id in visited:
+            return False
+        if node_id in visiting:
+            return True
+        visiting.add(node_id)
+        node = nodes.get(node_id) or {}
+        for nxt in node.get("leads_to") or []:
+            if str(nxt) in nodes and visit(str(nxt)):
+                return True
+        visiting.remove(node_id)
+        visited.add(node_id)
+        return False
+
+    return any(visit(str(node_id)) for node_id in nodes)
 
 
 def main() -> int:

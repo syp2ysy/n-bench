@@ -11,11 +11,14 @@
 
 Only article-body sections and article displays can drive `review.md`.
 
+Before writing each article-body section, consult `state/section_evidence_plans.jsonl`. A section should not introduce a new strong claim until the claim is represented in `state/claim_evidence_spans.jsonl` and covered by that section's evidence plan.
+
 Article body must:
 
 - state a central thesis and keep returning to it;
 - define concepts before using them;
 - explain representative papers as mechanisms and evidence;
+- compare scenario-specific definitions where the topic object changes by setting;
 - interpret every table or figure in prose;
 - compare method families rather than list papers;
 - calibrate evidence strength in scholarly language;

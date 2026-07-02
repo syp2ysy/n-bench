@@ -14,6 +14,9 @@ try:
     from .build_coverage_matrix import build_coverage
     from .validate_argument_graph import parse_structured_text, validate_argument_graph
     from .validate_article_quality import validate_article_quality
+    from .validate_scenario_definitions import validate_scenario_definitions
+    from .validate_synthesis_dossiers import read_dossier_dir, validate_synthesis_dossiers
+    from .validate_section_evidence_plans import validate_section_evidence_plans
 except ImportError:  # pragma: no cover
     from verify_sources import read_jsonl, validate_sources
     from validate_paper_understanding import validate_paper_understanding
@@ -21,6 +24,9 @@ except ImportError:  # pragma: no cover
     from build_coverage_matrix import build_coverage
     from validate_argument_graph import parse_structured_text, validate_argument_graph
     from validate_article_quality import validate_article_quality
+    from validate_scenario_definitions import validate_scenario_definitions
+    from validate_synthesis_dossiers import read_dossier_dir, validate_synthesis_dossiers
+    from validate_section_evidence_plans import validate_section_evidence_plans
 
 
 def text_or_empty(path: Path) -> str:
@@ -91,18 +97,36 @@ def evaluate_gates(task_dir: Path, target: str = "short") -> dict:
     citation_plan = read_jsonl(state / "citation_plan.jsonl")
     mechanism_cards = read_jsonl(state / "paper_mechanism_cards.jsonl")
     claims = read_jsonl(state / "claim_evidence_spans.jsonl")
+    section_plans = read_jsonl(state / "section_evidence_plans.jsonl")
     article_plan = text_or_empty(outputs / "article_plan.md")
     argument_text = text_or_empty(state / "argument_graph.yml")
     argument_graph = parse_structured_text(argument_text)
+    scenario_text = text_or_empty(state / "scenario_definitions.yml")
     survey_type = survey_type_status(text_or_empty(state / "survey_type_plan.yml"))
     review_text = text_or_empty(outputs / "review.md")
 
     gate_1 = validate_sources(papers, citation_plan, target)
     gate_2 = validate_paper_understanding(mechanism_cards, citation_plan)
-    gate_3 = validate_claim_evidence(claims, mechanism_cards)
+    gate_3 = validate_claim_evidence(claims, mechanism_cards, section_plans if target != "short" else None)
     gate_4 = build_coverage(papers, citation_plan, target)
     dossier_status = synthesis_dossier_status(outputs, target, survey_type)
+    scenario_status = validate_scenario_definitions(scenario_text, target)
+    synthesis_status = validate_synthesis_dossiers(
+        read_dossier_dir(outputs / "method_family_dossiers"),
+        read_dossier_dir(outputs / "benchmark_dossiers"),
+        scenario_text,
+        mechanism_cards,
+        target,
+    )
     gate_5 = validate_argument_graph(argument_graph, article_plan)
+    section_plan_status = validate_section_evidence_plans(
+        section_plans,
+        argument_graph if isinstance(argument_graph, dict) else {},
+        article_plan,
+        claims,
+        mechanism_cards,
+        target,
+    )
     plan_status = article_plan_status(article_plan)
     gate_6 = validate_article_quality(
         review_text,
@@ -118,10 +142,21 @@ def evaluate_gates(task_dir: Path, target: str = "short") -> dict:
         "gate_3_claim_evidence": {"passed": gate_3["valid"], **gate_3},
         "gate_4_coverage": {"passed": gate_4["valid"], **gate_4},
         "gate_5_argument_graph": {
-            "passed": gate_5["valid"] and dossier_status["valid"] and plan_status["valid"] and survey_type["valid"],
+            "passed": (
+                gate_5["valid"]
+                and dossier_status["valid"]
+                and scenario_status["valid"]
+                and synthesis_status["valid"]
+                and section_plan_status["valid"]
+                and plan_status["valid"]
+                and survey_type["valid"]
+            ),
             **gate_5,
             "survey_type": survey_type,
             "synthesis_dossiers": dossier_status,
+            "scenario_definitions": scenario_status,
+            "synthesis_dossier_quality": synthesis_status,
+            "section_evidence_plans": section_plan_status,
             "article_plan": plan_status,
         },
         "gate_6_article_quality": {"passed": gate_6["valid"], **gate_6},

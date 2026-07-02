@@ -12,6 +12,9 @@ from scripts.validate_article_quality import validate_article_quality
 from scripts.validate_argument_graph import validate_argument_graph
 from scripts.validate_claim_evidence import validate_claim_evidence
 from scripts.validate_paper_understanding import validate_paper_understanding
+from scripts.validate_scenario_definitions import validate_scenario_definitions
+from scripts.validate_section_evidence_plans import validate_section_evidence_plans
+from scripts.validate_synthesis_dossiers import validate_synthesis_dossiers
 from scripts.verify_sources import validate_sources
 
 
@@ -65,8 +68,19 @@ class SurveyAutoResearchRefactorTest(unittest.TestCase):
                     "task_definition": {"input": "observation and goal", "output": "action or answer"},
                     "benchmark_or_dataset": ["Benchmark-X"],
                     "method_pipeline": ["encode observation", "write record", "retrieve evidence", "act or answer"],
-                    "implementation_details": {"model": "encoder", "memory": "structured store", "controller": "planner"},
-                    "experimental_setup": {"metrics": ["success"], "baselines": ["no memory"], "ablations": ["no retrieval"]},
+                    "implementation_details": {
+                        "model_backbone": "encoder",
+                        "memory_module": "structured store",
+                        "retriever_or_map": "retriever",
+                        "planner_or_controller": "planner",
+                        "training_or_inference_setup": "inference-time retrieval",
+                    },
+                    "experimental_setup": {
+                        "metrics": ["success"],
+                        "baselines": ["no memory"],
+                        "ablations": ["no retrieval"],
+                        "evaluation_protocol": "diagnostic benchmark with no-memory comparison",
+                    },
                     "main_results": [
                         {
                             "result": "The method improves the diagnostic benchmark over the no-memory baseline.",
@@ -74,8 +88,11 @@ class SurveyAutoResearchRefactorTest(unittest.TestCase):
                             "claim_strength": "shows",
                         }
                     ],
-                    "limitations_and_confounders": ["perception and controller strength may confound aggregate success"],
-                    "relation_to_prior_work": "Extends prior context-only systems with explicit evidence use.",
+                    "limitations_and_confounders": [
+                        "perception and controller strength may confound aggregate success",
+                        "the evidence does not isolate all deployment-time failures",
+                    ],
+                    "relation_to_prior_work": "extends prior context-only systems with explicit evidence use.",
                     "what_it_changes_in_the_survey_argument": "It supports the claim that memory must be evaluated through evidence and control interfaces.",
                     "must_not_overclaim": ["does not demonstrate general memory causality without negative controls"],
                     "evidence_spans": ["Section 4, Table 2 reports the comparison."],
@@ -103,15 +120,149 @@ class SurveyAutoResearchRefactorTest(unittest.TestCase):
             }
         ]
 
+    def scenario_definitions(self) -> dict:
+        scenarios = []
+        for name in ["navigation", "EQA", "manipulation", "VLA", "lifelong"]:
+            scenarios.append(
+                {
+                    "scenario": name,
+                    "object_definition": f"{name} defines memory through task-specific state and evidence.",
+                    "required_fields": ["state", "source", "time", "task"],
+                    "typical_benchmarks": [f"{name}-Bench"],
+                    "unsuitable_claims": [f"{name} success alone does not prove all memory mechanisms."],
+                    "evaluation_pressure": "diagnostic pressure with confounders",
+                    "failure_risks": ["stale evidence", "wrong retrieval"],
+                }
+            )
+        return {"scenarios": scenarios}
+
+    def method_dossier(self) -> dict:
+        return {
+            "family": "retrieval memory",
+            "family_motivation": "Retrieve grounded evidence for downstream decisions.",
+            "assumptions": ["history can be indexed", "retrieval affects a controller"],
+            "representative_a_papers": ["p001", "p002"],
+            "supporting_b_papers": ["p026", "p027"],
+            "shared_mechanism_pattern": "write structured evidence, retrieve it by task-conditioned keys, then expose it to a controller",
+            "differences_among_representative_papers": "p001 uses local evidence while p002 uses a broader external store.",
+            "relation_graph": [
+                {"source": "p001", "target": "p002", "relation": "alternative", "reason": "different retrieval granularity"}
+            ],
+            "common_benchmarks": ["EQA-Bench"],
+            "evidence_strength_summary": "shows task-specific gains under no-memory comparison but still needs wrong-evidence controls",
+            "failure_modes": ["wrong evidence", "latency"],
+            "open_questions": ["how to separate retrieval quality from answer priors"],
+            "advances_central_story": "connects scenario-specific evidence to an action-facing interface",
+            "scenario_links": ["EQA"],
+        }
+
+    def benchmark_dossier(self) -> dict:
+        return {
+            "benchmark": "EQA-Bench",
+            "capability_tested": "grounded evidence retrieval",
+            "task_formulation": "answer questions from embodied observations",
+            "input_output": "input observations and question; output answer and evidence",
+            "environment_dataset": "simulated embodied scenes",
+            "metrics": ["accuracy", "groundedness"],
+            "common_baselines": ["closed-book", "oracle evidence"],
+            "reported_memory_specific_ablations": ["no-memory"],
+            "missing_diagnostic_controls": ["wrong evidence", "stale evidence"],
+            "what_it_can_support": "whether retrieved evidence helps answer questions",
+            "what_it_cannot_support": "it cannot alone prove object-state memory or policy-time use",
+            "representative_papers_using_it": ["p001", "p002"],
+            "confounders": ["language priors", "visual recognition"],
+            "scenario_links": ["EQA"],
+        }
+
+    def section_evidence_plans(self) -> list[dict]:
+        base = [
+            {
+                "section_id": "S1",
+                "title": "Introduction",
+                "argument_node": "A1",
+                "section_claim": "Existing views fragment mechanisms.",
+                "scenario_definitions_used": ["navigation", "EQA"],
+                "method_families_used": [],
+                "anchor_papers": ["p001"],
+                "supporting_papers": ["p026"],
+                "benchmarks": [],
+                "required_comparisons": ["task-first view vs interface-centered view"],
+                "must_include_evidence_spans": ["c1"],
+                "must_not_overclaim": ["do not claim all settings are solved"],
+            },
+            {
+                "section_id": "S2",
+                "title": "Method Families",
+                "argument_node": "A2",
+                "section_claim": "Method families differ by mechanism and evidence.",
+                "scenario_definitions_used": ["EQA", "lifelong"],
+                "method_families_used": ["retrieval memory"],
+                "anchor_papers": ["p001", "p002"],
+                "supporting_papers": ["p026", "p027"],
+                "benchmarks": ["EQA-Bench"],
+                "required_comparisons": ["p001 vs p002", "local evidence vs external store"],
+                "must_include_evidence_spans": ["c1"],
+                "must_not_overclaim": ["do not state retrieval proves causality"],
+            },
+            {
+                "section_id": "S3",
+                "title": "Benchmark and Evaluation",
+                "argument_node": "A3",
+                "section_claim": "Benchmarks operationalize but do not automatically prove claims.",
+                "scenario_definitions_used": ["EQA"],
+                "method_families_used": ["retrieval memory"],
+                "anchor_papers": ["p001"],
+                "supporting_papers": ["p026"],
+                "benchmarks": ["EQA-Bench"],
+                "required_comparisons": ["closed-book vs oracle evidence"],
+                "protocol": "compare no-memory, oracle evidence, and wrong evidence",
+                "metric": "accuracy and groundedness",
+                "baseline": "closed-book answerer",
+                "confounder": "language priors",
+                "must_include_evidence_spans": ["c1"],
+                "must_not_overclaim": ["do not claim benchmark success proves causality"],
+            },
+        ]
+        for idx, title in enumerate(["Evidence and Limitations", "Design Guidance", "Open Problems"], start=4):
+            base.append(
+                {
+                    "section_id": f"S{idx}",
+                    "title": title,
+                    "argument_node": "A3",
+                    "section_claim": f"{title} connects evidence limits to repair routes.",
+                    "scenario_definitions_used": ["EQA"],
+                    "method_families_used": ["retrieval memory"],
+                    "anchor_papers": ["p001"],
+                    "supporting_papers": ["p026"],
+                    "benchmarks": ["EQA-Bench"],
+                    "required_comparisons": ["evidence strength vs overclaim risk"],
+                    "must_include_evidence_spans": ["c1"],
+                    "must_not_overclaim": ["do not overstate causal memory claims"],
+                }
+            )
+        return base
+
     def argument_graph(self) -> dict:
         return {
             "central_thesis": "Memory should be evaluated as an evidence-to-action interface.",
             "field_shift": "Agents move from short tasks to long-horizon deployment.",
             "gap_in_existing_surveys": "Task-first views split method, benchmark, and evidence reasoning.",
+            "story_skeleton": [
+                "field_shift",
+                "fragmented_existing_view",
+                "new_unifying_lens",
+                "scenario-specific definitions",
+                "method-family comparison",
+                "benchmark/evidence limitations",
+                "research agenda",
+            ],
             "argument_nodes": {
                 "A1": {
                     "claim": "Existing views fragment mechanisms.",
                     "evidence": ["related_survey_matrix"],
+                    "scenario_links": ["navigation", "EQA"],
+                    "method_family_links": [],
+                    "benchmark_links": [],
                     "implication": "Use an interface-centered lens.",
                     "section": "Introduction",
                     "leads_to": ["A2"],
@@ -119,6 +270,9 @@ class SurveyAutoResearchRefactorTest(unittest.TestCase):
                 "A2": {
                     "claim": "Method families differ by mechanism and evidence.",
                     "evidence": ["method_family_dossiers"],
+                    "scenario_links": ["EQA", "lifelong"],
+                    "method_family_links": ["retrieval memory"],
+                    "benchmark_links": ["EQA-Bench"],
                     "implication": "Compare methods by pipeline and result support.",
                     "section": "Method Families",
                     "leads_to": ["A3"],
@@ -126,6 +280,10 @@ class SurveyAutoResearchRefactorTest(unittest.TestCase):
                 "A3": {
                     "claim": "Benchmarks operationalize but do not automatically prove claims.",
                     "evidence": ["benchmark_dossiers"],
+                    "scenario_links": ["EQA"],
+                    "method_family_links": ["retrieval memory"],
+                    "benchmark_links": ["EQA-Bench"],
+                    "benchmark_limit": "success does not prove causal memory contribution without diagnostic controls",
                     "implication": "Use diagnostic controls.",
                     "section": "Benchmark and Evaluation",
                     "leads_to": [],
@@ -198,6 +356,8 @@ class SurveyAutoResearchRefactorTest(unittest.TestCase):
             encoding="utf-8",
         )
         (state / "argument_graph.yml").write_text(json.dumps(self.argument_graph()), encoding="utf-8")
+        (state / "scenario_definitions.yml").write_text(json.dumps(self.scenario_definitions()), encoding="utf-8")
+        write_jsonl(state / "section_evidence_plans.jsonl", self.section_evidence_plans())
         (outputs / "article_plan.md").write_text(self.article_plan(), encoding="utf-8")
         (outputs / "review.md").write_text(self.review_text(), encoding="utf-8")
         (outputs / "appendix.md").write_text("# Appendix\n\nSearch protocol and coverage logistics.\n", encoding="utf-8")
@@ -208,7 +368,14 @@ class SurveyAutoResearchRefactorTest(unittest.TestCase):
         for dirname in ["method_family_dossiers", "benchmark_dossiers"]:
             directory = outputs / dirname
             directory.mkdir(exist_ok=True)
-            (directory / "dossier.md").write_text("# Dossier\n\nMechanism and evidence comparison.\n", encoding="utf-8")
+        (outputs / "method_family_dossiers" / "retrieval_memory.json").write_text(
+            json.dumps(self.method_dossier(), sort_keys=True),
+            encoding="utf-8",
+        )
+        (outputs / "benchmark_dossiers" / "eqa_bench.json").write_text(
+            json.dumps(self.benchmark_dossier(), sort_keys=True),
+            encoding="utf-8",
+        )
 
     def test_source_identity_gate_blocks_unverified_a_b(self):
         papers = self.papers(3, 0)
@@ -224,6 +391,16 @@ class SurveyAutoResearchRefactorTest(unittest.TestCase):
         self.assertIn("invalid_paper_understanding", status["errors"])
         status = validate_paper_understanding(self.mechanism_cards(1), [{"paper_id": "p001", "depth": "A"}])
         self.assertTrue(status["valid"], status)
+
+    def test_paper_understanding_rejects_generic_relation_and_missing_experiment_details(self):
+        card = self.mechanism_cards(1)[0]
+        card["relation_to_prior_work"] = "This is related to prior work."
+        card["experimental_setup"] = {"metrics": ["success"]}
+        status = validate_paper_understanding([card], [{"paper_id": "p001", "depth": "A"}])
+        self.assertFalse(status["valid"])
+        self.assertIn("generic_relation_to_prior_work", status["invalid_cards"]["p001"])
+        self.assertIn("missing_baselines", status["invalid_cards"]["p001"])
+        self.assertIn("missing_ablations", status["invalid_cards"]["p001"])
 
     def test_claim_evidence_blocks_missing_span_and_overclaim(self):
         too_strong = self.claims()
@@ -248,6 +425,55 @@ class SurveyAutoResearchRefactorTest(unittest.TestCase):
         graph["argument_nodes"]["A2"].pop("implication")
         status = validate_argument_graph(graph, self.article_plan())
         self.assertFalse(status["valid"])
+
+    def test_scenario_definitions_require_context_specific_definitions(self):
+        status = validate_scenario_definitions({}, target="full")
+        self.assertFalse(status["valid"])
+        status = validate_scenario_definitions(self.scenario_definitions(), target="full")
+        self.assertTrue(status["valid"], status)
+        weak = {"scenarios": [{"scenario": "navigation", "object_definition": "spatial memory"}]}
+        status = validate_scenario_definitions(weak, target="full")
+        self.assertFalse(status["valid"])
+
+    def test_synthesis_dossiers_require_cross_paper_comparison_and_benchmark_limits(self):
+        weak_method = {"family": "retrieval", "representative_a_papers": ["p001"], "supporting_b_papers": []}
+        weak_bench = {"benchmark": "EQA", "capability_tested": "answering"}
+        status = validate_synthesis_dossiers(
+            [weak_method],
+            [weak_bench],
+            self.scenario_definitions(),
+            self.mechanism_cards(2),
+            target="full",
+        )
+        self.assertFalse(status["valid"])
+        status = validate_synthesis_dossiers(
+            [self.method_dossier()],
+            [self.benchmark_dossier()],
+            self.scenario_definitions(),
+            self.mechanism_cards(30),
+            target="full",
+        )
+        self.assertTrue(status["valid"], status)
+
+    def test_section_evidence_plans_cover_article_sections_and_benchmark_requirements(self):
+        status = validate_section_evidence_plans(
+            [],
+            self.argument_graph(),
+            self.article_plan(),
+            self.claims(),
+            self.mechanism_cards(2),
+            target="full",
+        )
+        self.assertFalse(status["valid"])
+        status = validate_section_evidence_plans(
+            self.section_evidence_plans(),
+            self.argument_graph(),
+            self.article_plan(),
+            self.claims(),
+            self.mechanism_cards(30),
+            target="full",
+        )
+        self.assertTrue(status["valid"], status)
 
     def test_article_quality_rejects_internal_methodology_and_unsupported_claim(self):
         bad = (
@@ -291,10 +517,23 @@ class SurveyAutoResearchRefactorTest(unittest.TestCase):
             gates = evaluate_gates(task_dir, "full")
             self.assertTrue(gates["all_blocking_gates_passed"], gates)
 
+    def test_gate_check_blocks_missing_scenario_definitions_and_section_plans(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            task_dir = initialize_task(Path(tmp), "embodied memory system", target="full")
+            self.populate_full_task(task_dir)
+            (task_dir / "state/scenario_definitions.yml").write_text("", encoding="utf-8")
+            (task_dir / "state/section_evidence_plans.jsonl").write_text("", encoding="utf-8")
+            gates = evaluate_gates(task_dir, "full")
+            self.assertFalse(gates["gate_5_argument_graph"]["passed"])
+            self.assertIn("scenario_definitions", gates["gate_5_argument_graph"])
+            self.assertIn("section_evidence_plans", gates["gate_5_argument_graph"])
+
     def test_init_task_uses_new_state_skeleton(self):
         with tempfile.TemporaryDirectory() as tmp:
             task_dir = initialize_task(Path(tmp), "test topic", target="full")
             self.assertTrue((task_dir / "state/survey_type_plan.yml").exists())
+            self.assertTrue((task_dir / "state/scenario_definitions.yml").exists())
+            self.assertTrue((task_dir / "state/section_evidence_plans.jsonl").exists())
             self.assertTrue((task_dir / "state/paper_mechanism_cards.jsonl").exists())
             self.assertFalse((task_dir / "state/paper_cards.jsonl").exists())
             gates = json.loads((task_dir / "state/completion_gates.json").read_text())

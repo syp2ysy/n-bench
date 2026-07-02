@@ -17,6 +17,7 @@ STATE_FILES = [
     "citation_plan.jsonl",
     "paper_mechanism_cards.jsonl",
     "claim_evidence_spans.jsonl",
+    "section_evidence_plans.jsonl",
     "review_rounds.jsonl",
     "phase_summaries.jsonl",
 ]
@@ -77,6 +78,7 @@ def initialize_task(
         encoding="utf-8",
     )
     (state / "survey_type_plan.yml").write_text("", encoding="utf-8")
+    (state / "scenario_definitions.yml").write_text("", encoding="utf-8")
     (state / "argument_graph.yml").write_text("", encoding="utf-8")
     (state / "search_protocol.md").write_text("", encoding="utf-8")
     (state / "csur_notes.md").write_text("", encoding="utf-8")

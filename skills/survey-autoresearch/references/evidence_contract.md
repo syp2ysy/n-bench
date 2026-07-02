@@ -7,6 +7,7 @@ Required files:
 - `state/papers.jsonl`
 - `state/citation_plan.jsonl`
 - `state/claim_evidence_spans.jsonl`
+- `state/section_evidence_plans.jsonl`
 - `outputs/coverage_matrix.md`
 
 Source identity fields:
@@ -31,3 +32,4 @@ Rules:
 - Unverified papers cannot support article-body claims.
 - Claim strength cannot exceed evidence-span strength.
 - A paper title alone is not evidence.
+- Strong article claims should appear in a section whose evidence plan includes the relevant claim/evidence span.

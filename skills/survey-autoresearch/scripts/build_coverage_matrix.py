@@ -39,6 +39,16 @@ def build_coverage(papers: list[dict], citation_plan: list[dict], target: str = 
         str(p.get("family") or p.get("topic_axis") or p.get("survey_role") or "unassigned")
         for p in papers
     )
+    scenario_counts = Counter(
+        str(p.get("scenario") or p.get("domain_context") or p.get("capability") or "unassigned")
+        for p in papers
+        if p.get("scenario") or p.get("domain_context") or p.get("capability")
+    )
+    benchmark_refs = sum(
+        1 for paper in papers
+        if str(paper.get("survey_role") or paper.get("role") or "").lower() == "benchmark"
+        or "benchmark" in str(paper.get("title") or "").lower()
+    )
     missing = []
     if verified < thresholds["verified"]:
         missing.append("verified_refs")
@@ -60,7 +70,9 @@ def build_coverage(papers: list[dict], citation_plan: list[dict], target: str = 
         "b_refs": depth_counts["B"],
         "c_refs": depth_counts["C"],
         "related_surveys": related_surveys,
+        "benchmark_refs": benchmark_refs,
         "families": dict(family_counts),
+        "scenarios": dict(scenario_counts),
         "paper_ids_in_plan": sum(1 for item in citation_plan if str(item.get("paper_id")) in paper_by_id),
     }
 
@@ -76,6 +88,16 @@ def render_markdown(status: dict) -> str:
     lines.append("| --- | --- |")
     for family, count in sorted(status.get("families", {}).items()):
         lines.append(f"| {family} | {count} |")
+    if status.get("scenarios"):
+        lines.append("")
+        lines.append("## Scenarios")
+        lines.append("")
+        lines.append("| Scenario | Count |")
+        lines.append("| --- | --- |")
+        for scenario, count in sorted(status.get("scenarios", {}).items()):
+            lines.append(f"| {scenario} | {count} |")
+    lines.append("")
+    lines.append(f"Benchmark references: {status.get('benchmark_refs', 0)}")
     return "\n".join(lines) + "\n"
 
 

@@ -17,8 +17,12 @@ def read_jsonl(path: Path) -> list[dict]:
     return [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines() if line.strip()]
 
 
-def validate_claim_evidence(claims: list[dict], paper_cards: list[dict]) -> dict:
-    card_ids = {str(card.get("paper_id")) for card in paper_cards if card.get("paper_id")}
+def validate_claim_evidence(claims: list[dict], mechanism_cards: list[dict], section_plans: list[dict] | None = None) -> dict:
+    card_ids = {str(card.get("paper_id")) for card in mechanism_cards if card.get("paper_id")}
+    planned_claims = set()
+    for plan in section_plans or []:
+        for claim_id in plan.get("must_include_evidence_spans") or []:
+            planned_claims.add(str(claim_id))
     errors: list[str] = []
     invalid_claims: dict[str, list[str]] = {}
     for claim in claims:
@@ -29,6 +33,8 @@ def validate_claim_evidence(claims: list[dict], paper_cards: list[dict]) -> dict
         claim_strength = str(claim.get("strength") or "").lower()
         if claim_strength not in STRENGTH:
             claim_errors.append("invalid_claim_strength")
+        if section_plans is not None and STRENGTH.get(claim_strength, 0) >= STRENGTH["shows"] and claim_id not in planned_claims:
+            claim_errors.append("strong_claim_missing_section_plan")
         spans = claim.get("evidence_spans") or []
         if not isinstance(spans, list) or not spans:
             claim_errors.append("missing_evidence_spans")
@@ -59,8 +65,13 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--claims", required=True, type=Path)
     parser.add_argument("--paper-mechanism-cards", required=True, type=Path)
+    parser.add_argument("--section-evidence-plans", type=Path)
     args = parser.parse_args()
-    result = validate_claim_evidence(read_jsonl(args.claims), read_jsonl(args.paper_mechanism_cards))
+    result = validate_claim_evidence(
+        read_jsonl(args.claims),
+        read_jsonl(args.paper_mechanism_cards),
+        read_jsonl(args.section_evidence_plans) if args.section_evidence_plans else None,
+    )
     print(json.dumps(result, indent=2, sort_keys=True, ensure_ascii=False))
     return 0 if result["valid"] else 1
 
