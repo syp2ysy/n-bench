@@ -14,6 +14,7 @@ from scripts.validate_claim_evidence import validate_claim_evidence
 from scripts.validate_paper_understanding import validate_paper_understanding
 from scripts.validate_scenario_definitions import validate_scenario_definitions
 from scripts.validate_section_evidence_plans import validate_section_evidence_plans
+from scripts.validate_exemplar_alignment import validate_exemplar_alignment
 from scripts.validate_synthesis_dossiers import validate_synthesis_dossiers
 from scripts.verify_sources import validate_sources
 from scripts.expert_review_gate import validate_expert_reviews
@@ -145,28 +146,84 @@ class SurveyAutoResearchRefactorTest(unittest.TestCase):
             ("newcomer_tutorial", "Newcomer/Tutorial Reviewer"),
             ("style_publication", "Style/Publication Reviewer"),
         ]
-        dims = {
-            "narrative_coherence": score,
-            "paper_understanding_depth": score,
-            "method_taxonomy_quality": score,
-            "benchmark_and_evaluation_quality": score,
-            "evidence_factuality_and_citation_accuracy": score,
-            "synthesis_not_catalog": score,
-            "publication_prose": score,
-            "newcomer_value": score,
-            "expert_value": score,
-        }
-        return [
-            {
+        sections = [
+            "Introduction",
+            "Method Families",
+            "Benchmark and Evaluation",
+            "Evidence and Limitations",
+            "Design Guidance",
+            "Open Problems",
+            "Conclusion",
+        ]
+        quotes = [
+            "memory is useful only when prior evidence changes a later decision",
+            "two methods can share a benchmark label while using different pipelines",
+            "the prose explains motivation, mechanism, experimental support, and confounders",
+            "the section closes by linking method design to evidence and evaluation choices",
+            "The table shows that method labels are insufficient",
+        ]
+        base_dims = [
+            "narrative_coherence",
+            "paper_understanding_depth",
+            "field_native_taxonomy_quality",
+            "method_taxonomy_quality",
+            "benchmark_and_evaluation_quality",
+            "evidence_factuality_and_citation_accuracy",
+            "synthesis_not_catalog",
+            "publication_prose",
+            "newcomer_value",
+            "expert_value",
+        ]
+        reports = []
+        for offset, (reviewer_id, persona) in enumerate(personas):
+            dims = {name: max(0, min(10, score - offset * 0.01)) for name in base_dims}
+            report = {
                 "reviewer_id": reviewer_id,
                 "persona": persona,
                 "overall_score": score,
                 "dimension_scores": dims,
                 "blocking_weaknesses": weaknesses or [],
                 "pass_recommendation": not weaknesses and score >= 8.5,
+                "summary": f"{persona} read the complete article and found persona-specific strengths and repair risks.",
+                "review_trace": {"reviewed_full_article": True, "article_chars_read": len(self.review_text())},
+                "sections_reviewed": sections,
+                "section_comments": {
+                    section: f"{persona} comment on {section}: the section links claims, evidence, and limitations in a concrete way."
+                    for section in sections
+                },
+                "quoted_evidence_from_review": quotes,
             }
-            for reviewer_id, persona in personas
-        ]
+            if persona == "Domain Expert Reviewer":
+                report["paper_mechanism_audits"] = [
+                    {"paper_id": f"p{idx:03d}", "verdict": "consistent", "finding": "The article's mechanism wording is consistent with the paper card and does not overclaim."}
+                    for idx in range(1, 11)
+                ]
+            if persona == "Survey Architect Reviewer":
+                report["flow_taxonomy_audit"] = {
+                    "section_flow": "The article progresses from motivation to taxonomy, evidence, design guidance, and open problems.",
+                    "taxonomy_coherence": "The method taxonomy compares mechanisms and interfaces rather than only grouping paper titles.",
+                    "synthesis_vs_catalog": "The prose explains implications after tables and avoids becoming a paper-by-paper catalog.",
+                }
+            if persona == "Evidence/Factuality Reviewer":
+                report["claim_citation_audits"] = [
+                    {"claim_id": "c1", "paper_id": f"p{idx:03d}", "verdict": "supported", "finding": "The claim is tied to a full-text evidence span and does not exceed the recorded strength."}
+                    for idx in range(1, 11)
+                ]
+            if persona == "Newcomer/Tutorial Reviewer":
+                report["tutorial_audit"] = {
+                    "glossary_clarity": "The glossary gives a concrete entry point into terms that would otherwise be ambiguous to new readers.",
+                    "running_example_usefulness": "The running example connects memory, evidence, controller use, and benchmark interpretation.",
+                    "confusing_terms": "The remaining confusing terms are identified and explained through section comments rather than ignored.",
+                }
+            if persona == "Style/Publication Reviewer":
+                report["style_audit"] = {
+                    "repetition": "Repeated claims are controlled by linking each repetition to a new implication or section role.",
+                    "artifact_leakage": "The article avoids process artifacts and keeps workflow language outside the publication body.",
+                    "table_interpretation": "Tables are introduced and interpreted with prose before and after the display.",
+                    "transition_quality": "Transitions connect previous evidence to the next section's argument.",
+                }
+            reports.append(report)
+        return reports
 
     def scenario_definitions(self) -> dict:
         scenarios = []
@@ -295,6 +352,23 @@ class SurveyAutoResearchRefactorTest(unittest.TestCase):
             "central_thesis": "Memory should be evaluated as an evidence-to-action interface.",
             "field_shift": "Agents move from short tasks to long-horizon deployment.",
             "gap_in_existing_surveys": "Task-first views split method, benchmark, and evidence reasoning.",
+            "community_taxonomy_nodes": ["retrieval memory", "structured map memory", "episodic policy memory"],
+            "taxonomy_competition": {
+                "community_native_taxonomy": "method-family taxonomy organizes retrieval, mapping, and episodic policy memory.",
+                "alternative_taxonomy": "system-node taxonomy is retained as a diagnostic lens rather than the article spine.",
+                "selected": "community-native method-family taxonomy",
+            },
+            "paper_relation_graph": [
+                {"source": "p001", "target": "p002", "relation": "alternative retrieval granularity"},
+                {"source": "p001", "target": "p026", "relation": "benchmark transfer pressure"},
+            ],
+            "exemplar_delta": "The article follows related survey patterns of definition, taxonomy, data, evaluation, and open challenges while adding evidence-to-action diagnostics.",
+            "figure_plan": {
+                "taxonomy_roadmap": "Reader-facing map of method families and diagnostic interfaces.",
+                "method_evolution_timeline": "Timeline of retrieval and controller interfaces.",
+                "data_ecosystem": "Table linking observations, traces, annotations, and deployment logs.",
+                "evaluation_protocol_matrix": "Matrix of protocol, metric, baseline, and confounder.",
+            },
             "story_skeleton": [
                 "field_shift",
                 "fragmented_existing_view",
@@ -313,6 +387,7 @@ class SurveyAutoResearchRefactorTest(unittest.TestCase):
                     "benchmark_links": [],
                     "implication": "Use an interface-centered lens.",
                     "section": "Introduction",
+                    "section_role": "definition",
                     "leads_to": ["A2"],
                 },
                 "A2": {
@@ -323,6 +398,7 @@ class SurveyAutoResearchRefactorTest(unittest.TestCase):
                     "benchmark_links": ["EQA-Bench"],
                     "implication": "Compare methods by pipeline and result support.",
                     "section": "Method Families",
+                    "section_role": "taxonomy",
                     "leads_to": ["A3"],
                 },
                 "A3": {
@@ -334,6 +410,7 @@ class SurveyAutoResearchRefactorTest(unittest.TestCase):
                     "benchmark_limit": "success does not prove causal memory contribution without diagnostic controls",
                     "implication": "Use diagnostic controls.",
                     "section": "Benchmark and Evaluation",
+                    "section_role": "evaluation",
                     "leads_to": [],
                 },
             },
@@ -347,6 +424,10 @@ class SurveyAutoResearchRefactorTest(unittest.TestCase):
             "## Article Body Sections\n"
             "- Introduction\n- Method Families\n- Benchmark and Evaluation\n- Evidence and Limitations\n- Design Guidance\n- Open Problems\n\n"
             "## Article Displays\n"
+            "- Taxonomy roadmap figure\n"
+            "- Method evolution timeline figure\n"
+            "- Data ecosystem figure or table\n"
+            "- Evaluation protocol matrix\n"
             "- Method comparison table\n- Benchmark protocol table\n\n"
             "## Appendix Sections\n"
             "- Search protocol\n- Broad coverage matrix\n\n"
@@ -405,6 +486,23 @@ class SurveyAutoResearchRefactorTest(unittest.TestCase):
             "  - Introduction\n"
             "  - Method Families\n"
             "  - Benchmark and Evaluation\n"
+            "exemplar_alignment: Field Survey Exemplar uses definition -> taxonomy -> data ecosystem -> evaluation -> open challenges.\n"
+            "community_native_taxonomy:\n"
+            "  - retrieval memory\n"
+            "  - structured map memory\n"
+            "  - episodic policy memory\n"
+            "exemplar_section_patterns:\n"
+            "  - definition\n"
+            "  - taxonomy\n"
+            "  - data ecosystem\n"
+            "  - evaluation protocol\n"
+            "  - open challenges\n"
+            "candidate_article_spines:\n"
+            "  - community-native method-family taxonomy\n"
+            "  - system-node diagnostic lens\n"
+            "selected_article_spine: community-native method-family taxonomy\n"
+            "why_not_exemplar_spine: The article adapts the exemplar pattern to an evidence-to-action interface topic.\n"
+            "figure_first_plan: taxonomy roadmap; method evolution timeline; data ecosystem; evaluation protocol matrix.\n"
             "excluded_templates:\n"
             "  - pure chronological survey\n",
             encoding="utf-8",
@@ -521,6 +619,23 @@ class SurveyAutoResearchRefactorTest(unittest.TestCase):
         status = validate_argument_graph(graph, self.article_plan())
         self.assertFalse(status["valid"])
 
+    def test_exemplar_alignment_requires_field_native_outline(self):
+        status = validate_exemplar_alignment({}, self.argument_graph(), self.article_plan(), target="full")
+        self.assertFalse(status["valid"])
+        self.assertIn("missing_exemplar_alignment_fields", status["errors"])
+        survey_type_plan = {
+            "primary_type": "method-family",
+            "exemplar_alignment": ["Field Survey Exemplar"],
+            "community_native_taxonomy": ["retrieval memory", "structured map memory"],
+            "exemplar_section_patterns": ["definition", "taxonomy", "data ecosystem", "evaluation", "open challenges"],
+            "candidate_article_spines": ["community-native method-family taxonomy", "system-node diagnostic lens"],
+            "selected_article_spine": "community-native method-family taxonomy",
+            "why_not_exemplar_spine": "The article adapts the exemplar pattern to this evidence-to-action topic.",
+            "figure_first_plan": "taxonomy roadmap; method evolution timeline; data ecosystem; evaluation protocol matrix",
+        }
+        status = validate_exemplar_alignment(survey_type_plan, self.argument_graph(), self.article_plan(), target="full")
+        self.assertTrue(status["valid"], status)
+
     def test_scenario_definitions_require_context_specific_definitions(self):
         status = validate_scenario_definitions({}, target="full")
         self.assertFalse(status["valid"])
@@ -635,6 +750,23 @@ class SurveyAutoResearchRefactorTest(unittest.TestCase):
                 "  - Introduction\n"
                 "  - Method Families\n"
                 "  - Benchmark and Evaluation\n"
+                "exemplar_alignment: Field Survey Exemplar uses definition -> taxonomy -> data ecosystem -> evaluation -> open challenges.\n"
+                "community_native_taxonomy:\n"
+                "  - calibration methods\n"
+                "  - uncertainty estimation methods\n"
+                "  - evaluation protocols\n"
+                "exemplar_section_patterns:\n"
+                "  - definition\n"
+                "  - taxonomy\n"
+                "  - data ecosystem\n"
+                "  - evaluation protocol\n"
+                "  - open challenges\n"
+                "candidate_article_spines:\n"
+                "  - community-native method-family taxonomy\n"
+                "  - system-node diagnostic lens\n"
+                "selected_article_spine: community-native method-family taxonomy\n"
+                "why_not_exemplar_spine: The article adapts the exemplar pattern to uncertainty-specific method families.\n"
+                "figure_first_plan: taxonomy roadmap; method evolution timeline; data ecosystem; evaluation protocol matrix.\n"
                 "excluded_templates:\n"
                 "  - system-component-only survey\n",
                 encoding="utf-8",

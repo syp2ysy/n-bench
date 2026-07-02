@@ -7,10 +7,29 @@ Required fields:
 - `topic`
 - `primary_type`: `system-object`, `method-family`, `benchmark/evaluation`, `risk/threat`, or `application-domain`
 - `secondary_lenses`
+- `exemplar_alignment`
+- `community_native_taxonomy`
+- `exemplar_section_patterns`
+- `candidate_article_spines`
+- `selected_article_spine`
+- `why_not_exemplar_spine`
+- `figure_first_plan`
 - `why_this_type`
 - `why_not_other_types`
 - `article_skeleton`
 - `excluded_templates`
+
+For full or CSUR runs, do not choose the article spine from topic type alone. First perform exemplar-aligned outline design:
+
+- Identify 1-3 high-quality adjacent surveys, official tutorials, or field roadmaps.
+- Extract their section patterns, taxonomy spine, figures, data/evaluation treatment, and open-problem style.
+- Compare at least two candidate article spines, including one community-native taxonomy if the field has one.
+- Select an article spine and explicitly state why it should differ from or follow the exemplar pattern.
+- Treat `primary_type` as an analysis lens, not an automatic table of contents.
+
+`community_native_taxonomy` should name the field-native organizing vocabulary, such as Cascaded/Joint WAM for World Action Models. If the final article does not use the community-native taxonomy as its spine, `why_not_exemplar_spine` must explain why.
+
+`figure_first_plan` must specify at least the core roadmap or taxonomy figure, plus any timeline, data ecosystem, evaluation matrix, or diagnostic lens figures needed for a mature survey.
 
 Topic-specific defaults:
 

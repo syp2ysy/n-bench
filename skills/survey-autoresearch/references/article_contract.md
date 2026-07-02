@@ -11,12 +11,22 @@
 
 Only article-body sections and article displays can drive `review.md`.
 
+For full or CSUR surveys, design the reader-facing figures and tables before drafting prose. At minimum, the article plan must include:
+
+- taxonomy roadmap figure;
+- method evolution or timeline figure;
+- data ecosystem figure or table;
+- evaluation protocol matrix.
+
+The article spine should be driven by a reader-facing field map and community-native taxonomy, not only by evidence-plan bookkeeping. Evidence plans constrain claims, but they do not replace a mature survey outline.
+
 Before writing each article-body section, consult `state/section_evidence_plans.jsonl`. A section should not introduce a new strong claim until the claim is represented in `state/claim_evidence_spans.jsonl` and covered by that section's evidence plan.
 
 Article body must:
 
 - state a central thesis and keep returning to it;
 - define concepts before using them;
+- align its main taxonomy with field-native terminology unless it explicitly argues for a better alternative;
 - explain representative papers as mechanisms and evidence;
 - compare scenario-specific definitions where the topic object changes by setting;
 - interpret every table or figure in prose;

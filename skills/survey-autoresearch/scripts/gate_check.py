@@ -17,6 +17,7 @@ try:
     from .validate_scenario_definitions import validate_scenario_definitions
     from .validate_synthesis_dossiers import read_dossier_dir, validate_synthesis_dossiers
     from .validate_section_evidence_plans import validate_section_evidence_plans
+    from .validate_exemplar_alignment import validate_exemplar_alignment
     from .expert_review_gate import read_json as read_json_file, validate_expert_reviews
 except ImportError:  # pragma: no cover
     from verify_sources import read_jsonl, validate_sources
@@ -28,6 +29,7 @@ except ImportError:  # pragma: no cover
     from validate_scenario_definitions import validate_scenario_definitions
     from validate_synthesis_dossiers import read_dossier_dir, validate_synthesis_dossiers
     from validate_section_evidence_plans import validate_section_evidence_plans
+    from validate_exemplar_alignment import validate_exemplar_alignment
     from expert_review_gate import read_json as read_json_file, validate_expert_reviews
 
 
@@ -106,7 +108,8 @@ def evaluate_gates(task_dir: Path, target: str = "short") -> dict:
     argument_text = text_or_empty(state / "argument_graph.yml")
     argument_graph = parse_structured_text(argument_text)
     scenario_text = text_or_empty(state / "scenario_definitions.yml")
-    survey_type = survey_type_status(text_or_empty(state / "survey_type_plan.yml"))
+    survey_type_text = text_or_empty(state / "survey_type_plan.yml")
+    survey_type = survey_type_status(survey_type_text)
     review_text = text_or_empty(outputs / "review.md")
 
     gate_1 = validate_sources(papers, citation_plan, target)
@@ -123,6 +126,12 @@ def evaluate_gates(task_dir: Path, target: str = "short") -> dict:
         target,
     )
     gate_5 = validate_argument_graph(argument_graph, article_plan)
+    exemplar_status = validate_exemplar_alignment(
+        survey_type_text,
+        argument_graph if isinstance(argument_graph, dict) else {},
+        article_plan,
+        target,
+    )
     section_plan_status = validate_section_evidence_plans(
         section_plans,
         argument_graph if isinstance(argument_graph, dict) else {},
@@ -139,7 +148,15 @@ def evaluate_gates(task_dir: Path, target: str = "short") -> dict:
         claims=claims,
         target=target,
     )
-    gate_7 = validate_expert_reviews(expert_reviews, target, review_iteration_status)
+    gate_7 = validate_expert_reviews(
+        expert_reviews,
+        target,
+        review_iteration_status,
+        review_text,
+        claims,
+        mechanism_cards,
+        section_plans,
+    )
 
     gates = {
         "gate_1_source_identity": {"passed": gate_1["valid"], **gate_1},
@@ -155,9 +172,11 @@ def evaluate_gates(task_dir: Path, target: str = "short") -> dict:
                 and section_plan_status["valid"]
                 and plan_status["valid"]
                 and survey_type["valid"]
+                and exemplar_status["valid"]
             ),
             **gate_5,
             "survey_type": survey_type,
+            "exemplar_alignment": exemplar_status,
             "synthesis_dossiers": dossier_status,
             "scenario_definitions": scenario_status,
             "synthesis_dossier_quality": synthesis_status,

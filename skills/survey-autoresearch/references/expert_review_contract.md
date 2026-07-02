@@ -12,6 +12,23 @@ Required personas for mature full/CSUR review:
 
 Each report needs `reviewer_id`, `persona`, `overall_score`, `dimension_scores`, `blocking_weaknesses`, and `pass_recommendation`.
 
+Gate 7 is a full-article audit, not a score-form validator. For `target=full` or `target=csur`, every reviewer report must prove that the reviewer read the article body:
+
+- `sections_reviewed`: list every top-level `##` article section reviewed, excluding references or appendices.
+- `section_comments`: map each reviewed section title to a concrete comment about that section's argument, evidence, readability, or style.
+- `quoted_evidence_from_review`: at least five short quotes copied from different parts of `outputs/review.md`; each quote must appear in the article text.
+- `review_trace`: include `article_chars_read` and `reviewed_full_article: true`.
+
+Persona-specific audits are required:
+
+- Domain Expert Reviewer: `paper_mechanism_audits` with at least ten A/B paper checks against the article's mechanism claims.
+- Survey Architect Reviewer: `flow_taxonomy_audit` covering section flow, taxonomy coherence, and synthesis-vs-catalog risk.
+- Evidence/Factuality Reviewer: `claim_citation_audits` with at least ten claim/citation checks against article text and evidence spans.
+- Newcomer/Tutorial Reviewer: `tutorial_audit` covering glossary clarity, running example usefulness, and remaining confusing terms.
+- Style/Publication Reviewer: `style_audit` covering repetition, artifact leakage, table interpretation, and transition quality.
+
+Passing reviews must still name non-blocking weaknesses or explicitly explain why no blocking weakness remains. Reusing the same summary, identical dimension scores, or generic comments across reviewers is not independent expert review and must fail Gate 7.
+
 Score dimensions:
 
 - narrative coherence
