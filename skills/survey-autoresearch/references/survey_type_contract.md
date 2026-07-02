@@ -14,6 +14,10 @@ Required fields:
 - `selected_article_spine`
 - `why_not_exemplar_spine`
 - `figure_first_plan`
+- `science_paradigm_profile`
+- `evidence_norms`
+- `required_evidence_units`
+- `common_confounders`
 - `why_this_type`
 - `why_not_other_types`
 - `article_skeleton`
@@ -40,5 +44,14 @@ Topic-specific defaults:
 - `application-domain`: tasks, data, workflows, methods, deployment, evaluation.
 
 Do not force system-component artifacts onto non-system topics. Do not organize a system-object topic as a task list unless explicitly requested.
+
+Science paradigm profile:
+
+- `science_paradigm_profile` names the community evidence regime, such as `ML/AI systems`, `robotics/embodied-ai`, `biomedicine/clinical`, `materials/chemistry`, `theory/math`, `benchmark/evaluation`, or `social/scientific policy`.
+- `evidence_norms` states what the community accepts as meaningful evidence.
+- `required_evidence_units` lists required proof objects such as benchmark, dataset, theorem, simulation, physical experiment, clinical endpoint, baseline, ablation, uncertainty estimate, OOD split, or statistical test.
+- `common_confounders` lists failure modes that article claims must control or acknowledge.
+
+The profile prevents the skill from using one field's proof standard for another field. For example, a robotics survey normally needs benchmark, baseline, ablation, sim-real or OOD boundaries, and controller/perception confounders; a theory survey needs definitions, lemmas, theorem statements, proof dependencies, and boundary cases.
 
 Every full or CSUR run also writes `state/scenario_definitions.yml`. The definitions follow the primary survey type and secondary lenses rather than forcing a system-component schema onto all topics.

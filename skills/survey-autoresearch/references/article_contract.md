@@ -31,6 +31,8 @@ Article body must:
 - compare scenario-specific definitions where the topic object changes by setting;
 - interpret every table or figure in prose;
 - compare method families rather than list papers;
+- make method sections explain trade-offs, alternatives, conflicts, and scope conditions;
+- make benchmark/evaluation sections provide an evaluation recipe: protocol, metric, baseline, ablation/control, and confounder;
 - calibrate evidence strength in scholarly language;
 - close each major section with design, evaluation, or research implications.
 

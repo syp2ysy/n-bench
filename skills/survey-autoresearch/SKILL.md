@@ -9,7 +9,7 @@ Use this skill when the user asks for a literature review, survey paper, researc
 
 The workflow has one core chain:
 
-`source truth -> paper mechanism understanding -> scenario definitions -> field synthesis -> argument graph -> section evidence re-check -> publication article`
+`source truth -> full-text evidence -> paper mechanism understanding -> scenario definitions -> field synthesis -> argument graph -> section evidence re-check -> publication article`
 
 The final `outputs/review.md` is an article. It must not read like a workflow report, evidence report, appendix, checklist, or state-file dump.
 
@@ -31,7 +31,7 @@ Read `references/runtime_contract.md` before long-running work.
 2. **High-recall discovery**: collect broad candidates in `state/raw_candidates.jsonl`.
 3. **Source verification and citation depth**: write `state/papers.jsonl` and `state/citation_plan.jsonl`.
    If a full survey discovers a public curated list or recent survey whose visible paper count substantially exceeds the retained corpus, the run must enter corpus-expansion mode before final drafting.
-4. **Paper mechanism understanding**: write `state/paper_mechanism_cards.jsonl` for A/B papers; A/B means full-text deep-read, not abstract, metadata, or curated-list notes.
+4. **Paper mechanism understanding**: write `state/full_text_sources.jsonl` and `state/paper_mechanism_cards.jsonl` for A/B papers; A/B means full-text deep-read with auditable source excerpts, not abstract, metadata, or curated-list notes.
 5. **Scenario/domain definitions**: write `state/scenario_definitions.yml`.
 6. **Field synthesis**: write method-family dossiers, benchmark dossiers, related-survey matrix, and `state/claim_evidence_spans.jsonl`.
 7. **Story skeleton**: write `state/argument_graph.yml`.
@@ -56,8 +56,8 @@ Read `references/runtime_contract.md` before long-running work.
 For `target=full` and `target=csur`, completion requires:
 
 1. **Source Identity Gate**: A/B papers are fully verified; C papers meet the target verification rate; unverified papers do not support article claims.
-2. **Paper Understanding Gate**: every A/B paper has full-text deep-read evidence plus motivation, task/problem, benchmark/environment, implementation, experiment, result, limitation, relation-to-prior-work, and overclaim boundaries.
-3. **Claim-Evidence Gate**: every important claim traces to evidence spans and section evidence plans; claim strength does not exceed evidence strength.
+2. **Paper Understanding Gate**: every A/B paper has full-text deep-read evidence, source/excerpt audit, motivation, task/problem, benchmark/environment, implementation, experiment, result, limitation, relation-to-prior-work, and overclaim boundaries.
+3. **Claim-Evidence Gate**: every important claim traces to source-backed evidence spans and section evidence plans; strong claims need quoted/extracted evidence and claim strength does not exceed evidence strength.
 4. **Coverage Gate**: the literature map meets target breadth and records family, benchmark, related-survey, and scenario gaps honestly.
 5. **Argument Graph Gate**: scenario definitions, synthesis dossiers, story skeleton, and section evidence plans jointly support the article.
 6. **Article Quality Gate**: `review.md` is publication prose with no raw artifacts, internal methodology, run metadata, unsupported factual claims, repeated template sections, or un-interpreted tables.

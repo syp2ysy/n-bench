@@ -57,9 +57,30 @@ def _is_metadata_only_span(span: dict) -> bool:
     return any(term in text for term in METADATA_EVIDENCE_TERMS)
 
 
-def validate_claim_evidence(claims: list[dict], mechanism_cards: list[dict], section_plans: list[dict] | None = None) -> dict:
+def _source_refs(full_text_sources: list[dict] | None) -> dict[str, str]:
+    refs: dict[str, str] = {}
+    for source in full_text_sources or []:
+        ref = str(source.get("source_ref") or source.get("id") or "").strip()
+        pid = str(source.get("paper_id") or "").strip()
+        if ref and pid:
+            refs[ref] = pid
+    return refs
+
+
+def _span_has_excerpt(span: dict) -> bool:
+    text = str(span.get("excerpt") or span.get("quoted_excerpt") or "").strip()
+    return len(text) >= 24
+
+
+def validate_claim_evidence(
+    claims: list[dict],
+    mechanism_cards: list[dict],
+    section_plans: list[dict] | None = None,
+    full_text_sources: list[dict] | None = None,
+) -> dict:
     card_ids = {str(card.get("paper_id")) for card in mechanism_cards if card.get("paper_id")}
     cards_by_id = {str(card.get("paper_id")): card for card in mechanism_cards if card.get("paper_id")}
+    source_refs = _source_refs(full_text_sources)
     planned_claims = set()
     for plan in section_plans or []:
         for claim_id in plan.get("must_include_evidence_spans") or []:
@@ -83,19 +104,29 @@ def validate_claim_evidence(claims: list[dict], mechanism_cards: list[dict], sec
         for span in spans if isinstance(spans, list) else []:
             paper_id = str(span.get("paper_id") or "")
             span_strength = str(span.get("strength") or "").lower()
-            if paper_id not in card_ids:
-                claim_errors.append(f"unknown_paper:{paper_id}")
-            elif (
+            is_strong_or_full_text = (
                 claim_type in FULL_TEXT_CLAIM_TYPES
                 or (claim_type not in BACKGROUND_CLAIM_TYPES and STRENGTH.get(claim_strength, 0) >= STRENGTH["shows"])
-            ) and not _is_deep_read_card(cards_by_id.get(paper_id)):
+            )
+            if paper_id not in card_ids:
+                claim_errors.append(f"unknown_paper:{paper_id}")
+            elif is_strong_or_full_text and not _is_deep_read_card(cards_by_id.get(paper_id)):
                 claim_errors.append(f"claim_requires_full_text_deep_read:{paper_id}")
             if not span.get("section_or_page") or not span.get("evidence_summary"):
                 claim_errors.append(f"incomplete_span:{paper_id}")
-            if _is_metadata_only_span(span) and (
-                claim_type in FULL_TEXT_CLAIM_TYPES or STRENGTH.get(claim_strength, 0) >= STRENGTH["shows"]
-            ):
+            if _is_metadata_only_span(span) and is_strong_or_full_text:
                 claim_errors.append(f"metadata_only_span_for_strong_claim:{paper_id}")
+            if is_strong_or_full_text:
+                if not _span_has_excerpt(span):
+                    claim_errors.append(f"strong_claim_missing_excerpt:{paper_id}")
+                source_ref = str(span.get("source_ref") or "").strip()
+                if full_text_sources is not None:
+                    if not source_ref:
+                        claim_errors.append(f"strong_claim_missing_source_ref:{paper_id}")
+                    elif source_ref not in source_refs:
+                        claim_errors.append(f"unknown_source_ref:{source_ref}")
+                    elif source_refs[source_ref] != paper_id:
+                        claim_errors.append(f"source_ref_paper_mismatch:{source_ref}")
             if span_strength not in STRENGTH:
                 claim_errors.append(f"invalid_span_strength:{paper_id}")
             elif claim_strength in STRENGTH and STRENGTH[claim_strength] > STRENGTH[span_strength]:
@@ -117,11 +148,13 @@ def main() -> int:
     parser.add_argument("--claims", required=True, type=Path)
     parser.add_argument("--paper-mechanism-cards", required=True, type=Path)
     parser.add_argument("--section-evidence-plans", type=Path)
+    parser.add_argument("--full-text-sources", type=Path)
     args = parser.parse_args()
     result = validate_claim_evidence(
         read_jsonl(args.claims),
         read_jsonl(args.paper_mechanism_cards),
         read_jsonl(args.section_evidence_plans) if args.section_evidence_plans else None,
+        read_jsonl(args.full_text_sources) if args.full_text_sources else None,
     )
     print(json.dumps(result, indent=2, sort_keys=True, ensure_ascii=False))
     return 0 if result["valid"] else 1

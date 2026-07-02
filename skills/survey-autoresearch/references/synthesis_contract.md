@@ -20,6 +20,7 @@ Benchmark dossiers should explain capability tested, task formulation, input/out
 - central thesis
 - field shift
 - gap in existing surveys
+- paradigm evidence norms
 - story skeleton
 - community taxonomy nodes
 - taxonomy competition
@@ -33,6 +34,8 @@ Benchmark dossiers should explain capability tested, task formulation, input/out
 Sections are not a table of contents; they are an argument dependency chain.
 
 For full or CSUR surveys, the argument graph must show why the final article spine is field-native. It must compare at least two possible taxonomies, such as system-node taxonomy versus Cascaded/Joint WAM taxonomy, and record why the selected spine gives readers a better map of the field.
+
+`paradigm_evidence_norms` should mirror `state/survey_type_plan.yml` and state the proof standard for the field: required evidence units, common confounders, and what strong claims cannot infer. Argument nodes should use these norms when deciding whether a paper supports a mechanism, result, benchmark-property, comparison, or open-problem claim.
 
 Each argument node should include a `section_role`, such as definition, background, taxonomy, data ecosystem, evaluation protocol, diagnostic lens, application scenario, open challenge, or conclusion. The role prevents sections from becoming only evidence buckets.
 

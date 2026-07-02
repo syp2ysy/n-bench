@@ -38,6 +38,39 @@ FORBIDDEN_PATTERNS = [
     r"full node-paper material",
 ]
 
+METHOD_SECTION_HEADING_TERMS = ["method", "taxonomy", "famil", "方法", "分类", "谱系", "路线"]
+TRADEOFF_MARKERS = [
+    r"trade[- ]?off",
+    r"whereas",
+    r"\bwhile\b",
+    r"tension",
+    r"alternative",
+    r"conflict",
+    r"different pipelines",
+    r"相比",
+    r"取舍",
+    r"张力",
+    r"不同路线",
+    r"替代",
+    r"冲突",
+]
+BENCHMARK_SECTION_HEADING_TERMS = ["benchmark", "evaluation", "评测", "基准", "实验"]
+EVALUATION_RECIPE_MARKERS = [
+    "protocol",
+    "metric",
+    "baseline",
+    "ablation",
+    "confounder",
+    "control",
+    "recipe",
+    "协议",
+    "指标",
+    "基线",
+    "消融",
+    "混淆",
+    "对照",
+]
+
 
 def _plain(text: str) -> str:
     text = re.sub(r"```[\s\S]*?```", " ", text)
@@ -115,6 +148,30 @@ def validate_article_quality(review_text: str, article_plan: str = "", argument_
     duplicates = [heading for heading, count in duplicate_headings.items() if count > 1]
     if duplicates:
         errors.append("duplicate_headings")
+    method_sections_without_tradeoff = []
+    benchmark_sections_without_recipe = []
+    for heading, body in sections:
+        heading_lower = heading.lower()
+        body_plain = _plain(body)
+        body_lower = body_plain.lower()
+        if any(term in heading_lower for term in METHOD_SECTION_HEADING_TERMS):
+            if not any(re.search(marker, body_plain, flags=re.IGNORECASE) for marker in TRADEOFF_MARKERS):
+                method_sections_without_tradeoff.append(heading)
+        if any(term in heading_lower for term in BENCHMARK_SECTION_HEADING_TERMS):
+            marker_count = sum(1 for marker in EVALUATION_RECIPE_MARKERS if marker in body_lower)
+            has_recipe_phrase = bool(
+                re.search(
+                    r"minimum evaluation recipe|evaluation recipe|最低.{0,12}(实验|评测)包|最小.{0,12}(实验|评测)",
+                    body_plain,
+                    flags=re.IGNORECASE,
+                )
+            )
+            if marker_count < 4 or not has_recipe_phrase:
+                benchmark_sections_without_recipe.append(heading)
+    if target in {"full", "csur"} and method_sections_without_tradeoff:
+        errors.append("missing_section_tradeoff")
+    if target in {"full", "csur"} and benchmark_sections_without_recipe:
+        errors.append("missing_evaluation_recipe")
     graph_sections = []
     if argument_graph:
         graph_sections = [str(s) for s in argument_graph.get("section_order") or []]
@@ -143,6 +200,8 @@ def validate_article_quality(review_text: str, article_plan: str = "", argument_
         "weak_sections": weak_sections,
         "uninterpreted_tables": uninterpreted_tables,
         "duplicate_headings": duplicates,
+        "method_sections_without_tradeoff": method_sections_without_tradeoff,
+        "benchmark_sections_without_recipe": benchmark_sections_without_recipe,
     }
 
 

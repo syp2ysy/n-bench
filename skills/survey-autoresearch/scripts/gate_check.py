@@ -100,6 +100,7 @@ def evaluate_gates(task_dir: Path, target: str = "short") -> dict:
     papers = read_jsonl(state / "papers.jsonl")
     citation_plan = read_jsonl(state / "citation_plan.jsonl")
     mechanism_cards = read_jsonl(state / "paper_mechanism_cards.jsonl")
+    full_text_sources = read_jsonl(state / "full_text_sources.jsonl")
     claims = read_jsonl(state / "claim_evidence_spans.jsonl")
     section_plans = read_jsonl(state / "section_evidence_plans.jsonl")
     expert_reviews = read_jsonl(state / "expert_review_reports.jsonl")
@@ -113,8 +114,13 @@ def evaluate_gates(task_dir: Path, target: str = "short") -> dict:
     review_text = text_or_empty(outputs / "review.md")
 
     gate_1 = validate_sources(papers, citation_plan, target)
-    gate_2 = validate_paper_understanding(mechanism_cards, citation_plan)
-    gate_3 = validate_claim_evidence(claims, mechanism_cards, section_plans if target != "short" else None)
+    gate_2 = validate_paper_understanding(mechanism_cards, citation_plan, full_text_sources)
+    gate_3 = validate_claim_evidence(
+        claims,
+        mechanism_cards,
+        section_plans if target != "short" else None,
+        full_text_sources=full_text_sources,
+    )
     gate_4 = build_coverage(papers, citation_plan, target)
     dossier_status = synthesis_dossier_status(outputs, target, survey_type)
     scenario_status = validate_scenario_definitions(scenario_text, target)

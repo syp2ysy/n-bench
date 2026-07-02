@@ -74,6 +74,9 @@ FULL_TEXT_SOURCE_TERMS = {
     "publisher_html",
 }
 
+FULL_TEXT_ACCESS_STATUSES = {"accessible", "downloaded", "extracted", "available", "ok"}
+FULL_TEXT_EXTRACTION_STATUSES = {"extracted", "excerpt_captured", "partial_extracted", "parsed"}
+
 METADATA_SOURCE_TERMS = {
     "title",
     "abstract",
@@ -160,6 +163,46 @@ def _has_location_anchor(value) -> bool:
     return any(term in text for term in LOCATION_TERMS)
 
 
+def _source_by_paper(full_text_sources: list[dict] | None) -> dict[str, list[dict]]:
+    result: dict[str, list[dict]] = {}
+    for source in full_text_sources or []:
+        pid = str(source.get("paper_id") or "")
+        if pid:
+            result.setdefault(pid, []).append(source)
+    return result
+
+
+def _source_type_text(source: dict) -> str:
+    return str(source.get("source_kind") or source.get("source_type") or "").lower()
+
+
+def _captured_excerpts(source: dict) -> list[dict]:
+    excerpts = source.get("captured_excerpts") or source.get("excerpts") or []
+    return excerpts if isinstance(excerpts, list) else []
+
+
+def _valid_full_text_source(source: dict) -> bool:
+    source_type = _source_type_text(source)
+    if not source_type or _is_metadata_only_text(source_type):
+        return False
+    if not any(term in source_type for term in FULL_TEXT_SOURCE_TERMS):
+        return False
+    access_status = str(source.get("access_status") or "").lower()
+    if access_status and access_status not in FULL_TEXT_ACCESS_STATUSES:
+        return False
+    extraction_status = str(source.get("extraction_status") or "").lower()
+    if extraction_status and extraction_status not in FULL_TEXT_EXTRACTION_STATUSES:
+        return False
+    excerpts = _captured_excerpts(source)
+    if excerpts:
+        for excerpt in excerpts:
+            if not isinstance(excerpt, dict):
+                continue
+            if _nonempty(excerpt.get("excerpt")) and _has_location_anchor(excerpt.get("section_or_page") or excerpt.get("location")):
+                return True
+    return bool(source.get("local_text_path") or source.get("excerpt_path") or source.get("pdf_path"))
+
+
 def _covered_section_groups(sections_read) -> set[str]:
     text_items = [_text_blob(item).lower() for item in _as_list(sections_read)]
     covered = set()
@@ -195,12 +238,18 @@ def _has_relation_type(value) -> bool:
     return any(term in lowered for term in RELATION_TERMS)
 
 
-def validate_paper_understanding(cards: list[dict], citation_plan: list[dict] | None = None) -> dict:
+def validate_paper_understanding(
+    cards: list[dict],
+    citation_plan: list[dict] | None = None,
+    full_text_sources: list[dict] | None = None,
+) -> dict:
     required_ids = depth_ids(citation_plan or [])
     by_id = {str(card.get("paper_id")): card for card in cards if card.get("paper_id")}
+    sources_by_paper = _source_by_paper(full_text_sources)
     errors: list[str] = []
     invalid_cards: dict[str, list[str]] = {}
     deep_read_ids: set[str] = set()
+    audited_deep_read_ids: set[str] = set()
     metadata_only_a_b_ids: set[str] = set()
     for pid in sorted(required_ids - set(by_id)):
         invalid_cards[pid] = ["missing_mechanism_card"]
@@ -216,6 +265,13 @@ def validate_paper_understanding(cards: list[dict], citation_plan: list[dict] | 
             if not _nonempty(card.get(field)):
                 card_errors.append(f"missing_{field}")
         if is_required_ab:
+            paper_sources = sources_by_paper.get(pid, [])
+            if not paper_sources:
+                card_errors.append("missing_full_text_source_audit")
+            elif not any(_valid_full_text_source(source) for source in paper_sources):
+                card_errors.append("invalid_full_text_source_audit")
+            else:
+                audited_deep_read_ids.add(pid)
             if reading_depth != READING_DEPTH_FULL:
                 card_errors.append("a_b_not_full_text_deep_read")
                 metadata_only_a_b_ids.add(pid)
@@ -282,6 +338,7 @@ def validate_paper_understanding(cards: list[dict], citation_plan: list[dict] | 
         "required_a_b_cards": len(required_ids),
         "a_b_required_count": len(required_ids),
         "a_b_full_text_deep_read_count": len(deep_read_ids & required_ids),
+        "a_b_full_text_source_audited_count": len(audited_deep_read_ids & required_ids),
         "metadata_only_a_b_count": len(metadata_only_a_b_ids & required_ids),
         "paper_understanding_complete": not errors,
         "invalid_cards": invalid_cards,
@@ -292,10 +349,12 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--paper-mechanism-cards", required=True, type=Path)
     parser.add_argument("--citation-plan", type=Path)
+    parser.add_argument("--full-text-sources", type=Path)
     args = parser.parse_args()
     result = validate_paper_understanding(
         read_jsonl(args.paper_mechanism_cards),
         read_jsonl(args.citation_plan) if args.citation_plan else None,
+        read_jsonl(args.full_text_sources) if args.full_text_sources else None,
     )
     print(json.dumps(result, indent=2, sort_keys=True, ensure_ascii=False))
     return 0 if result["valid"] else 1

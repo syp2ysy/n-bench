@@ -7,6 +7,7 @@ Required personas for mature full/CSUR review:
 - Domain Expert Reviewer: paper mechanisms, method claims, benchmark interpretation.
 - Survey Architect Reviewer: central thesis, taxonomy, section order, synthesis quality.
 - Evidence/Factuality Reviewer: citation support, claim strength, source status.
+- Paradigm/Evidence Norm Reviewer may be combined with Domain Expert or Evidence/Factuality: whether the article uses the correct proof standard for the scientific field.
 - Newcomer/Tutorial Reviewer: whether a new reader can understand the field and design choices.
 - Style/Publication Reviewer: publication prose, artifact leakage, repetition, transitions.
 
@@ -24,6 +25,7 @@ Persona-specific audits are required:
 - Domain Expert Reviewer: `paper_mechanism_audits` with at least ten A/B paper checks against the article's mechanism claims.
 - Survey Architect Reviewer: `flow_taxonomy_audit` covering section flow, taxonomy coherence, and synthesis-vs-catalog risk.
 - Evidence/Factuality Reviewer: `claim_citation_audits` with at least ten claim/citation checks against article text and evidence spans.
+- Domain Expert or Evidence/Factuality Reviewer must also comment on `science_paradigm_profile`: whether method, benchmark, theorem, experiment, simulation, clinical, or deployment claims use evidence units accepted by the relevant community.
 - Newcomer/Tutorial Reviewer: `tutorial_audit` covering glossary clarity, running example usefulness, and remaining confusing terms.
 - Style/Publication Reviewer: `style_audit` covering repetition, artifact leakage, table interpretation, and transition quality.
 

@@ -118,6 +118,25 @@ class SurveyAutoResearchRefactorTest(unittest.TestCase):
             )
         return rows
 
+    def full_text_sources(self, count: int = 95) -> list[dict]:
+        return [
+            {
+                "paper_id": f"p{idx:03d}",
+                "source_ref": f"src-p{idx:03d}",
+                "source_url": f"https://arxiv.org/pdf/0000.{idx:05d}",
+                "source_kind": "arxiv_pdf",
+                "access_status": "accessible",
+                "extraction_status": "extracted",
+                "captured_excerpts": [
+                    {
+                        "section_or_page": "Section 4, Table 2",
+                        "excerpt": "The method is compared with a no-memory baseline and improves the diagnostic benchmark.",
+                    }
+                ],
+            }
+            for idx in range(1, count + 1)
+        ]
+
     def claims(self) -> list[dict]:
         return [
             {
@@ -129,7 +148,9 @@ class SurveyAutoResearchRefactorTest(unittest.TestCase):
                 "evidence_spans": [
                     {
                         "paper_id": "p001",
+                        "source_ref": "src-p001",
                         "section_or_page": "Section 4, Table 2",
+                        "excerpt": "The method is compared with a no-memory baseline and improves the diagnostic benchmark.",
                         "evidence_summary": "The paper compares the method with a no-memory baseline.",
                         "supports": "direct",
                         "strength": "shows",
@@ -352,6 +373,11 @@ class SurveyAutoResearchRefactorTest(unittest.TestCase):
             "central_thesis": "Memory should be evaluated as an evidence-to-action interface.",
             "field_shift": "Agents move from short tasks to long-horizon deployment.",
             "gap_in_existing_surveys": "Task-first views split method, benchmark, and evidence reasoning.",
+            "paradigm_evidence_norms": {
+                "science_paradigm_profile": "robotics/embodied-ai",
+                "required_evidence_units": ["benchmark", "baseline", "ablation", "sim_real_or_ood_boundary"],
+                "common_confounders": ["perception", "controller capacity", "simulation bias"],
+            },
             "community_taxonomy_nodes": ["retrieval memory", "structured map memory", "episodic policy memory"],
             "taxonomy_competition": {
                 "community_native_taxonomy": "method-family taxonomy organizes retrieval, mapping, and episodic policy memory.",
@@ -448,6 +474,7 @@ class SurveyAutoResearchRefactorTest(unittest.TestCase):
             "| --- | --- | --- | --- |\n"
             "| Retrieval | writes and reads structured evidence | no-memory comparison | perception confounder |\n\n"
             "The table shows that method labels are insufficient. A reader should compare what evidence is written, how it is retrieved, which baseline is used, and what limitation remains.\n\n"
+            "A minimum evaluation recipe specifies protocol, metric, baseline, ablation, and confounder before the article interprets benchmark success.\n\n"
         )
         body = (section + table) * repeat
         return (
@@ -467,6 +494,7 @@ class SurveyAutoResearchRefactorTest(unittest.TestCase):
         write_jsonl(state / "papers.jsonl", self.papers())
         write_jsonl(state / "citation_plan.jsonl", self.citation_plan())
         write_jsonl(state / "paper_mechanism_cards.jsonl", self.mechanism_cards())
+        write_jsonl(state / "full_text_sources.jsonl", self.full_text_sources())
         write_jsonl(state / "claim_evidence_spans.jsonl", self.claims())
         write_jsonl(state / "expert_review_reports.jsonl", self.expert_reviews())
         write_jsonl(state / "weakness_routes.jsonl", [])
@@ -503,6 +531,19 @@ class SurveyAutoResearchRefactorTest(unittest.TestCase):
             "selected_article_spine: community-native method-family taxonomy\n"
             "why_not_exemplar_spine: The article adapts the exemplar pattern to an evidence-to-action interface topic.\n"
             "figure_first_plan: taxonomy roadmap; method evolution timeline; data ecosystem; evaluation protocol matrix.\n"
+            "science_paradigm_profile: robotics/embodied-ai\n"
+            "evidence_norms:\n"
+            "  - benchmark/baseline/ablation evidence is required for method claims\n"
+            "  - sim-real or OOD boundaries must be stated for deployment claims\n"
+            "required_evidence_units:\n"
+            "  - benchmark\n"
+            "  - baseline\n"
+            "  - ablation\n"
+            "  - sim_real_or_ood_boundary\n"
+            "common_confounders:\n"
+            "  - perception\n"
+            "  - controller capacity\n"
+            "  - simulation bias\n"
             "excluded_templates:\n"
             "  - pure chronological survey\n",
             encoding="utf-8",
@@ -538,17 +579,17 @@ class SurveyAutoResearchRefactorTest(unittest.TestCase):
 
     def test_paper_understanding_requires_scientific_contribution_chain(self):
         shallow = [{"paper_id": "p001", "title": "Paper", "survey_role": "method", "level": "A"}]
-        status = validate_paper_understanding(shallow, [{"paper_id": "p001", "depth": "A"}])
+        status = validate_paper_understanding(shallow, [{"paper_id": "p001", "depth": "A"}], self.full_text_sources(1))
         self.assertFalse(status["valid"])
         self.assertIn("invalid_paper_understanding", status["errors"])
-        status = validate_paper_understanding(self.mechanism_cards(1), [{"paper_id": "p001", "depth": "A"}])
+        status = validate_paper_understanding(self.mechanism_cards(1), [{"paper_id": "p001", "depth": "A"}], self.full_text_sources(1))
         self.assertTrue(status["valid"], status)
 
     def test_paper_understanding_rejects_generic_relation_and_missing_experiment_details(self):
         card = self.mechanism_cards(1)[0]
         card["relation_to_prior_work"] = "This is related to prior work."
         card["experimental_setup"] = {"metrics": ["success"]}
-        status = validate_paper_understanding([card], [{"paper_id": "p001", "depth": "A"}])
+        status = validate_paper_understanding([card], [{"paper_id": "p001", "depth": "A"}], self.full_text_sources(1))
         self.assertFalse(status["valid"])
         self.assertIn("generic_relation_to_prior_work", status["invalid_cards"]["p001"])
         self.assertIn("missing_baselines", status["invalid_cards"]["p001"])
@@ -562,7 +603,7 @@ class SurveyAutoResearchRefactorTest(unittest.TestCase):
         card["sections_read"] = ["title and abstract"]
         card["evidence_span_locations"] = ["curated-list row"]
         card["main_results"][0]["evidence_span"] = "Semantic Scholar metadata says the paper improves a benchmark."
-        status = validate_paper_understanding([card], [{"paper_id": "p001", "depth": "A"}])
+        status = validate_paper_understanding([card], [{"paper_id": "p001", "depth": "A"}], self.full_text_sources(1))
         self.assertFalse(status["valid"])
         self.assertIn("a_b_not_full_text_deep_read", status["invalid_cards"]["p001"])
         self.assertIn("full_text_not_accessed", status["invalid_cards"]["p001"])
@@ -577,19 +618,30 @@ class SurveyAutoResearchRefactorTest(unittest.TestCase):
             "reading_depth": "abstract_metadata_only",
             "evidence_limited": True,
         }
-        status = validate_paper_understanding([card], [{"paper_id": "p001", "depth": "A"}])
+        status = validate_paper_understanding([card], [{"paper_id": "p001", "depth": "A"}], self.full_text_sources(1))
         self.assertFalse(status["valid"])
         self.assertIn("p001", status["invalid_cards"])
-        status = validate_paper_understanding([card], [{"paper_id": "p150", "depth": "C"}])
+        status = validate_paper_understanding([card], [{"paper_id": "p150", "depth": "C"}], [])
         self.assertTrue(status["valid"], status)
+
+    def test_paper_understanding_requires_full_text_source_audit_for_a_b(self):
+        status = validate_paper_understanding(self.mechanism_cards(1), [{"paper_id": "p001", "depth": "A"}], [])
+        self.assertFalse(status["valid"])
+        self.assertIn("missing_full_text_source_audit", status["invalid_cards"]["p001"])
+        source = self.full_text_sources(1)[0]
+        source["captured_excerpts"] = []
+        source["extraction_status"] = "metadata_only"
+        status = validate_paper_understanding(self.mechanism_cards(1), [{"paper_id": "p001", "depth": "A"}], [source])
+        self.assertFalse(status["valid"])
+        self.assertIn("invalid_full_text_source_audit", status["invalid_cards"]["p001"])
 
     def test_claim_evidence_blocks_missing_span_and_overclaim(self):
         too_strong = self.claims()
         too_strong[0]["strength"] = "demonstrates"
-        status = validate_claim_evidence(too_strong, self.mechanism_cards(1))
+        status = validate_claim_evidence(too_strong, self.mechanism_cards(1), full_text_sources=self.full_text_sources(1))
         self.assertFalse(status["valid"])
         self.assertIn("claim_strength_exceeds_evidence:p001", status["invalid_claims"]["c1"])
-        status = validate_claim_evidence(self.claims(), self.mechanism_cards(1))
+        status = validate_claim_evidence(self.claims(), self.mechanism_cards(1), full_text_sources=self.full_text_sources(1))
         self.assertTrue(status["valid"], status)
 
     def test_claim_evidence_rejects_metadata_only_support_for_strong_claims(self):
@@ -599,10 +651,17 @@ class SurveyAutoResearchRefactorTest(unittest.TestCase):
         claim = self.claims()[0]
         claim["evidence_spans"][0]["section_or_page"] = "Semantic Scholar metadata"
         claim["evidence_spans"][0]["evidence_summary"] = "Abstract metadata says the method improves the benchmark."
-        status = validate_claim_evidence([claim], [metadata_card])
+        status = validate_claim_evidence([claim], [metadata_card], full_text_sources=self.full_text_sources(1))
         self.assertFalse(status["valid"])
         self.assertIn("claim_requires_full_text_deep_read:p001", status["invalid_claims"]["c1"])
         self.assertIn("metadata_only_span_for_strong_claim:p001", status["invalid_claims"]["c1"])
+
+    def test_claim_evidence_requires_excerpt_for_strong_claims(self):
+        claim = self.claims()[0]
+        claim["evidence_spans"][0].pop("excerpt")
+        status = validate_claim_evidence([claim], self.mechanism_cards(1), full_text_sources=self.full_text_sources(1))
+        self.assertFalse(status["valid"])
+        self.assertIn("strong_claim_missing_excerpt:p001", status["invalid_claims"]["c1"])
 
     def test_coverage_gate_enforces_full_survey_breadth(self):
         status = build_coverage(self.papers(20, 1), self.citation_plan(a=2, b=4, c=14), "full")
@@ -632,9 +691,28 @@ class SurveyAutoResearchRefactorTest(unittest.TestCase):
             "selected_article_spine": "community-native method-family taxonomy",
             "why_not_exemplar_spine": "The article adapts the exemplar pattern to this evidence-to-action topic.",
             "figure_first_plan": "taxonomy roadmap; method evolution timeline; data ecosystem; evaluation protocol matrix",
+            "science_paradigm_profile": "ML/AI systems",
+            "evidence_norms": ["benchmark/baseline/ablation evidence controls method claims"],
+            "required_evidence_units": ["benchmark", "baseline", "ablation"],
+            "common_confounders": ["data leakage", "scale", "benchmark saturation"],
         }
         status = validate_exemplar_alignment(survey_type_plan, self.argument_graph(), self.article_plan(), target="full")
         self.assertTrue(status["valid"], status)
+
+    def test_exemplar_alignment_requires_science_paradigm_profile(self):
+        survey_type_plan = {
+            "primary_type": "method-family",
+            "exemplar_alignment": ["Field Survey Exemplar"],
+            "community_native_taxonomy": ["retrieval memory", "structured map memory"],
+            "exemplar_section_patterns": ["definition", "taxonomy", "data ecosystem", "evaluation", "open challenges"],
+            "candidate_article_spines": ["community-native method-family taxonomy", "system-node diagnostic lens"],
+            "selected_article_spine": "community-native method-family taxonomy",
+            "why_not_exemplar_spine": "The article adapts the exemplar pattern to this topic.",
+            "figure_first_plan": "taxonomy roadmap; method evolution timeline; data ecosystem; evaluation protocol matrix",
+        }
+        status = validate_exemplar_alignment(survey_type_plan, self.argument_graph(), self.article_plan(), target="full")
+        self.assertFalse(status["valid"])
+        self.assertIn("missing_science_paradigm_profile", status["errors"])
 
     def test_scenario_definitions_require_context_specific_definitions(self):
         status = validate_scenario_definitions({}, target="full")
@@ -704,6 +782,27 @@ class SurveyAutoResearchRefactorTest(unittest.TestCase):
             self.assertFalse(status["valid"], phrase)
             self.assertIn("internal_or_scaffold_language", status["errors"])
 
+    def test_article_quality_requires_tradeoff_and_evaluation_recipe(self):
+        no_tradeoff = self.review_text(30).replace(
+            "because two methods can share a benchmark label while using different pipelines, evaluation baselines, and limitations",
+            "and this paragraph lists several related papers",
+        )
+        status = validate_article_quality(no_tradeoff, self.article_plan(), self.argument_graph(), self.claims(), "full")
+        self.assertFalse(status["valid"])
+        self.assertIn("missing_section_tradeoff", status["errors"])
+        no_recipe = self.review_text(30).replace(
+            "which baseline is used, and what limitation remains",
+            "which paper is cited, and what topic remains",
+        )
+        no_recipe = no_recipe.replace(
+            "A minimum evaluation recipe specifies protocol, metric, baseline, ablation, and confounder before the article interprets benchmark success.",
+            "A citation paragraph lists papers before the article interprets benchmark success.",
+        )
+        no_recipe = no_recipe.replace("evaluation protocol matrix", "citation matrix")
+        status = validate_article_quality(no_recipe, self.article_plan(), self.argument_graph(), self.claims(), "full")
+        self.assertFalse(status["valid"])
+        self.assertIn("missing_evaluation_recipe", status["errors"])
+
     def test_expert_review_gate_requires_independent_high_scoring_reviews(self):
         status = validate_expert_reviews(self.expert_reviews()[:2], target="full")
         self.assertFalse(status["valid"])
@@ -767,6 +866,17 @@ class SurveyAutoResearchRefactorTest(unittest.TestCase):
                 "selected_article_spine: community-native method-family taxonomy\n"
                 "why_not_exemplar_spine: The article adapts the exemplar pattern to uncertainty-specific method families.\n"
                 "figure_first_plan: taxonomy roadmap; method evolution timeline; data ecosystem; evaluation protocol matrix.\n"
+                "science_paradigm_profile: ML/AI systems\n"
+                "evidence_norms:\n"
+                "  - calibration and benchmark evidence must be separated from application claims\n"
+                "required_evidence_units:\n"
+                "  - benchmark\n"
+                "  - metric\n"
+                "  - baseline\n"
+                "common_confounders:\n"
+                "  - dataset shift\n"
+                "  - prompt sensitivity\n"
+                "  - calibration target mismatch\n"
                 "excluded_templates:\n"
                 "  - system-component-only survey\n",
                 encoding="utf-8",
@@ -790,6 +900,15 @@ class SurveyAutoResearchRefactorTest(unittest.TestCase):
             gates = evaluate_gates(task_dir, "full")
             self.assertFalse(gates["all_blocking_gates_passed"])
             self.assertFalse(gates["gate_7_expert_review"]["passed"])
+
+    def test_gate_check_blocks_missing_full_text_sources(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            task_dir = initialize_task(Path(tmp), "embodied memory system", target="full")
+            self.populate_full_task(task_dir)
+            (task_dir / "state/full_text_sources.jsonl").write_text("", encoding="utf-8")
+            gates = evaluate_gates(task_dir, "full")
+            self.assertFalse(gates["gate_2_paper_understanding"]["passed"])
+            self.assertFalse(gates["all_blocking_gates_passed"])
 
     def test_gate_check_blocks_missing_scenario_definitions_and_section_plans(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -826,6 +945,7 @@ class SurveyAutoResearchRefactorTest(unittest.TestCase):
             self.assertTrue((task_dir / "state/scenario_definitions.yml").exists())
             self.assertTrue((task_dir / "state/section_evidence_plans.jsonl").exists())
             self.assertTrue((task_dir / "state/paper_mechanism_cards.jsonl").exists())
+            self.assertTrue((task_dir / "state/full_text_sources.jsonl").exists())
             self.assertFalse((task_dir / "state/paper_cards.jsonl").exists())
             gates = json.loads((task_dir / "state/completion_gates.json").read_text())
             self.assertIn("gate_6_article_quality", gates)

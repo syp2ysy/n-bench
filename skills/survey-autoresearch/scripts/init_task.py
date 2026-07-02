@@ -16,6 +16,7 @@ STATE_FILES = [
     "lqs_scores.jsonl",
     "citation_plan.jsonl",
     "paper_mechanism_cards.jsonl",
+    "full_text_sources.jsonl",
     "claim_evidence_spans.jsonl",
     "section_evidence_plans.jsonl",
     "expert_review_reports.jsonl",

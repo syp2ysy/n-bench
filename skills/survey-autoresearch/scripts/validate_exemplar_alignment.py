@@ -24,7 +24,15 @@ SURVEY_TYPE_REQUIRED = [
     "figure_first_plan",
 ]
 
+SCIENCE_PARADIGM_REQUIRED = [
+    "science_paradigm_profile",
+    "evidence_norms",
+    "required_evidence_units",
+    "common_confounders",
+]
+
 ARGUMENT_GRAPH_REQUIRED = [
+    "paradigm_evidence_norms",
     "community_taxonomy_nodes",
     "taxonomy_competition",
     "paper_relation_graph",
@@ -93,6 +101,10 @@ def validate_exemplar_alignment(
     if missing_survey_type_fields:
         errors.append("missing_exemplar_alignment_fields")
 
+    missing_science_fields = [field for field in SCIENCE_PARADIGM_REQUIRED if not _nonempty(survey.get(field))]
+    if missing_science_fields:
+        errors.append("missing_science_paradigm_profile")
+
     exemplar_alignment = survey.get("exemplar_alignment")
     if _list_len(exemplar_alignment) < 1:
         errors.append("too_few_exemplars")
@@ -107,6 +119,13 @@ def validate_exemplar_alignment(
     primary_type = str(survey.get("primary_type") or survey.get("primary_survey_type") or "").lower()
     if primary_type and selected_spine and selected_spine == primary_type:
         errors.append("selected_spine_equals_abstract_primary_type")
+    paradigm_profile = str(survey.get("science_paradigm_profile") or "").strip().lower()
+    if paradigm_profile and primary_type and paradigm_profile == primary_type:
+        errors.append("science_paradigm_equals_abstract_primary_type")
+    if _nonempty(survey.get("required_evidence_units")) and _list_len(survey.get("required_evidence_units")) < 2:
+        errors.append("required_evidence_units_too_thin")
+    if _nonempty(survey.get("common_confounders")) and _list_len(survey.get("common_confounders")) < 2:
+        errors.append("common_confounders_too_thin")
 
     figure_text = _figure_plan_text(survey.get("figure_first_plan"))
     missing_figure_items = [
@@ -148,6 +167,7 @@ def validate_exemplar_alignment(
         "required": True,
         "errors": sorted(set(errors)),
         "missing_survey_type_fields": missing_survey_type_fields,
+        "missing_science_paradigm_fields": missing_science_fields,
         "missing_argument_graph_fields": missing_argument_graph_fields,
         "invalid_argument_nodes": invalid_argument_nodes,
         "missing_article_plan_items": missing_article_plan_items,

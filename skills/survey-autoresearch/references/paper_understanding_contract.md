@@ -1,6 +1,6 @@
 # Paper Understanding Contract
 
-`state/paper_mechanism_cards.jsonl` is the single deep-reading source of truth.
+`state/paper_mechanism_cards.jsonl` is the single deep-reading interpretation source. `state/full_text_sources.jsonl` is the full-text audit source that each A/B card must bind to.
 
 Reading depth is explicit:
 
@@ -14,6 +14,7 @@ Every A/B paper needs:
 - `reading_depth: full_text_deep_read`
 - `full_text_accessed: true`
 - `source_type` naming a full-text source such as PDF, publisher HTML, arXiv PDF, ACM DL PDF, or OpenReview PDF
+- a matching `state/full_text_sources.jsonl` record with accessible full text, extraction status, source reference, and captured excerpt(s)
 - `sections_read` covering at least intro/problem, method/system, experiment/evaluation, and results/limitations
 - `evidence_span_locations` with concrete section, page, figure, or table locators
 - `deep_read_notes` summarizing what was learned from the full text
@@ -36,6 +37,8 @@ The card explains a scientific contribution, not a survey bucket. It must answer
 A/B papers without full-text access, concrete results, baselines, ablations, limitations, or benchmark/environment details must be downgraded. They may be retained as C/background only when marked `evidence_limited=true`.
 
 Evidence spans for A/B papers must come from the full text. Title-only, abstract-only, Semantic Scholar metadata, Crossref/DBLP metadata, curated-list rows, GitHub list entries, or visible survey-table rows are not deep-reading evidence.
+
+The paper mechanism card is not enough by itself. For A/B papers, the run must also record where the full text was accessed and what section/page/figure/table evidence was extracted. If `full_text_sources.jsonl` is missing, metadata-only, or lacks captured excerpts, the card must fail even if all mechanism fields are filled.
 
 `relation_to_prior_work` must name the relationship type, such as extends, replaces, contradicts, benchmarks, reframes, surveys, predecessor, successor, alternative, or conflict. Generic prose such as "related to prior work" is not enough.
 
