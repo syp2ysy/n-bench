@@ -36,18 +36,18 @@
 <body>
   <header>
     <h1>World Action Model 领域综述</h1>
-    <p class="lede">新版 skill 更新版：加入 full-text source audit、source_ref/excerpt 证据链、science paradigm profile，以及 protocol/metric/baseline/ablation/confounder 评测 recipe。</p>
+    <p class="lede">以 Cascaded WAM 与 Joint WAM 为主轴，连接动作-未来建模、数据生态、评测协议与机器人部署约束。</p>
     <section class="roadmap" aria-label="Taxonomy roadmap">
-      <div class="node"><strong>Evidence Norms</strong><small>Full-text A/B source_ref + excerpt for strong claims.</small></div>
+      <div class="node"><strong>Field Roots</strong><small>World models, visual foresight, VLA policies, and physical AI video priors.</small></div>
       <div class="node cascaded"><strong>Cascaded WAM</strong><small>Future representation first, then planning, policy, or training signal.</small></div>
       <div class="node joint"><strong>Joint WAM</strong><small>Action and world representation share token streams, flow paths, or latent alignment.</small></div>
-      <div class="node eval"><strong>Evaluation Recipe</strong><small>Protocol, metric, baseline, ablation/control, confounder.</small></div>
+      <div class="node eval"><strong>Evaluation</strong><small>Protocol, metric, baseline, ablation/control, and confounder.</small></div>
     </section>
     <div class="metrics">
-      <span class="metric">170 references</span>
-      <span class="metric">95 full-text A/B audited</span>
-      <span class="metric">Cascaded / Joint spine</span>
-      <span class="metric">Robotics evidence norms</span>
+      <span class="metric">Definition and formalism</span>
+      <span class="metric">Architecture taxonomy</span>
+      <span class="metric">Data ecosystem</span>
+      <span class="metric">Evaluation recipe</span>
     </div>
   </header>
   <main>
@@ -60,7 +60,7 @@
 <a href='#4--architecture-taxonomy--cascaded-wam-and'>4. Architecture taxonomy: Cascaded WAM and Joint WAM</a>
 <a href='#5--training-data-ecosystem'>5. Training data ecosystem</a>
 <a href='#6--evaluation-protocols'>6. Evaluation protocols</a>
-<a href='#7--system-interfaces-as-cross-cutting-diagnostic'>7. System interfaces as cross-cutting diagnostic lens</a>
+<a href='#7--system-interfaces--diagnostic-lens'>7. System interfaces: diagnostic lens</a>
 <a href='#8--applications-and-scenarios'>8. Applications and scenarios</a>
 <a href='#9--open-challenges'>9. Open challenges</a>
 <a href='#10--conclusion'>10. Conclusion</a>
@@ -74,7 +74,7 @@
 <p>机器人基础模型的第一波扩展主要发生在 reaction side：给定当前图像、语言指令和少量历史，模型输出低层动作、离散 action token 或 flow action。RT-1、RT-2、Open X-Embodiment、Octo、OpenVLA、pi0 和 FAST 这条线把网络规模、跨机器人数据、语言监督与动作 tokenization 带进了真实机器人控制 [p016] [p019] [p021]。它的优势是端到端，部署路径清晰；限制是模型内部不一定显式表达“动作之后世界会变成什么”。当任务需要接触后物体状态、遮挡后的持久性、长程子目标、可逆与不可逆操作、以及失败前的预演时，纯反应式策略容易把未来压缩成一个动作分布，而不是可检查、可修正的中间对象。</p>
 <p>world model 传统提供了另一条路线。World Models、PlaNet、Dreamer、DreamerV3 与 TD-MPC 类方法把 latent dynamics、reward/value 或 imagined rollout 放在控制中心 [p001] [p003]。Deep Visual Foresight 则更早展示了 action-conditioned video prediction 如何服务 robot motion planning [p008]。这些方法的共同点是：未来不是隐含在 action logits 里的副产物，而是策略可以查询、采样、比较或训练的对象。问题在于，经典 world model 多半面向强化学习或特定连续控制，和大规模 VLA 的语言、开放类别视觉、跨 embodiment 数据并未自然合流。</p>
 <p>WAM 的出现正是这个裂缝的结果。它试图让 action model 不只是“当前观测到动作”的映射，也让 world model 不只是“无动作视频”或“控制用 latent dynamics”。Unified Video Action Model 直接把 video 和 action 放在统一模型中处理，WorldVLA 以 autoregressive action-world modeling 方式把动作和世界 token 串接起来，Fast-WAM 反过来追问 test-time future imagination 是否总是必要，GigaWorld-Policy 和 MotuBrain 则把效率、训练规模和机器人控制接口推到更靠近部署的位置 [p022] [p023] [p026] [p027] [p028]。这些工作共享一个领域问题：模型如何在观察、语言、动作和可预测未来之间建立可训练、可评测、可部署的接口。</p>
-<p>因此，本综述不再把 WAM 拆成主目录中的“七个系统节点”。那种 system-node 视角有助于做接口审计，但它不是领域原生的文章 spine。更合适的主线是先定义 WAM，再回到 world model、VLA、video generation 和 action model 背景，随后以 Cascaded WAM 与 Joint WAM 组织 architecture taxonomy，再单独讨论 training data ecosystem 与 evaluation protocols。系统接口在第 7 节作为 cross-cutting diagnostic lens 返回，用来解释同一架构家族内部为何会出现不同表示、动作接口、记忆和 uncertainty 设计。由此，读者先得到一张领域地图，再得到可用于读论文和做系统设计的诊断工具。</p>
+<p>因此，本文先给出 WAM 定义，再回到 world model、VLA、video generation 和 action model 背景；随后以 Cascaded WAM 与 Joint WAM 组织 architecture taxonomy，并单独讨论 training data ecosystem 与 evaluation protocols。系统接口在第 7 节作为跨章节诊断视角出现，用来解释同一架构家族内部为何会出现不同表示、动作接口、记忆和 uncertainty 设计。由此，读者先得到一张领域地图，再得到可用于读论文和做系统设计的诊断工具。</p>
 <h2 id='2--definition-and-formalism--wam-vla'>2. Definition and formalism: WAM, VLA, world model, ACWM, video policy</h2>
 <p>一个工作性的定义是：WAM 学习从历史观测、语言或任务条件、候选动作或动作历史到未来世界表示与动作决策之间的联合关系。形式上，可以把输入写成 $h_t=(o_{1:t}, l, a_{1:t-1})$，模型学习 $p(z_{t+1:t+H}, a_{t:t+H} | h_t)$、$p(z_{t+1:t+H} | h_t, a_{t:t+H})$，或一个可用于策略训练的 latent consistency objective。这里的 $z$ 可以是像素视频、latent embedding、object-centric state、joint token stream 或可供 controller 使用的 imagined feature。关键不在于一定输出视频，而在于 action 与 future representation 同时进入模型的学习或推理闭环。</p>
 <p>这个定义把 WAM 和几个相邻概念区分开。VLA 模型通常学习 $p(a_t | o_t, l, h_t)$，也可以有 action chunking、flow matching 或 tokenization，但 future state 不一定是显式训练目标 [p019] [p021]。classic world model 学习 dynamics，可用于 planning 或 imagination，但未必接入大规模 language-conditioned robot policy，也未必把 action-world alignment 做成统一序列 [p001] [p003]。Action-conditioned world model，或 ACWM，更强调给定 action 后预测未来视觉或物理交互；WAM 则把这种预测和 action synthesis、policy utility、training data scaling 合并到一个机器人基础模型问题中 [p038]。Video policy 可能直接从视频表示中产生动作，但如果未来生成只作为预训练素材而不进入动作-未来一致性约束，它仍未必构成严格意义上的 WAM。</p>
@@ -144,13 +144,13 @@
 <p>部署评测同样不可省略。真实机器人系统关心的是控制频率、失败恢复、在线 memory、动作安全边界和人类监督成本。一个需要长时间视频 rollout 的模型可能适合离线计划或高层 deliberation，却不适合低层闭环控制；一个 distilled WAM policy 可能适合快速动作，却不容易解释失败原因。因此，evaluation chapter 必须把 latency 与 interpretability 放在同一个讨论框架里，而不是把它们当作工程细节。</p>
 <p>从设计指导看，评测结果应回流到 architecture choice。如果失败主要来自 contact physics，优先修复 action-conditioned physical representation，而不是扩大语言模型；如果失败主要来自 long-horizon subgoal drift，优先修复 future abstraction、memory 和 controller interface；如果失败主要来自动作不可执行，优先修复 action tokenization、trajectory parameterization 或 low-level controller；如果失败主要来自延迟，优先考虑 training-only WAM、distillation 或短 horizon latent future。这样的 evaluation-to-design loop 是 WAM 和普通视频生成评测的区别：评测不只是排名，而是告诉系统应该在哪个接口上改。</p>
 <p>因此，一个成熟 WAM benchmark suite 应同时保留小型诊断任务和真实任务。小型诊断任务负责隔离物体持久性、接触、遮挡、动作可行性和 uncertainty；真实任务负责检查这些能力是否转化为 policy utility。只有两者结合，才能避免 benchmark 过窄或过宽。过窄的 benchmark 会奖励特定物理 probe，过宽的 benchmark 又会把 WAM 能力和 perception、language prior、controller strength 混在一起。protocol matrix 的目的就是在两者之间建立可解释的桥。</p>
-<h2 id='7--system-interfaces-as-cross-cutting-diagnostic'>7. System interfaces as cross-cutting diagnostic lens</h2>
+<h2 id='7--system-interfaces--diagnostic-lens'>7. System interfaces: diagnostic lens</h2>
 <p>系统接口仍然重要，只是不应作为文章主目录。把它放在 Cascaded/Joint taxonomy 之后，反而更有解释力。第一类接口是 representation：未来以像素、latent、object state、token stream 还是 memory slot 表达。pixel future 适合 human inspection，latent future 适合低延迟，object-addressable representation 适合 manipulation 中的持久物体关系，token stream 适合与 VLA scaling 合并 [p030] [p031] [p023]。</p>
 <p>第二类接口是 dynamics/update：模型如何把 action 后的世界变化写入未来表示。classic latent dynamics、action-conditioned video prediction、JEPA-style predictive representation、diffusion/flow denoising 和 autoregressive token update 都是不同答案 [p003] [p008] [p012] [p020] [p023]。这个接口决定模型擅长短期接触、长期一致性还是高层语义变化。</p>
 <p>第三类接口是 action decoding：动作是连续控制、离散 token、chunk、skill、language-like command 还是 flow trajectory。FAST、Diffusion Policy、pi0 与 WorldVLA 分别显示 action representation 对 scaling、multimodality 和 joint modeling 的影响 [p020] [p021] [p019] [p023]。第四类接口是 controller interface：WAM 输出被 planner、policy、critic、MPC、action decoder 或 training objective 如何使用。Cascaded WAM 最容易在这里暴露误差传播；Joint WAM 最容易在这里暴露 token budget 与 latency。</p>
 <p>第五类接口是 memory/retrieval。Mem-World 和 object-addressable WAM 把长期物体状态、可检索历史或对象地址放进 action-world modeling，回应了 manipulation 中“物体被遮挡后仍然存在、被移动后状态改变”的问题 [p034] [p030]。第六类接口是 evaluation/uncertainty：模型是否报告未来不确定性，是否能区分多种可能结果，是否把不确定性传给 controller 或 evaluator。WorldArena、SC3-Eval 和 ACWM-Phys 表达了从 perception utility、self-consistency 到 physical interaction 的不同评测压力 [p037] [p036] [p038]。</p>
 <p>这个 lens 的价值在于诊断，而不是取代 taxonomy。比如，WorldVLA 与 Unified Video Action Model 都属于 Joint WAM，但它们在 token stream、action interface 和 evaluation protocol 上的取舍不同；Fast-WAM 与 LaWAM 都在降低或重塑 rollout 负担，但一个突出 test-time imagination 问题，一个突出 latent dynamics-aware policy；OA-WAM 与 Mem-World 都强调持久对象和记忆，但一个偏 object addressing，一个偏 memory-augmented action-conditioned world model。系统接口把这些差异说清楚，Cascaded/Joint taxonomy 则告诉读者这些差异处在什么架构家族中。</p>
-<p>因此，system-interface lens 更像一套诊断问卷。读一篇 WAM 论文时，先问它属于 Cascaded 还是 Joint，再问它的 future representation 是像素、latent、对象还是 token；它的 action interface 是连续控制、chunk、token、flow 还是 skill；它的 controller 如何消费 future；它是否有 memory；它如何表达 uncertainty；它的评测是否覆盖相应接口。这个顺序能避免目录被组件拆散，也能保留系统级分析的精度。</p>
+<p>因此，系统接口视角 更像一套诊断问卷。读一篇 WAM 论文时，先问它属于 Cascaded 还是 Joint，再问它的 future representation 是像素、latent、对象还是 token；它的 action interface 是连续控制、chunk、token、flow 还是 skill；它的 controller 如何消费 future；它是否有 memory；它如何表达 uncertainty；它的评测是否覆盖相应接口。这个顺序能避免目录被组件拆散，也能保留系统级分析的精度。</p>
 <h2 id='8--applications-and-scenarios'>8. Applications and scenarios</h2>
 <p>WAM 最直接的应用是机器人 manipulation。抓取、推、拉、开关、倒液体、整理、双臂协作等任务都依赖 action 后物体状态的预测。OA-WAM、MotuBrain、Mem-World 与 ACWM-Phys 体现了这个场景对 object persistence、contact dynamics、action feasibility 和 failure recovery 的需求 [p030] [p028] [p034] [p038]。在这里，WAM 的收益往往来自对“动作后世界”的显式约束，而不是单纯更大的视觉语言模型。</p>
 <p>第二类场景是 long-horizon language-conditioned policy。CALVIN 和 LIBERO 这样的任务强调多步指令、知识迁移、环境状态和长期成功 [p040] [p041]。WAM 在这里可以承担三个角色：为子目标选择提供 imagined future，为训练阶段提供 dynamics-aware supervision，为失败恢复提供可检查的 state transition。若 WAM 只提升短期动作质量，却不能改善 long-horizon consistency，那么它对这类场景的贡献有限。</p>
@@ -167,14 +167,14 @@
 <p>第五个挑战是 uncertainty and branching futures。真实世界中同一动作可能产生多种未来，尤其在接触、滑动、遮挡和人机交互场景中。WAM 若只输出单一路径，controller 会过度相信一个可能错误的未来。diffusion、ensemble、latent stochasticity 和 uncertainty-aware evaluator 都可能缓解问题，但关键是把 uncertainty 传给 action selection，而不是只作为生成多样性的附带结果。</p>
 <p>第六个挑战是 paper-to-paper synthesis。当前 WAM 论文发展很快，容易形成“每篇都是新系统”的景象。更有价值的问题是：哪篇工作继承了 visual foresight 的显式未来，哪篇把 VLA action tokenization 推入 joint world-action stream，哪篇把 test-time imagination 替换为 training-time constraint，哪篇把 object memory 或 benchmark utility 补上。综述和 benchmark 都应鼓励这种关系图，而不是只给方法命名。</p>
 <p>第七个挑战是 standard reporting。WAM 论文应更一致地报告架构家族、future representation、动作接口、数据来源、训练目标、是否 test-time rollout、评测层级、延迟和 failure cases。当前很多工作各自强调亮点，导致读者难以判断两个系统到底差在 architecture、data、action representation 还是 evaluator。一个轻量但统一的 reporting checklist，会比单纯增加 benchmark 数量更能推动可累积比较。</p>
-<p>因此，开放问题不只是“模型还不够强”，而是社区还缺少一套把方法、数据、评测和部署连接起来的共同语言。Cascaded/Joint taxonomy 可以提供第一层语言，system-interface lens 可以提供第二层诊断，protocol matrix 可以提供第三层证据约束。三者合在一起，才能让 WAM 从快速命名阶段进入稳定比较阶段。</p>
+<p>因此，开放问题不只是“模型还不够强”，而是社区还缺少一套把方法、数据、评测和部署连接起来的共同语言。Cascaded/Joint taxonomy 可以提供第一层语言，系统接口视角 可以提供第二层诊断，protocol matrix 可以提供第三层证据约束。三者合在一起，才能让 WAM 从快速命名阶段进入稳定比较阶段。</p>
 <h2 id='10--conclusion'>10. Conclusion</h2>
-<p>WAM 的成熟综述应先像领域地图，再像系统审计。本文采用 Cascaded WAM 与 Joint WAM 作为 article spine，是因为这正对应社区中最原生的架构分歧：先生成或对齐未来再行动，还是把动作与世界放进统一建模过程。system-object 的七类接口没有被丢弃，而是被放到 taxonomy 之后，用于诊断每个架构家族的 representation、dynamics、action decoding、controller、memory 和 evaluation 设计。</p>
+<p>WAM 的成熟综述应先像领域地图，再像系统审计。本文采用 Cascaded WAM 与 Joint WAM 作为主线，是因为这正对应社区中最原生的架构分歧：先生成或对齐未来再行动，还是把动作与世界放进统一建模过程。system-object 的七类接口被放到 taxonomy 之后，用于诊断每个架构家族的 representation、dynamics、action decoding、controller、memory 和 evaluation 设计。</p>
 <p>这个重构带来的主要收益有三点。第一，WAM 与 VLA、world model、ACWM 和 video policy 的边界更清楚，避免把所有相邻工作都纳入同一概念。第二，数据生态和评测协议成为独立章节，使读者能判断一篇论文的能力来自 robot logs、human video、simulation 还是 world foundation pretraining，也能判断它的结论成立于 visual fidelity、physical commonsense、action plausibility、policy utility 还是 deployment cost。第三，paper-to-paper relation 更清晰：Deep Visual Foresight 与 latent imagination 解释 Cascaded roots，Unified Video Action Model 与 WorldVLA 解释 Joint turn，Fast-WAM 解释 training-time 与 inference-time imagination 的分离，OA-WAM 与 Mem-World 解释 object/memory pressure，WorldArena、SC3-Eval 和 ACWM-Phys 解释评测正在从视频质量走向 embodied utility。</p>
-<p>未来的 WAM 研究如果要从概念热度走向可累积科学，需要同时报告架构位置、数据来源、接口设计、评测层级和部署成本。只有这样，WAM 才能成为连接世界理解与机器人行动的稳定模型族，而不是一个随论文命名漂移的宽泛标签。因此，一个高质量 WAM 综述也必须服务这个目标：用领域原生 taxonomy 帮读者定位方法，用证据约束强结论，用 cross-cutting lens 指出下一步系统设计和评测修复的方向。</p>
+<p>未来的 WAM 研究如果要从概念热度走向可累积科学，需要同时报告架构位置、数据来源、接口设计、评测层级和部署成本。只有这样，WAM 才能成为连接世界理解与机器人行动的稳定模型族，而不是一个随论文命名漂移的宽泛标签。因此，一个高质量 WAM 综述也必须服务这个目标：用领域原生 taxonomy 帮读者定位方法，用证据约束强结论，用系统接口诊断指出下一步系统设计和评测修复的方向。</p>
 <p>最后，WAM 综述的质量还取决于它能否给未来论文提供写作模板。一篇新论文若提出 Cascaded WAM，应说明 future representation 的形式、rollout 是否在线、controller 如何读取未来、错误如何传播、与 no-future policy 的差别在哪里；若提出 Joint WAM，应说明 token 或 latent 共享机制、动作频率、context budget、world/action ablation 和 latency；若提出数据或 benchmark，应说明它测的是哪个 capability layer，不能支持哪些结论。这样的模板把综述从“总结已有论文”推进到“规范下一批论文如何可比较地写作和评测”。这也是本文从 system-node 主目录转向 community-native taxonomy 的根本原因。</p>
-<p>在这个证据标准下，WAM 的论文关系也要重新读取：一篇工作若只改进视觉预测，只能支持 world-prior 或 physical-consistency 层面的结论；若同时提供 no-future baseline、action ablation 和 policy utility，它才更接近 WAM 机制贡献；若报告低延迟部署，则还需要说明 online rollout、distillation 或 training-only objective 如何改变控制接口。这个 science paradigm profile 把机器人和 ML systems 的证据规范合并起来，使 taxonomy 不只是概念地图，也成为判断 claim strength 的工具。</p>
-<p>因此，本文最终给出的不是一个替代所有视角的单一框架，而是一个优先级顺序：先用社区原生 taxonomy 建立地图，再用数据生态解释能力来源，再用评测矩阵限定结论，最后用系统接口 lens 做诊断。这个顺序能让综述既像领域综述，也保留证据约束。</p>
+<p>在这个证据标准下，WAM 的论文关系也要重新读取：一篇工作若只改进视觉预测，只能支持 world-prior 或 physical-consistency 层面的结论；若同时提供 no-future baseline、action ablation 和 policy utility，它才更接近 WAM 机制贡献；若报告低延迟部署，则还需要说明 online rollout、distillation 或 training-only objective 如何改变控制接口。这一证据规范把机器人实验与 ML systems 报告标准合并起来，使 taxonomy 不只是概念地图，也成为判断 claim strength 的工具。</p>
+<p>因此，本文最终给出的不是一个替代所有视角的单一框架，而是一个优先级顺序：先用社区原生 taxonomy 建立地图，再用数据生态解释能力来源，再用评测矩阵限定结论，最后用系统接口视角做诊断。这个顺序能让综述既像领域综述，也保留证据约束。</p>
 <p>这种写法也给读者一个 practical reading protocol：遇到新 WAM 论文时，先定位 Cascaded 或 Joint，再检查数据来源和评测层级，最后追问系统接口是否支持论文声称的能力。若三步不能对齐，该论文的结论就应被收窄。</p>
       <section class="refs">
         <h2>References</h2>
