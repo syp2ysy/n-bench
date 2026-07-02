@@ -4,6 +4,8 @@ Synthesis turns verified papers into comparison structures.
 
 Required synthesis outputs:
 
+- `state/paper_contribution_statements.jsonl`
+- `outputs/contribution_tree.yml`
 - `state/scenario_definitions.yml`
 - `outputs/method_family_dossiers/`
 - `outputs/benchmark_dossiers/`
@@ -21,6 +23,7 @@ Benchmark dossiers should explain capability tested, task formulation, input/out
 - field shift
 - gap in existing surveys
 - paradigm evidence norms
+- contribution tree reference and candidate spines derived from the contribution tree
 - story skeleton
 - community taxonomy nodes
 - taxonomy competition
@@ -32,6 +35,13 @@ Benchmark dossiers should explain capability tested, task formulation, input/out
 - take-home findings
 
 Sections are not a table of contents; they are an argument dependency chain.
+
+Contribution abstraction:
+
+- `state/paper_contribution_statements.jsonl` records one standard contribution sentence per A/B paper.
+- Each statement must include problem, method, benchmark or task, result, limitation, evidence strength, and source reference.
+- `outputs/contribution_tree.yml` clusters those statements into reader-facing branches with motivation, representative papers, core tradeoff, evidence standard, and failure risks.
+- The contribution tree is a spine generator. It should propose candidate article spines and feed `state/argument_graph.yml`; it is not a raw appendix table.
 
 For full or CSUR surveys, the argument graph must show why the final article spine is field-native. It must compare at least two possible taxonomies, such as system-node taxonomy versus Cascaded/Joint WAM taxonomy, and record why the selected spine gives readers a better map of the field.
 

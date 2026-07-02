@@ -2,6 +2,8 @@
 
 `state/expert_review_reports.jsonl` records independent reviewer judgments after Gate 1-6 pass.
 
+`state/expert_review_invocations.jsonl` records how those judgments were produced. Reports without invocation evidence are not sufficient for full/CSUR completion.
+
 Required personas for mature full/CSUR review:
 
 - Domain Expert Reviewer: paper mechanisms, method claims, benchmark interpretation.
@@ -28,6 +30,14 @@ Persona-specific audits are required:
 - Domain Expert or Evidence/Factuality Reviewer must also comment on `science_paradigm_profile`: whether method, benchmark, theorem, experiment, simulation, clinical, or deployment claims use evidence units accepted by the relevant community.
 - Newcomer/Tutorial Reviewer: `tutorial_audit` covering glossary clarity, running example usefulness, and remaining confusing terms.
 - Style/Publication Reviewer: `style_audit` covering repetition, artifact leakage, table interpretation, and transition quality.
+
+Invocation evidence is required:
+
+- `fresh_context: true`
+- inputs include the publication article, and may include appendix plus selected evidence artifacts;
+- inputs must not include previous reviewer reports;
+- `forbidden_inputs` must explicitly name previous reviewer reports;
+- output target must be recorded.
 
 Passing reviews must still name non-blocking weaknesses or explicitly explain why no blocking weakness remains. Reusing the same summary, identical dimension scores, or generic comments across reviewers is not independent expert review and must fail Gate 7.
 
@@ -62,3 +72,5 @@ Weakness routes:
 If median score is below 8.0, do not only polish prose. Repair paper understanding, synthesis dossiers, argument graph, or section evidence plans first.
 
 If two consecutive expert-review rounds improve by less than 0.2 while still below threshold, mark the run quality-limited in `state/review_iteration_status.json` and report the blocker honestly.
+
+Major weakness closure is required. `state/repair_actions.jsonl` must record weakness id, route, repair action, changed artifacts, evidence, and status. `state/regression_checks.jsonl` must record a passing verification for each resolved major weakness. A high median score does not pass Gate 7 if a major weakness is unclosed or recurrent.

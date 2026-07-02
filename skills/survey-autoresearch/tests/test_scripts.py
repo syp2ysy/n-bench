@@ -18,6 +18,7 @@ from scripts.validate_exemplar_alignment import validate_exemplar_alignment
 from scripts.validate_synthesis_dossiers import validate_synthesis_dossiers
 from scripts.verify_sources import validate_sources
 from scripts.expert_review_gate import validate_expert_reviews
+from scripts.build_contribution_tree import validate_contribution_tree
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -159,6 +160,56 @@ class SurveyAutoResearchRefactorTest(unittest.TestCase):
             }
         ]
 
+    def contribution_statements(self, count: int = 95) -> list[dict]:
+        return [
+            {
+                "paper_id": f"p{idx:03d}",
+                "statement": (
+                    f"Verified Paper {idx} addresses evidence-conditioned decisions by using structured retrieval, "
+                    "evaluates on Benchmark-X against a no-memory baseline, and shows diagnostic improvement while "
+                    "remaining limited by perception and controller confounders."
+                ),
+                "problem": "evidence-conditioned decision making",
+                "method": "structured retrieval memory",
+                "benchmark": ["Benchmark-X"],
+                "result": "shows improvement over a no-memory baseline",
+                "limitation": "perception and controller confounders remain",
+                "evidence_strength": "shows",
+                "source_ref": f"src-p{idx:03d}",
+            }
+            for idx in range(1, count + 1)
+        ]
+
+    def contribution_tree(self) -> dict:
+        return {
+            "root_claim": "Memory research is organized by how evidence changes downstream decisions.",
+            "candidate_article_spines": [
+                "contribution-tree: retrieval memory vs structured map memory",
+                "system-node diagnostic lens",
+            ],
+            "selected_article_spine": "contribution-tree: retrieval memory vs structured map memory",
+            "branches": [
+                {
+                    "name": "retrieval memory",
+                    "motivation": "make past evidence available to later decisions",
+                    "representative_papers": ["p001", "p002"],
+                    "core_tradeoff": "high semantic recall versus wrong-evidence and latency risk",
+                    "evidence_standard": "requires no-memory, oracle-evidence, and wrong-evidence comparisons",
+                    "failure_risks": ["wrong evidence", "stale evidence"],
+                    "subbranches": ["local evidence retrieval", "external evidence store"],
+                },
+                {
+                    "name": "structured map memory",
+                    "motivation": "preserve spatial and object state for planning",
+                    "representative_papers": ["p003", "p004"],
+                    "core_tradeoff": "spatial persistence versus stale object state",
+                    "evidence_standard": "requires map ablations and stale-state tests",
+                    "failure_risks": ["spatial aliasing", "stale map"],
+                    "subbranches": ["semantic map", "topological graph"],
+                },
+            ],
+        }
+
     def expert_reviews(self, score: float = 8.8, weaknesses: list[dict] | None = None) -> list[dict]:
         personas = [
             ("domain_expert", "Domain Expert Reviewer"),
@@ -245,6 +296,48 @@ class SurveyAutoResearchRefactorTest(unittest.TestCase):
                 }
             reports.append(report)
         return reports
+
+    def expert_invocations(self) -> list[dict]:
+        return [
+            {
+                "reviewer_id": reviewer_id,
+                "persona": persona,
+                "fresh_context": True,
+                "inputs": ["outputs/review.md", "outputs/appendix.md", "state/paper_mechanism_cards.jsonl"],
+                "forbidden_inputs": ["previous reviewer reports", "state/expert_review_reports.jsonl"],
+                "output": "state/expert_review_reports.jsonl",
+                "timestamp": "2026-07-03T00:00:00Z",
+            }
+            for reviewer_id, persona in [
+                ("domain_expert", "Domain Expert Reviewer"),
+                ("survey_architect", "Survey Architect Reviewer"),
+                ("evidence_factuality", "Evidence/Factuality Reviewer"),
+                ("newcomer_tutorial", "Newcomer/Tutorial Reviewer"),
+                ("style_publication", "Style/Publication Reviewer"),
+            ]
+        ]
+
+    def repair_actions(self, weakness_id: str = "w1") -> list[dict]:
+        return [
+            {
+                "weakness_id": weakness_id,
+                "status": "resolved",
+                "route_to": "synthesis_dossiers",
+                "repair_action": "rebuild method-family comparison",
+                "changed_artifacts": ["outputs/method_family_dossiers/retrieval_memory.json", "outputs/review.md"],
+                "evidence": "The method family now compares alternatives, trade-offs, and evidence limits.",
+            }
+        ]
+
+    def regression_checks(self, weakness_id: str = "w1") -> list[dict]:
+        return [
+            {
+                "weakness_id": weakness_id,
+                "status": "passed",
+                "command": "PYTHONDONTWRITEBYTECODE=1 python3 -m unittest tests/test_scripts.py",
+                "result": "OK",
+            }
+        ]
 
     def scenario_definitions(self) -> dict:
         scenarios = []
@@ -388,6 +481,8 @@ class SurveyAutoResearchRefactorTest(unittest.TestCase):
                 {"source": "p001", "target": "p002", "relation": "alternative retrieval granularity"},
                 {"source": "p001", "target": "p026", "relation": "benchmark transfer pressure"},
             ],
+            "contribution_tree": "outputs/contribution_tree.yml",
+            "candidate_spines_from_contribution_tree": ["retrieval memory", "structured map memory"],
             "exemplar_delta": "The article follows related survey patterns of definition, taxonomy, data, evaluation, and open challenges while adding evidence-to-action diagnostics.",
             "figure_plan": {
                 "taxonomy_roadmap": "Reader-facing map of method families and diagnostic interfaces.",
@@ -495,9 +590,13 @@ class SurveyAutoResearchRefactorTest(unittest.TestCase):
         write_jsonl(state / "citation_plan.jsonl", self.citation_plan())
         write_jsonl(state / "paper_mechanism_cards.jsonl", self.mechanism_cards())
         write_jsonl(state / "full_text_sources.jsonl", self.full_text_sources())
+        write_jsonl(state / "paper_contribution_statements.jsonl", self.contribution_statements())
         write_jsonl(state / "claim_evidence_spans.jsonl", self.claims())
         write_jsonl(state / "expert_review_reports.jsonl", self.expert_reviews())
+        write_jsonl(state / "expert_review_invocations.jsonl", self.expert_invocations())
         write_jsonl(state / "weakness_routes.jsonl", [])
+        write_jsonl(state / "repair_actions.jsonl", [])
+        write_jsonl(state / "regression_checks.jsonl", [])
         (state / "review_iteration_status.json").write_text(
             json.dumps({"round": 1, "last_median_score": 8.8, "previous_median_score": None}),
             encoding="utf-8",
@@ -555,6 +654,7 @@ class SurveyAutoResearchRefactorTest(unittest.TestCase):
         (outputs / "review.md").write_text(self.review_text(), encoding="utf-8")
         (outputs / "appendix.md").write_text("# Appendix\n\nSearch protocol and coverage logistics.\n", encoding="utf-8")
         (outputs / "coverage_matrix.md").write_text("# Coverage Matrix\n\nVerified coverage summary.\n", encoding="utf-8")
+        (outputs / "contribution_tree.yml").write_text(json.dumps(self.contribution_tree()), encoding="utf-8")
         (outputs / "related_survey_matrix.md").write_text("# Related Survey Matrix\n\nSurvey positioning.\n", encoding="utf-8")
         (outputs / "references.bib").write_text("@article{x,title={x}}\n", encoding="utf-8")
         (outputs / "final_report.md").write_text("Complete\n", encoding="utf-8")
@@ -670,6 +770,28 @@ class SurveyAutoResearchRefactorTest(unittest.TestCase):
         status = build_coverage(self.papers(), self.citation_plan(), "full")
         self.assertTrue(status["valid"], status)
 
+    def test_contribution_tree_requires_ab_statements_and_branch_tradeoffs(self):
+        status = validate_contribution_tree([], {}, self.citation_plan(a=2, b=0, c=0), self.argument_graph(), target="full")
+        self.assertFalse(status["valid"])
+        self.assertIn("missing_contribution_statements", status["errors"])
+        weak_tree = {
+            "root_claim": "Memory research has papers.",
+            "branches": [{"name": "retrieval memory", "representative_papers": ["p001"]}],
+        }
+        status = validate_contribution_tree(self.contribution_statements(2), weak_tree, self.citation_plan(a=2, b=0, c=0), self.argument_graph(), target="full")
+        self.assertFalse(status["valid"])
+        self.assertIn("invalid_contribution_tree", status["errors"])
+        status = validate_contribution_tree(self.contribution_statements(4), self.contribution_tree(), self.citation_plan(a=4, b=0, c=0), self.argument_graph(), target="full")
+        self.assertTrue(status["valid"], status)
+
+    def test_contribution_tree_must_drive_argument_graph_spines(self):
+        graph = self.argument_graph()
+        graph.pop("contribution_tree")
+        graph.pop("candidate_spines_from_contribution_tree")
+        status = validate_contribution_tree(self.contribution_statements(4), self.contribution_tree(), self.citation_plan(a=4, b=0, c=0), graph, target="full")
+        self.assertFalse(status["valid"])
+        self.assertIn("argument_graph_missing_contribution_tree", status["errors"])
+
     def test_argument_graph_requires_section_mapping(self):
         graph = self.argument_graph()
         status = validate_argument_graph(graph, self.article_plan())
@@ -782,6 +904,35 @@ class SurveyAutoResearchRefactorTest(unittest.TestCase):
             self.assertFalse(status["valid"], phrase)
             self.assertIn("internal_or_scaffold_language", status["errors"])
 
+    def test_article_quality_rejects_rendered_html_artifact_leakage(self):
+        html = "<html><body><header>新版 skill 更新版：95 full-text A/B audited with source_ref and science paradigm profile.</header></body></html>"
+        status = validate_article_quality(
+            self.review_text(20),
+            self.article_plan(),
+            self.argument_graph(),
+            self.claims(),
+            "full",
+            rendered_artifacts=[("outputs/review.html", html)],
+        )
+        self.assertFalse(status["valid"])
+        self.assertIn("rendered_artifact_boundary", status["errors"])
+        dashboard = "<html><body>gate_7_expert_review A/B full-text deep-read debug panel</body></html>"
+        status = validate_article_quality(
+            self.review_text(20),
+            self.article_plan(),
+            self.argument_graph(),
+            self.claims(),
+            "full",
+            rendered_artifacts=[("dashboard/index.html", dashboard)],
+        )
+        self.assertTrue(status["valid"], status)
+
+    def test_article_quality_rejects_process_correction_prose(self):
+        bad = self.review_text(20) + "\n本综述不再把 WAM 拆成主目录中的七个系统节点。那种 system-node 视角不是文章 spine。"
+        status = validate_article_quality(bad, self.article_plan(), self.argument_graph(), self.claims(), "full")
+        self.assertFalse(status["valid"])
+        self.assertIn("internal_or_scaffold_language", status["errors"])
+
     def test_article_quality_requires_tradeoff_and_evaluation_recipe(self):
         no_tradeoff = self.review_text(30).replace(
             "because two methods can share a benchmark label while using different pipelines, evaluation baselines, and limitations",
@@ -804,35 +955,71 @@ class SurveyAutoResearchRefactorTest(unittest.TestCase):
         self.assertIn("missing_evaluation_recipe", status["errors"])
 
     def test_expert_review_gate_requires_independent_high_scoring_reviews(self):
-        status = validate_expert_reviews(self.expert_reviews()[:2], target="full")
+        status = validate_expert_reviews(self.expert_reviews()[:2], target="full", review_invocations=self.expert_invocations()[:2])
         self.assertFalse(status["valid"])
         self.assertIn("too_few_expert_reviews", status["errors"])
-        status = validate_expert_reviews(self.expert_reviews(score=8.4), target="full")
+        status = validate_expert_reviews(self.expert_reviews(score=8.4), target="full", review_invocations=self.expert_invocations())
         self.assertFalse(status["valid"])
         self.assertIn("median_score_below_threshold", status["errors"])
-        status = validate_expert_reviews(self.expert_reviews(score=9.0), target="csur")
+        status = validate_expert_reviews(self.expert_reviews(score=9.0), target="csur", review_invocations=self.expert_invocations())
         self.assertTrue(status["valid"], status)
 
     def test_expert_review_gate_rejects_duplicate_personas_and_unresolved_weaknesses(self):
         duplicate = self.expert_reviews()
         duplicate[1]["persona"] = duplicate[0]["persona"]
-        status = validate_expert_reviews(duplicate, target="full")
+        status = validate_expert_reviews(duplicate, target="full", review_invocations=self.expert_invocations())
         self.assertFalse(status["valid"])
         self.assertIn("duplicate_reviewer_personas", status["errors"])
         weakness = {
+            "weakness_id": "w1",
             "severity": "major",
             "evidence_quote": "The section reads like a paper list.",
             "why_it_matters": "It fails synthesis.",
             "route_to": "synthesis_dossiers",
             "repair_action": "rebuild method-family comparison",
         }
-        status = validate_expert_reviews(self.expert_reviews(weaknesses=[weakness]), target="full")
+        status = validate_expert_reviews(self.expert_reviews(weaknesses=[weakness]), target="full", review_invocations=self.expert_invocations())
         self.assertFalse(status["valid"])
         self.assertIn("unresolved_major_weaknesses", status["errors"])
         bad = self.expert_reviews(weaknesses=[{"severity": "major", "route_to": "synthesis_dossiers"}])
-        status = validate_expert_reviews(bad, target="full")
+        status = validate_expert_reviews(bad, target="full", review_invocations=self.expert_invocations())
         self.assertFalse(status["valid"])
         self.assertIn("invalid_expert_review_reports", status["errors"])
+
+    def test_expert_review_gate_requires_invocations_and_repair_closure(self):
+        status = validate_expert_reviews(self.expert_reviews(score=8.8), target="full")
+        self.assertFalse(status["valid"])
+        self.assertIn("missing_expert_review_invocations", status["errors"])
+        bad_invocations = self.expert_invocations()
+        bad_invocations[0]["fresh_context"] = False
+        status = validate_expert_reviews(self.expert_reviews(score=8.8), target="full", review_invocations=bad_invocations)
+        self.assertFalse(status["valid"])
+        self.assertIn("invalid_expert_review_invocations", status["errors"])
+        weakness = {
+            "weakness_id": "w1",
+            "severity": "major",
+            "evidence_quote": "The section reads like a paper list.",
+            "why_it_matters": "It fails synthesis.",
+            "route_to": "synthesis_dossiers",
+            "repair_action": "rebuild method-family comparison",
+        }
+        status = validate_expert_reviews(
+            self.expert_reviews(weaknesses=[weakness]),
+            target="full",
+            review_invocations=self.expert_invocations(),
+            repair_actions=self.repair_actions("w1"),
+            regression_checks=[],
+        )
+        self.assertFalse(status["valid"])
+        self.assertIn("missing_regression_checks_for_repairs", status["errors"])
+        status = validate_expert_reviews(
+            self.expert_reviews(weaknesses=[weakness]),
+            target="full",
+            review_invocations=self.expert_invocations(),
+            repair_actions=self.repair_actions("w1"),
+            regression_checks=self.regression_checks("w1"),
+        )
+        self.assertTrue(status["valid"], status)
 
     def test_survey_type_lenses_drive_required_dossiers(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -901,6 +1088,20 @@ class SurveyAutoResearchRefactorTest(unittest.TestCase):
             self.assertFalse(gates["all_blocking_gates_passed"])
             self.assertFalse(gates["gate_7_expert_review"]["passed"])
 
+    def test_gate_check_blocks_rendered_html_leakage_and_missing_contribution_tree(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            task_dir = initialize_task(Path(tmp), "world action models", target="full")
+            self.populate_full_task(task_dir)
+            (task_dir / "outputs" / "review.html").write_text("<html>新版 skill 更新版 full-text A/B audited source_ref</html>", encoding="utf-8")
+            gates = evaluate_gates(task_dir, "full")
+            self.assertFalse(gates["gate_6_article_quality"]["passed"])
+            self.assertFalse(gates["all_blocking_gates_passed"])
+            (task_dir / "outputs" / "review.html").unlink()
+            (task_dir / "outputs" / "contribution_tree.yml").write_text("", encoding="utf-8")
+            gates = evaluate_gates(task_dir, "full")
+            self.assertFalse(gates["gate_5_argument_graph"]["passed"])
+            self.assertIn("contribution_tree", gates["gate_5_argument_graph"])
+
     def test_gate_check_blocks_missing_full_text_sources(self):
         with tempfile.TemporaryDirectory() as tmp:
             task_dir = initialize_task(Path(tmp), "embodied memory system", target="full")
@@ -946,6 +1147,10 @@ class SurveyAutoResearchRefactorTest(unittest.TestCase):
             self.assertTrue((task_dir / "state/section_evidence_plans.jsonl").exists())
             self.assertTrue((task_dir / "state/paper_mechanism_cards.jsonl").exists())
             self.assertTrue((task_dir / "state/full_text_sources.jsonl").exists())
+            self.assertTrue((task_dir / "state/paper_contribution_statements.jsonl").exists())
+            self.assertTrue((task_dir / "state/expert_review_invocations.jsonl").exists())
+            self.assertTrue((task_dir / "state/repair_actions.jsonl").exists())
+            self.assertTrue((task_dir / "state/regression_checks.jsonl").exists())
             self.assertFalse((task_dir / "state/paper_cards.jsonl").exists())
             gates = json.loads((task_dir / "state/completion_gates.json").read_text())
             self.assertIn("gate_6_article_quality", gates)

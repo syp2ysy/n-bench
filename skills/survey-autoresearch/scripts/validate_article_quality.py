@@ -36,6 +36,18 @@ FORBIDDEN_PATTERNS = [
     r"材料保留在",
     r"完整[^。\n]{0,60}material",
     r"full node-paper material",
+    r"新版\s*skill",
+    r"full[- ]text\s*A/B\s*audited",
+    r"source_ref",
+    r"science paradigm profile",
+    r"evidence norms?",
+    r"run counts?",
+    r"candidate counts?",
+    r"本综述不再把",
+    r"那种[^。\n]{0,80}视角",
+    r"不是[^。\n]{0,80}文章\s*spine",
+    r"更合适的主线是",
+    r"cross[- ]cutting diagnostic lens",
 ]
 
 METHOD_SECTION_HEADING_TERMS = ["method", "taxonomy", "famil", "方法", "分类", "谱系", "路线"]
@@ -101,7 +113,30 @@ def _claim_texts(claims: list[dict]) -> list[str]:
     return result
 
 
-def validate_article_quality(review_text: str, article_plan: str = "", argument_graph: dict | None = None, claims: list[dict] | None = None, target: str = "full") -> dict:
+def _rendered_artifact_items(rendered_artifacts) -> list[tuple[str, str]]:
+    result = []
+    for item in rendered_artifacts or []:
+        if isinstance(item, tuple) and len(item) == 2:
+            result.append((str(item[0]), str(item[1])))
+        elif isinstance(item, dict):
+            result.append((str(item.get("path") or item.get("name") or "<rendered>"), str(item.get("text") or item.get("content") or "")))
+        else:
+            result.append(("<rendered>", str(item)))
+    return result
+
+
+def _forbidden_hits(text: str) -> list[str]:
+    return [pattern for pattern in FORBIDDEN_PATTERNS if re.search(pattern, text, flags=re.IGNORECASE)]
+
+
+def validate_article_quality(
+    review_text: str,
+    article_plan: str = "",
+    argument_graph: dict | None = None,
+    claims: list[dict] | None = None,
+    target: str = "full",
+    rendered_artifacts=None,
+) -> dict:
     if target == "short":
         min_chars = 1000
     elif target == "csur":
@@ -110,11 +145,18 @@ def validate_article_quality(review_text: str, article_plan: str = "", argument_
         min_chars = 25000
     errors: list[str] = []
     leaked = []
-    for pattern in FORBIDDEN_PATTERNS:
-        if re.search(pattern, review_text, flags=re.IGNORECASE):
-            leaked.append(pattern)
+    leaked = _forbidden_hits(review_text)
     if leaked:
         errors.append("internal_or_scaffold_language")
+    rendered_errors = []
+    for name, text in _rendered_artifact_items(rendered_artifacts):
+        if "dashboard" in name.lower():
+            continue
+        hits = _forbidden_hits(text)
+        if hits:
+            rendered_errors.append({"path": name, "patterns": hits})
+    if rendered_errors:
+        errors.append("rendered_artifact_boundary")
     plain = _plain(review_text)
     if len(plain) < min_chars:
         errors.append("article_too_short")
@@ -197,6 +239,7 @@ def validate_article_quality(review_text: str, article_plan: str = "", argument_
         "chars": len(plain),
         "min_chars": min_chars,
         "leaked_patterns": leaked,
+        "rendered_artifact_errors": rendered_errors,
         "weak_sections": weak_sections,
         "uninterpreted_tables": uninterpreted_tables,
         "duplicate_headings": duplicates,
@@ -211,6 +254,7 @@ def main() -> int:
     parser.add_argument("--article-plan", type=Path)
     parser.add_argument("--claims", type=Path)
     parser.add_argument("--target", choices=["short", "full", "csur"], default="full")
+    parser.add_argument("--rendered-artifact", action="append", type=Path, default=[])
     args = parser.parse_args()
     claims = []
     if args.claims and args.claims.exists():
@@ -220,6 +264,7 @@ def main() -> int:
         args.article_plan.read_text(encoding="utf-8") if args.article_plan and args.article_plan.exists() else "",
         claims=claims,
         target=args.target,
+        rendered_artifacts=[(str(path), path.read_text(encoding="utf-8")) for path in args.rendered_artifact if path.exists()],
     )
     print(json.dumps(result, indent=2, sort_keys=True, ensure_ascii=False))
     return 0 if result["valid"] else 1

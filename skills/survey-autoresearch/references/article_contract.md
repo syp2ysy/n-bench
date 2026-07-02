@@ -2,6 +2,8 @@
 
 `outputs/review.md` is the publication-facing article.
 
+Any final publication-facing HTML or rendered article page is also part of the article. Dashboard/debug pages may show gates and run metadata; article pages must not.
+
 `outputs/article_plan.md` must separate:
 
 - article body sections
@@ -43,5 +45,6 @@ Article body must not include:
 - state-file names, gate names, extraction fields, or repair notes;
 - raw appendix tables;
 - scaffold phrases such as "本节面向", "下面的表", "该工作在本文中被读作", "好的综述", or "本文采用 system-object survey 的结构".
+- process-correction phrasing such as "本综述不再把...", "那种视角不是文章 spine", or runtime labels such as "新版 skill", `source_ref`, `science paradigm profile`, or A/B audit counts.
 
 Search protocol, broad coverage tables, and evidence logistics belong in `outputs/appendix.md` or `outputs/final_report.md`.

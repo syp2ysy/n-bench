@@ -9,7 +9,7 @@ Use this skill when the user asks for a literature review, survey paper, researc
 
 The workflow has one core chain:
 
-`source truth -> full-text evidence -> paper mechanism understanding -> scenario definitions -> field synthesis -> argument graph -> section evidence re-check -> publication article`
+`source truth -> full-text evidence -> paper mechanism understanding -> contribution tree -> scenario definitions -> field synthesis -> argument graph -> section evidence re-check -> publication article`
 
 The final `outputs/review.md` is an article. It must not read like a workflow report, evidence report, appendix, checklist, or state-file dump.
 
@@ -32,12 +32,12 @@ Read `references/runtime_contract.md` before long-running work.
 3. **Source verification and citation depth**: write `state/papers.jsonl` and `state/citation_plan.jsonl`.
    If a full survey discovers a public curated list or recent survey whose visible paper count substantially exceeds the retained corpus, the run must enter corpus-expansion mode before final drafting.
 4. **Paper mechanism understanding**: write `state/full_text_sources.jsonl` and `state/paper_mechanism_cards.jsonl` for A/B papers; A/B means full-text deep-read with auditable source excerpts, not abstract, metadata, or curated-list notes.
-5. **Scenario/domain definitions**: write `state/scenario_definitions.yml`.
-6. **Field synthesis**: write method-family dossiers, benchmark dossiers, related-survey matrix, and `state/claim_evidence_spans.jsonl`.
-7. **Story skeleton**: write `state/argument_graph.yml`.
-8. **Section source re-check**: write `state/section_evidence_plans.jsonl`.
-9. **Publication drafting**: write `outputs/article_plan.md`, `outputs/review_body_draft.md`, final `outputs/review.md`, and `outputs/appendix.md`.
-10. **Expert review and repair**: generate independent expert review reports, route weaknesses, repair the responsible layer, and rerun gates until complete or precisely blocked.
+5. **Contribution abstraction**: write `state/paper_contribution_statements.jsonl` and `outputs/contribution_tree.yml`.
+6. **Scenario/domain definitions**: write `state/scenario_definitions.yml`.
+7. **Field synthesis**: write method-family dossiers, benchmark dossiers, related-survey matrix, and `state/claim_evidence_spans.jsonl`.
+8. **Story skeleton**: write `state/argument_graph.yml`.
+9. **Section source re-check and drafting**: write `state/section_evidence_plans.jsonl`, `outputs/article_plan.md`, `outputs/review_body_draft.md`, final `outputs/review.md`, and `outputs/appendix.md`.
+10. **Expert review and repair**: generate independent expert review reports, log reviewer invocations, close routed weaknesses with repair/regression evidence, and rerun gates until complete or precisely blocked.
 
 ## Required Contracts
 
@@ -59,9 +59,9 @@ For `target=full` and `target=csur`, completion requires:
 2. **Paper Understanding Gate**: every A/B paper has full-text deep-read evidence, source/excerpt audit, motivation, task/problem, benchmark/environment, implementation, experiment, result, limitation, relation-to-prior-work, and overclaim boundaries.
 3. **Claim-Evidence Gate**: every important claim traces to source-backed evidence spans and section evidence plans; strong claims need quoted/extracted evidence and claim strength does not exceed evidence strength.
 4. **Coverage Gate**: the literature map meets target breadth and records family, benchmark, related-survey, and scenario gaps honestly.
-5. **Argument Graph Gate**: scenario definitions, synthesis dossiers, story skeleton, and section evidence plans jointly support the article.
-6. **Article Quality Gate**: `review.md` is publication prose with no raw artifacts, internal methodology, run metadata, unsupported factual claims, repeated template sections, or un-interpreted tables.
-7. **Expert Review Gate**: independent reviewer reports meet the target score threshold and route all major weaknesses back to the responsible workflow layer.
+5. **Argument Graph Gate**: contribution tree, scenario definitions, synthesis dossiers, story skeleton, and section evidence plans jointly support the article.
+6. **Article Quality Gate**: `review.md` and rendered publication artifacts are publication prose with no raw artifacts, internal methodology, run metadata, unsupported factual claims, repeated template sections, or un-interpreted tables.
+7. **Expert Review Gate**: independent reviewer reports meet the target score threshold, have invocation evidence, and close all major weaknesses with repair/regression evidence.
 
 `short` targets may use a lighter workflow, but must still avoid fabricated citations and unsupported claims.
 
@@ -95,6 +95,7 @@ Transparent search protocol, broad coverage tables, and evidence logistics belon
 - `scripts/validate_paper_understanding.py`: paper mechanism-card validation.
 - `scripts/validate_claim_evidence.py`: claim-to-evidence validation.
 - `scripts/build_coverage_matrix.py`: coverage summary builder and validator.
+- `scripts/build_contribution_tree.py`: contribution-statement and contribution-tree validator.
 - `scripts/validate_scenario_definitions.py`: scenario/domain definition validation.
 - `scripts/validate_synthesis_dossiers.py`: method-family and benchmark dossier validation.
 - `scripts/validate_argument_graph.py`: argument graph validation.

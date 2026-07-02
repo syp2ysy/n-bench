@@ -46,6 +46,7 @@ VALID_ROUTES = {
 BLOCKING_SEVERITIES = {"major", "blocking"}
 MIN_REVIEW_QUOTES = 5
 MIN_AUDIT_ITEMS = 10
+REVIEWER_REPORT_TERMS = {"expert_review_reports", "previous reviewer", "reviewer reports"}
 
 
 def read_jsonl(path: Path) -> list[dict]:
@@ -118,6 +119,97 @@ def _valid_audit_items(items, min_items: int = MIN_AUDIT_ITEMS) -> bool:
     return valid >= min_items
 
 
+def _weakness_id(weakness: dict, route: dict | None = None) -> str:
+    explicit = str((weakness or {}).get("weakness_id") or (route or {}).get("weakness_id") or "").strip()
+    if explicit:
+        return explicit
+    text = "|".join(
+        str((weakness or route or {}).get(field) or "")
+        for field in ["evidence_quote", "route_to", "repair_action"]
+    )
+    return _normalize(text)
+
+
+def _valid_invocations(reports: list[dict], invocations: list[dict] | None) -> tuple[list[str], dict[str, list[str]]]:
+    if not invocations:
+        return ["missing_expert_review_invocations"], {}
+    by_id = {str(item.get("reviewer_id") or ""): item for item in invocations if item.get("reviewer_id")}
+    errors: list[str] = []
+    invalid: dict[str, list[str]] = {}
+    for report in reports:
+        reviewer_id = str(report.get("reviewer_id") or "")
+        invocation = by_id.get(reviewer_id)
+        item_errors = []
+        if not invocation:
+            invalid[reviewer_id or "<missing>"] = ["missing_invocation"]
+            continue
+        if invocation.get("fresh_context") is not True:
+            item_errors.append("fresh_context_not_true")
+        inputs = [str(item).lower() for item in invocation.get("inputs") or []]
+        if not any("review.md" in item for item in inputs):
+            item_errors.append("missing_review_input")
+        if any(any(term in item for term in REVIEWER_REPORT_TERMS) for item in inputs):
+            item_errors.append("reviewer_report_used_as_input")
+        forbidden = " ".join(str(item).lower() for item in invocation.get("forbidden_inputs") or [])
+        if not any(term in forbidden for term in REVIEWER_REPORT_TERMS):
+            item_errors.append("previous_reports_not_forbidden")
+        if not str(invocation.get("output") or "").strip():
+            item_errors.append("missing_output")
+        if item_errors:
+            invalid[reviewer_id or "<missing>"] = item_errors
+    missing = [str(report.get("reviewer_id") or "<missing>") for report in reports if str(report.get("reviewer_id") or "") not in by_id]
+    if missing:
+        errors.append("missing_expert_review_invocations")
+    if invalid:
+        errors.append("invalid_expert_review_invocations")
+    return errors, invalid
+
+
+def _repair_status(
+    unresolved_major: list[dict],
+    repair_actions: list[dict] | None,
+    regression_checks: list[dict] | None,
+) -> tuple[list[str], list[dict], dict[str, list[str]], dict[str, list[str]]]:
+    if not unresolved_major:
+        return [], [], {}, {}
+    repairs_by_id = {str(item.get("weakness_id") or ""): item for item in repair_actions or [] if item.get("weakness_id")}
+    checks_by_id = {}
+    for check in regression_checks or []:
+        if check.get("weakness_id"):
+            checks_by_id.setdefault(str(check.get("weakness_id")), []).append(check)
+    errors: list[str] = []
+    still_unresolved = []
+    invalid_repairs: dict[str, list[str]] = {}
+    invalid_checks: dict[str, list[str]] = {}
+    for weakness in unresolved_major:
+        wid = str(weakness.get("weakness_id") or _weakness_id({}, weakness))
+        repair = repairs_by_id.get(wid)
+        if not repair:
+            still_unresolved.append(weakness)
+            continue
+        repair_errors = []
+        if str(repair.get("status") or "").lower() not in {"resolved", "accepted_limitation"}:
+            repair_errors.append("repair_not_resolved")
+        for field in ["route_to", "repair_action", "changed_artifacts", "evidence"]:
+            if not repair.get(field):
+                repair_errors.append(f"missing_{field}")
+        if repair_errors:
+            invalid_repairs[wid] = repair_errors
+            still_unresolved.append(weakness)
+            continue
+        checks = checks_by_id.get(wid, [])
+        if not checks or not any(str(check.get("status") or "").lower() == "passed" for check in checks):
+            invalid_checks[wid] = ["missing_passing_regression_check"]
+            still_unresolved.append(weakness)
+    if invalid_repairs:
+        errors.append("invalid_repair_actions")
+    if invalid_checks:
+        errors.append("missing_regression_checks_for_repairs")
+    if still_unresolved:
+        errors.append("unresolved_major_weaknesses")
+    return errors, still_unresolved, invalid_repairs, invalid_checks
+
+
 def validate_expert_reviews(
     reports: list[dict],
     target: str = "full",
@@ -126,6 +218,9 @@ def validate_expert_reviews(
     claims: list[dict] | None = None,
     mechanism_cards: list[dict] | None = None,
     section_plans: list[dict] | None = None,
+    review_invocations: list[dict] | None = None,
+    repair_actions: list[dict] | None = None,
+    regression_checks: list[dict] | None = None,
 ) -> dict:
     if target == "short":
         return {
@@ -233,6 +328,7 @@ def validate_expert_reviews(
                 item_errors.append("invalid_weakness")
                 continue
             route = {
+                "weakness_id": _weakness_id(weakness),
                 "reviewer_id": reviewer_id,
                 "persona": report.get("persona"),
                 "severity": weakness.get("severity"),
@@ -260,8 +356,14 @@ def validate_expert_reviews(
     threshold = _threshold(target)
     if median_score is None or median_score < threshold:
         errors.append("median_score_below_threshold")
-    if unresolved_major:
-        errors.append("unresolved_major_weaknesses")
+    invocation_errors, invalid_invocations = _valid_invocations(reports, review_invocations)
+    errors.extend(invocation_errors)
+    repair_errors, unresolved_major, invalid_repairs, invalid_regression_checks = _repair_status(
+        unresolved_major,
+        repair_actions,
+        regression_checks,
+    )
+    errors.extend(repair_errors)
 
     status = iteration_status or {}
     quality_limited = False
@@ -284,6 +386,9 @@ def validate_expert_reviews(
         "missing_personas": missing_personas,
         "duplicate_personas": duplicate_personas,
         "invalid_reports": invalid_reports,
+        "invalid_invocations": invalid_invocations,
+        "invalid_repair_actions": invalid_repairs,
+        "invalid_regression_checks": invalid_regression_checks,
         "unresolved_major_weaknesses": unresolved_major,
         "weakness_routes": weakness_routes,
         "quality_limited": quality_limited,
@@ -299,6 +404,9 @@ def main() -> int:
     parser.add_argument("--claims", type=Path)
     parser.add_argument("--paper-mechanism-cards", type=Path)
     parser.add_argument("--section-evidence-plans", type=Path)
+    parser.add_argument("--expert-review-invocations", type=Path)
+    parser.add_argument("--repair-actions", type=Path)
+    parser.add_argument("--regression-checks", type=Path)
     parser.add_argument("--target", choices=["short", "full", "csur"], default="full")
     args = parser.parse_args()
     result = validate_expert_reviews(
@@ -309,6 +417,9 @@ def main() -> int:
         read_jsonl(args.claims) if args.claims else None,
         read_jsonl(args.paper_mechanism_cards) if args.paper_mechanism_cards else None,
         read_jsonl(args.section_evidence_plans) if args.section_evidence_plans else None,
+        read_jsonl(args.expert_review_invocations) if args.expert_review_invocations else None,
+        read_jsonl(args.repair_actions) if args.repair_actions else None,
+        read_jsonl(args.regression_checks) if args.regression_checks else None,
     )
     print(json.dumps(result, indent=2, sort_keys=True, ensure_ascii=False))
     return 0 if result["valid"] else 1

@@ -25,3 +25,5 @@ Repair routes:
 - repeated or generic prose -> run article quality repair.
 
 Final review is not self-evaluation. For full and CSUR targets, independent expert review reports must be generated and validated by the Expert Review Gate. If reviewers score the article below target, repair must route to the responsible layer; low-scoring reviews cannot be fixed by prose polish alone.
+
+Every major or blocking weakness must be closed before completion unless it is explicitly accepted as a limitation with evidence. Closure requires a repair action and a regression check; otherwise the review remains incomplete even if the next prose draft reads better.

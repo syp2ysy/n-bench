@@ -17,10 +17,14 @@ STATE_FILES = [
     "citation_plan.jsonl",
     "paper_mechanism_cards.jsonl",
     "full_text_sources.jsonl",
+    "paper_contribution_statements.jsonl",
     "claim_evidence_spans.jsonl",
     "section_evidence_plans.jsonl",
     "expert_review_reports.jsonl",
+    "expert_review_invocations.jsonl",
     "weakness_routes.jsonl",
+    "repair_actions.jsonl",
+    "regression_checks.jsonl",
     "review_rounds.jsonl",
     "phase_summaries.jsonl",
 ]
@@ -43,6 +47,7 @@ OUTPUT_FILES = {
     "references.bib": "",
     "final_report.md": "",
     "figures_plan.md": "",
+    "contribution_tree.yml": "",
 }
 
 

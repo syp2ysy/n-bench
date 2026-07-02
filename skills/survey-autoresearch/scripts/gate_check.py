@@ -19,6 +19,7 @@ try:
     from .validate_section_evidence_plans import validate_section_evidence_plans
     from .validate_exemplar_alignment import validate_exemplar_alignment
     from .expert_review_gate import read_json as read_json_file, validate_expert_reviews
+    from .build_contribution_tree import validate_contribution_tree
 except ImportError:  # pragma: no cover
     from verify_sources import read_jsonl, validate_sources
     from validate_paper_understanding import validate_paper_understanding
@@ -31,6 +32,7 @@ except ImportError:  # pragma: no cover
     from validate_section_evidence_plans import validate_section_evidence_plans
     from validate_exemplar_alignment import validate_exemplar_alignment
     from expert_review_gate import read_json as read_json_file, validate_expert_reviews
+    from build_contribution_tree import validate_contribution_tree
 
 
 def text_or_empty(path: Path) -> str:
@@ -94,6 +96,15 @@ def synthesis_dossier_status(outputs_dir: Path, target: str, survey_type: dict) 
     return {"valid": not missing, "required": True, "missing": missing}
 
 
+def rendered_artifacts(outputs_dir: Path) -> list[tuple[str, str]]:
+    artifacts = []
+    for path in sorted(outputs_dir.glob("*.html")):
+        if "dashboard" in str(path).lower():
+            continue
+        artifacts.append((str(path), text_or_empty(path)))
+    return artifacts
+
+
 def evaluate_gates(task_dir: Path, target: str = "short") -> dict:
     state = task_dir / "state"
     outputs = task_dir / "outputs"
@@ -101,9 +112,13 @@ def evaluate_gates(task_dir: Path, target: str = "short") -> dict:
     citation_plan = read_jsonl(state / "citation_plan.jsonl")
     mechanism_cards = read_jsonl(state / "paper_mechanism_cards.jsonl")
     full_text_sources = read_jsonl(state / "full_text_sources.jsonl")
+    contribution_statements = read_jsonl(state / "paper_contribution_statements.jsonl")
     claims = read_jsonl(state / "claim_evidence_spans.jsonl")
     section_plans = read_jsonl(state / "section_evidence_plans.jsonl")
     expert_reviews = read_jsonl(state / "expert_review_reports.jsonl")
+    expert_invocations = read_jsonl(state / "expert_review_invocations.jsonl")
+    repair_actions = read_jsonl(state / "repair_actions.jsonl")
+    regression_checks = read_jsonl(state / "regression_checks.jsonl")
     review_iteration_status = read_json_file(state / "review_iteration_status.json")
     article_plan = text_or_empty(outputs / "article_plan.md")
     argument_text = text_or_empty(state / "argument_graph.yml")
@@ -146,6 +161,13 @@ def evaluate_gates(task_dir: Path, target: str = "short") -> dict:
         mechanism_cards,
         target,
     )
+    contribution_tree_status = validate_contribution_tree(
+        contribution_statements,
+        text_or_empty(outputs / "contribution_tree.yml"),
+        citation_plan,
+        argument_graph if isinstance(argument_graph, dict) else {},
+        target,
+    )
     plan_status = article_plan_status(article_plan)
     gate_6 = validate_article_quality(
         review_text,
@@ -153,6 +175,7 @@ def evaluate_gates(task_dir: Path, target: str = "short") -> dict:
         argument_graph=argument_graph if isinstance(argument_graph, dict) else {},
         claims=claims,
         target=target,
+        rendered_artifacts=rendered_artifacts(outputs),
     )
     gate_7 = validate_expert_reviews(
         expert_reviews,
@@ -162,6 +185,9 @@ def evaluate_gates(task_dir: Path, target: str = "short") -> dict:
         claims,
         mechanism_cards,
         section_plans,
+        expert_invocations,
+        repair_actions,
+        regression_checks,
     )
 
     gates = {
@@ -176,6 +202,7 @@ def evaluate_gates(task_dir: Path, target: str = "short") -> dict:
                 and scenario_status["valid"]
                 and synthesis_status["valid"]
                 and section_plan_status["valid"]
+                and contribution_tree_status["valid"]
                 and plan_status["valid"]
                 and survey_type["valid"]
                 and exemplar_status["valid"]
@@ -187,6 +214,7 @@ def evaluate_gates(task_dir: Path, target: str = "short") -> dict:
             "scenario_definitions": scenario_status,
             "synthesis_dossier_quality": synthesis_status,
             "section_evidence_plans": section_plan_status,
+            "contribution_tree": contribution_tree_status,
             "article_plan": plan_status,
         },
         "gate_6_article_quality": {"passed": gate_6["valid"], **gate_6},
