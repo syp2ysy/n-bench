@@ -58,11 +58,15 @@ def render_dashboard(task_dir: Path, target: str | None = None) -> Path:
         "gate_4_coverage",
         "gate_5_argument_graph",
         "gate_6_article_quality",
+        "gate_7_expert_review",
     ]:
         gate = gates.get(key, {})
+        score = ""
+        if key == "gate_7_expert_review" and gate.get("median_score") is not None:
+            score = f"<p class='muted'>median expert score: {esc(gate.get('median_score'))}</p>"
         gate_cards.append(
             f"<div class='card'><h3>{esc(key)}</h3><div class='{ 'pass' if gate.get('passed') else 'fail' }'>"
-            f"{'PASS' if gate.get('passed') else 'FAIL'}</div><pre>{esc(json.dumps(gate, indent=2, ensure_ascii=False)[:1200])}</pre></div>"
+            f"{'PASS' if gate.get('passed') else 'FAIL'}</div>{score}<pre>{esc(json.dumps(gate, indent=2, ensure_ascii=False)[:1200])}</pre></div>"
         )
     html = (
         "<!doctype html><html><head><meta charset='utf-8'><title>Survey AutoResearch</title>"

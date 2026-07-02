@@ -23,3 +23,5 @@ Repair routes:
 - section claims float above evidence -> repair section evidence plans;
 - article reads like artifacts -> rewrite from article plan and move logistics to appendix;
 - repeated or generic prose -> run article quality repair.
+
+Final review is not self-evaluation. For full and CSUR targets, independent expert review reports must be generated and validated by the Expert Review Gate. If reviewers score the article below target, repair must route to the responsible layer; low-scoring reviews cannot be fixed by prose polish alone.

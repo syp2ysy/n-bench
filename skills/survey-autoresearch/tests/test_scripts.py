@@ -16,6 +16,7 @@ from scripts.validate_scenario_definitions import validate_scenario_definitions
 from scripts.validate_section_evidence_plans import validate_section_evidence_plans
 from scripts.validate_synthesis_dossiers import validate_synthesis_dossiers
 from scripts.verify_sources import validate_sources
+from scripts.expert_review_gate import validate_expert_reviews
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -118,6 +119,37 @@ class SurveyAutoResearchRefactorTest(unittest.TestCase):
                     }
                 ],
             }
+        ]
+
+    def expert_reviews(self, score: float = 8.8, weaknesses: list[dict] | None = None) -> list[dict]:
+        personas = [
+            ("domain_expert", "Domain Expert Reviewer"),
+            ("survey_architect", "Survey Architect Reviewer"),
+            ("evidence_factuality", "Evidence/Factuality Reviewer"),
+            ("newcomer_tutorial", "Newcomer/Tutorial Reviewer"),
+            ("style_publication", "Style/Publication Reviewer"),
+        ]
+        dims = {
+            "narrative_coherence": score,
+            "paper_understanding_depth": score,
+            "method_taxonomy_quality": score,
+            "benchmark_and_evaluation_quality": score,
+            "evidence_factuality_and_citation_accuracy": score,
+            "synthesis_not_catalog": score,
+            "publication_prose": score,
+            "newcomer_value": score,
+            "expert_value": score,
+        }
+        return [
+            {
+                "reviewer_id": reviewer_id,
+                "persona": persona,
+                "overall_score": score,
+                "dimension_scores": dims,
+                "blocking_weaknesses": weaknesses or [],
+                "pass_recommendation": not weaknesses and score >= 8.5,
+            }
+            for reviewer_id, persona in personas
         ]
 
     def scenario_definitions(self) -> dict:
@@ -314,7 +346,7 @@ class SurveyAutoResearchRefactorTest(unittest.TestCase):
             "Therefore, the section closes by linking method design to evidence and evaluation choices.\n\n"
         )
         table = (
-            "The table below is introduced as an article-facing comparison of mechanism and evidence.\n\n"
+            "The comparison table is introduced as a publication-ready synthesis of mechanism and evidence.\n\n"
             "| Family | Mechanism | Evidence | Limitation |\n"
             "| --- | --- | --- | --- |\n"
             "| Retrieval | writes and reads structured evidence | no-memory comparison | perception confounder |\n\n"
@@ -339,6 +371,12 @@ class SurveyAutoResearchRefactorTest(unittest.TestCase):
         write_jsonl(state / "citation_plan.jsonl", self.citation_plan())
         write_jsonl(state / "paper_mechanism_cards.jsonl", self.mechanism_cards())
         write_jsonl(state / "claim_evidence_spans.jsonl", self.claims())
+        write_jsonl(state / "expert_review_reports.jsonl", self.expert_reviews())
+        write_jsonl(state / "weakness_routes.jsonl", [])
+        (state / "review_iteration_status.json").write_text(
+            json.dumps({"round": 1, "last_median_score": 8.8, "previous_median_score": None}),
+            encoding="utf-8",
+        )
         (state / "survey_type_plan.yml").write_text(
             "topic: embodied memory system\n"
             "primary_type: system-object\n"
@@ -488,6 +526,43 @@ class SurveyAutoResearchRefactorTest(unittest.TestCase):
         self.assertFalse(status["valid"])
         self.assertIn("unsupported_strong_article_claims", status["errors"])
 
+    def test_article_quality_rejects_new_artifact_language(self):
+        for phrase in ["article-facing", "支撑文件", "正文选择", "supporting material", "worked example 集合", "材料保留在"]:
+            status = validate_article_quality(self.review_text(20) + phrase, self.article_plan(), self.argument_graph(), self.claims(), "full")
+            self.assertFalse(status["valid"], phrase)
+            self.assertIn("internal_or_scaffold_language", status["errors"])
+
+    def test_expert_review_gate_requires_independent_high_scoring_reviews(self):
+        status = validate_expert_reviews(self.expert_reviews()[:2], target="full")
+        self.assertFalse(status["valid"])
+        self.assertIn("too_few_expert_reviews", status["errors"])
+        status = validate_expert_reviews(self.expert_reviews(score=8.4), target="full")
+        self.assertFalse(status["valid"])
+        self.assertIn("median_score_below_threshold", status["errors"])
+        status = validate_expert_reviews(self.expert_reviews(score=9.0), target="csur")
+        self.assertTrue(status["valid"], status)
+
+    def test_expert_review_gate_rejects_duplicate_personas_and_unresolved_weaknesses(self):
+        duplicate = self.expert_reviews()
+        duplicate[1]["persona"] = duplicate[0]["persona"]
+        status = validate_expert_reviews(duplicate, target="full")
+        self.assertFalse(status["valid"])
+        self.assertIn("duplicate_reviewer_personas", status["errors"])
+        weakness = {
+            "severity": "major",
+            "evidence_quote": "The section reads like a paper list.",
+            "why_it_matters": "It fails synthesis.",
+            "route_to": "synthesis_dossiers",
+            "repair_action": "rebuild method-family comparison",
+        }
+        status = validate_expert_reviews(self.expert_reviews(weaknesses=[weakness]), target="full")
+        self.assertFalse(status["valid"])
+        self.assertIn("unresolved_major_weaknesses", status["errors"])
+        bad = self.expert_reviews(weaknesses=[{"severity": "major", "route_to": "synthesis_dossiers"}])
+        status = validate_expert_reviews(bad, target="full")
+        self.assertFalse(status["valid"])
+        self.assertIn("invalid_expert_review_reports", status["errors"])
+
     def test_survey_type_lenses_drive_required_dossiers(self):
         with tempfile.TemporaryDirectory() as tmp:
             task_dir = initialize_task(Path(tmp), "LLM uncertainty quantification", target="full")
@@ -516,6 +591,16 @@ class SurveyAutoResearchRefactorTest(unittest.TestCase):
             self.populate_full_task(task_dir)
             gates = evaluate_gates(task_dir, "full")
             self.assertTrue(gates["all_blocking_gates_passed"], gates)
+            self.assertIn("gate_7_expert_review", gates)
+
+    def test_gate_check_blocks_when_expert_review_missing_or_low_score(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            task_dir = initialize_task(Path(tmp), "embodied memory system", target="full")
+            self.populate_full_task(task_dir)
+            (task_dir / "state/expert_review_reports.jsonl").write_text("", encoding="utf-8")
+            gates = evaluate_gates(task_dir, "full")
+            self.assertFalse(gates["all_blocking_gates_passed"])
+            self.assertFalse(gates["gate_7_expert_review"]["passed"])
 
     def test_gate_check_blocks_missing_scenario_definitions_and_section_plans(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -538,7 +623,11 @@ class SurveyAutoResearchRefactorTest(unittest.TestCase):
             self.assertFalse((task_dir / "state/paper_cards.jsonl").exists())
             gates = json.loads((task_dir / "state/completion_gates.json").read_text())
             self.assertIn("gate_6_article_quality", gates)
+            self.assertIn("gate_7_expert_review", gates)
             self.assertNotIn("gate_7_review_depth", gates)
+            self.assertTrue((task_dir / "state/expert_review_reports.jsonl").exists())
+            self.assertTrue((task_dir / "state/weakness_routes.jsonl").exists())
+            self.assertTrue((task_dir / "state/review_iteration_status.json").exists())
 
     def test_dashboard_renders_new_gate_names(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -547,6 +636,7 @@ class SurveyAutoResearchRefactorTest(unittest.TestCase):
             html = path.read_text(encoding="utf-8")
             self.assertIn("gate_1_source_identity", html)
             self.assertIn("gate_6_article_quality", html)
+            self.assertIn("gate_7_expert_review", html)
 
     def test_lqs_keeps_foundational_roles(self):
         scored = score_paper({"paper_id": "p1", "survey_role": "seminal", "conceptual_centrality": 10, "mechanism_clarity": 8})

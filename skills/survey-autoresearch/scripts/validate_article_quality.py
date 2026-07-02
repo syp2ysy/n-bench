@@ -28,6 +28,14 @@ FORBIDDEN_PATTERNS = [
     r"state file",
     r"gate check",
     r"paper card",
+    r"article-facing",
+    r"supporting material",
+    r"支撑文件",
+    r"正文选择",
+    r"worked example\s*集合",
+    r"材料保留在",
+    r"完整[^。\n]{0,60}material",
+    r"full node-paper material",
 ]
 
 

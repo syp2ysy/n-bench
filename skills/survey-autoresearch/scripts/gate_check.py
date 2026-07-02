@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Run the six survey-autoresearch completion gates."""
+"""Run the survey-autoresearch completion gates."""
 
 from __future__ import annotations
 
@@ -17,6 +17,7 @@ try:
     from .validate_scenario_definitions import validate_scenario_definitions
     from .validate_synthesis_dossiers import read_dossier_dir, validate_synthesis_dossiers
     from .validate_section_evidence_plans import validate_section_evidence_plans
+    from .expert_review_gate import read_json as read_json_file, validate_expert_reviews
 except ImportError:  # pragma: no cover
     from verify_sources import read_jsonl, validate_sources
     from validate_paper_understanding import validate_paper_understanding
@@ -27,6 +28,7 @@ except ImportError:  # pragma: no cover
     from validate_scenario_definitions import validate_scenario_definitions
     from validate_synthesis_dossiers import read_dossier_dir, validate_synthesis_dossiers
     from validate_section_evidence_plans import validate_section_evidence_plans
+    from expert_review_gate import read_json as read_json_file, validate_expert_reviews
 
 
 def text_or_empty(path: Path) -> str:
@@ -98,6 +100,8 @@ def evaluate_gates(task_dir: Path, target: str = "short") -> dict:
     mechanism_cards = read_jsonl(state / "paper_mechanism_cards.jsonl")
     claims = read_jsonl(state / "claim_evidence_spans.jsonl")
     section_plans = read_jsonl(state / "section_evidence_plans.jsonl")
+    expert_reviews = read_jsonl(state / "expert_review_reports.jsonl")
+    review_iteration_status = read_json_file(state / "review_iteration_status.json")
     article_plan = text_or_empty(outputs / "article_plan.md")
     argument_text = text_or_empty(state / "argument_graph.yml")
     argument_graph = parse_structured_text(argument_text)
@@ -135,6 +139,7 @@ def evaluate_gates(task_dir: Path, target: str = "short") -> dict:
         claims=claims,
         target=target,
     )
+    gate_7 = validate_expert_reviews(expert_reviews, target, review_iteration_status)
 
     gates = {
         "gate_1_source_identity": {"passed": gate_1["valid"], **gate_1},
@@ -160,6 +165,7 @@ def evaluate_gates(task_dir: Path, target: str = "short") -> dict:
             "article_plan": plan_status,
         },
         "gate_6_article_quality": {"passed": gate_6["valid"], **gate_6},
+        "gate_7_expert_review": {"passed": gate_7["valid"], **gate_7},
     }
     gates["all_blocking_gates_passed"] = all(
         gates[name]["passed"] for name in [
@@ -169,6 +175,7 @@ def evaluate_gates(task_dir: Path, target: str = "short") -> dict:
             "gate_4_coverage",
             "gate_5_argument_graph",
             "gate_6_article_quality",
+            "gate_7_expert_review",
         ]
     )
     return gates

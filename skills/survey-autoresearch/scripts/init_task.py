@@ -18,6 +18,8 @@ STATE_FILES = [
     "paper_mechanism_cards.jsonl",
     "claim_evidence_spans.jsonl",
     "section_evidence_plans.jsonl",
+    "expert_review_reports.jsonl",
+    "weakness_routes.jsonl",
     "review_rounds.jsonl",
     "phase_summaries.jsonl",
 ]
@@ -106,7 +108,17 @@ def initialize_task(
             "gate_4_coverage": False,
             "gate_5_argument_graph": False,
             "gate_6_article_quality": False,
+            "gate_7_expert_review": False,
             "final_review_status": False,
+        },
+    )
+    write_json(
+        state / "review_iteration_status.json",
+        {
+            "round": 0,
+            "last_median_score": None,
+            "previous_median_score": None,
+            "status": "not_reviewed",
         },
     )
     for filename in STATE_FILES:

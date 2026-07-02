@@ -37,7 +37,7 @@ Read `references/runtime_contract.md` before long-running work.
 7. **Story skeleton**: write `state/argument_graph.yml`.
 8. **Section source re-check**: write `state/section_evidence_plans.jsonl`.
 9. **Publication drafting**: write `outputs/article_plan.md`, `outputs/review_body_draft.md`, final `outputs/review.md`, and `outputs/appendix.md`.
-10. **Review and repair**: write `state/review_rounds.jsonl` and `outputs/final_report.md`; rerun gates until complete or precisely blocked.
+10. **Expert review and repair**: generate independent expert review reports, route weaknesses, repair the responsible layer, and rerun gates until complete or precisely blocked.
 
 ## Required Contracts
 
@@ -48,9 +48,10 @@ Read `references/runtime_contract.md` before long-running work.
 - Synthesis dossiers and argument graph: `references/synthesis_contract.md`.
 - Article plan, appendix boundary, and publication prose: `references/article_contract.md`.
 - Final review standards and repair routing: `references/review_contract.md`.
+- Independent expert review scoring and weakness routing: `references/expert_review_contract.md`.
 - CSUR style and official exemplar use for `target=csur`: `references/csur_patterns.md` and `references/csur_official_exemplars.yml`.
 
-## Six Blocking Gates
+## Seven Blocking Gates
 
 For `target=full` and `target=csur`, completion requires:
 
@@ -60,6 +61,7 @@ For `target=full` and `target=csur`, completion requires:
 4. **Coverage Gate**: the literature map meets target breadth and records family, benchmark, related-survey, and scenario gaps honestly.
 5. **Argument Graph Gate**: scenario definitions, synthesis dossiers, story skeleton, and section evidence plans jointly support the article.
 6. **Article Quality Gate**: `review.md` is publication prose with no raw artifacts, internal methodology, run metadata, unsupported factual claims, repeated template sections, or un-interpreted tables.
+7. **Expert Review Gate**: independent reviewer reports meet the target score threshold and route all major weaknesses back to the responsible workflow layer.
 
 `short` targets may use a lighter workflow, but must still avoid fabricated citations and unsupported claims.
 
@@ -98,7 +100,8 @@ Transparent search protocol, broad coverage tables, and evidence logistics belon
 - `scripts/validate_argument_graph.py`: argument graph validation.
 - `scripts/validate_section_evidence_plans.py`: section source re-check validation.
 - `scripts/validate_article_quality.py`: article boundary, prose, repetition, section, table, and factual-support checks.
-- `scripts/gate_check.py`: six-gate orchestrator.
+- `scripts/expert_review_gate.py`: independent expert-review score, persona, weakness, and stop-rule validation.
+- `scripts/gate_check.py`: gate orchestrator.
 - `scripts/render_dashboard.py`: HTML progress dashboard.
 - `scripts/normalize_bib.py`: BibTeX normalization.
 
