@@ -13,6 +13,12 @@ REQUIRED_FIELDS = [
     "title",
     "survey_role",
     "level",
+    "reading_depth",
+    "full_text_accessed",
+    "source_type",
+    "sections_read",
+    "evidence_span_locations",
+    "deep_read_notes",
     "motivation",
     "problem_setting",
     "task_definition",
@@ -51,6 +57,48 @@ GENERIC_RELATIONS = {
     "positions the work relative to adjacent embodied-memory designs in the mechanism taxonomy",
 }
 
+READING_DEPTH_FULL = "full_text_deep_read"
+READING_DEPTH_METADATA = "abstract_metadata_only"
+READING_DEPTH_UNREAD = "unavailable_or_unread"
+
+FULL_TEXT_SOURCE_TERMS = {
+    "pdf",
+    "full_text_pdf",
+    "official_pdf",
+    "arxiv_pdf",
+    "publisher_pdf",
+    "acm_dl_pdf",
+    "openreview_pdf",
+    "paper_html",
+    "full_text_html",
+    "publisher_html",
+}
+
+METADATA_SOURCE_TERMS = {
+    "title",
+    "abstract",
+    "metadata",
+    "semantic scholar",
+    "semanticscholar",
+    "crossref",
+    "dblp",
+    "curated list",
+    "curated-list",
+    "github list",
+    "github curated",
+    "paper list",
+    "survey table",
+}
+
+SECTION_GROUPS = {
+    "intro_or_problem": {"intro", "introduction", "problem", "motivation", "background", "摘要", "引言", "问题"},
+    "method_or_system": {"method", "methods", "system", "approach", "model", "architecture", "方法", "系统", "模型", "架构"},
+    "experiment_or_evaluation": {"experiment", "experiments", "evaluation", "benchmark", "setup", "实验", "评测", "基准"},
+    "results_or_limitations": {"result", "results", "discussion", "limitation", "limitations", "conclusion", "结果", "限制", "讨论", "结论"},
+}
+
+LOCATION_TERMS = {"section", "sec.", "page", "p.", "pp.", "figure", "fig.", "table", "appendix", "section ", "页", "图", "表", "节"}
+
 
 def read_jsonl(path: Path) -> list[dict]:
     if not path.exists():
@@ -66,6 +114,10 @@ def depth_ids(citation_plan: list[dict]) -> set[str]:
     }
 
 
+def _is_depth_ab(value) -> bool:
+    return str(value or "").upper() in {"A", "B"}
+
+
 def _nonempty(value) -> bool:
     if value is None:
         return False
@@ -74,6 +126,47 @@ def _nonempty(value) -> bool:
     if isinstance(value, (list, tuple, set, dict)):
         return bool(value)
     return True
+
+
+def _as_list(value) -> list:
+    if value is None:
+        return []
+    if isinstance(value, list):
+        return value
+    if isinstance(value, (tuple, set)):
+        return list(value)
+    return [value]
+
+
+def _text_blob(value) -> str:
+    if value is None:
+        return ""
+    if isinstance(value, str):
+        return value
+    if isinstance(value, dict):
+        return " ".join(_text_blob(v) for v in value.values())
+    if isinstance(value, (list, tuple, set)):
+        return " ".join(_text_blob(v) for v in value)
+    return str(value)
+
+
+def _is_metadata_only_text(value) -> bool:
+    text = _text_blob(value).lower()
+    return any(term in text for term in METADATA_SOURCE_TERMS)
+
+
+def _has_location_anchor(value) -> bool:
+    text = _text_blob(value).lower()
+    return any(term in text for term in LOCATION_TERMS)
+
+
+def _covered_section_groups(sections_read) -> set[str]:
+    text_items = [_text_blob(item).lower() for item in _as_list(sections_read)]
+    covered = set()
+    for group, terms in SECTION_GROUPS.items():
+        if any(any(term in item for term in terms) for item in text_items):
+            covered.add(group)
+    return covered
 
 
 def _has_benchmark(card: dict) -> bool:
@@ -89,7 +182,7 @@ def _valid_result(result: dict) -> bool:
     ):
         return False
     lowered = evidence.lower()
-    return not any(term in lowered for term in ["title only", "title/abstract only", "paper title alone"])
+    return not any(term in lowered for term in ["title only", "title/abstract only", "paper title alone"]) and not _is_metadata_only_text(evidence)
 
 
 def _has_relation_type(value) -> bool:
@@ -107,14 +200,44 @@ def validate_paper_understanding(cards: list[dict], citation_plan: list[dict] | 
     by_id = {str(card.get("paper_id")): card for card in cards if card.get("paper_id")}
     errors: list[str] = []
     invalid_cards: dict[str, list[str]] = {}
+    deep_read_ids: set[str] = set()
+    metadata_only_a_b_ids: set[str] = set()
     for pid in sorted(required_ids - set(by_id)):
         invalid_cards[pid] = ["missing_mechanism_card"]
     for card in cards:
         pid = str(card.get("paper_id") or "<missing>")
+        is_required_ab = pid in required_ids or _is_depth_ab(card.get("level") or card.get("depth"))
+        reading_depth = str(card.get("reading_depth") or "").strip()
+        if not is_required_ab:
+            if reading_depth in {READING_DEPTH_METADATA, READING_DEPTH_UNREAD} or card.get("evidence_limited") is True:
+                continue
         card_errors = []
         for field in REQUIRED_FIELDS:
             if not _nonempty(card.get(field)):
                 card_errors.append(f"missing_{field}")
+        if is_required_ab:
+            if reading_depth != READING_DEPTH_FULL:
+                card_errors.append("a_b_not_full_text_deep_read")
+                metadata_only_a_b_ids.add(pid)
+            if card.get("full_text_accessed") is not True:
+                card_errors.append("full_text_not_accessed")
+            source_type = str(card.get("source_type") or "").lower()
+            if not any(term in source_type for term in FULL_TEXT_SOURCE_TERMS) or _is_metadata_only_text(source_type):
+                card_errors.append("invalid_full_text_source_type")
+            covered_groups = _covered_section_groups(card.get("sections_read"))
+            for group in SECTION_GROUPS:
+                if group not in covered_groups:
+                    card_errors.append(f"missing_section_group:{group}")
+            locations = _as_list(card.get("evidence_span_locations"))
+            if not locations:
+                card_errors.append("missing_evidence_span_locations")
+            else:
+                if any(_is_metadata_only_text(location) for location in locations):
+                    card_errors.append("metadata_only_evidence_location")
+                if not all(_has_location_anchor(location) for location in locations):
+                    card_errors.append("evidence_location_not_specific")
+            if _is_metadata_only_text(card.get("evidence_spans")):
+                card_errors.append("metadata_only_evidence_span")
         if not _has_benchmark(card):
             card_errors.append("missing_benchmark_or_dataset")
         if not isinstance(card.get("method_pipeline"), list) or len(card.get("method_pipeline", [])) < 2:
@@ -148,6 +271,8 @@ def validate_paper_understanding(cards: list[dict], citation_plan: list[dict] | 
             card_errors.append("benchmark_used_as_method_result")
         if card_errors:
             invalid_cards[pid] = card_errors
+        elif is_required_ab and reading_depth == READING_DEPTH_FULL:
+            deep_read_ids.add(pid)
     if invalid_cards:
         errors.append("invalid_paper_understanding")
     return {
@@ -155,6 +280,10 @@ def validate_paper_understanding(cards: list[dict], citation_plan: list[dict] | 
         "errors": errors,
         "total_cards": len(cards),
         "required_a_b_cards": len(required_ids),
+        "a_b_required_count": len(required_ids),
+        "a_b_full_text_deep_read_count": len(deep_read_ids & required_ids),
+        "metadata_only_a_b_count": len(metadata_only_a_b_ids & required_ids),
+        "paper_understanding_complete": not errors,
         "invalid_cards": invalid_cards,
     }
 

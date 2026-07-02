@@ -61,8 +61,10 @@ def build_coverage(papers: list[dict], citation_plan: list[dict], target: str = 
     unassigned = family_counts.get("unassigned", 0)
     if target in {"full", "csur"} and papers and unassigned == len(papers):
         missing.append("all_coverage_unassigned")
+    coverage_expanded = not missing
     return {
         "valid": not missing,
+        "coverage_expanded": coverage_expanded,
         "missing": missing,
         "thresholds": thresholds,
         "verified_refs": verified,

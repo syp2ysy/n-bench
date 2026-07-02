@@ -10,6 +10,34 @@ from pathlib import Path
 
 STRENGTH = {"may indicate": 1, "suggests": 2, "shows": 3, "demonstrates": 4}
 
+DEEP_READING_DEPTH = "full_text_deep_read"
+BACKGROUND_CLAIM_TYPES = {"background", "coverage", "related_work", "context"}
+FULL_TEXT_CLAIM_TYPES = {
+    "method",
+    "method_mechanism",
+    "mechanism",
+    "result",
+    "experimental_result",
+    "benchmark",
+    "benchmark_property",
+    "comparison",
+    "limitation",
+}
+METADATA_EVIDENCE_TERMS = {
+    "title only",
+    "title/abstract only",
+    "paper title alone",
+    "abstract metadata",
+    "abstract only",
+    "metadata",
+    "semantic scholar",
+    "semanticscholar",
+    "curated list",
+    "curated-list",
+    "github list",
+    "paper list",
+}
+
 
 def read_jsonl(path: Path) -> list[dict]:
     if not path.exists():
@@ -17,8 +45,21 @@ def read_jsonl(path: Path) -> list[dict]:
     return [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines() if line.strip()]
 
 
+def _is_deep_read_card(card: dict | None) -> bool:
+    return bool(card) and card.get("reading_depth") == DEEP_READING_DEPTH and card.get("full_text_accessed") is True
+
+
+def _is_metadata_only_span(span: dict) -> bool:
+    text = " ".join(
+        str(span.get(field) or "").lower()
+        for field in ["section_or_page", "evidence_summary", "source_type", "evidence_span"]
+    )
+    return any(term in text for term in METADATA_EVIDENCE_TERMS)
+
+
 def validate_claim_evidence(claims: list[dict], mechanism_cards: list[dict], section_plans: list[dict] | None = None) -> dict:
     card_ids = {str(card.get("paper_id")) for card in mechanism_cards if card.get("paper_id")}
+    cards_by_id = {str(card.get("paper_id")): card for card in mechanism_cards if card.get("paper_id")}
     planned_claims = set()
     for plan in section_plans or []:
         for claim_id in plan.get("must_include_evidence_spans") or []:
@@ -30,6 +71,7 @@ def validate_claim_evidence(claims: list[dict], mechanism_cards: list[dict], sec
         claim_errors = []
         if not claim.get("claim"):
             claim_errors.append("missing_claim_text")
+        claim_type = str(claim.get("claim_type") or "").lower()
         claim_strength = str(claim.get("strength") or "").lower()
         if claim_strength not in STRENGTH:
             claim_errors.append("invalid_claim_strength")
@@ -43,8 +85,17 @@ def validate_claim_evidence(claims: list[dict], mechanism_cards: list[dict], sec
             span_strength = str(span.get("strength") or "").lower()
             if paper_id not in card_ids:
                 claim_errors.append(f"unknown_paper:{paper_id}")
+            elif (
+                claim_type in FULL_TEXT_CLAIM_TYPES
+                or (claim_type not in BACKGROUND_CLAIM_TYPES and STRENGTH.get(claim_strength, 0) >= STRENGTH["shows"])
+            ) and not _is_deep_read_card(cards_by_id.get(paper_id)):
+                claim_errors.append(f"claim_requires_full_text_deep_read:{paper_id}")
             if not span.get("section_or_page") or not span.get("evidence_summary"):
                 claim_errors.append(f"incomplete_span:{paper_id}")
+            if _is_metadata_only_span(span) and (
+                claim_type in FULL_TEXT_CLAIM_TYPES or STRENGTH.get(claim_strength, 0) >= STRENGTH["shows"]
+            ):
+                claim_errors.append(f"metadata_only_span_for_strong_claim:{paper_id}")
             if span_strength not in STRENGTH:
                 claim_errors.append(f"invalid_span_strength:{paper_id}")
             elif claim_strength in STRENGTH and STRENGTH[claim_strength] > STRENGTH[span_strength]:

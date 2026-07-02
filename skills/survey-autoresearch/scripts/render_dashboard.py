@@ -64,6 +64,13 @@ def render_dashboard(task_dir: Path, target: str | None = None) -> Path:
         score = ""
         if key == "gate_7_expert_review" and gate.get("median_score") is not None:
             score = f"<p class='muted'>median expert score: {esc(gate.get('median_score'))}</p>"
+        if key == "gate_2_paper_understanding":
+            score = (
+                score
+                + "<p class='muted'>A/B full-text deep-read: "
+                + f"{esc(gate.get('a_b_full_text_deep_read_count', 0))}/{esc(gate.get('a_b_required_count', gate.get('required_a_b_cards', 0)))}"
+                + f" · metadata-only A/B: {esc(gate.get('metadata_only_a_b_count', 0))}</p>"
+            )
         gate_cards.append(
             f"<div class='card'><h3>{esc(key)}</h3><div class='{ 'pass' if gate.get('passed') else 'fail' }'>"
             f"{'PASS' if gate.get('passed') else 'FAIL'}</div>{score}<pre>{esc(json.dumps(gate, indent=2, ensure_ascii=False)[:1200])}</pre></div>"

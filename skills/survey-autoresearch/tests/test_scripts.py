@@ -64,6 +64,22 @@ class SurveyAutoResearchRefactorTest(unittest.TestCase):
                     "title": f"Verified Paper {idx}",
                     "survey_role": "method",
                     "level": "A" if idx <= 25 else "B",
+                    "reading_depth": "full_text_deep_read",
+                    "full_text_accessed": True,
+                    "source_type": "arxiv_pdf",
+                    "sections_read": [
+                        "Introduction and problem formulation",
+                        "Method and system architecture",
+                        "Experiments and evaluation setup",
+                        "Results, discussion, and limitations",
+                    ],
+                    "evidence_span_locations": [
+                        "Section 1, page 1",
+                        "Section 3, pages 4-6",
+                        "Section 4, Table 2",
+                        "Section 5, page 9",
+                    ],
+                    "deep_read_notes": "Full text was read across introduction, method, experiment, result, and limitation sections.",
                     "motivation": "The paper addresses a concrete long-horizon research bottleneck.",
                     "problem_setting": "A partially observable embodied or agentic decision problem.",
                     "task_definition": {"input": "observation and goal", "output": "action or answer"},
@@ -440,6 +456,35 @@ class SurveyAutoResearchRefactorTest(unittest.TestCase):
         self.assertIn("missing_baselines", status["invalid_cards"]["p001"])
         self.assertIn("missing_ablations", status["invalid_cards"]["p001"])
 
+    def test_paper_understanding_rejects_metadata_only_a_b_cards(self):
+        card = self.mechanism_cards(1)[0]
+        card["reading_depth"] = "abstract_metadata_only"
+        card["full_text_accessed"] = False
+        card["source_type"] = "Semantic Scholar metadata"
+        card["sections_read"] = ["title and abstract"]
+        card["evidence_span_locations"] = ["curated-list row"]
+        card["main_results"][0]["evidence_span"] = "Semantic Scholar metadata says the paper improves a benchmark."
+        status = validate_paper_understanding([card], [{"paper_id": "p001", "depth": "A"}])
+        self.assertFalse(status["valid"])
+        self.assertIn("a_b_not_full_text_deep_read", status["invalid_cards"]["p001"])
+        self.assertIn("full_text_not_accessed", status["invalid_cards"]["p001"])
+        self.assertIn("metadata_only_evidence_location", status["invalid_cards"]["p001"])
+        self.assertEqual(status["metadata_only_a_b_count"], 1)
+
+    def test_metadata_only_c_is_not_required_by_paper_understanding(self):
+        card = {
+            "paper_id": "p150",
+            "title": "Metadata-only Background Paper",
+            "level": "C",
+            "reading_depth": "abstract_metadata_only",
+            "evidence_limited": True,
+        }
+        status = validate_paper_understanding([card], [{"paper_id": "p001", "depth": "A"}])
+        self.assertFalse(status["valid"])
+        self.assertIn("p001", status["invalid_cards"])
+        status = validate_paper_understanding([card], [{"paper_id": "p150", "depth": "C"}])
+        self.assertTrue(status["valid"], status)
+
     def test_claim_evidence_blocks_missing_span_and_overclaim(self):
         too_strong = self.claims()
         too_strong[0]["strength"] = "demonstrates"
@@ -448,6 +493,18 @@ class SurveyAutoResearchRefactorTest(unittest.TestCase):
         self.assertIn("claim_strength_exceeds_evidence:p001", status["invalid_claims"]["c1"])
         status = validate_claim_evidence(self.claims(), self.mechanism_cards(1))
         self.assertTrue(status["valid"], status)
+
+    def test_claim_evidence_rejects_metadata_only_support_for_strong_claims(self):
+        metadata_card = self.mechanism_cards(1)[0]
+        metadata_card["reading_depth"] = "abstract_metadata_only"
+        metadata_card["full_text_accessed"] = False
+        claim = self.claims()[0]
+        claim["evidence_spans"][0]["section_or_page"] = "Semantic Scholar metadata"
+        claim["evidence_spans"][0]["evidence_summary"] = "Abstract metadata says the method improves the benchmark."
+        status = validate_claim_evidence([claim], [metadata_card])
+        self.assertFalse(status["valid"])
+        self.assertIn("claim_requires_full_text_deep_read:p001", status["invalid_claims"]["c1"])
+        self.assertIn("metadata_only_span_for_strong_claim:p001", status["invalid_claims"]["c1"])
 
     def test_coverage_gate_enforces_full_survey_breadth(self):
         status = build_coverage(self.papers(20, 1), self.citation_plan(a=2, b=4, c=14), "full")
@@ -613,6 +670,23 @@ class SurveyAutoResearchRefactorTest(unittest.TestCase):
             self.assertIn("scenario_definitions", gates["gate_5_argument_graph"])
             self.assertIn("section_evidence_plans", gates["gate_5_argument_graph"])
 
+    def test_gate_check_distinguishes_expanded_coverage_from_deep_read_completion(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            task_dir = initialize_task(Path(tmp), "world action models", target="full")
+            self.populate_full_task(task_dir)
+            cards = self.mechanism_cards()
+            for card in cards:
+                card["reading_depth"] = "abstract_metadata_only"
+                card["full_text_accessed"] = False
+                card["source_type"] = "curated list metadata"
+                card["sections_read"] = ["title and abstract"]
+                card["evidence_span_locations"] = ["curated-list row"]
+            write_jsonl(task_dir / "state" / "paper_mechanism_cards.jsonl", cards)
+            gates = evaluate_gates(task_dir, "full")
+            self.assertTrue(gates["gate_4_coverage"]["coverage_expanded"])
+            self.assertFalse(gates["gate_2_paper_understanding"]["paper_understanding_complete"])
+            self.assertFalse(gates["all_blocking_gates_passed"])
+
     def test_init_task_uses_new_state_skeleton(self):
         with tempfile.TemporaryDirectory() as tmp:
             task_dir = initialize_task(Path(tmp), "test topic", target="full")
@@ -637,6 +711,7 @@ class SurveyAutoResearchRefactorTest(unittest.TestCase):
             self.assertIn("gate_1_source_identity", html)
             self.assertIn("gate_6_article_quality", html)
             self.assertIn("gate_7_expert_review", html)
+            self.assertIn("A/B full-text deep-read", html)
 
     def test_lqs_keeps_foundational_roles(self):
         scored = score_paper({"paper_id": "p1", "survey_role": "seminal", "conceptual_centrality": 10, "mechanism_clarity": 8})
