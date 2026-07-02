@@ -30,6 +30,7 @@ Read `references/runtime_contract.md` before long-running work.
 1. **Task lock and survey type**: write `state/task_spec.md` and `state/survey_type_plan.yml`.
 2. **High-recall discovery**: collect broad candidates in `state/raw_candidates.jsonl`.
 3. **Source verification and citation depth**: write `state/papers.jsonl` and `state/citation_plan.jsonl`.
+   If a full survey discovers a public curated list or recent survey whose visible paper count substantially exceeds the retained corpus, the run must enter corpus-expansion mode before final drafting.
 4. **Paper mechanism understanding**: write `state/paper_mechanism_cards.jsonl` for A/B papers.
 5. **Scenario/domain definitions**: write `state/scenario_definitions.yml`.
 6. **Field synthesis**: write method-family dossiers, benchmark dossiers, related-survey matrix, and `state/claim_evidence_spans.jsonl`.
