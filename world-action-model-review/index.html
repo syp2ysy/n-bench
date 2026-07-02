@@ -36,18 +36,18 @@
 <body>
   <header>
     <h1>World Action Model 领域综述</h1>
-    <p class="lede">社区原生版本：以 Cascaded WAM / Joint WAM 作为主 taxonomy，把 system-object 节点作为横向诊断 lens，并把数据生态与评测协议放回文章主骨架。</p>
+    <p class="lede">新版 skill 更新版：加入 full-text source audit、source_ref/excerpt 证据链、science paradigm profile，以及 protocol/metric/baseline/ablation/confounder 评测 recipe。</p>
     <section class="roadmap" aria-label="Taxonomy roadmap">
-      <div class="node"><strong>Roots</strong><small>Reactive VLA, latent world models, visual foresight, video foundation models.</small></div>
-      <div class="node cascaded"><strong>Cascaded WAM</strong><small>Explicit or latent future first, then planning, policy, or training signal.</small></div>
-      <div class="node joint"><strong>Joint WAM</strong><small>Action and world representation share token streams, diffusion/flow paths, or latent alignment.</small></div>
-      <div class="node eval"><strong>Data + Evaluation</strong><small>Robot logs, human video, simulation, world priors, utility and latency protocols.</small></div>
+      <div class="node"><strong>Evidence Norms</strong><small>Full-text A/B source_ref + excerpt for strong claims.</small></div>
+      <div class="node cascaded"><strong>Cascaded WAM</strong><small>Future representation first, then planning, policy, or training signal.</small></div>
+      <div class="node joint"><strong>Joint WAM</strong><small>Action and world representation share token streams, flow paths, or latent alignment.</small></div>
+      <div class="node eval"><strong>Evaluation Recipe</strong><small>Protocol, metric, baseline, ablation/control, confounder.</small></div>
     </section>
     <div class="metrics">
       <span class="metric">170 references</span>
-      <span class="metric">95 full-text A/B</span>
+      <span class="metric">95 full-text A/B audited</span>
       <span class="metric">Cascaded / Joint spine</span>
-      <span class="metric">System interfaces as diagnostic lens</span>
+      <span class="metric">Robotics evidence norms</span>
     </div>
   </header>
   <main>
@@ -138,6 +138,7 @@
 <tr><td>Policy utility</td><td>Use WAM for planning, training, or policy input</td><td>Success, recovery, sample efficiency</td><td>No-WAM policy and oracle future</td><td>Perception and low-level control</td></tr>
 <tr><td>Deployment cost</td><td>Measure online rollout or decoding</td><td>Latency, memory, control frequency</td><td>Training-only WAM or reactive policy</td><td>Hardware and batching differences</td></tr>
 </table>
+<p>一个最低限度的 minimum evaluation recipe 应包含五个显式元素：protocol 说明任务、输入输出、控制频率和是否在线 rollout；metric 说明视觉质量、物理一致性、动作可行、策略收益或延迟中的哪一项被测量；baseline 至少包含 reactive VLA、no-WAM policy、non-action-conditioned world model 或 oracle/privileged future 中的合适对照；ablation/control 应隔离 future branch、action representation、data source、context length 或 rollout horizon；confounder 则要报告 perception error、controller clipping、dataset prior、sim-real gap 和硬件 latency。因此，评测章节给出的不是一个单分数排行榜，而是一份 evaluation recipe：每个强结论都必须能回指到 protocol、metric、baseline、ablation/control 和 confounder。</p>
 <p>这个 matrix 的启示是：WAM 论文的强结论必须说明自己在哪一层成立。一个模型可以在 visual fidelity 上强，但 policy utility 未被验证；也可以在 policy utility 上有效，却没有提供可检查未来；还可以在训练时利用 world-action consistency，但部署时不输出 future。成熟 WAM 评测需要跨层组合，而不是把单一 benchmark 分数当作全局答案。</p>
 <p>评测协议还需要处理 negative controls。对于 Cascaded WAM，至少应比较 no-future policy、oracle or privileged future、wrong-action future、以及不同 rollout horizon；对于 Joint WAM，至少应比较 action token ablation、world token ablation、context length、以及仅 VLA 或仅 video pretraining 的替代模型。对于 training-only WAM，还要区分 future loss 带来的 representation improvement 与额外数据、额外 compute 或更强 backbone 带来的收益。没有这些 negative controls，WAM 的贡献会被“更大模型”或“更多数据”解释掉。</p>
 <p>部署评测同样不可省略。真实机器人系统关心的是控制频率、失败恢复、在线 memory、动作安全边界和人类监督成本。一个需要长时间视频 rollout 的模型可能适合离线计划或高层 deliberation，却不适合低层闭环控制；一个 distilled WAM policy 可能适合快速动作，却不容易解释失败原因。因此，evaluation chapter 必须把 latency 与 interpretability 放在同一个讨论框架里，而不是把它们当作工程细节。</p>
@@ -172,6 +173,7 @@
 <p>这个重构带来的主要收益有三点。第一，WAM 与 VLA、world model、ACWM 和 video policy 的边界更清楚，避免把所有相邻工作都纳入同一概念。第二，数据生态和评测协议成为独立章节，使读者能判断一篇论文的能力来自 robot logs、human video、simulation 还是 world foundation pretraining，也能判断它的结论成立于 visual fidelity、physical commonsense、action plausibility、policy utility 还是 deployment cost。第三，paper-to-paper relation 更清晰：Deep Visual Foresight 与 latent imagination 解释 Cascaded roots，Unified Video Action Model 与 WorldVLA 解释 Joint turn，Fast-WAM 解释 training-time 与 inference-time imagination 的分离，OA-WAM 与 Mem-World 解释 object/memory pressure，WorldArena、SC3-Eval 和 ACWM-Phys 解释评测正在从视频质量走向 embodied utility。</p>
 <p>未来的 WAM 研究如果要从概念热度走向可累积科学，需要同时报告架构位置、数据来源、接口设计、评测层级和部署成本。只有这样，WAM 才能成为连接世界理解与机器人行动的稳定模型族，而不是一个随论文命名漂移的宽泛标签。因此，一个高质量 WAM 综述也必须服务这个目标：用领域原生 taxonomy 帮读者定位方法，用证据约束强结论，用 cross-cutting lens 指出下一步系统设计和评测修复的方向。</p>
 <p>最后，WAM 综述的质量还取决于它能否给未来论文提供写作模板。一篇新论文若提出 Cascaded WAM，应说明 future representation 的形式、rollout 是否在线、controller 如何读取未来、错误如何传播、与 no-future policy 的差别在哪里；若提出 Joint WAM，应说明 token 或 latent 共享机制、动作频率、context budget、world/action ablation 和 latency；若提出数据或 benchmark，应说明它测的是哪个 capability layer，不能支持哪些结论。这样的模板把综述从“总结已有论文”推进到“规范下一批论文如何可比较地写作和评测”。这也是本文从 system-node 主目录转向 community-native taxonomy 的根本原因。</p>
+<p>在这个证据标准下，WAM 的论文关系也要重新读取：一篇工作若只改进视觉预测，只能支持 world-prior 或 physical-consistency 层面的结论；若同时提供 no-future baseline、action ablation 和 policy utility，它才更接近 WAM 机制贡献；若报告低延迟部署，则还需要说明 online rollout、distillation 或 training-only objective 如何改变控制接口。这个 science paradigm profile 把机器人和 ML systems 的证据规范合并起来，使 taxonomy 不只是概念地图，也成为判断 claim strength 的工具。</p>
 <p>因此，本文最终给出的不是一个替代所有视角的单一框架，而是一个优先级顺序：先用社区原生 taxonomy 建立地图，再用数据生态解释能力来源，再用评测矩阵限定结论，最后用系统接口 lens 做诊断。这个顺序能让综述既像领域综述，也保留证据约束。</p>
 <p>这种写法也给读者一个 practical reading protocol：遇到新 WAM 论文时，先定位 Cascaded 或 Joint，再检查数据来源和评测层级，最后追问系统接口是否支持论文声称的能力。若三步不能对齐，该论文的结论就应被收窄。</p>
       <section class="refs">
