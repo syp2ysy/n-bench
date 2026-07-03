@@ -90,25 +90,11 @@ Transparent search protocol, broad coverage tables, and evidence logistics belon
 
 ## Script Helpers
 
-- `scripts/init_task.py`: create the new state/output skeleton.
-- `scripts/heartbeat.py`, `scripts/patrol.py`: runtime liveness helpers.
-- `scripts/score_lqs.py`: survey-role scoring for candidate triage.
-- `scripts/phase_gate.py`: phase barrier controller.
-- `scripts/verify_sources.py`: source identity validation.
-- `scripts/validate_paper_understanding.py`: paper mechanism-card validation.
-- `scripts/validate_claim_evidence.py`: claim-to-evidence validation.
-- `scripts/validate_coverage.py`: discovery, corpus-expansion, candidate-linkage, and retained-coverage validator.
-- `scripts/build_contribution_tree.py`: contribution-statement and contribution-tree validator.
-- `scripts/validate_scenario_definitions.py`: scenario/domain definition validation.
-- `scripts/validate_synthesis_dossiers.py`: method-family and benchmark dossier validation.
-- `scripts/validate_argument_graph.py`: argument graph validation.
-- `scripts/validate_section_evidence_plans.py`: section source re-check validation.
-- `scripts/validate_article_quality.py`: article boundary, prose, repetition, section, table, and factual-support checks.
-- `scripts/run_expert_reviews.py`: freeze article versions and prepare independent reviewer packets without fabricating review content.
-- `scripts/expert_review_gate.py`: independent expert-review score, persona, weakness, and stop-rule validation.
-- `scripts/gate_check.py`: gate orchestrator.
-- `scripts/render_dashboard.py`: HTML progress dashboard.
-- `scripts/normalize_bib.py`: BibTeX normalization.
+- Initialize and monitor runs with `init_task.py`, heartbeat/patrol helpers, and the dashboard renderer.
+- Validate phase barriers with `phase_gate.py`; use `gate_check.py` only as the final summary.
+- Validate evidence and synthesis with the source, coverage, paper-understanding, claim-evidence, contribution-tree, scenario, dossier, argument, section-plan, and article-quality validators.
+- Run expert review with `run_expert_reviews.py` for freeze/dispatch/collect and `expert_review_gate.py` for final review closure.
+- Use scoring and bibliography helpers only for candidate triage and output cleanup.
 
 ## Final Outputs
 
