@@ -12,6 +12,7 @@ from pathlib import Path
 
 STATE_FILES = [
     "raw_candidates.jsonl",
+    "search_routes.jsonl",
     "papers.jsonl",
     "lqs_scores.jsonl",
     "citation_plan.jsonl",
@@ -69,7 +70,7 @@ def initialize_task(
     topic: str,
     slug: str | None = None,
     output_mode: str = "markdown",
-    target: str = "short",
+    target: str = "full",
 ) -> Path:
     task_slug = slug or slugify(topic)
     task_dir = base_dir / task_slug
@@ -98,7 +99,11 @@ def initialize_task(
             "last_seen": now,
             "status": "running",
             "iteration": 0,
-            "phase": "phase_0_task_lock",
+            "phase": "task_lock",
+            "current_phase": "task_lock",
+            "last_passed_phase": None,
+            "blocked_by_phase": None,
+            "allowed_next_phase": "survey_type",
             "topic": topic,
             "target": target,
             "next_action": "write survey_type_plan.yml and start high-recall discovery",
@@ -127,6 +132,37 @@ def initialize_task(
             "status": "not_reviewed",
         },
     )
+    write_json(
+        state / "phase_status.json",
+        {
+            "valid": False,
+            "all_required_phases_passed": False,
+            "blocked_by_phase": "discovery",
+            "last_passed_phase": None,
+            "allowed_next_phase": "discovery",
+            "phases": {
+                "discovery": {"passed": False},
+                "source_verification": {"passed": False},
+                "paper_understanding": {"passed": False},
+                "synthesis": {"passed": False},
+                "argument": {"passed": False},
+                "article": {"passed": False},
+                "expert_review": {"passed": False},
+            },
+        },
+    )
+    write_json(
+        state / "corpus_expansion.json",
+        {
+            "required": False,
+            "triggered_by": [],
+            "visible_external_count": 0,
+            "retained_candidate_count": 0,
+            "expansion_rounds": [],
+            "status": "not_required",
+            "waiver_reason": "",
+        },
+    )
     for filename in STATE_FILES:
         (state / filename).touch()
     for filename in LOG_FILES:
@@ -149,7 +185,7 @@ def main() -> int:
     parser.add_argument("--topic", required=True)
     parser.add_argument("--slug")
     parser.add_argument("--output-mode", default="markdown")
-    parser.add_argument("--target", choices=["short", "full", "csur"], default="short")
+    parser.add_argument("--target", choices=["short", "full", "csur"], default="full")
     args = parser.parse_args()
     print(initialize_task(args.base_dir, args.topic, args.slug, args.output_mode, args.target))
     return 0

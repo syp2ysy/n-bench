@@ -16,12 +16,14 @@ REQUIRED_FIELDS = [
     "reading_depth",
     "full_text_accessed",
     "source_type",
+    "full_text_sources",
     "sections_read",
     "evidence_span_locations",
     "deep_read_notes",
     "motivation",
     "problem_setting",
     "task_definition",
+    "benchmark_or_dataset",
     "method_pipeline",
     "implementation_details",
     "experimental_setup",
@@ -29,6 +31,7 @@ REQUIRED_FIELDS = [
     "limitations_and_confounders",
     "relation_to_prior_work",
     "what_it_changes_in_the_survey_argument",
+    "must_not_overclaim",
     "evidence_spans",
 ]
 
@@ -101,6 +104,30 @@ SECTION_GROUPS = {
 }
 
 LOCATION_TERMS = {"section", "sec.", "page", "p.", "pp.", "figure", "fig.", "table", "appendix", "section ", "页", "图", "表", "节"}
+
+GENERIC_FIELD_PATTERNS = {
+    "motivation": {
+        "this paper is important",
+        "this paper is relevant",
+        "important and relevant",
+        "the paper addresses a problem in this area",
+    },
+    "problem_setting": {
+        "a general problem",
+        "a relevant task",
+        "the paper studies the problem",
+    },
+    "deep_read_notes": {
+        "read the paper",
+        "paper was read",
+        "full text was reviewed",
+    },
+    "what_it_changes_in_the_survey_argument": {
+        "it is useful for the survey",
+        "it supports the survey",
+        "it is relevant to the argument",
+    },
+}
 
 
 def read_jsonl(path: Path) -> list[dict]:
@@ -238,6 +265,17 @@ def _has_relation_type(value) -> bool:
     return any(term in lowered for term in RELATION_TERMS)
 
 
+def _is_generic_field(field: str, value) -> bool:
+    text = _text_blob(value).strip().lower()
+    if not text:
+        return False
+    if field == "deep_read_notes" and len(text.split()) < 12:
+        return True
+    if field in {"motivation", "problem_setting", "what_it_changes_in_the_survey_argument"} and len(text.split()) < 8:
+        return True
+    return any(pattern in text for pattern in GENERIC_FIELD_PATTERNS.get(field, set()))
+
+
 def validate_paper_understanding(
     cards: list[dict],
     citation_plan: list[dict] | None = None,
@@ -264,6 +302,8 @@ def validate_paper_understanding(
         for field in REQUIRED_FIELDS:
             if not _nonempty(card.get(field)):
                 card_errors.append(f"missing_{field}")
+            elif is_required_ab and _is_generic_field(field, card.get(field)):
+                card_errors.append(f"generic_{field}")
         if is_required_ab:
             paper_sources = sources_by_paper.get(pid, [])
             if not paper_sources:
@@ -296,7 +336,7 @@ def validate_paper_understanding(
                 card_errors.append("metadata_only_evidence_span")
         if not _has_benchmark(card):
             card_errors.append("missing_benchmark_or_dataset")
-        if not isinstance(card.get("method_pipeline"), list) or len(card.get("method_pipeline", [])) < 2:
+        if not isinstance(card.get("method_pipeline"), list) or len(card.get("method_pipeline", [])) < 3:
             card_errors.append("method_pipeline_too_thin")
         if not isinstance(card.get("implementation_details"), dict) or len(card.get("implementation_details", {})) < 2:
             card_errors.append("implementation_details_too_thin")
@@ -329,18 +369,23 @@ def validate_paper_understanding(
             invalid_cards[pid] = card_errors
         elif is_required_ab and reading_depth == READING_DEPTH_FULL:
             deep_read_ids.add(pid)
+    incomplete_ids = sorted(set(invalid_cards) | (required_ids - deep_read_ids))
     if invalid_cards:
         errors.append("invalid_paper_understanding")
+    if required_ids and deep_read_ids != required_ids:
+        errors.append("incomplete_a_b_paper_understanding")
     return {
         "valid": not errors,
         "errors": errors,
         "total_cards": len(cards),
         "required_a_b_cards": len(required_ids),
         "a_b_required_count": len(required_ids),
+        "a_b_completed_count": len(deep_read_ids & required_ids),
         "a_b_full_text_deep_read_count": len(deep_read_ids & required_ids),
         "a_b_full_text_source_audited_count": len(audited_deep_read_ids & required_ids),
         "metadata_only_a_b_count": len(metadata_only_a_b_ids & required_ids),
         "paper_understanding_complete": not errors,
+        "incomplete_paper_ids": incomplete_ids,
         "invalid_cards": invalid_cards,
     }
 

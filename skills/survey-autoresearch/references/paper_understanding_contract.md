@@ -14,6 +14,7 @@ Every A/B paper needs:
 - `reading_depth: full_text_deep_read`
 - `full_text_accessed: true`
 - `source_type` naming a full-text source such as PDF, publisher HTML, arXiv PDF, ACM DL PDF, or OpenReview PDF
+- `full_text_sources`: stable source references matching `state/full_text_sources.jsonl`
 - a matching `state/full_text_sources.jsonl` record with accessible full text, extraction status, source reference, and captured excerpt(s)
 - `sections_read` covering at least intro/problem, method/system, experiment/evaluation, and results/limitations
 - `evidence_span_locations` with concrete section, page, figure, or table locators
@@ -33,6 +34,10 @@ Every A/B paper needs:
 - `evidence_spans`
 
 The card explains a scientific contribution, not a survey bucket. It must answer why the paper exists, what task it studies, how the method works, how it was evaluated, what the results support, what they do not support, and how the paper changes the survey argument.
+
+Every required A/B field must contain substantive content. Empty strings, empty lists, empty dicts, placeholder prose, and generic sentences such as "this paper is important", "related to prior work", or "read the paper" fail the Paper Understanding Completion Gate. If a field is genuinely not applicable, use a structured `not_applicable_reason` with an evidence-backed explanation; do not leave the field blank.
+
+All A/B papers in `state/citation_plan.jsonl` must have complete mechanism cards before any contribution tree, scenario definition, synthesis dossier, argument graph, section evidence plan, article plan, or review draft is treated as valid. Partial A/B completion is a blocked state, not a warning.
 
 A/B papers without full-text access, concrete results, baselines, ablations, limitations, or benchmark/environment details must be downgraded. They may be retained as C/background only when marked `evidence_limited=true`.
 

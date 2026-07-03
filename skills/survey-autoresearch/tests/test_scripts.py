@@ -3,11 +3,12 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from scripts.build_coverage_matrix import build_coverage
 from scripts.gate_check import evaluate_gates
 from scripts.init_task import initialize_task
+from scripts.phase_gate import evaluate_phase_barriers
 from scripts.render_dashboard import render_dashboard
 from scripts.score_lqs import classify_depth, score_paper
+from scripts.validate_coverage import validate_coverage
 from scripts.validate_article_quality import validate_article_quality
 from scripts.validate_argument_graph import validate_argument_graph
 from scripts.validate_claim_evidence import validate_claim_evidence
@@ -42,11 +43,67 @@ class SurveyAutoResearchRefactorTest(unittest.TestCase):
                     "doi": f"10.0000/{idx}",
                     "verification_status": "verified",
                     "verified_sources": ["doi"],
+                    "source_candidate_id": f"cand-{idx:03d}",
                     "survey_role": "survey" if idx <= related_surveys else ("benchmark" if idx % 5 == 0 else "method"),
                     "family": "family-a" if idx % 2 else "family-b",
                 }
             )
         return rows
+
+    def raw_candidates(self, total: int = 220, related_surveys: int = 8) -> list[dict]:
+        rows = []
+        for idx in range(1, total + 1):
+            rows.append(
+                {
+                    "candidate_id": f"cand-{idx:03d}",
+                    "paper_id": f"p{idx:03d}",
+                    "title": f"{'Survey' if idx <= related_surveys else 'Candidate'} Paper {idx}",
+                    "source": "Semantic Scholar",
+                    "query": "embodied memory survey",
+                    "survey_role": "survey" if idx <= related_surveys else ("benchmark" if idx % 5 == 0 else "method"),
+                }
+            )
+        return rows
+
+    def search_routes(self, total: int = 8) -> list[dict]:
+        families = [
+            "seed",
+            "synonym",
+            "related_survey",
+            "curated_list",
+            "benchmark_page",
+            "venue_domain",
+            "backward_citation",
+            "forward_citation",
+        ]
+        return [
+            {
+                "route_id": f"route-{idx:02d}",
+                "source": "Semantic Scholar" if idx % 2 else "OpenAlex",
+                "query": f"{families[(idx - 1) % len(families)]} query",
+                "query_family": families[(idx - 1) % len(families)],
+                "results_seen": 50,
+                "candidates_retained": 20,
+            }
+            for idx in range(1, total + 1)
+        ]
+
+    def lqs_scores(self, total: int = 220) -> list[dict]:
+        return [
+            {"candidate_id": f"cand-{idx:03d}", "paper_id": f"p{idx:03d}", "lqs": 8.0, "depth_recommendation": "B"}
+            for idx in range(1, total + 1)
+        ]
+
+    def corpus_expansion(self, required: bool = False, status: str = "not_required") -> dict:
+        return {
+            "required": required,
+            "triggered_by": ["curated list larger than retained corpus"] if required else [],
+            "visible_external_count": 0,
+            "retained_candidate_count": 220,
+            "expansion_rounds": [],
+            "status": status,
+            "waiver_reason": "",
+        }
 
     def citation_plan(self, a: int = 25, b: int = 70, c: int = 65) -> list[dict]:
         rows = []
@@ -69,6 +126,7 @@ class SurveyAutoResearchRefactorTest(unittest.TestCase):
                     "reading_depth": "full_text_deep_read",
                     "full_text_accessed": True,
                     "source_type": "arxiv_pdf",
+                    "full_text_sources": [f"src-p{idx:03d}"],
                     "sections_read": [
                         "Introduction and problem formulation",
                         "Method and system architecture",
@@ -586,6 +644,10 @@ class SurveyAutoResearchRefactorTest(unittest.TestCase):
     def populate_full_task(self, task_dir: Path) -> None:
         state = task_dir / "state"
         outputs = task_dir / "outputs"
+        write_jsonl(state / "raw_candidates.jsonl", self.raw_candidates())
+        write_jsonl(state / "search_routes.jsonl", self.search_routes())
+        write_jsonl(state / "lqs_scores.jsonl", self.lqs_scores())
+        (state / "corpus_expansion.json").write_text(json.dumps(self.corpus_expansion()), encoding="utf-8")
         write_jsonl(state / "papers.jsonl", self.papers())
         write_jsonl(state / "citation_plan.jsonl", self.citation_plan())
         write_jsonl(state / "paper_mechanism_cards.jsonl", self.mechanism_cards())
@@ -764,11 +826,68 @@ class SurveyAutoResearchRefactorTest(unittest.TestCase):
         self.assertIn("strong_claim_missing_excerpt:p001", status["invalid_claims"]["c1"])
 
     def test_coverage_gate_enforces_full_survey_breadth(self):
-        status = build_coverage(self.papers(20, 1), self.citation_plan(a=2, b=4, c=14), "full")
+        status = validate_coverage(
+            self.raw_candidates(20, 1),
+            self.search_routes(2),
+            self.lqs_scores(20),
+            self.corpus_expansion(),
+            self.papers(20, 1),
+            self.citation_plan(a=2, b=4, c=14),
+            "full",
+        )
         self.assertFalse(status["valid"])
         self.assertIn("verified_refs", status["missing"])
-        status = build_coverage(self.papers(), self.citation_plan(), "full")
+        self.assertIn("raw_candidates", status["missing"])
+        status = validate_coverage(
+            self.raw_candidates(),
+            self.search_routes(),
+            self.lqs_scores(),
+            self.corpus_expansion(),
+            self.papers(),
+            self.citation_plan(),
+            "full",
+        )
         self.assertTrue(status["valid"], status)
+
+    def test_discovery_phase_blocks_insufficient_search_before_source_verification(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            task_dir = initialize_task(Path(tmp), "embodied memory system", target="full")
+            write_jsonl(task_dir / "state/raw_candidates.jsonl", self.raw_candidates(20, 1))
+            write_jsonl(task_dir / "state/search_routes.jsonl", self.search_routes(1))
+            write_jsonl(task_dir / "state/lqs_scores.jsonl", self.lqs_scores(20))
+            (task_dir / "state/corpus_expansion.json").write_text(json.dumps(self.corpus_expansion()), encoding="utf-8")
+            status = evaluate_phase_barriers(task_dir, "full")
+            self.assertFalse(status["phases"]["discovery"]["passed"])
+            self.assertEqual(status["blocked_by_phase"], "discovery")
+            self.assertEqual(status["allowed_next_phase"], "discovery")
+
+    def test_corpus_expansion_required_blocks_discovery_until_complete(self):
+        status = validate_coverage(
+            self.raw_candidates(),
+            self.search_routes(),
+            self.lqs_scores(),
+            self.corpus_expansion(required=True, status="required"),
+            self.papers(),
+            self.citation_plan(),
+            "full",
+        )
+        self.assertFalse(status["valid"])
+        self.assertIn("corpus_expansion_incomplete", status["missing"])
+
+    def test_retained_papers_must_link_to_raw_candidates(self):
+        papers = self.papers()
+        papers[0].pop("source_candidate_id")
+        status = validate_coverage(
+            self.raw_candidates(),
+            self.search_routes(),
+            self.lqs_scores(),
+            self.corpus_expansion(),
+            papers,
+            self.citation_plan(),
+            "full",
+        )
+        self.assertFalse(status["valid"])
+        self.assertIn("paper_candidate_linkage", status["missing"])
 
     def test_contribution_tree_requires_ab_statements_and_branch_tradeoffs(self):
         status = validate_contribution_tree([], {}, self.citation_plan(a=2, b=0, c=0), self.argument_graph(), target="full")
@@ -1139,9 +1258,44 @@ class SurveyAutoResearchRefactorTest(unittest.TestCase):
             self.assertFalse(gates["gate_2_paper_understanding"]["paper_understanding_complete"])
             self.assertFalse(gates["all_blocking_gates_passed"])
 
+    def test_paper_understanding_completion_requires_all_a_b_cards(self):
+        cards = self.mechanism_cards(94)
+        status = validate_paper_understanding(cards, self.citation_plan(), self.full_text_sources())
+        self.assertFalse(status["valid"])
+        self.assertEqual(status["a_b_required_count"], 95)
+        self.assertEqual(status["a_b_completed_count"], 94)
+        self.assertIn("p095", status["incomplete_paper_ids"])
+
+    def test_paper_understanding_rejects_empty_required_fields_and_generic_templates(self):
+        card = self.mechanism_cards(1)[0]
+        card["deep_read_notes"] = ""
+        card["motivation"] = "This paper is important and relevant to the survey."
+        status = validate_paper_understanding([card], [{"paper_id": "p001", "depth": "A"}], self.full_text_sources(1))
+        self.assertFalse(status["valid"])
+        self.assertIn("missing_deep_read_notes", status["invalid_cards"]["p001"])
+        self.assertIn("generic_motivation", status["invalid_cards"]["p001"])
+
+    def test_phase_gate_reports_illegal_downstream_artifacts_when_paper_understanding_incomplete(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            task_dir = initialize_task(Path(tmp), "embodied memory system", target="full")
+            self.populate_full_task(task_dir)
+            cards = self.mechanism_cards(94)
+            write_jsonl(task_dir / "state/paper_mechanism_cards.jsonl", cards)
+            status = evaluate_phase_barriers(task_dir, "full")
+            self.assertFalse(status["phases"]["paper_understanding"]["passed"])
+            self.assertIn("illegal_downstream_artifacts", status["phases"]["paper_understanding"])
+            self.assertIn("outputs/contribution_tree.yml", status["phases"]["paper_understanding"]["illegal_downstream_artifacts"])
+
     def test_init_task_uses_new_state_skeleton(self):
         with tempfile.TemporaryDirectory() as tmp:
-            task_dir = initialize_task(Path(tmp), "test topic", target="full")
+            task_dir = initialize_task(Path(tmp), "test topic")
+            progress = json.loads((task_dir / "state/progress.json").read_text())
+            self.assertEqual(progress["target"], "full")
+            self.assertEqual(progress["current_phase"], "task_lock")
+            self.assertEqual(progress["allowed_next_phase"], "survey_type")
+            self.assertTrue((task_dir / "state/phase_status.json").exists())
+            self.assertTrue((task_dir / "state/search_routes.jsonl").exists())
+            self.assertTrue((task_dir / "state/corpus_expansion.json").exists())
             self.assertTrue((task_dir / "state/survey_type_plan.yml").exists())
             self.assertTrue((task_dir / "state/scenario_definitions.yml").exists())
             self.assertTrue((task_dir / "state/section_evidence_plans.jsonl").exists())
@@ -1165,6 +1319,8 @@ class SurveyAutoResearchRefactorTest(unittest.TestCase):
             task_dir = initialize_task(Path(tmp), "dashboard topic", target="short")
             path = render_dashboard(task_dir, "short")
             html = path.read_text(encoding="utf-8")
+            self.assertIn("Current Phase", html)
+            self.assertIn("raw candidates", html)
             self.assertIn("gate_1_source_identity", html)
             self.assertIn("gate_6_article_quality", html)
             self.assertIn("gate_7_expert_review", html)
@@ -1183,6 +1339,7 @@ class SurveyAutoResearchRefactorTest(unittest.TestCase):
             "validate_node_cards.py",
             "validate_section_cards.py",
             "validate_worked_examples.py",
+            "build_coverage_matrix.py",
         ]
         for script in deleted_scripts:
             self.assertFalse((ROOT / "scripts" / script).exists(), script)

@@ -11,7 +11,8 @@ try:
     from .verify_sources import read_jsonl, validate_sources
     from .validate_paper_understanding import validate_paper_understanding
     from .validate_claim_evidence import validate_claim_evidence
-    from .build_coverage_matrix import build_coverage
+    from .phase_gate import evaluate_phase_barriers
+    from .validate_coverage import read_json, validate_coverage
     from .validate_argument_graph import parse_structured_text, validate_argument_graph
     from .validate_article_quality import validate_article_quality
     from .validate_scenario_definitions import validate_scenario_definitions
@@ -24,7 +25,8 @@ except ImportError:  # pragma: no cover
     from verify_sources import read_jsonl, validate_sources
     from validate_paper_understanding import validate_paper_understanding
     from validate_claim_evidence import validate_claim_evidence
-    from build_coverage_matrix import build_coverage
+    from phase_gate import evaluate_phase_barriers
+    from validate_coverage import read_json, validate_coverage
     from validate_argument_graph import parse_structured_text, validate_argument_graph
     from validate_article_quality import validate_article_quality
     from validate_scenario_definitions import validate_scenario_definitions
@@ -105,9 +107,13 @@ def rendered_artifacts(outputs_dir: Path) -> list[tuple[str, str]]:
     return artifacts
 
 
-def evaluate_gates(task_dir: Path, target: str = "short") -> dict:
+def evaluate_gates(task_dir: Path, target: str = "full") -> dict:
     state = task_dir / "state"
     outputs = task_dir / "outputs"
+    raw_candidates = read_jsonl(state / "raw_candidates.jsonl")
+    search_routes = read_jsonl(state / "search_routes.jsonl")
+    lqs_scores = read_jsonl(state / "lqs_scores.jsonl")
+    corpus_expansion = read_json(state / "corpus_expansion.json")
     papers = read_jsonl(state / "papers.jsonl")
     citation_plan = read_jsonl(state / "citation_plan.jsonl")
     mechanism_cards = read_jsonl(state / "paper_mechanism_cards.jsonl")
@@ -136,7 +142,7 @@ def evaluate_gates(task_dir: Path, target: str = "short") -> dict:
         section_plans if target != "short" else None,
         full_text_sources=full_text_sources,
     )
-    gate_4 = build_coverage(papers, citation_plan, target)
+    gate_4 = validate_coverage(raw_candidates, search_routes, lqs_scores, corpus_expansion, papers, citation_plan, target)
     dossier_status = synthesis_dossier_status(outputs, target, survey_type)
     scenario_status = validate_scenario_definitions(scenario_text, target)
     synthesis_status = validate_synthesis_dossiers(
@@ -189,6 +195,7 @@ def evaluate_gates(task_dir: Path, target: str = "short") -> dict:
         repair_actions,
         regression_checks,
     )
+    phase_barriers = evaluate_phase_barriers(task_dir, target)
 
     gates = {
         "gate_1_source_identity": {"passed": gate_1["valid"], **gate_1},
@@ -219,6 +226,7 @@ def evaluate_gates(task_dir: Path, target: str = "short") -> dict:
         },
         "gate_6_article_quality": {"passed": gate_6["valid"], **gate_6},
         "gate_7_expert_review": {"passed": gate_7["valid"], **gate_7},
+        "phase_barriers": phase_barriers,
     }
     gates["all_blocking_gates_passed"] = all(
         gates[name]["passed"] for name in [
@@ -230,14 +238,17 @@ def evaluate_gates(task_dir: Path, target: str = "short") -> dict:
             "gate_6_article_quality",
             "gate_7_expert_review",
         ]
-    )
+    ) and phase_barriers["all_required_phases_passed"]
+    if not phase_barriers["all_required_phases_passed"]:
+        gates["blocked_by_phase"] = phase_barriers["blocked_by_phase"]
+        gates["allowed_next_phase"] = phase_barriers["allowed_next_phase"]
     return gates
 
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--task-dir", required=True, type=Path)
-    parser.add_argument("--target", choices=["short", "full", "csur"], default="short")
+    parser.add_argument("--target", choices=["short", "full", "csur"], default="full")
     parser.add_argument("--output", type=Path)
     args = parser.parse_args()
     result = evaluate_gates(args.task_dir, args.target)

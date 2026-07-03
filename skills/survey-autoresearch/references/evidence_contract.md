@@ -4,6 +4,10 @@ The evidence layer establishes source truth and claim support.
 
 Required files:
 
+- `state/raw_candidates.jsonl`
+- `state/search_routes.jsonl`
+- `state/lqs_scores.jsonl`
+- `state/corpus_expansion.json`
 - `state/papers.jsonl`
 - `state/citation_plan.jsonl`
 - `state/full_text_sources.jsonl`
@@ -39,6 +43,10 @@ Full-text source fields:
 
 Rules:
 
+- Discovery sufficiency is a hard predecessor to source verification and paper understanding.
+- Full and CSUR runs must record enough raw candidates, search routes, related surveys, and corpus-expansion status before selecting A/B/C papers.
+- Every retained paper in `state/papers.jsonl` must have `source_candidate_id` linking back to `state/raw_candidates.jsonl`.
+- If a public curated list or recent survey visibly contains far more relevant papers than the retained corpus, `state/corpus_expansion.json` must mark expansion required and complete it before the run proceeds.
 - A/B papers must be verified.
 - A/B papers must have auditable full-text source records.
 - C papers must meet the target verification rate.

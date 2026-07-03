@@ -48,8 +48,10 @@ def render_dashboard(task_dir: Path, target: str | None = None) -> Path:
     dashboard = task_dir / "dashboard"
     dashboard.mkdir(exist_ok=True)
     progress = read_json(state / "progress.json")
-    selected_target = target or progress.get("target") or "short"
+    selected_target = target or progress.get("target") or "full"
     gates = evaluate_gates(task_dir, selected_target)
+    phase_barriers = gates.get("phase_barriers", {})
+    coverage = gates.get("gate_4_coverage", {})
     gate_cards = []
     for key in [
         "gate_1_source_identity",
@@ -79,7 +81,17 @@ def render_dashboard(task_dir: Path, target: str | None = None) -> Path:
         "<!doctype html><html><head><meta charset='utf-8'><title>Survey AutoResearch</title>"
         f"<style>{CSS}</style></head><body><div class='wrap'>"
         f"<h1>{esc(progress.get('topic', task_dir.name))}</h1>"
-        f"<p class='muted'>phase: {esc(progress.get('phase'))} · target: {esc(selected_target)}</p>"
+        f"<p class='muted'>target: {esc(selected_target)}</p>"
+        "<div class='grid'>"
+        f"<div class='card'><h3>Current Phase</h3><p>{esc(progress.get('current_phase') or progress.get('phase'))}</p>"
+        f"<p class='muted'>last passed: {esc(phase_barriers.get('last_passed_phase'))}</p>"
+        f"<p class='muted'>blocked by: {esc(phase_barriers.get('blocked_by_phase'))}</p>"
+        f"<p class='muted'>allowed next: {esc(phase_barriers.get('allowed_next_phase'))}</p></div>"
+        f"<div class='card'><h3>Discovery</h3><p class='muted'>raw candidates: {esc(coverage.get('raw_candidates', 0))}</p>"
+        f"<p class='muted'>search routes: {esc(coverage.get('search_routes', 0))}</p>"
+        f"<p class='muted'>related surveys: {esc(coverage.get('related_surveys', 0))}</p>"
+        f"<p class='muted'>corpus expansion: {esc(coverage.get('corpus_expansion_status'))}</p></div>"
+        "</div>"
         f"<div class='grid'>{''.join(gate_cards)}</div>"
         f"<h2>Blocking Gates</h2><div class='{ 'pass' if gates.get('all_blocking_gates_passed') else 'fail' }'>"
         f"{'PASS' if gates.get('all_blocking_gates_passed') else 'FAIL'}</div>"
