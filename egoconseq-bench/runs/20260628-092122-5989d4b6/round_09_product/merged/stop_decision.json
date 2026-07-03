@@ -1,6 +1,0 @@
-{
-  "should_stop": true,
-  "terminal_state": "product_layer_rendered",
-  "reason": "Frozen design/spec were used to generate Habitat rollout cases and render HTML; inspect hard gate status for release readiness.",
-  "round_index": 9
-}

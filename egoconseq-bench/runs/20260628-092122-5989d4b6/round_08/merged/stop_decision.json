@@ -1,6 +1,0 @@
-{
-  "should_stop": true,
-  "terminal_state": "max_rounds_exhausted",
-  "reason": "The bounded agent workflow reached max_rounds=8 without a success or explicit blocker.",
-  "round_index": 8
-}
