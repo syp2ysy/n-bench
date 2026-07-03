@@ -66,6 +66,17 @@ def render_dashboard(task_dir: Path, target: str | None = None) -> Path:
         score = ""
         if key == "gate_7_expert_review" and gate.get("median_score") is not None:
             score = f"<p class='muted'>median expert score: {esc(gate.get('median_score'))}</p>"
+            round_status = gate.get("round_status") or {}
+            dim = gate.get("dimension_medians") or {}
+            dim_preview = ", ".join(f"{name}:{value}" for name, value in sorted(dim.items())[:4])
+            score += (
+                "<p class='muted'>reviewers returned: "
+                + f"{esc(round_status.get('reviewers_returned', 0))}/{esc(round_status.get('reviewers_expected', 5))}</p>"
+                + f"<p class='muted'>dimension medians: {esc(dim_preview)}</p>"
+                + f"<p class='muted'>canonical major weaknesses: {esc(len(gate.get('canonical_major_weaknesses') or []))}</p>"
+                + f"<p class='muted'>unresolved repairs: {esc(len(gate.get('unresolved_major_weaknesses') or []))}</p>"
+                + f"<p class='muted'>targeted rereview issues: {esc(len(gate.get('invalid_targeted_rereviews') or {}))}</p>"
+            )
         if key == "gate_2_paper_understanding":
             score = (
                 score

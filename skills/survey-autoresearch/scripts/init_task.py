@@ -26,6 +26,7 @@ STATE_FILES = [
     "weakness_routes.jsonl",
     "repair_actions.jsonl",
     "regression_checks.jsonl",
+    "targeted_rereview_reports.jsonl",
     "review_rounds.jsonl",
     "phase_summaries.jsonl",
 ]
@@ -130,6 +131,26 @@ def initialize_task(
             "last_median_score": None,
             "previous_median_score": None,
             "status": "not_reviewed",
+        },
+    )
+    write_json(
+        state / "expert_review_round_status.json",
+        {
+            "review_round_id": None,
+            "status": "not_started",
+            "review_freeze": {},
+            "all_reports_received": False,
+            "reviewers_expected": 5,
+            "reviewers_returned": 0,
+            "repaired_article_hash": None,
+        },
+    )
+    write_json(
+        state / "expert_review_adjudication.json",
+        {
+            "review_round_id": None,
+            "all_major_weaknesses_adjudicated": False,
+            "canonical_weaknesses": [],
         },
     )
     write_json(

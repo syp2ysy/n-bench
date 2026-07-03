@@ -117,6 +117,9 @@ def _load_common(task_dir: Path) -> dict:
         "expert_invocations": read_jsonl(state / "expert_review_invocations.jsonl"),
         "repair_actions": read_jsonl(state / "repair_actions.jsonl"),
         "regression_checks": read_jsonl(state / "regression_checks.jsonl"),
+        "expert_round_status": read_json_file(state / "expert_review_round_status.json"),
+        "expert_adjudication": read_json_file(state / "expert_review_adjudication.json"),
+        "targeted_rereviews": read_jsonl(state / "targeted_rereview_reports.jsonl"),
         "review_iteration_status": read_json_file(state / "review_iteration_status.json"),
         "article_plan": _text(outputs / "article_plan.md"),
         "review_text": _text(outputs / "review.md"),
@@ -195,6 +198,9 @@ def evaluate_phase_barriers(task_dir: Path, target: str = "full") -> dict:
         data["expert_invocations"],
         data["repair_actions"],
         data["regression_checks"],
+        data["expert_round_status"],
+        data["expert_adjudication"],
+        data["targeted_rereviews"],
     )
 
     phases: dict[str, dict] = {
@@ -266,12 +272,24 @@ def evaluate_phase_barriers(task_dir: Path, target: str = "full") -> dict:
         else:
             break
 
+    allowed_next_phase = blocked_by or "complete"
+    if blocked_by == "expert_review":
+        expert_errors = set(expert.get("errors") or [])
+        if "expert_reviews_not_all_returned" in expert_errors or "missing_expert_review_invocations" in expert_errors:
+            allowed_next_phase = "expert_review_waiting"
+        elif "missing_expert_review_adjudication" in expert_errors or "unadjudicated_major_weaknesses" in expert_errors or "invalid_expert_review_adjudication" in expert_errors:
+            allowed_next_phase = "expert_review_adjudication"
+        elif "unresolved_major_weaknesses" in expert_errors or "invalid_repair_actions" in expert_errors or "missing_regression_checks_for_repairs" in expert_errors:
+            allowed_next_phase = "repair_with_evidence_check"
+        elif "missing_targeted_rereviews" in expert_errors or "invalid_targeted_rereviews" in expert_errors:
+            allowed_next_phase = "targeted_rereview"
+
     return {
         "valid": blocked_by is None,
         "all_required_phases_passed": blocked_by is None,
         "blocked_by_phase": blocked_by,
         "last_passed_phase": last_passed,
-        "allowed_next_phase": blocked_by or "complete",
+        "allowed_next_phase": allowed_next_phase,
         "phases": phases,
     }
 

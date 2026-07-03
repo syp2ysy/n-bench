@@ -1,76 +1,84 @@
 # Expert Review Contract
 
-`state/expert_review_reports.jsonl` records independent reviewer judgments after Gate 1-6 pass.
+Gate 7 is the final maturity gate for `target=full` and `target=csur`. It is not self-evaluation and not a score-form check.
 
-`state/expert_review_invocations.jsonl` records how those judgments were produced. Reports without invocation evidence are not sufficient for full/CSUR completion.
+## Required Order
 
-Required personas for mature full/CSUR review:
+1. Gate 1-6 pass.
+2. Freeze `outputs/review.md`, `outputs/appendix.md`, `state/argument_graph.yml`, and `state/section_evidence_plans.jsonl` in `state/expert_review_round_status.json`.
+3. Dispatch five independent reviewers and record `state/expert_review_invocations.jsonl`.
+4. Wait until all five reports are returned. Do not repair while reports are still missing.
+5. Adjudicate all major/blocking weaknesses in `state/expert_review_adjudication.json`.
+6. Repair each canonical weakness only after rechecking evidence.
+7. Run targeted rereview for each repaired major/blocking weakness.
 
-- Domain Expert Reviewer: paper mechanisms, method claims, benchmark interpretation.
-- Survey Architect Reviewer: central thesis, taxonomy, section order, synthesis quality.
-- Evidence/Factuality Reviewer: citation support, claim strength, source status.
-- Paradigm/Evidence Norm Reviewer may be combined with Domain Expert or Evidence/Factuality: whether the article uses the correct proof standard for the scientific field.
-- Newcomer/Tutorial Reviewer: whether a new reader can understand the field and design choices.
-- Style/Publication Reviewer: publication prose, artifact leakage, repetition, transitions.
+If fresh subagents or fresh contexts are unavailable, mark the run blocked; do not fabricate reviewer reports.
 
-Each report needs `reviewer_id`, `persona`, `overall_score`, `dimension_scores`, `blocking_weaknesses`, and `pass_recommendation`.
+## Required Reviewers
 
-Gate 7 is a full-article audit, not a score-form validator. For `target=full` or `target=csur`, every reviewer report must prove that the reviewer read the article body:
+Full/CSUR runs require exactly these persona roles:
 
-- `sections_reviewed`: list every top-level `##` article section reviewed, excluding references or appendices.
-- `section_comments`: map each reviewed section title to a concrete comment about that section's argument, evidence, readability, or style.
-- `quoted_evidence_from_review`: at least five short quotes copied from different parts of `outputs/review.md`; each quote must appear in the article text.
-- `review_trace`: include `article_chars_read` and `reviewed_full_article: true`.
+- Domain Expert Reviewer
+- Survey Architect Reviewer
+- Evidence/Factuality Reviewer
+- Newcomer/Tutorial Reviewer
+- Style/Publication Reviewer
 
-Persona-specific audits are required:
+Each invocation needs `review_round_id`, `reviewer_id`, `persona`, `fresh_context: true`, `subagent_session_id`, article/evidence inputs, forbidden previous reports and repair actions, output target, and `status: returned`.
 
-- Domain Expert Reviewer: `paper_mechanism_audits` with at least ten A/B paper checks against the article's mechanism claims.
-- Survey Architect Reviewer: `flow_taxonomy_audit` covering section flow, taxonomy coherence, and synthesis-vs-catalog risk.
-- Evidence/Factuality Reviewer: `claim_citation_audits` with at least ten claim/citation checks against article text and evidence spans.
-- Domain Expert or Evidence/Factuality Reviewer must also comment on `science_paradigm_profile`: whether method, benchmark, theorem, experiment, simulation, clinical, or deployment claims use evidence units accepted by the relevant community.
-- Newcomer/Tutorial Reviewer: `tutorial_audit` covering glossary clarity, running example usefulness, and remaining confusing terms.
-- Style/Publication Reviewer: `style_audit` covering repetition, artifact leakage, table interpretation, and transition quality.
+## Report Contract
 
-Invocation evidence is required:
+Each row in `state/expert_review_reports.jsonl` needs:
 
-- `fresh_context: true`
-- inputs include the publication article, and may include appendix plus selected evidence artifacts;
-- inputs must not include previous reviewer reports;
-- `forbidden_inputs` must explicitly name previous reviewer reports;
-- output target must be recorded.
+- `reviewer_id`, `persona`, `overall_score`, `pass_recommendation`
+- `dimension_scores` and `dimension_audits`
+- `review_trace`, `sections_reviewed`, `section_comments`, `quoted_evidence_from_review`
+- persona-specific audits: paper mechanism, flow/taxonomy, claim/citation, tutorial, or style audit
+- `blocking_weaknesses`
 
-Passing reviews must still name non-blocking weaknesses or explicitly explain why no blocking weakness remains. Reusing the same summary, identical dimension scores, or generic comments across reviewers is not independent expert review and must fail Gate 7.
-
-Score dimensions:
+`dimension_audits` must independently cover:
 
 - narrative coherence
 - paper understanding depth
+- field-native taxonomy quality
 - method taxonomy quality
-- benchmark and evaluation quality
-- evidence factuality and citation accuracy
+- benchmark/evaluation quality
+- evidence/citation accuracy
 - synthesis not catalog
 - publication prose
 - newcomer value
 - expert value
 
+Each dimension audit needs score, verdict, evidence quotes, failure cases, why it matters, repair recommendation, and route. A dimension below the target floor creates a major weakness.
+
 Thresholds:
 
-- `target=full`: median score must be at least 8.5.
-- `target=csur`: median score must be at least 9.0.
-- `target=short`: expert review is optional.
+- `full`: median overall >= 8.5 and every dimension median >= 8.0.
+- `csur`: median overall >= 9.0 and every dimension median >= 8.5.
 
-Weakness routes:
+## Adjudication And Repair
 
-- citation or source error -> source verification or claim evidence;
-- paper mechanism unclear -> paper understanding;
-- benchmark misread -> benchmark dossiers;
-- taxonomy feels like buckets -> synthesis dossiers and argument graph;
-- section reads like a paper list -> section evidence plan;
-- artifact/process language -> article quality;
-- shallow coverage -> coverage and high-recall discovery.
+`state/expert_review_adjudication.json` must map reviewer weaknesses into canonical weaknesses with severity, source reviewers, affected sections, affected papers, affected claims, route, required evidence check, and repair acceptance criteria. Unadjudicated major weaknesses fail Gate 7.
 
-If median score is below 8.0, do not only polish prose. Repair paper understanding, synthesis dossiers, argument graph, or section evidence plans first.
+`state/repair_actions.jsonl` must record evidence-first repair:
 
-If two consecutive expert-review rounds improve by less than 0.2 while still below threshold, mark the run quality-limited in `state/review_iteration_status.json` and report the blocker honestly.
+- `evidence_rechecked` from the relevant source: paper mechanism cards, claim evidence spans, contribution tree, argument graph, section evidence plans, benchmark dossiers, or full-text sources.
+- changed artifacts and repair action.
+- claim strength changes and newly modified claims.
+- status: resolved, accepted limitation, or unresolved.
 
-Major weakness closure is required. `state/repair_actions.jsonl` must record weakness id, route, repair action, changed artifacts, evidence, and status. `state/regression_checks.jsonl` must record a passing verification for each resolved major weakness. A high median score does not pass Gate 7 if a major weakness is unclosed or recurrent.
+If the repair adds or strengthens a claim, update `state/claim_evidence_spans.jsonl` before revising the article. If evidence is insufficient, downgrade the wording or route back to source verification or paper understanding.
+
+`state/targeted_rereview_reports.jsonl` must verify each repaired major/blocking weakness against changed artifacts and checked evidence refs. Verdict must be `resolved`, with matching article hash and no introduced regression.
+
+## Weakness Routes
+
+- citation/source error -> source verification or claim evidence
+- paper mechanism unclear -> paper understanding
+- benchmark misread -> benchmark dossiers
+- taxonomy/story weak -> contribution tree, synthesis dossiers, and argument graph
+- section reads like a paper list -> section evidence plan
+- artifact/process language -> article quality
+- shallow coverage -> discovery and coverage
+
+If two consecutive rounds improve by less than 0.2 while still below threshold, mark the run quality-limited instead of pretending completion.

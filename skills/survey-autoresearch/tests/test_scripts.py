@@ -20,6 +20,7 @@ from scripts.validate_synthesis_dossiers import validate_synthesis_dossiers
 from scripts.verify_sources import validate_sources
 from scripts.expert_review_gate import validate_expert_reviews
 from scripts.build_contribution_tree import validate_contribution_tree
+from scripts.run_expert_reviews import collect_status, dispatch_packets, freeze_review_round
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -307,11 +308,31 @@ class SurveyAutoResearchRefactorTest(unittest.TestCase):
         reports = []
         for offset, (reviewer_id, persona) in enumerate(personas):
             dims = {name: max(0, min(10, score - offset * 0.01)) for name in base_dims}
+            dimension_audits = [
+                {
+                    "dimension": name,
+                    "score": dims[name],
+                    "verdict": "pass" if dims[name] >= 8.0 else "fail",
+                    "evidence_quotes": [quotes[offset % len(quotes)]],
+                    "failure_cases": [] if dims[name] >= 8.0 else [f"{name} is under the publication threshold."],
+                    "why_it_matters": f"{persona} checks whether {name} is strong enough for a mature survey.",
+                    "repair_recommendation": f"Repair {name} through the routed evidence and article plan.",
+                    "route_to": "argument_graph" if name in {"narrative_coherence", "field_native_taxonomy_quality"} else (
+                        "paper_understanding" if name == "paper_understanding_depth" else (
+                            "benchmark_dossiers" if name == "benchmark_and_evaluation_quality" else (
+                                "claim_evidence" if name == "evidence_factuality_and_citation_accuracy" else "article_quality"
+                            )
+                        )
+                    ),
+                }
+                for name in base_dims
+            ]
             report = {
                 "reviewer_id": reviewer_id,
                 "persona": persona,
                 "overall_score": score,
                 "dimension_scores": dims,
+                "dimension_audits": dimension_audits,
                 "blocking_weaknesses": weaknesses or [],
                 "pass_recommendation": not weaknesses and score >= 8.5,
                 "summary": f"{persona} read the complete article and found persona-specific strengths and repair risks.",
@@ -358,12 +379,15 @@ class SurveyAutoResearchRefactorTest(unittest.TestCase):
     def expert_invocations(self) -> list[dict]:
         return [
             {
+                "review_round_id": "round-1",
                 "reviewer_id": reviewer_id,
                 "persona": persona,
                 "fresh_context": True,
+                "subagent_session_id": f"subagent-{reviewer_id}",
                 "inputs": ["outputs/review.md", "outputs/appendix.md", "state/paper_mechanism_cards.jsonl"],
-                "forbidden_inputs": ["previous reviewer reports", "state/expert_review_reports.jsonl"],
+                "forbidden_inputs": ["previous reviewer reports", "state/expert_review_reports.jsonl", "repair actions from this round"],
                 "output": "state/expert_review_reports.jsonl",
+                "status": "returned",
                 "timestamp": "2026-07-03T00:00:00Z",
             }
             for reviewer_id, persona in [
@@ -381,9 +405,25 @@ class SurveyAutoResearchRefactorTest(unittest.TestCase):
                 "weakness_id": weakness_id,
                 "status": "resolved",
                 "route_to": "synthesis_dossiers",
+                "evidence_rechecked": [
+                    {
+                        "source": "contribution_tree",
+                        "id": "outputs/contribution_tree.yml",
+                        "finding": "The contribution tree supports rebuilding the method-family comparison.",
+                        "supports_repair": True,
+                    },
+                    {
+                        "source": "argument_graph",
+                        "id": "state/argument_graph.yml",
+                        "finding": "The argument graph confirms the section should compare mechanisms rather than list papers.",
+                        "supports_repair": True,
+                    },
+                ],
                 "repair_action": "rebuild method-family comparison",
                 "changed_artifacts": ["outputs/method_family_dossiers/retrieval_memory.json", "outputs/review.md"],
                 "evidence": "The method family now compares alternatives, trade-offs, and evidence limits.",
+                "claim_strength_changes": [],
+                "new_or_modified_claims": [],
             }
         ]
 
@@ -396,6 +436,72 @@ class SurveyAutoResearchRefactorTest(unittest.TestCase):
                 "result": "OK",
             }
         ]
+
+    def review_round_status(self, all_reports_received: bool = True, repaired_article_hash: str = "hash-after-repair") -> dict:
+        return {
+            "review_round_id": "round-1",
+            "status": "all_reports_received" if all_reports_received else "collecting_reviews",
+            "review_freeze": {
+                "review_round_id": "round-1",
+                "started_at": "2026-07-03T00:00:00Z",
+                "frozen_artifacts": {
+                    "outputs/review.md": "hash-review",
+                    "outputs/appendix.md": "hash-appendix",
+                    "state/argument_graph.yml": "hash-argument",
+                    "state/section_evidence_plans.jsonl": "hash-section-plans",
+                },
+                "article_hash": "hash-review",
+            },
+            "all_reports_received": all_reports_received,
+            "reviewers_expected": 5,
+            "reviewers_returned": 5 if all_reports_received else 4,
+            "repaired_article_hash": repaired_article_hash,
+        }
+
+    def expert_adjudication(self, weakness_id: str | None = None) -> dict:
+        canonical = []
+        if weakness_id:
+            canonical.append(
+                {
+                    "weakness_id": weakness_id,
+                    "severity": "major",
+                    "source_reviewers": ["domain_expert"],
+                    "source_weakness_ids": [weakness_id],
+                    "affected_sections": ["Method Families"],
+                    "affected_papers": ["p001"],
+                    "affected_claims": ["c1"],
+                    "route_to": "synthesis_dossiers",
+                    "required_evidence_check": ["contribution_tree", "argument_graph"],
+                    "repair_acceptance_criteria": "The repaired section compares method families and is supported by the contribution tree.",
+                }
+            )
+        return {
+            "review_round_id": "round-1",
+            "all_major_weaknesses_adjudicated": True,
+            "canonical_weaknesses": canonical,
+        }
+
+    def targeted_rereviews(self, weakness_id: str = "w1", verdict: str = "resolved") -> list[dict]:
+        return [
+            {
+                "weakness_id": weakness_id,
+                "reviewer_id": "survey_architect",
+                "persona": "Survey Architect Reviewer",
+                "checked_changed_artifacts": ["outputs/review.md", "outputs/method_family_dossiers/retrieval_memory.json"],
+                "checked_evidence_refs": ["outputs/contribution_tree.yml", "state/argument_graph.yml"],
+                "verdict": verdict,
+                "evidence_quote_after_repair": "The repaired method section compares retrieval memory with structured map memory before discussing evidence limits.",
+                "remaining_risk": "No blocking risk remains after the targeted rereview.",
+                "article_hash": "hash-after-repair",
+            }
+        ]
+
+    def expert_gate_kwargs(self, weakness_id: str | None = None) -> dict:
+        return {
+            "round_status": self.review_round_status(),
+            "adjudication": self.expert_adjudication(weakness_id),
+            "targeted_rereviews": self.targeted_rereviews(weakness_id) if weakness_id else [],
+        }
 
     def scenario_definitions(self) -> dict:
         scenarios = []
@@ -659,6 +765,15 @@ class SurveyAutoResearchRefactorTest(unittest.TestCase):
         write_jsonl(state / "weakness_routes.jsonl", [])
         write_jsonl(state / "repair_actions.jsonl", [])
         write_jsonl(state / "regression_checks.jsonl", [])
+        write_jsonl(state / "targeted_rereview_reports.jsonl", [])
+        (state / "expert_review_round_status.json").write_text(
+            json.dumps(self.review_round_status()),
+            encoding="utf-8",
+        )
+        (state / "expert_review_adjudication.json").write_text(
+            json.dumps(self.expert_adjudication()),
+            encoding="utf-8",
+        )
         (state / "review_iteration_status.json").write_text(
             json.dumps({"round": 1, "last_median_score": 8.8, "previous_median_score": None}),
             encoding="utf-8",
@@ -1074,19 +1189,34 @@ class SurveyAutoResearchRefactorTest(unittest.TestCase):
         self.assertIn("missing_evaluation_recipe", status["errors"])
 
     def test_expert_review_gate_requires_independent_high_scoring_reviews(self):
-        status = validate_expert_reviews(self.expert_reviews()[:2], target="full", review_invocations=self.expert_invocations()[:2])
+        status = validate_expert_reviews(
+            self.expert_reviews()[:2],
+            target="full",
+            review_invocations=self.expert_invocations()[:2],
+            **self.expert_gate_kwargs(),
+        )
         self.assertFalse(status["valid"])
         self.assertIn("too_few_expert_reviews", status["errors"])
-        status = validate_expert_reviews(self.expert_reviews(score=8.4), target="full", review_invocations=self.expert_invocations())
+        status = validate_expert_reviews(
+            self.expert_reviews(score=8.4),
+            target="full",
+            review_invocations=self.expert_invocations(),
+            **self.expert_gate_kwargs(),
+        )
         self.assertFalse(status["valid"])
         self.assertIn("median_score_below_threshold", status["errors"])
-        status = validate_expert_reviews(self.expert_reviews(score=9.0), target="csur", review_invocations=self.expert_invocations())
+        status = validate_expert_reviews(
+            self.expert_reviews(score=9.0),
+            target="csur",
+            review_invocations=self.expert_invocations(),
+            **self.expert_gate_kwargs(),
+        )
         self.assertTrue(status["valid"], status)
 
     def test_expert_review_gate_rejects_duplicate_personas_and_unresolved_weaknesses(self):
         duplicate = self.expert_reviews()
         duplicate[1]["persona"] = duplicate[0]["persona"]
-        status = validate_expert_reviews(duplicate, target="full", review_invocations=self.expert_invocations())
+        status = validate_expert_reviews(duplicate, target="full", review_invocations=self.expert_invocations(), **self.expert_gate_kwargs())
         self.assertFalse(status["valid"])
         self.assertIn("duplicate_reviewer_personas", status["errors"])
         weakness = {
@@ -1097,21 +1227,33 @@ class SurveyAutoResearchRefactorTest(unittest.TestCase):
             "route_to": "synthesis_dossiers",
             "repair_action": "rebuild method-family comparison",
         }
-        status = validate_expert_reviews(self.expert_reviews(weaknesses=[weakness]), target="full", review_invocations=self.expert_invocations())
+        status = validate_expert_reviews(
+            self.expert_reviews(weaknesses=[weakness]),
+            target="full",
+            review_invocations=self.expert_invocations(),
+            round_status=self.review_round_status(),
+            adjudication=self.expert_adjudication(),
+            targeted_rereviews=[],
+        )
         self.assertFalse(status["valid"])
         self.assertIn("unresolved_major_weaknesses", status["errors"])
         bad = self.expert_reviews(weaknesses=[{"severity": "major", "route_to": "synthesis_dossiers"}])
-        status = validate_expert_reviews(bad, target="full", review_invocations=self.expert_invocations())
+        status = validate_expert_reviews(bad, target="full", review_invocations=self.expert_invocations(), **self.expert_gate_kwargs("w1"))
         self.assertFalse(status["valid"])
         self.assertIn("invalid_expert_review_reports", status["errors"])
 
     def test_expert_review_gate_requires_invocations_and_repair_closure(self):
-        status = validate_expert_reviews(self.expert_reviews(score=8.8), target="full")
+        status = validate_expert_reviews(self.expert_reviews(score=8.8), target="full", **self.expert_gate_kwargs())
         self.assertFalse(status["valid"])
         self.assertIn("missing_expert_review_invocations", status["errors"])
         bad_invocations = self.expert_invocations()
         bad_invocations[0]["fresh_context"] = False
-        status = validate_expert_reviews(self.expert_reviews(score=8.8), target="full", review_invocations=bad_invocations)
+        status = validate_expert_reviews(
+            self.expert_reviews(score=8.8),
+            target="full",
+            review_invocations=bad_invocations,
+            **self.expert_gate_kwargs(),
+        )
         self.assertFalse(status["valid"])
         self.assertIn("invalid_expert_review_invocations", status["errors"])
         weakness = {
@@ -1128,6 +1270,9 @@ class SurveyAutoResearchRefactorTest(unittest.TestCase):
             review_invocations=self.expert_invocations(),
             repair_actions=self.repair_actions("w1"),
             regression_checks=[],
+            round_status=self.review_round_status(),
+            adjudication=self.expert_adjudication("w1"),
+            targeted_rereviews=[],
         )
         self.assertFalse(status["valid"])
         self.assertIn("missing_regression_checks_for_repairs", status["errors"])
@@ -1137,8 +1282,143 @@ class SurveyAutoResearchRefactorTest(unittest.TestCase):
             review_invocations=self.expert_invocations(),
             repair_actions=self.repair_actions("w1"),
             regression_checks=self.regression_checks("w1"),
+            round_status=self.review_round_status(),
+            adjudication=self.expert_adjudication("w1"),
+            targeted_rereviews=self.targeted_rereviews("w1"),
         )
         self.assertTrue(status["valid"], status)
+
+    def test_expert_review_gate_requires_all_five_personas_and_dimension_audits(self):
+        reports = self.expert_reviews()[:4]
+        status = validate_expert_reviews(
+            reports,
+            target="full",
+            review_invocations=self.expert_invocations()[:4],
+            **self.expert_gate_kwargs(),
+        )
+        self.assertFalse(status["valid"])
+        self.assertIn("too_few_expert_reviews", status["errors"])
+        self.assertIn("missing_required_personas", status["errors"])
+        reports = self.expert_reviews()
+        del reports[0]["dimension_audits"]
+        status = validate_expert_reviews(
+            reports,
+            target="full",
+            review_invocations=self.expert_invocations(),
+            **self.expert_gate_kwargs(),
+        )
+        self.assertFalse(status["valid"])
+        self.assertIn("invalid_expert_review_reports", status["errors"])
+        self.assertIn("missing_dimension_audits", status["invalid_reports"]["domain_expert"])
+
+    def test_expert_review_gate_requires_low_dimension_to_create_major_weakness(self):
+        reports = self.expert_reviews()
+        reports[0]["dimension_audits"][0]["score"] = 7.5
+        reports[0]["dimension_audits"][0]["verdict"] = "fail"
+        reports[0]["dimension_scores"]["narrative_coherence"] = 7.5
+        status = validate_expert_reviews(
+            reports,
+            target="full",
+            review_invocations=self.expert_invocations(),
+            **self.expert_gate_kwargs(),
+        )
+        self.assertFalse(status["valid"])
+        self.assertIn("invalid_expert_review_reports", status["errors"])
+        self.assertIn("low_dimension_without_major_weakness", status["invalid_reports"]["domain_expert"])
+
+    def test_expert_review_gate_blocks_repair_before_all_reviews_return(self):
+        weakness = {
+            "weakness_id": "w1",
+            "severity": "major",
+            "evidence_quote": "The section reads like a paper list.",
+            "why_it_matters": "It fails synthesis.",
+            "route_to": "synthesis_dossiers",
+            "repair_action": "rebuild method-family comparison",
+        }
+        status = validate_expert_reviews(
+            self.expert_reviews(weaknesses=[weakness]),
+            target="full",
+            review_invocations=self.expert_invocations()[:4],
+            repair_actions=self.repair_actions("w1"),
+            regression_checks=self.regression_checks("w1"),
+            round_status=self.review_round_status(all_reports_received=False),
+            adjudication=self.expert_adjudication("w1"),
+            targeted_rereviews=self.targeted_rereviews("w1"),
+        )
+        self.assertFalse(status["valid"])
+        self.assertIn("repair_before_all_reviews_returned", status["errors"])
+
+    def test_expert_review_gate_requires_adjudication_and_evidence_backed_repair(self):
+        weakness = {
+            "weakness_id": "w1",
+            "severity": "major",
+            "evidence_quote": "The section reads like a paper list.",
+            "why_it_matters": "It fails synthesis.",
+            "route_to": "synthesis_dossiers",
+            "repair_action": "rebuild method-family comparison",
+        }
+        status = validate_expert_reviews(
+            self.expert_reviews(weaknesses=[weakness]),
+            target="full",
+            review_invocations=self.expert_invocations(),
+            repair_actions=self.repair_actions("w1"),
+            regression_checks=self.regression_checks("w1"),
+            round_status=self.review_round_status(),
+            adjudication=self.expert_adjudication(),
+            targeted_rereviews=self.targeted_rereviews("w1"),
+        )
+        self.assertFalse(status["valid"])
+        self.assertIn("unadjudicated_major_weaknesses", status["errors"])
+        bad_repair = self.repair_actions("w1")
+        bad_repair[0]["evidence_rechecked"] = []
+        status = validate_expert_reviews(
+            self.expert_reviews(weaknesses=[weakness]),
+            target="full",
+            review_invocations=self.expert_invocations(),
+            repair_actions=bad_repair,
+            regression_checks=self.regression_checks("w1"),
+            round_status=self.review_round_status(),
+            adjudication=self.expert_adjudication("w1"),
+            targeted_rereviews=self.targeted_rereviews("w1"),
+        )
+        self.assertFalse(status["valid"])
+        self.assertIn("invalid_repair_actions", status["errors"])
+
+    def test_expert_review_gate_requires_targeted_rereview_and_matching_article_hash(self):
+        weakness = {
+            "weakness_id": "w1",
+            "severity": "major",
+            "evidence_quote": "The section reads like a paper list.",
+            "why_it_matters": "It fails synthesis.",
+            "route_to": "synthesis_dossiers",
+            "repair_action": "rebuild method-family comparison",
+        }
+        status = validate_expert_reviews(
+            self.expert_reviews(weaknesses=[weakness]),
+            target="full",
+            review_invocations=self.expert_invocations(),
+            repair_actions=self.repair_actions("w1"),
+            regression_checks=self.regression_checks("w1"),
+            round_status=self.review_round_status(),
+            adjudication=self.expert_adjudication("w1"),
+            targeted_rereviews=[],
+        )
+        self.assertFalse(status["valid"])
+        self.assertIn("missing_targeted_rereviews", status["errors"])
+        bad_rereview = self.targeted_rereviews("w1")
+        bad_rereview[0]["article_hash"] = "wrong-hash"
+        status = validate_expert_reviews(
+            self.expert_reviews(weaknesses=[weakness]),
+            target="full",
+            review_invocations=self.expert_invocations(),
+            repair_actions=self.repair_actions("w1"),
+            regression_checks=self.regression_checks("w1"),
+            round_status=self.review_round_status(),
+            adjudication=self.expert_adjudication("w1"),
+            targeted_rereviews=bad_rereview,
+        )
+        self.assertFalse(status["valid"])
+        self.assertIn("invalid_targeted_rereviews", status["errors"])
 
     def test_survey_type_lenses_drive_required_dossiers(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -1303,8 +1583,11 @@ class SurveyAutoResearchRefactorTest(unittest.TestCase):
             self.assertTrue((task_dir / "state/full_text_sources.jsonl").exists())
             self.assertTrue((task_dir / "state/paper_contribution_statements.jsonl").exists())
             self.assertTrue((task_dir / "state/expert_review_invocations.jsonl").exists())
+            self.assertTrue((task_dir / "state/expert_review_round_status.json").exists())
+            self.assertTrue((task_dir / "state/expert_review_adjudication.json").exists())
             self.assertTrue((task_dir / "state/repair_actions.jsonl").exists())
             self.assertTrue((task_dir / "state/regression_checks.jsonl").exists())
+            self.assertTrue((task_dir / "state/targeted_rereview_reports.jsonl").exists())
             self.assertFalse((task_dir / "state/paper_cards.jsonl").exists())
             gates = json.loads((task_dir / "state/completion_gates.json").read_text())
             self.assertIn("gate_6_article_quality", gates)
@@ -1313,6 +1596,26 @@ class SurveyAutoResearchRefactorTest(unittest.TestCase):
             self.assertTrue((task_dir / "state/expert_review_reports.jsonl").exists())
             self.assertTrue((task_dir / "state/weakness_routes.jsonl").exists())
             self.assertTrue((task_dir / "state/review_iteration_status.json").exists())
+
+    def test_run_expert_reviews_freezes_and_dispatches_without_fabricating_reports(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            task_dir = initialize_task(Path(tmp), "expert review runner topic")
+            (task_dir / "outputs" / "review.md").write_text("# Review\n\n## Intro\ntext\n", encoding="utf-8")
+            (task_dir / "outputs" / "appendix.md").write_text("# Appendix\n", encoding="utf-8")
+            (task_dir / "state" / "argument_graph.yml").write_text("central_thesis: x\n", encoding="utf-8")
+            write_jsonl(task_dir / "state" / "section_evidence_plans.jsonl", [{"section_id": "S1"}])
+            status = freeze_review_round(task_dir, "round-test")
+            self.assertEqual(status["review_round_id"], "round-test")
+            self.assertTrue(status["review_freeze"]["frozen_artifacts"]["outputs/review.md"])
+            dispatched = dispatch_packets(task_dir, "round-test")
+            self.assertEqual(dispatched["packets"], 5)
+            invocations = (task_dir / "state" / "expert_review_invocations.jsonl").read_text(encoding="utf-8")
+            self.assertIn('"status": "dispatched"', invocations)
+            self.assertEqual((task_dir / "state" / "expert_review_reports.jsonl").read_text(encoding="utf-8"), "")
+            write_jsonl(task_dir / "state" / "expert_review_reports.jsonl", [{"reviewer_id": "domain_expert"}])
+            collected = collect_status(task_dir)
+            self.assertEqual(collected["reviewers_returned"], 1)
+            self.assertFalse(collected["all_reports_received"])
 
     def test_dashboard_renders_new_gate_names(self):
         with tempfile.TemporaryDirectory() as tmp:

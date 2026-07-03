@@ -125,6 +125,9 @@ def evaluate_gates(task_dir: Path, target: str = "full") -> dict:
     expert_invocations = read_jsonl(state / "expert_review_invocations.jsonl")
     repair_actions = read_jsonl(state / "repair_actions.jsonl")
     regression_checks = read_jsonl(state / "regression_checks.jsonl")
+    expert_round_status = read_json_file(state / "expert_review_round_status.json")
+    expert_adjudication = read_json_file(state / "expert_review_adjudication.json")
+    targeted_rereviews = read_jsonl(state / "targeted_rereview_reports.jsonl")
     review_iteration_status = read_json_file(state / "review_iteration_status.json")
     article_plan = text_or_empty(outputs / "article_plan.md")
     argument_text = text_or_empty(state / "argument_graph.yml")
@@ -194,6 +197,9 @@ def evaluate_gates(task_dir: Path, target: str = "full") -> dict:
         expert_invocations,
         repair_actions,
         regression_checks,
+        expert_round_status,
+        expert_adjudication,
+        targeted_rereviews,
     )
     phase_barriers = evaluate_phase_barriers(task_dir, target)
 

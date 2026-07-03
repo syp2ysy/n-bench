@@ -37,7 +37,7 @@ Read `references/runtime_contract.md` before long-running work.
 7. **Field synthesis**: write method-family dossiers, benchmark dossiers, related-survey matrix, and `state/claim_evidence_spans.jsonl`.
 8. **Story skeleton**: write `state/argument_graph.yml`.
 9. **Section source re-check and drafting**: write `state/section_evidence_plans.jsonl`, `outputs/article_plan.md`, `outputs/review_body_draft.md`, final `outputs/review.md`, and `outputs/appendix.md`.
-10. **Expert review and repair**: generate independent expert review reports, log reviewer invocations, close routed weaknesses with repair/regression evidence, and rerun gates until complete or precisely blocked.
+10. **Expert review and repair**: freeze the article, dispatch all five independent reviewers, wait for every report, adjudicate weaknesses, repair with evidence re-checks, run targeted rereview, and rerun gates until complete or precisely blocked.
 
 Run `scripts/phase_gate.py --task-dir <run> --target <target> --phase <phase>` at each barrier. If a phase fails, repair that phase instead of creating downstream artifacts. If A/B paper understanding fails and downstream synthesis/article files already exist, the run is invalid until the A/B cards are completed and the phase gate passes.
 
@@ -63,7 +63,7 @@ Run `scripts/phase_gate.py --task-dir <run> --target <target> --phase <phase>` a
 4. **Coverage Gate**: discovery sufficiency, corpus expansion, retained literature breadth, family, benchmark, related-survey, and scenario gaps are all recorded and valid.
 5. **Argument Graph Gate**: contribution tree, scenario definitions, synthesis dossiers, story skeleton, and section evidence plans jointly support the article.
 6. **Article Quality Gate**: `review.md` and rendered publication artifacts are publication prose with no raw artifacts, internal methodology, run metadata, unsupported factual claims, repeated template sections, or un-interpreted tables.
-7. **Expert Review Gate**: independent reviewer reports meet the target score threshold, have invocation evidence, and close all major weaknesses with repair/regression evidence.
+7. **Expert Review Gate**: all five independent reviewer reports meet the target score and dimension thresholds, have fresh-context invocation evidence, are adjudicated before repair, and close every major weakness with evidence-backed repair, regression checks, and targeted rereview.
 
 The default target is `full`. Use `short` only when the user explicitly asks for a short or quick draft; even short runs must pass minimum discovery and evidence checks.
 
@@ -104,6 +104,7 @@ Transparent search protocol, broad coverage tables, and evidence logistics belon
 - `scripts/validate_argument_graph.py`: argument graph validation.
 - `scripts/validate_section_evidence_plans.py`: section source re-check validation.
 - `scripts/validate_article_quality.py`: article boundary, prose, repetition, section, table, and factual-support checks.
+- `scripts/run_expert_reviews.py`: freeze article versions and prepare independent reviewer packets without fabricating review content.
 - `scripts/expert_review_gate.py`: independent expert-review score, persona, weakness, and stop-rule validation.
 - `scripts/gate_check.py`: gate orchestrator.
 - `scripts/render_dashboard.py`: HTML progress dashboard.
