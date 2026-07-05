@@ -68,7 +68,7 @@ def _topic_profile(task_dir: Path) -> dict:
 
 def _summary(doc: dict) -> dict:
     batches = doc.get("batches") or []
-    pending = [batch for batch in batches if batch.get("status") != "resolved"]
+    pending = [batch for batch in batches if not _batch_terminal(batch)]
     return {
         "batch_count": len(batches),
         "active_batch_id": doc.get("active_batch_id"),
@@ -87,7 +87,7 @@ def _with_metadata(doc: dict) -> dict:
 def _refresh_batch_statuses(doc: dict) -> dict:
     active_batch_id = None
     for batch in doc.get("batches") or []:
-        if batch.get("status") == "resolved":
+        if _batch_terminal(batch):
             continue
         if active_batch_id is None:
             if batch.get("status") in {"blocked_by_upstream", "blocked", "partially_resolved", "", None}:
@@ -98,6 +98,10 @@ def _refresh_batch_statuses(doc: dict) -> dict:
             batch["status"] = "blocked_by_upstream"
     doc["active_batch_id"] = active_batch_id
     return doc
+
+
+def _batch_terminal(batch: dict) -> bool:
+    return str((batch or {}).get("status") or "") in {"resolved", "superseded"}
 
 
 def _safe_json_from_url(url: str, timeout: int = 8) -> tuple[dict, str | None]:
@@ -506,12 +510,24 @@ def _prompt(task_dir: Path, batch: dict) -> str:
     topic_profile = _topic_profile(task_dir)
     prefetch = _latest_prefetch(task_dir, str(batch.get("batch_id") or ""))
     prefetched_count = len(prefetch.get("prefetched_candidates") or [])
+    existing_note = ""
+    if batch.get("uses_existing_candidates"):
+        payload, coverage = _merged_discovery_payload(task_dir, read_json(_state(task_dir) / "discovery_batches.json"))
+        existing_note = (
+            "This is a scoring and retained-corpus audit batch, not another broad search batch.\n"
+            f"Existing merged raw candidates: {len(payload.get('raw_candidates') or [])}; "
+            f"existing LQS rows: {len(payload.get('lqs_scores') or [])}; "
+            f"current blockers: {json.dumps(coverage.get('discovery_missing') or coverage.get('missing') or [], ensure_ascii=False)}.\n"
+            "Use the supplied existing_raw_candidates payload to add missing lqs_scores, judge retained-corpus sufficiency, "
+            "and complete corpus_expansion. Only add new raw_candidates when a real source is checked and the record is topic-boundary relevant.\n"
+        )
     return (
         "You are a high-recall discovery worker for survey-autoresearch.\n"
         "Use real search sources and return structured discovery state. Do not invent papers or counts.\n"
         "Follow the topic_profile exactly: positive anchors define core relevance; negative anchors define drift risks; allowed background cannot become A/B core.\n"
         "This is one route-level discovery batch. Do not try to satisfy the full corpus alone; exhaust the assigned route, report blockers, and return only real records.\n"
         "Timebox the route: run only the listed seed queries or fewer, then return resolved/partial/blocked JSON. Do not keep expanding recursively.\n"
+        f"{existing_note}"
         f"Task directory: {task_dir.resolve()}\n"
         f"Batch id: {batch.get('batch_id')}\n"
         f"Route focus: {batch.get('route_focus')}\n"
@@ -533,6 +549,10 @@ def _prompt(task_dir: Path, batch: dict) -> str:
 
 def _spawn_request(task_dir: Path, batch: dict) -> dict:
     prefetch = _latest_prefetch(task_dir, str(batch.get("batch_id") or ""))
+    existing_payload = {}
+    existing_coverage = {}
+    if batch.get("uses_existing_candidates"):
+        existing_payload, existing_coverage = _merged_discovery_payload(task_dir, read_json(_state(task_dir) / "discovery_batches.json"))
     return {
         "request_id": f"discovery-{batch.get('batch_id')}",
         "next_action": "spawn_discovery_agents",
@@ -552,6 +572,13 @@ def _spawn_request(task_dir: Path, batch: dict) -> dict:
         "prefetched_candidates": (prefetch.get("prefetched_candidates") or [])[:50],
         "prefetch_errors": prefetch.get("prefetch_errors") or [],
         "prefetch_snapshot_at": prefetch.get("prefetched_at"),
+        "existing_raw_candidates": (existing_payload.get("raw_candidates") or [])[:250],
+        "existing_discovery_counts": {
+            "raw_candidates": len(existing_payload.get("raw_candidates") or []),
+            "search_routes": len(existing_payload.get("search_routes") or []),
+            "lqs_scores": len(existing_payload.get("lqs_scores") or []),
+        } if existing_payload else {},
+        "existing_coverage": existing_coverage,
         "target": _target(task_dir),
         "task_spec": _task_spec(task_dir),
         "topic_profile": _topic_profile(task_dir),
@@ -632,16 +659,22 @@ def prepare_discovery_batches(task_dir: Path) -> dict:
 
 def collect_discovery_status(task_dir: Path) -> dict:
     state = _state(task_dir)
+    recorded_at = _utc_now()
     doc = _refresh_batch_statuses(read_json(state / "discovery_batches.json"))
     if not doc.get("batches"):
         return {
             **status_envelope(COMPONENT, "not_prepared", next_action="prepare_discovery_batches", terminal=False, blocked=True, blocked_by_phase="discovery", summary={"batch_count": 0}),
             "batches": [],
         }
-    doc, _coverage = _finalize_discovery_if_ready(task_dir, doc, _utc_now())
+    payload, current_coverage = _merged_discovery_payload(task_dir, doc)
+    if payload.get("raw_candidates"):
+        blockers = current_coverage.get("discovery_missing") or current_coverage.get("missing") or []
+        _retire_obsolete_raw_enrichment_retries(task_dir, doc, blockers, recorded_at)
+    doc, _coverage = _finalize_discovery_if_ready(task_dir, doc, recorded_at)
     doc = _with_metadata(_refresh_batch_statuses(doc))
     write_json(state / "discovery_batches.json", doc)
-    all_resolved = all(batch.get("status") == "resolved" for batch in doc.get("batches") or [])
+    _write_runtime_action(task_dir, doc)
+    all_resolved = all(_batch_terminal(batch) for batch in doc.get("batches") or [])
     return {
         **status_envelope(
             COMPONENT,
@@ -780,8 +813,15 @@ def _merge_corpus_expansion(corpora: list[dict], raw_count: int, route_count: in
             }
         )
     required = any(bool(item.get("required")) for item in corpora if isinstance(item, dict))
-    complete_like = {"complete", "not_required", ""}
-    status = "complete" if all(status in complete_like for status in statuses) else "in_progress"
+    def complete_like(status: str) -> bool:
+        normalized = str(status or "").strip().lower()
+        return (
+            normalized in {"", "complete", "not_required"}
+            or "resolved" in normalized
+            or "sufficient" in normalized
+        )
+
+    status = "complete" if all(complete_like(status) for status in statuses) else "in_progress"
     return {
         "required": required,
         "status": status,
@@ -822,7 +862,7 @@ def _merged_discovery_payload(task_dir: Path, doc: dict) -> tuple[dict, dict]:
     }, coverage
 
 
-def _enrichment_seed_queries(task_dir: Path, blockers: list[str]) -> list[str]:
+def _enrichment_seed_queries(task_dir: Path, blockers: list[str], kind: str = "mixed") -> list[str]:
     profile = _topic_profile(task_dir)
     seeds = [str(item).strip() for item in profile.get("search_seed_queries") or [] if str(item).strip()]
     related = [
@@ -830,15 +870,21 @@ def _enrichment_seed_queries(task_dir: Path, blockers: list[str]) -> list[str]:
         "survey multimodal reasoning visual tool use and grounded reasoning",
         "review visual reasoning large multimodal model grounded chain of thought",
         "survey visual tool use multimodal agents",
+        "taxonomy survey multimodal visual reasoning large language models",
+        "review grounded visual reasoning multimodal agents tool use",
     ]
     expansion = [
         "\"think with image\" multimodal reasoning",
         "\"visual scratchpad\" multimodal reasoning",
         "\"image-grounded\" visual reasoning actions",
         "\"visual workspace\" large multimodal model reasoning",
+        "\"grounded visual reasoning\" multimodal",
+        "\"visual tool use\" \"large multimodal model\"",
     ]
-    if "related_surveys" in set(str(item) for item in blockers):
+    if kind == "related_surveys" or "related_surveys" in set(str(item) for item in blockers):
         ordered = related + seeds + expansion
+    elif kind == "raw_candidates":
+        ordered = seeds + expansion + related
     else:
         ordered = seeds + expansion + related
     deduped: list[str] = []
@@ -851,18 +897,134 @@ def _enrichment_seed_queries(task_dir: Path, blockers: list[str]) -> list[str]:
     return deduped[:10]
 
 
-def _ensure_enrichment_batch(task_dir: Path, doc: dict, blockers: list[str], recorded_at: str) -> None:
-    seed_queries = _enrichment_seed_queries(task_dir, blockers)
-    batch = next((item for item in doc.get("batches") or [] if item.get("batch_id") == "D999"), None)
+def _retry_enrichment_seed_queries(kind: str, attempt: int) -> list[str]:
+    if attempt <= 1:
+        return []
+    raw_retry = [
+        "\"visual grounding\" \"chain of thought\" multimodal",
+        "\"grounded visual reasoning\" \"large multimodal model\"",
+        "\"pixel-space reasoning\" multimodal",
+        "\"region\" \"crop\" \"zoom\" \"multimodal reasoning\"",
+        "\"visual agentic reinforcement\" multimodal",
+        "\"visual tool\" \"reinforcement learning\" \"multimodal\"",
+        "\"point visual tokens\" multimodal reasoning",
+        "\"visual search\" \"multimodal LLM\" reasoning",
+        "\"image region\" \"reasoning\" \"large multimodal model\"",
+        "\"object-centric\" \"grounded chain-of-thought\"",
+    ]
+    related_retry = [
+        "\"multimodal chain-of-thought\" survey",
+        "\"large multimodal reasoning models\" survey",
+        "\"multimodal agents\" survey visual tool use",
+        "\"grounded visual reasoning\" survey",
+        "\"compositional visual reasoning\" survey",
+        "\"visual question answering\" reasoning survey multimodal",
+        "\"vision-language agents\" survey multimodal",
+        "\"visual tool use\" survey multimodal",
+    ]
+    if kind == "related_surveys":
+        return related_retry[:10]
+    if kind == "raw_candidates":
+        return raw_retry[:10]
+    return []
+
+
+def _enrichment_specs(task_dir: Path, blockers: list[str]) -> list[dict]:
+    blocker_set = {str(item) for item in blockers}
+    specs: list[dict] = []
+    scoring_blockers = {
+        "lqs_scores",
+        "corpus_expansion_incomplete",
+        "corpus_expansion_required",
+        "corpus_expansion_audit_incomplete",
+    }
+    if "related_surveys" in blocker_set:
+        related_queries = _enrichment_seed_queries(task_dir, blockers, "related_surveys")
+        specs.append(
+            {
+                "batch_id": "D999R",
+                "route_focus": "targeted related-survey enrichment for taxonomy and spine positioning gaps",
+                "required_route_types": ["related_survey_refs", "keyword"],
+                "min_raw_candidates": 12,
+                "min_related_surveys": 6,
+                "max_search_queries": min(10, len(related_queries)),
+                "seed_queries": related_queries,
+            }
+        )
+    if "raw_candidates" in blocker_set:
+        raw_queries = _enrichment_seed_queries(task_dir, blockers, "raw_candidates")
+        specs.append(
+            {
+                "batch_id": "D999C",
+                "route_focus": "targeted raw-candidate gap fill for topic-qualified visual reasoning corpus coverage",
+                "required_route_types": ["keyword", "snowball", "curated_list", "venue", "benchmark", "author_group"],
+                "min_raw_candidates": 30,
+                "max_search_queries": min(10, len(raw_queries)),
+                "seed_queries": raw_queries,
+            }
+        )
+    if not specs and blocker_set & scoring_blockers:
+        specs.append(
+            {
+                "batch_id": "D999S",
+                "route_focus": "scoring and retained-corpus expansion audit over existing topic-boundary discovery candidates",
+                "required_route_types": ["curated_list", "benchmark", "venue"],
+                "min_raw_candidates": 0,
+                "max_search_queries": 0,
+                "seed_queries": [],
+                "uses_existing_candidates": True,
+            }
+        )
+    if not specs:
+        raw_queries = _enrichment_seed_queries(task_dir, blockers, "raw_candidates")
+        specs.append(
+            {
+                "batch_id": "D999C",
+                "route_focus": "targeted raw-candidate gap fill for topic-qualified visual reasoning corpus coverage",
+                "required_route_types": ["keyword", "snowball", "curated_list", "venue", "benchmark", "author_group"],
+                "min_raw_candidates": 30,
+                "max_search_queries": min(10, len(raw_queries)),
+                "seed_queries": raw_queries,
+            }
+        )
+    return specs
+
+
+def _upsert_enrichment_batch(doc: dict, spec: dict, blockers: list[str], recorded_at: str) -> None:
+    batch_id = str(spec.get("batch_id") or "")
+    batch = next((item for item in doc.get("batches") or [] if item.get("batch_id") == batch_id), None)
+    if batch and batch.get("status") == "resolved":
+        attempt = 2
+        existing_ids = {str(item.get("batch_id") or "") for item in doc.get("batches") or []}
+        while f"{batch_id}{attempt}" in existing_ids:
+            attempt += 1
+        retry_spec = dict(spec)
+        if batch_id.endswith("R"):
+            kind = "related_surveys"
+        elif batch_id.endswith("C"):
+            kind = "raw_candidates"
+        else:
+            kind = "scoring"
+        retry_queries = _retry_enrichment_seed_queries(kind, attempt)
+        if retry_queries:
+            retry_spec["seed_queries"] = retry_queries
+            retry_spec["max_search_queries"] = min(10, len(retry_queries))
+        doc.setdefault("batches", []).append(
+            {
+                **retry_spec,
+                "batch_id": f"{batch_id}{attempt}",
+                "status": "pending_spawn",
+                "attempt": 1,
+                "retry_of": batch_id,
+                "last_blockers": blockers,
+                "created_at": recorded_at,
+            }
+        )
+        return
     if batch is None:
         doc.setdefault("batches", []).append(
             {
-                "batch_id": "D999",
-                "route_focus": "final coverage enrichment for unresolved discovery gaps",
-                "required_route_types": ["keyword", "snowball", "related_survey_refs", "curated_list", "venue", "benchmark", "author_group"],
-                "min_raw_candidates": 25,
-                "max_search_queries": min(10, len(seed_queries)),
-                "seed_queries": seed_queries,
+                **spec,
                 "status": "pending_spawn",
                 "attempt": 1,
                 "last_blockers": blockers,
@@ -870,20 +1032,53 @@ def _ensure_enrichment_batch(task_dir: Path, doc: dict, blockers: list[str], rec
             }
         )
         return
+    batch.update({key: value for key, value in spec.items() if value not in [None, "", [], {}]})
     batch["status"] = "pending_spawn"
     batch["attempt"] = int(batch.get("attempt") or 1) + 1
     batch["last_blockers"] = blockers
     batch["last_blocked_at"] = recorded_at
     batch.pop("resolved_at", None)
     batch.pop("subagent_session_id", None)
-    if not batch.get("seed_queries"):
-        batch["seed_queries"] = seed_queries
-    if not batch.get("max_search_queries"):
-        batch["max_search_queries"] = min(10, len(batch.get("seed_queries") or []))
+
+
+def _ensure_enrichment_batch(task_dir: Path, doc: dict, blockers: list[str], recorded_at: str) -> None:
+    for spec in _enrichment_specs(task_dir, blockers):
+        _upsert_enrichment_batch(doc, spec, blockers, recorded_at)
+
+
+def _retire_obsolete_raw_enrichment_retries(task_dir: Path, doc: dict, blockers: list[str], recorded_at: str) -> bool:
+    blocker_set = {str(item) for item in blockers}
+    scoring_only = bool(
+        blocker_set & {
+            "lqs_scores",
+            "corpus_expansion_incomplete",
+            "corpus_expansion_required",
+            "corpus_expansion_audit_incomplete",
+        }
+    ) and not (blocker_set & {"raw_candidates", "related_surveys", "search_routes"})
+    if not scoring_only:
+        return False
+    changed = False
+    for batch in doc.get("batches") or []:
+        batch_id = str(batch.get("batch_id") or "")
+        if (
+            batch_id.startswith("D999C")
+            and batch_id != "D999C"
+            and not _batch_terminal(batch)
+            and str(batch.get("status") or "") in {"pending_spawn", "blocked_by_upstream", "blocked", "partially_resolved", ""}
+        ):
+            batch["status"] = "superseded"
+            batch["superseded_by"] = "D999S"
+            batch["superseded_at"] = recorded_at
+            batch["superseded_reason"] = "raw and related-survey discovery thresholds are satisfied; remaining blockers require scoring/retention audit"
+            changed = True
+    if changed:
+        _ensure_enrichment_batch(task_dir, doc, list(blocker_set), recorded_at)
+    return changed
 
 
 def _finalize_discovery_if_ready(task_dir: Path, doc: dict, recorded_at: str) -> tuple[dict, dict | None]:
-    if not doc.get("batches") or not all(batch.get("status") == "resolved" for batch in doc.get("batches") or []):
+    if not doc.get("batches") or not all(_batch_terminal(batch) for batch in doc.get("batches") or []):
         return doc, None
     payload, coverage = _merged_discovery_payload(task_dir, doc)
     if not coverage.get("discovery_sufficient"):

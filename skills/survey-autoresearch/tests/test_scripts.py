@@ -1977,25 +1977,194 @@ class SurveyAutoResearchContractTest(unittest.TestCase):
             self.write_topic_profile(task_dir, topic="mllm think with image")
             doc = {"batches": []}
             _ensure_enrichment_batch(task_dir, doc, ["raw_candidates", "related_surveys"], "2026-07-05T00:00:00+00:00")
-            batch = doc["batches"][0]
-            self.assertEqual(batch["batch_id"], "D999")
-            self.assertGreaterEqual(len(batch["seed_queries"]), 4)
-            self.assertGreater(batch["max_search_queries"], 0)
-            joined_queries = "\n".join(batch["seed_queries"]).lower()
-            self.assertIn("survey", joined_queries)
-            self.assertIn("visual", joined_queries)
+            batches = {batch["batch_id"]: batch for batch in doc["batches"]}
+            self.assertEqual(set(batches), {"D999R", "D999C"})
+            self.assertIn("related_survey_refs", batches["D999R"]["required_route_types"])
+            self.assertIn("keyword", batches["D999C"]["required_route_types"])
+            self.assertGreaterEqual(len(batches["D999R"]["seed_queries"]), 4)
+            self.assertGreaterEqual(len(batches["D999C"]["seed_queries"]), 4)
+            self.assertGreater(batches["D999R"]["max_search_queries"], 0)
+            self.assertGreater(batches["D999C"]["max_search_queries"], 0)
+            related_queries = "\n".join(batches["D999R"]["seed_queries"]).lower()
+            raw_queries = "\n".join(batches["D999C"]["seed_queries"]).lower()
+            self.assertIn("survey", related_queries)
+            self.assertIn("visual", raw_queries)
 
-    def test_reopened_discovery_enrichment_clears_resolved_metadata(self):
+    def test_resolved_discovery_enrichment_appends_retry_batch(self):
         from scripts.discovery_runtime_executor import _ensure_enrichment_batch
 
         with tempfile.TemporaryDirectory() as tmp:
-            task_dir = initialize_task(Path(tmp), "mllm reopened enrichment", target="full")
+            task_dir = initialize_task(Path(tmp), "mllm resolved enrichment retry", target="full")
             self.write_topic_profile(task_dir, topic="mllm think with image")
             doc = {
                 "batches": [
                     {
-                        "batch_id": "D999",
+                        "batch_id": "D999R",
                         "status": "resolved",
+                        "attempt": 1,
+                        "resolved_at": "2026-07-05T00:00:00+00:00",
+                        "subagent_session_id": "old-prefetch",
+                    }
+                ]
+            }
+            _ensure_enrichment_batch(task_dir, doc, ["related_surveys"], "2026-07-05T00:05:00+00:00")
+            original = next(batch for batch in doc["batches"] if batch["batch_id"] == "D999R")
+            retry = next(batch for batch in doc["batches"] if batch["batch_id"] == "D999R2")
+            self.assertEqual(original["status"], "resolved")
+            self.assertEqual(original["subagent_session_id"], "old-prefetch")
+            self.assertEqual(retry["status"], "pending_spawn")
+            self.assertEqual(retry["retry_of"], "D999R")
+
+    def test_raw_candidate_enrichment_retry_uses_fresh_queries(self):
+        from scripts.discovery_runtime_executor import _ensure_enrichment_batch
+
+        with tempfile.TemporaryDirectory() as tmp:
+            task_dir = initialize_task(Path(tmp), "mllm raw retry enrichment", target="full")
+            self.write_topic_profile(task_dir, topic="mllm think with image")
+            doc = {
+                "batches": [
+                    {
+                        "batch_id": "D999C",
+                        "status": "resolved",
+                        "attempt": 1,
+                        "seed_queries": ["survey visual reasoning large multimodal models visual chain of thought"],
+                        "resolved_at": "2026-07-05T00:00:00+00:00",
+                    }
+                ]
+            }
+            _ensure_enrichment_batch(task_dir, doc, ["raw_candidates"], "2026-07-05T00:05:00+00:00")
+            retry = next(batch for batch in doc["batches"] if batch["batch_id"] == "D999C2")
+            joined_queries = "\n".join(retry["seed_queries"]).lower()
+            self.assertIn("pixel-space reasoning", joined_queries)
+            self.assertNotEqual(retry["seed_queries"], doc["batches"][0]["seed_queries"])
+
+    def test_scoring_enrichment_does_not_create_raw_candidate_retry(self):
+        from scripts.discovery_runtime_executor import _ensure_enrichment_batch
+
+        with tempfile.TemporaryDirectory() as tmp:
+            task_dir = initialize_task(Path(tmp), "mllm scoring enrichment", target="full")
+            self.write_topic_profile(task_dir, topic="mllm think with image")
+            doc = {
+                "batches": [
+                    {
+                        "batch_id": "D999C",
+                        "status": "resolved",
+                        "attempt": 1,
+                        "seed_queries": ["old raw query"],
+                        "resolved_at": "2026-07-05T00:00:00+00:00",
+                    }
+                ]
+            }
+            _ensure_enrichment_batch(task_dir, doc, ["lqs_scores", "corpus_expansion_incomplete"], "2026-07-05T00:05:00+00:00")
+            self.assertFalse(any(batch["batch_id"] == "D999C2" for batch in doc["batches"]))
+            scoring = next(batch for batch in doc["batches"] if batch["batch_id"] == "D999S")
+            self.assertTrue(scoring["uses_existing_candidates"])
+            self.assertEqual(scoring["max_search_queries"], 0)
+            self.assertEqual(scoring["seed_queries"], [])
+
+    def test_corpus_expansion_merge_treats_resolved_route_audits_as_complete(self):
+        from scripts.discovery_runtime_executor import _merge_corpus_expansion
+
+        merged = _merge_corpus_expansion(
+            [
+                {
+                    "required": True,
+                    "status": "metadata_verification_resolved_for_supplied_candidates",
+                    "visible_external_count": 3,
+                    "retained_candidate_count": 3,
+                    "curated_lists_checked": ["local records"],
+                    "recent_surveys_checked": ["arxiv metadata"],
+                    "why_retained_corpus_is_sufficient": "Verified supplied related survey records.",
+                },
+                {
+                    "required": False,
+                    "status": "sufficient_for_D007_route_batch_not_full_corpus",
+                    "visible_external_count": 23,
+                    "retained_candidate_count": 23,
+                },
+            ],
+            raw_count=213,
+            route_count=75,
+        )
+        self.assertEqual(merged["status"], "complete")
+        self.assertTrue(merged["required"])
+
+    def test_collect_status_supersedes_obsolete_raw_enrichment_retry(self):
+        from scripts.discovery_runtime_executor import collect_discovery_status
+
+        with tempfile.TemporaryDirectory() as tmp:
+            task_dir = initialize_task(Path(tmp), "obsolete raw enrichment", target="full")
+            self.write_topic_profile(task_dir, topic="mllm think with image")
+            state = task_dir / "state"
+            raw = self.raw_candidates(total=210, related_surveys=8)
+            routes = self.search_routes() + [
+                {
+                    "route_id": f"extra-{idx}",
+                    "route_type": "keyword",
+                    "query": f"extra visual reasoning {idx}",
+                    "results_seen": 5,
+                    "candidates_retained": 5,
+                }
+                for idx in range(9, 12)
+            ]
+            lqs = self.lqs_scores(total=100)
+            write_jsonl(
+                state / "discovery_results.jsonl",
+                [
+                    {
+                        "batch_id": "D999C",
+                        "status": "resolved",
+                        "raw_candidates": raw,
+                        "search_routes": routes,
+                        "lqs_scores": lqs,
+                        "corpus_expansion": {
+                            "required": True,
+                            "status": "metadata_verification_resolved_for_supplied_candidates",
+                            "visible_external_count": 210,
+                            "retained_candidate_count": 210,
+                            "curated_lists_checked": ["fixture"],
+                            "recent_surveys_checked": ["fixture"],
+                            "why_retained_corpus_is_sufficient": "Fixture corpus is visible and retained; scoring is incomplete.",
+                        },
+                        "validator_results": [{"validator": "validate_discovery", "status": "passed"}],
+                        "remaining_blockers": [],
+                        "subagent_session_id": "fixture",
+                    }
+                ],
+            )
+            (state / "discovery_batches.json").write_text(
+                json.dumps(
+                    {
+                        "batches": [
+                            {"batch_id": "D999C", "status": "resolved"},
+                            {"batch_id": "D999C2", "status": "pending_spawn", "retry_of": "D999C"},
+                        ]
+                    },
+                    sort_keys=True,
+                ),
+                encoding="utf-8",
+            )
+            status = collect_discovery_status(task_dir)
+            batches = {batch["batch_id"]: batch for batch in status["batches"]}
+            self.assertEqual(batches["D999C2"]["status"], "superseded")
+            self.assertEqual(batches["D999C2"]["superseded_by"], "D999S")
+            self.assertEqual(batches["D999S"]["status"], "pending_spawn")
+            self.assertEqual(status["active_batch_id"], "D999S")
+            spawn_requests = json.loads((state / "discovery_spawn_requests.json").read_text(encoding="utf-8"))["spawn_requests"]
+            self.assertEqual(spawn_requests[0]["batch_id"], "D999S")
+            self.assertTrue(spawn_requests[0]["existing_raw_candidates"])
+
+    def test_pending_discovery_enrichment_clears_stale_resolved_metadata(self):
+        from scripts.discovery_runtime_executor import _ensure_enrichment_batch
+
+        with tempfile.TemporaryDirectory() as tmp:
+            task_dir = initialize_task(Path(tmp), "mllm pending enrichment cleanup", target="full")
+            self.write_topic_profile(task_dir, topic="mllm think with image")
+            doc = {
+                "batches": [
+                    {
+                        "batch_id": "D999R",
+                        "status": "pending_spawn",
                         "attempt": 1,
                         "resolved_at": "2026-07-05T00:00:00+00:00",
                         "subagent_session_id": "old-prefetch",
