@@ -21,7 +21,7 @@ except ImportError:  # pragma: no cover
 
 COMPONENT = "discovery_runtime_executor"
 RESULT_SCHEMA_VERSION = 1
-DISCOVERY_ROUTE_PLAN_VERSION = 2
+DISCOVERY_ROUTE_PLAN_VERSION = 3
 REQUIRED_RESULT_KEYS = ["batch_id", "status", "raw_candidates", "search_routes", "lqs_scores", "corpus_expansion", "validator_results", "remaining_blockers"]
 VALID_RESULT_STATUSES = {"resolved", "partially_resolved", "blocked"}
 
@@ -95,42 +95,124 @@ def _refresh_batch_statuses(doc: dict) -> dict:
 
 def _route_batches(target: str, topic_profile: dict) -> list[dict]:
     seed_queries = [str(item) for item in topic_profile.get("search_seed_queries") or [] if str(item).strip()]
+    def seed(index: int, fallback: str) -> str:
+        return seed_queries[index] if len(seed_queries) > index else fallback
+
     base = [
         {
             "batch_id": "D001",
-            "route_focus": "core positive-anchor keyword and snowball search",
-            "required_route_types": ["keyword", "snowball"],
-            "min_raw_candidates": 45,
-            "seed_queries": seed_queries[:4],
+            "route_focus": "exact core phrase search for think-with-image and visual workspace reasoning",
+            "required_route_types": ["keyword"],
+            "min_raw_candidates": 8,
+            "max_search_queries": 3,
+            "seed_queries": [
+                seed(0, '"think with image" multimodal reasoning'),
+                '"think with images" "multimodal"',
+                '"visual workspace" "multimodal reasoning"',
+            ],
         },
         {
             "batch_id": "D002",
-            "route_focus": "curated lists, benchmark pages, and venue-focused discovery",
-            "required_route_types": ["curated_list", "benchmark", "venue"],
-            "min_raw_candidates": 35,
-            "seed_queries": seed_queries[2:6],
+            "route_focus": "visual scratchpad keyword search",
+            "required_route_types": ["keyword"],
+            "min_raw_candidates": 8,
+            "max_search_queries": 3,
+            "seed_queries": [
+                seed(1, '"visual scratchpad" multimodal reasoning'),
+                '"visual scratchpad" "large multimodal model"',
+                '"scratchpad" "image" "reasoning"',
+            ],
         },
         {
             "batch_id": "D003",
-            "route_focus": "directly related survey discovery and reference mining",
-            "required_route_types": ["related_survey_refs", "keyword"],
-            "min_raw_candidates": 30,
-            "min_related_surveys": 6 if target == "full" else 10,
-            "seed_queries": seed_queries[:6],
+            "route_focus": "image-as-workspace and visual intermediate-state keyword search",
+            "required_route_types": ["keyword"],
+            "min_raw_candidates": 8,
+            "max_search_queries": 3,
+            "seed_queries": [
+                seed(2, '"image as workspace" multimodal reasoning'),
+                seed(3, '"visual intermediate state" reasoning MLLM'),
+                '"image-as-workspace" "reasoning"',
+            ],
         },
         {
             "batch_id": "D004",
-            "route_focus": "forward/backward snowballing around core systems, benchmarks, and author groups",
-            "required_route_types": ["snowball", "author_group"],
-            "min_raw_candidates": 45,
-            "seed_queries": seed_queries,
+            "route_focus": "visual chain-of-thought and image-grounded action search",
+            "required_route_types": ["keyword"],
+            "min_raw_candidates": 12,
+            "max_search_queries": 4,
+            "seed_queries": [
+                seed(4, '"visual chain of thought" image reasoning multimodal'),
+                seed(6, '"image-grounded" reasoning actions crop zoom annotate MLLM'),
+                '"multimodal" "visual tool use" reasoning',
+                '"visual reasoning" "crop" "zoom" "MLLM"',
+            ],
         },
         {
             "batch_id": "D005",
+            "route_focus": "curated lists and benchmark pages for visual reasoning agents",
+            "required_route_types": ["curated_list", "benchmark"],
+            "min_raw_candidates": 12,
+            "max_search_queries": 4,
+            "seed_queries": [
+                "awesome multimodal chain of thought visual reasoning",
+                "awesome visual reasoning large multimodal model tool use",
+                "multimodal reasoning benchmark visual scratchpad",
+                "visual tool use MLLM benchmark",
+            ],
+        },
+        {
+            "batch_id": "D006",
+            "route_focus": "related survey discovery for taxonomy and boundary positioning",
+            "required_route_types": ["related_survey_refs", "keyword"],
+            "min_raw_candidates": 12,
+            "min_related_surveys": 6 if target == "full" else 10,
+            "max_search_queries": 5,
+            "seed_queries": [
+                "survey visual reasoning large multimodal models chain of thought",
+                "survey multimodal reasoning visual tool use",
+                "review visual question answering reasoning large multimodal model",
+                "survey multimodal agents visual reasoning",
+                "survey large multimodal models reasoning",
+            ],
+        },
+        {
+            "batch_id": "D007",
+            "route_focus": "snowballing from known core systems, benchmarks, and author clusters",
+            "required_route_types": ["snowball", "author_group"],
+            "min_raw_candidates": 20,
+            "max_search_queries": 6,
+            "seed_queries": [
+                "Visual Sketchpad multimodal reasoning references",
+                "OpenThinkIMG visual reasoning references",
+                "VTool-R1 visual tool reasoning references",
+                "DeepEyes multimodal reasoning references",
+                "ReFocus visual reasoning MLLM references",
+                "Multimodal-CoT visual chain of thought references",
+            ],
+        },
+        {
+            "batch_id": "D008",
+            "route_focus": "venue and recent-paper expansion for core visual workspace mechanisms",
+            "required_route_types": ["venue", "keyword"],
+            "min_raw_candidates": 18,
+            "max_search_queries": 6,
+            "seed_queries": [
+                "CVPR 2026 visual reasoning large multimodal model tool",
+                "ICLR 2026 visual reasoning multimodal scratchpad",
+                "NeurIPS 2025 visual reasoning MLLM tool use",
+                "ACL 2025 multimodal chain of thought visual reasoning",
+                "EMNLP 2025 visual tool use multimodal reasoning",
+                "arXiv visual reasoning large multimodal model 2026",
+            ],
+        },
+        {
+            "batch_id": "D009",
             "route_focus": "metadata enrichment, deduplication, corpus expansion audit, and gap-filling",
             "required_route_types": ["keyword", "venue", "curated_list"],
-            "min_raw_candidates": 45,
-            "seed_queries": seed_queries,
+            "min_raw_candidates": 25,
+            "max_search_queries": 8,
+            "seed_queries": seed_queries[:8],
         },
     ]
     if target == "short":
@@ -141,17 +223,19 @@ def _route_batches(target: str, topic_profile: dict) -> list[dict]:
                 "required_route_types": ["keyword", "snowball", "related_survey_refs", "curated_list"],
                 "min_raw_candidates": 50,
                 "min_related_surveys": 2,
+                "max_search_queries": 8,
                 "seed_queries": seed_queries,
             }
         ]
     if target == "csur":
         base.append(
             {
-                "batch_id": "D006",
+                "batch_id": "D010",
                 "route_focus": "CSUR-grade long-tail expansion across adjacent venues and recent surveys",
                 "required_route_types": ["venue", "related_survey_refs", "snowball"],
-                "min_raw_candidates": 120,
+                "min_raw_candidates": 80,
                 "min_related_surveys": 10,
+                "max_search_queries": 10,
                 "seed_queries": seed_queries,
             }
         )
@@ -165,19 +249,22 @@ def _prompt(task_dir: Path, batch: dict) -> str:
         "Use real search sources and return structured discovery state. Do not invent papers or counts.\n"
         "Follow the topic_profile exactly: positive anchors define core relevance; negative anchors define drift risks; allowed background cannot become A/B core.\n"
         "This is one route-level discovery batch. Do not try to satisfy the full corpus alone; exhaust the assigned route, report blockers, and return only real records.\n"
+        "Timebox the route: run only the listed seed queries or fewer, then return resolved/partial/blocked JSON. Do not keep expanding recursively.\n"
         f"Task directory: {task_dir.resolve()}\n"
         f"Batch id: {batch.get('batch_id')}\n"
         f"Route focus: {batch.get('route_focus')}\n"
         f"Required route types: {json.dumps(batch.get('required_route_types') or [], ensure_ascii=False)}\n"
         f"Minimum raw candidates for this route: {batch.get('min_raw_candidates')}\n"
         f"Minimum related surveys for this route, when applicable: {batch.get('min_related_surveys') or 0}\n"
+        f"Maximum search queries for this route: {batch.get('max_search_queries') or len(batch.get('seed_queries') or [])}\n"
         f"Seed queries for this route: {json.dumps(batch.get('seed_queries') or [], ensure_ascii=False)}\n"
         f"Previous blockers for this route: {json.dumps(batch.get('last_blockers') or [], ensure_ascii=False)}\n"
         f"Task spec:\n{_task_spec(task_dir)}\n"
         f"Topic profile:\n{json.dumps(topic_profile, indent=2, sort_keys=True, ensure_ascii=False)}\n"
         f"Survey type plan:\n{_survey_type(task_dir)}\n"
         "Return one JSON object with keys: batch_id, status, raw_candidates, search_routes, lqs_scores, corpus_expansion, validator_results, remaining_blockers. "
-        "For a resolved route batch, include a passed validator named validate_discovery_route or validate_discovery."
+        "For a resolved route batch, include a passed validator named validate_discovery_route or validate_discovery. "
+        "If time runs short, return status partially_resolved with the real records already found rather than continuing."
     )
 
 
@@ -196,6 +283,7 @@ def _spawn_request(task_dir: Path, batch: dict) -> dict:
         "required_route_types": batch.get("required_route_types") or [],
         "min_raw_candidates": batch.get("min_raw_candidates"),
         "min_related_surveys": batch.get("min_related_surveys") or 0,
+        "max_search_queries": batch.get("max_search_queries") or len(batch.get("seed_queries") or []),
         "route_plan_version": DISCOVERY_ROUTE_PLAN_VERSION,
         "target": _target(task_dir),
         "task_spec": _task_spec(task_dir),
