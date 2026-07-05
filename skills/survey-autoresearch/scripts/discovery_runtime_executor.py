@@ -6,6 +6,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import time
 import urllib.parse
 import urllib.request
 import xml.etree.ElementTree as ET
@@ -24,8 +25,10 @@ except ImportError:  # pragma: no cover
 
 COMPONENT = "discovery_runtime_executor"
 RESULT_SCHEMA_VERSION = 1
-DISCOVERY_ROUTE_PLAN_VERSION = 4
+DISCOVERY_ROUTE_PLAN_VERSION = 7
 PREFETCH_FILE = "discovery_prefetch_snapshots.jsonl"
+OPENALEX_POLITE_DELAY_SECONDS = 0.5
+ARXIV_POLITE_DELAY_SECONDS = 3.2
 REQUIRED_RESULT_KEYS = ["batch_id", "status", "raw_candidates", "search_routes", "lqs_scores", "corpus_expansion", "validator_results", "remaining_blockers"]
 VALID_RESULT_STATUSES = {"resolved", "partially_resolved", "blocked"}
 
@@ -115,13 +118,19 @@ def _safe_text_from_url(url: str, timeout: int = 8) -> tuple[str, str | None]:
         return "", f"{type(exc).__name__}: {exc}"
 
 
-def _openalex_candidates(query: str, batch_id: str, route_id: str, limit: int = 8) -> tuple[list[dict], str | None]:
+def _batch_route_type(batch: dict | None) -> str:
+    route_types = [str(item).strip() for item in (batch or {}).get("required_route_types") or [] if str(item).strip()]
+    return route_types[0] if route_types else "keyword"
+
+
+def _openalex_candidates(query: str, batch_id: str, route_id: str, route_type: str = "keyword", limit: int = 8) -> tuple[list[dict], str | None]:
     params = urllib.parse.urlencode(
         {
             "search": query,
             "per-page": max(1, min(limit, 25)),
             "filter": "from_publication_date:2018-01-01",
             "select": "id,doi,title,display_name,publication_year,authorships,primary_location,locations,type",
+            "mailto": "survey-autoresearch@example.org",
         }
     )
     payload, error = _safe_json_from_url(f"https://api.openalex.org/works?{params}")
@@ -154,7 +163,7 @@ def _openalex_candidates(query: str, batch_id: str, route_id: str, limit: int = 
                 "source_api": "openalex",
                 "query": query,
                 "route_id": route_id,
-                "route_type": "keyword",
+                "route_type": route_type,
                 "source_record_id": item.get("id"),
                 "relevance_note": "Prefetched metadata; worker must audit topic relevance before retained selection.",
             }
@@ -162,8 +171,29 @@ def _openalex_candidates(query: str, batch_id: str, route_id: str, limit: int = 
     return rows, None
 
 
-def _arxiv_candidates(query: str, batch_id: str, route_id: str, limit: int = 8) -> tuple[list[dict], str | None]:
-    search_query = urllib.parse.quote(f'all:"{query}"')
+def _arxiv_search_expression(query: str, max_terms: int = 7) -> str:
+    normalized = "".join(ch if ch.isalnum() or ch in {"-", " "} else " " for ch in str(query or ""))
+    stopwords = {
+        "and", "the", "with", "from", "for", "large", "model", "models", "paper", "papers",
+        "survey", "review", "arxiv", "cvpr", "iclr", "neurips", "acl", "emnlp",
+    }
+    terms: list[str] = []
+    for token in normalized.split():
+        token = token.strip()
+        if len(token) < 3 or token.lower() in stopwords:
+            continue
+        if token.lower() not in {item.lower() for item in terms}:
+            terms.append(token)
+    if not terms:
+        terms = [item for item in normalized.split() if item.strip()][:max_terms]
+    selected = terms[:max_terms]
+    if not selected:
+        return "all:multimodal"
+    return "+AND+".join(f"all:{urllib.parse.quote(term)}" for term in selected)
+
+
+def _arxiv_candidates(query: str, batch_id: str, route_id: str, route_type: str = "keyword", limit: int = 8) -> tuple[list[dict], str | None]:
+    search_query = _arxiv_search_expression(query)
     url = f"https://export.arxiv.org/api/query?search_query={search_query}&start=0&max_results={max(1, min(limit, 20))}&sortBy=relevance&sortOrder=descending"
     text, error = _safe_text_from_url(url)
     if error:
@@ -197,7 +227,7 @@ def _arxiv_candidates(query: str, batch_id: str, route_id: str, limit: int = 8) 
                 "source_api": "arxiv",
                 "query": query,
                 "route_id": route_id,
-                "route_type": "keyword",
+                "route_type": route_type,
                 "abstract": " ".join((entry.findtext("atom:summary", default="", namespaces=ns) or "").split())[:1200],
                 "relevance_note": "Prefetched metadata; worker must audit topic relevance before retained selection.",
             }
@@ -225,13 +255,16 @@ def prefetch_active_discovery_sources(task_dir: Path, per_query_limit: int = 8) 
     queries = queries[: int(active.get("max_search_queries") or len(queries))]
     candidates: list[dict] = []
     errors: list[str] = []
+    route_type = _batch_route_type(active)
     for idx, query in enumerate(queries, start=1):
         route_id = f"{batch_id}-prefetch-{idx:02d}"
-        route_rows, error = _openalex_candidates(query, batch_id, route_id, per_query_limit)
+        route_rows, error = _openalex_candidates(query, batch_id, route_id, route_type, per_query_limit)
         candidates.extend(route_rows)
         if error:
             errors.append(error)
-        route_rows, error = _arxiv_candidates(query, batch_id, route_id, per_query_limit)
+        time.sleep(OPENALEX_POLITE_DELAY_SECONDS)
+        time.sleep(ARXIV_POLITE_DELAY_SECONDS)
+        route_rows, error = _arxiv_candidates(query, batch_id, route_id, route_type, per_query_limit)
         candidates.extend(route_rows)
         if error:
             errors.append(error)
@@ -273,11 +306,13 @@ def record_prefetch_as_discovery_result(task_dir: Path, subagent_session_id: str
     candidates = snapshot.get("prefetched_candidates") or []
     if not candidates:
         return {"status": "invalid", "error": "prefetch_snapshot_missing_or_empty", "batch_id": active_batch_id}
+    active = next((batch for batch in doc.get("batches") or [] if str(batch.get("batch_id") or "") == active_batch_id), {})
+    route_type = _batch_route_type(active)
     route_ids = sorted({str(item.get("route_id") or f"{active_batch_id}-prefetch") for item in candidates if isinstance(item, dict)})
     routes = [
         {
             "route_id": route_id,
-            "route_type": "keyword",
+            "route_type": route_type,
             "source": "OpenAlex/arXiv prefetch",
             "query": "; ".join(sorted({str(item.get("query") or "") for item in candidates if item.get("route_id") == route_id and item.get("query")}))[:500],
             "results_seen": len([item for item in candidates if item.get("route_id") == route_id]),
@@ -380,10 +415,10 @@ def _route_batches(target: str, topic_profile: dict) -> list[dict]:
             "min_raw_candidates": 12,
             "max_search_queries": 4,
             "seed_queries": [
-                "awesome multimodal chain of thought visual reasoning",
-                "awesome visual reasoning large multimodal model tool use",
-                "multimodal reasoning benchmark visual scratchpad",
-                "visual tool use MLLM benchmark",
+                '"MathVista" "multimodal reasoning" benchmark',
+                '"MMMU" "visual reasoning" benchmark',
+                '"MMBench" "multimodal reasoning" benchmark',
+                '"visual reasoning" "benchmark" "large multimodal model"',
             ],
         },
         {
@@ -408,12 +443,12 @@ def _route_batches(target: str, topic_profile: dict) -> list[dict]:
             "min_raw_candidates": 20,
             "max_search_queries": 6,
             "seed_queries": [
-                "Visual Sketchpad multimodal reasoning references",
-                "OpenThinkIMG visual reasoning references",
-                "VTool-R1 visual tool reasoning references",
-                "DeepEyes multimodal reasoning references",
-                "ReFocus visual reasoning MLLM references",
-                "Multimodal-CoT visual chain of thought references",
+                '"Visual Sketchpad" "multimodal reasoning"',
+                '"OpenThinkIMG"',
+                '"VTool-R1"',
+                '"DeepEyes" "multimodal reasoning"',
+                '"ReFocus" "MLLM"',
+                '"Multimodal-CoT" "visual chain of thought"',
             ],
         },
         {

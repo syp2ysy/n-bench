@@ -1780,7 +1780,7 @@ class SurveyAutoResearchContractTest(unittest.TestCase):
             self.assertNotEqual(retry_request["request_id"], first["request_id"])
 
     def test_discovery_prefetch_snapshot_is_carried_in_worker_request(self):
-        from scripts.discovery_runtime_executor import prepare_discovery_batches
+        from scripts.discovery_runtime_executor import DISCOVERY_ROUTE_PLAN_VERSION, prepare_discovery_batches
 
         with tempfile.TemporaryDirectory() as tmp:
             task_dir = initialize_task(Path(tmp), "prefetched discovery request", target="full")
@@ -1792,7 +1792,7 @@ class SurveyAutoResearchContractTest(unittest.TestCase):
                 [
                     {
                         "schema_version": 1,
-                        "route_plan_version": 4,
+                        "route_plan_version": DISCOVERY_ROUTE_PLAN_VERSION,
                         "batch_id": "D001",
                         "prefetched_candidates": [
                             {
@@ -1814,7 +1814,7 @@ class SurveyAutoResearchContractTest(unittest.TestCase):
             self.assertEqual(request["prefetch_snapshot_at"], "2026-07-05T00:00:00+00:00")
 
     def test_dispatcher_stales_discovery_request_when_prefetch_changes_payload(self):
-        from scripts.discovery_runtime_executor import prepare_discovery_batches
+        from scripts.discovery_runtime_executor import DISCOVERY_ROUTE_PLAN_VERSION, prepare_discovery_batches
         from scripts.runtime_dispatcher import collect_pending
         from scripts.survey_driver import run_until_complete as run_survey_until_complete
 
@@ -1831,7 +1831,7 @@ class SurveyAutoResearchContractTest(unittest.TestCase):
                 [
                     {
                         "schema_version": 1,
-                        "route_plan_version": 4,
+                        "route_plan_version": DISCOVERY_ROUTE_PLAN_VERSION,
                         "batch_id": "D001",
                         "prefetched_candidates": [{"candidate_id": "prefetch-001", "title": "Visual Workspace Reasoning"}],
                         "prefetch_errors": [],
@@ -1849,7 +1849,7 @@ class SurveyAutoResearchContractTest(unittest.TestCase):
             self.assertEqual(old["status"], "stale_superseded")
 
     def test_discovery_prefetch_can_record_route_result_without_canonical_corpus(self):
-        from scripts.discovery_runtime_executor import prepare_discovery_batches, record_prefetch_as_discovery_result
+        from scripts.discovery_runtime_executor import DISCOVERY_ROUTE_PLAN_VERSION, prepare_discovery_batches, record_prefetch_as_discovery_result
 
         with tempfile.TemporaryDirectory() as tmp:
             task_dir = initialize_task(Path(tmp), "record prefetch discovery", target="full")
@@ -1860,7 +1860,7 @@ class SurveyAutoResearchContractTest(unittest.TestCase):
                 [
                     {
                         "schema_version": 1,
-                        "route_plan_version": 4,
+                        "route_plan_version": DISCOVERY_ROUTE_PLAN_VERSION,
                         "batch_id": "D001",
                         "prefetched_candidates": [
                             {
@@ -1885,6 +1885,89 @@ class SurveyAutoResearchContractTest(unittest.TestCase):
             self.assertEqual(batches["batches"][0]["status"], "resolved")
             self.assertEqual(batches["active_batch_id"], "D002")
             self.assertEqual(read_jsonl(task_dir / "state/raw_candidates.jsonl"), [])
+
+    def test_discovery_known_system_route_uses_direct_system_queries(self):
+        from scripts.discovery_runtime_executor import prepare_discovery_batches
+
+        with tempfile.TemporaryDirectory() as tmp:
+            task_dir = initialize_task(Path(tmp), "mllm think with image route plan", target="full")
+            self.write_topic_profile(task_dir, topic="mllm think with image")
+            prepare_discovery_batches(task_dir)
+            batches = json.loads((task_dir / "state/discovery_batches.json").read_text(encoding="utf-8"))
+            d007 = next(batch for batch in batches["batches"] if batch["batch_id"] == "D007")
+            joined_queries = "\n".join(d007["seed_queries"]).lower()
+            self.assertIn("visual sketchpad", joined_queries)
+            self.assertIn("openthinkimg", joined_queries)
+            self.assertNotIn(" references", joined_queries)
+
+    def test_discovery_benchmark_route_uses_metadata_friendly_queries(self):
+        from scripts.discovery_runtime_executor import prepare_discovery_batches
+
+        with tempfile.TemporaryDirectory() as tmp:
+            task_dir = initialize_task(Path(tmp), "mllm benchmark route plan", target="full")
+            self.write_topic_profile(task_dir, topic="mllm think with image")
+            prepare_discovery_batches(task_dir)
+            batches = json.loads((task_dir / "state/discovery_batches.json").read_text(encoding="utf-8"))
+            d005 = next(batch for batch in batches["batches"] if batch["batch_id"] == "D005")
+            joined_queries = "\n".join(d005["seed_queries"]).lower()
+            self.assertIn("benchmark", joined_queries)
+            self.assertNotIn("awesome", joined_queries)
+
+    def test_arxiv_prefetch_uses_term_conjunction_for_long_queries(self):
+        from scripts.discovery_runtime_executor import _arxiv_search_expression
+
+        expression = _arxiv_search_expression("survey visual reasoning large multimodal models chain of thought")
+        self.assertIn("+AND+", expression)
+        self.assertIn("all:visual", expression)
+        self.assertNotIn('all:"', expression)
+
+    def test_prefetch_route_result_preserves_batch_route_type(self):
+        from scripts.discovery_runtime_executor import DISCOVERY_ROUTE_PLAN_VERSION, record_prefetch_as_discovery_result
+
+        with tempfile.TemporaryDirectory() as tmp:
+            task_dir = initialize_task(Path(tmp), "route type prefetch", target="full")
+            state = task_dir / "state"
+            write_jsonl(state / "discovery_prefetch_snapshots.jsonl", [
+                {
+                    "schema_version": 1,
+                    "route_plan_version": DISCOVERY_ROUTE_PLAN_VERSION,
+                    "batch_id": "D007",
+                    "prefetched_candidates": [
+                        {
+                            "candidate_id": "prefetch-known-system-001",
+                            "title": "Visual Sketchpad: Sketching as a Visual Chain of Thought for Multimodal Language Models",
+                            "query": '"Visual Sketchpad" "multimodal reasoning"',
+                            "route_id": "D007-prefetch-01",
+                        }
+                    ],
+                    "prefetch_errors": [],
+                    "prefetched_at": "2026-07-05T00:00:00+00:00",
+                }
+            ])
+            (state / "discovery_batches.json").write_text(
+                json.dumps(
+                    {
+                        "schema_version": 1,
+                        "plan_hash": "test-plan",
+                        "route_plan_version": DISCOVERY_ROUTE_PLAN_VERSION,
+                        "active_batch_id": "D007",
+                        "batches": [
+                            {
+                                "batch_id": "D007",
+                                "status": "pending_spawn",
+                                "attempt": 1,
+                                "required_route_types": ["snowball", "author_group"],
+                            }
+                        ],
+                    },
+                    sort_keys=True,
+                ),
+                encoding="utf-8",
+            )
+            recorded = record_prefetch_as_discovery_result(task_dir, "prefetch-script")
+            self.assertEqual(recorded["status"], "recorded", recorded)
+            result_rows = read_jsonl(state / "discovery_results.jsonl")
+            self.assertEqual(result_rows[-1]["search_routes"][0]["route_type"], "snowball")
 
     def test_corpus_pipeline_facade_preserves_topic_boundary_before_discovery(self):
         from scripts.corpus_pipeline import collect_status as collect_corpus_status
