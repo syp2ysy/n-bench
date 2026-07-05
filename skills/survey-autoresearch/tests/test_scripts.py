@@ -1969,6 +1969,45 @@ class SurveyAutoResearchContractTest(unittest.TestCase):
             result_rows = read_jsonl(state / "discovery_results.jsonl")
             self.assertEqual(result_rows[-1]["search_routes"][0]["route_type"], "snowball")
 
+    def test_discovery_enrichment_batch_has_seed_queries(self):
+        from scripts.discovery_runtime_executor import _ensure_enrichment_batch
+
+        with tempfile.TemporaryDirectory() as tmp:
+            task_dir = initialize_task(Path(tmp), "mllm enrichment route plan", target="full")
+            self.write_topic_profile(task_dir, topic="mllm think with image")
+            doc = {"batches": []}
+            _ensure_enrichment_batch(task_dir, doc, ["raw_candidates", "related_surveys"], "2026-07-05T00:00:00+00:00")
+            batch = doc["batches"][0]
+            self.assertEqual(batch["batch_id"], "D999")
+            self.assertGreaterEqual(len(batch["seed_queries"]), 4)
+            self.assertGreater(batch["max_search_queries"], 0)
+            joined_queries = "\n".join(batch["seed_queries"]).lower()
+            self.assertIn("survey", joined_queries)
+            self.assertIn("visual", joined_queries)
+
+    def test_reopened_discovery_enrichment_clears_resolved_metadata(self):
+        from scripts.discovery_runtime_executor import _ensure_enrichment_batch
+
+        with tempfile.TemporaryDirectory() as tmp:
+            task_dir = initialize_task(Path(tmp), "mllm reopened enrichment", target="full")
+            self.write_topic_profile(task_dir, topic="mllm think with image")
+            doc = {
+                "batches": [
+                    {
+                        "batch_id": "D999",
+                        "status": "resolved",
+                        "attempt": 1,
+                        "resolved_at": "2026-07-05T00:00:00+00:00",
+                        "subagent_session_id": "old-prefetch",
+                    }
+                ]
+            }
+            _ensure_enrichment_batch(task_dir, doc, ["related_surveys"], "2026-07-05T00:05:00+00:00")
+            batch = doc["batches"][0]
+            self.assertEqual(batch["status"], "pending_spawn")
+            self.assertNotIn("resolved_at", batch)
+            self.assertNotIn("subagent_session_id", batch)
+
     def test_corpus_pipeline_facade_preserves_topic_boundary_before_discovery(self):
         from scripts.corpus_pipeline import collect_status as collect_corpus_status
         from scripts.corpus_pipeline import prepare as prepare_corpus

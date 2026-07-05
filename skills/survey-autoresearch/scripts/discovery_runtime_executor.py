@@ -822,7 +822,37 @@ def _merged_discovery_payload(task_dir: Path, doc: dict) -> tuple[dict, dict]:
     }, coverage
 
 
-def _ensure_enrichment_batch(doc: dict, blockers: list[str], recorded_at: str) -> None:
+def _enrichment_seed_queries(task_dir: Path, blockers: list[str]) -> list[str]:
+    profile = _topic_profile(task_dir)
+    seeds = [str(item).strip() for item in profile.get("search_seed_queries") or [] if str(item).strip()]
+    related = [
+        "survey visual reasoning large multimodal models visual chain of thought",
+        "survey multimodal reasoning visual tool use and grounded reasoning",
+        "review visual reasoning large multimodal model grounded chain of thought",
+        "survey visual tool use multimodal agents",
+    ]
+    expansion = [
+        "\"think with image\" multimodal reasoning",
+        "\"visual scratchpad\" multimodal reasoning",
+        "\"image-grounded\" visual reasoning actions",
+        "\"visual workspace\" large multimodal model reasoning",
+    ]
+    if "related_surveys" in set(str(item) for item in blockers):
+        ordered = related + seeds + expansion
+    else:
+        ordered = seeds + expansion + related
+    deduped: list[str] = []
+    seen: set[str] = set()
+    for query in ordered:
+        key = query.lower()
+        if key not in seen:
+            deduped.append(query)
+            seen.add(key)
+    return deduped[:10]
+
+
+def _ensure_enrichment_batch(task_dir: Path, doc: dict, blockers: list[str], recorded_at: str) -> None:
+    seed_queries = _enrichment_seed_queries(task_dir, blockers)
     batch = next((item for item in doc.get("batches") or [] if item.get("batch_id") == "D999"), None)
     if batch is None:
         doc.setdefault("batches", []).append(
@@ -831,6 +861,8 @@ def _ensure_enrichment_batch(doc: dict, blockers: list[str], recorded_at: str) -
                 "route_focus": "final coverage enrichment for unresolved discovery gaps",
                 "required_route_types": ["keyword", "snowball", "related_survey_refs", "curated_list", "venue", "benchmark", "author_group"],
                 "min_raw_candidates": 25,
+                "max_search_queries": min(10, len(seed_queries)),
+                "seed_queries": seed_queries,
                 "status": "pending_spawn",
                 "attempt": 1,
                 "last_blockers": blockers,
@@ -842,6 +874,12 @@ def _ensure_enrichment_batch(doc: dict, blockers: list[str], recorded_at: str) -
     batch["attempt"] = int(batch.get("attempt") or 1) + 1
     batch["last_blockers"] = blockers
     batch["last_blocked_at"] = recorded_at
+    batch.pop("resolved_at", None)
+    batch.pop("subagent_session_id", None)
+    if not batch.get("seed_queries"):
+        batch["seed_queries"] = seed_queries
+    if not batch.get("max_search_queries"):
+        batch["max_search_queries"] = min(10, len(batch.get("seed_queries") or []))
 
 
 def _finalize_discovery_if_ready(task_dir: Path, doc: dict, recorded_at: str) -> tuple[dict, dict | None]:
@@ -850,7 +888,7 @@ def _finalize_discovery_if_ready(task_dir: Path, doc: dict, recorded_at: str) ->
     payload, coverage = _merged_discovery_payload(task_dir, doc)
     if not coverage.get("discovery_sufficient"):
         blockers = coverage.get("discovery_missing") or coverage.get("missing") or ["discovery_not_sufficient_after_merge"]
-        _ensure_enrichment_batch(doc, blockers, recorded_at)
+        _ensure_enrichment_batch(task_dir, doc, blockers, recorded_at)
         return doc, coverage
     state = _state(task_dir)
     write_jsonl(state / "raw_candidates.jsonl", payload["raw_candidates"])
