@@ -21,6 +21,7 @@ try:
     from .validate_exemplar_alignment import validate_exemplar_alignment
     from .validate_related_survey_alignment import validate_related_survey_alignment
     from .verify_sources import validate_sources
+    from .validate_topic_profile import validate_topic_profile
     from .validate_topic_relevance import validate_topic_relevance
     from .status_schema import status_envelope
 except ImportError:  # pragma: no cover
@@ -37,11 +38,13 @@ except ImportError:  # pragma: no cover
     from validate_exemplar_alignment import validate_exemplar_alignment
     from validate_related_survey_alignment import validate_related_survey_alignment
     from verify_sources import validate_sources
+    from validate_topic_profile import validate_topic_profile
     from validate_topic_relevance import validate_topic_relevance
     from status_schema import status_envelope
 
 
 PHASE_ORDER = [
+    "topic_profile",
     "discovery",
     "source_verification",
     "paper_understanding",
@@ -158,6 +161,7 @@ def _load_common(task_dir: Path) -> dict:
         "argument_text": _text(state / "argument_graph.yml"),
         "scenario_text": _text(state / "scenario_definitions.yml"),
         "survey_type_text": _text(state / "survey_type_plan.yml"),
+        "topic_profile": read_json(state / "topic_profile.json"),
         "contribution_tree_text": _text(outputs / "contribution_tree.yml"),
     }
 
@@ -166,6 +170,7 @@ def evaluate_phase_barriers(task_dir: Path, target: str = "full") -> dict:
     data = _load_common(task_dir)
     outputs = data["outputs"]
 
+    topic_profile = validate_topic_profile(data["topic_profile"], target)
     topic_relevance = validate_topic_relevance(
         data["raw_candidates"],
         data["papers"],
@@ -275,10 +280,16 @@ def evaluate_phase_barriers(task_dir: Path, target: str = "full") -> dict:
     )
 
     phases: dict[str, dict] = {
+        "topic_profile": {
+            "passed": topic_profile["valid"],
+            "validator": "validate_topic_profile",
+            "details": topic_profile,
+        },
         "discovery": {
-            "passed": coverage["discovery_sufficient"],
+            "passed": topic_profile["valid"] and coverage["discovery_sufficient"],
             "validator": "validate_coverage",
             "details": {
+                "topic_profile": topic_profile,
                 "discovery_ready": coverage["discovery_sufficient"],
                 "retained_coverage_ready": retained_coverage_ready,
                 "coverage": coverage,
@@ -353,6 +364,8 @@ def evaluate_phase_barriers(task_dir: Path, target: str = "full") -> dict:
             break
 
     allowed_next_phase = blocked_by or "complete"
+    if blocked_by == "topic_profile":
+        allowed_next_phase = "topic_profile"
     if blocked_by == "article":
         article_errors = set(article.get("errors") or [])
         if "expansion_audit_missing" in article_errors or "invalid_expansion_audit" in article_errors:

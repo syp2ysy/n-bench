@@ -19,6 +19,7 @@ try:  # pragma: no cover - script import fallback
     from .run_expert_reviews import read_json, read_jsonl, write_json, write_jsonl
     from .status_schema import STATUS_SCHEMA_VERSION
     from .status_schema import status_envelope
+    from .topic_profile import prepare_topic_profile_request
     from .topic_relevance_runtime_executor import prepare_topic_relevance_batches, prepare_topic_relevance_second_audit_batches
 except ImportError:  # pragma: no cover
     from discovery_runtime_executor import prepare_discovery_batches
@@ -30,12 +31,14 @@ except ImportError:  # pragma: no cover
     from run_expert_reviews import read_json, read_jsonl, write_json, write_jsonl
     from status_schema import STATUS_SCHEMA_VERSION
     from status_schema import status_envelope
+    from topic_profile import prepare_topic_profile_request
     from topic_relevance_runtime_executor import prepare_topic_relevance_batches, prepare_topic_relevance_second_audit_batches
 
 
 COMPONENT = "survey_driver"
 
 REQUEST_TYPES_BY_ACTION = {
+    "spawn_topic_profile_agents": ["topic_profile"],
     "spawn_discovery_agents": ["discovery"],
     "spawn_topic_relevance_agents": ["topic_relevance"],
     "spawn_topic_relevance_second_audit_agents": ["topic_relevance_second_audit"],
@@ -65,9 +68,14 @@ def _sha256_file(path: Path) -> str:
 INTENT_HASH_FILES_BY_ACTION = {
     "spawn_discovery_agents": [
         "state/task_spec.md",
+        "state/topic_profile.json",
         "state/survey_type_plan.yml",
         "state/progress.json",
         "state/discovery_spawn_requests.json",
+    ],
+    "spawn_topic_profile_agents": [
+        "state/task_spec.md",
+        "state/topic_profile_spawn_requests.json",
     ],
     "spawn_topic_relevance_agents": [
         "state/raw_candidates.jsonl",
@@ -400,6 +408,9 @@ def run_until_complete(task_dir: Path, target: str = "full", max_steps: int = 25
                 actions,
                 phase_status,
             )
+        if blocked_by == "topic_profile":
+            runtime = prepare_topic_profile_request(task_dir, target)
+            return _finish(task_dir, runtime, actions, phase_status)
         if blocked_by == "discovery" and next_action == "discovery":
             runtime = prepare_discovery_batches(task_dir)
             return _finish(task_dir, runtime, actions, phase_status)

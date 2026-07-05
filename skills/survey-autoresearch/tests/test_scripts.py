@@ -229,6 +229,65 @@ class SurveyAutoResearchContractTest(unittest.TestCase):
             )
         return rows
 
+    def topic_profile(self, topic: str = "embodied memory system") -> dict:
+        if "mllm" in topic.lower() or "image" in topic.lower() or "visual" in topic.lower():
+            positive = [
+                "visual scratchpad",
+                "image-as-workspace",
+                "visual intermediate-state reasoning",
+            ]
+            negative = [
+                "generic LLM survey without visual workspace reasoning",
+                "RAG survey without image-grounded reasoning actions",
+                "education or medical ChatGPT survey without multimodal reasoning mechanisms",
+            ]
+            queries = [
+                "visual scratchpad multimodal reasoning",
+                "image as workspace MLLM reasoning",
+                "visual intermediate state reasoning",
+            ]
+            central = "Which papers directly study image-grounded intermediate reasoning states rather than generic MLLM capability?"
+        else:
+            positive = [
+                "retrieval memory",
+                "structured map memory",
+                "episodic policy memory",
+            ]
+            negative = [
+                "generic LLM memory without embodied decision evidence",
+                "survey-only background without direct system mechanism",
+            ]
+            queries = [
+                "embodied memory retrieval system survey",
+                "structured map memory embodied agents",
+                "episodic policy memory embodied AI",
+            ]
+            central = "How do embodied systems use memory mechanisms to support evidence-conditioned decisions?"
+        return {
+            "schema_version": 1,
+            "topic": topic,
+            "central_question": central,
+            "positive_anchors": positive,
+            "negative_anchors": negative,
+            "allowed_background": ["broad surveys may be used only for positioning, not as A/B core papers"],
+            "core_claim_types": ["taxonomy claims", "method comparison claims", "benchmark and evaluation claims"],
+            "search_seed_queries": queries,
+            "acceptance_rubric": {
+                "paper_relevance": "A/B papers must directly match the positive anchors and avoid the negative drift anchors.",
+                "survey_spine": "The survey spine must be derived from topic-qualified paper cards and related-survey deltas.",
+                "paper_understanding": "A/B papers require full-text mechanism cards with evidence spans.",
+            },
+            "must_find_related_surveys": True,
+            "subagent_session_id": "test-topic-profile-agent",
+            "recorded_at": "2026-07-05T00:00:00+00:00",
+        }
+
+    def write_topic_profile(self, task_dir: Path, topic: str = "embodied memory system") -> None:
+        (task_dir / "state" / "topic_profile.json").write_text(
+            json.dumps(self.topic_profile(topic), sort_keys=True),
+            encoding="utf-8",
+        )
+
     def corpus_expansion(self, required: bool = False, status: str = "not_required") -> dict:
         return {
             "required": required,
@@ -826,6 +885,7 @@ class SurveyAutoResearchContractTest(unittest.TestCase):
 
     def populate_source_verified_task(self, task_dir: Path) -> None:
         state = task_dir / "state"
+        self.write_topic_profile(task_dir)
         raw_candidates = self.raw_candidates()
         papers = self.papers()
         citation_plan = self.citation_plan()
@@ -859,6 +919,7 @@ class SurveyAutoResearchContractTest(unittest.TestCase):
         second_audits = fixture / "topic_relevance_second_audits.jsonl"
         if second_audits.exists():
             shutil.copyfile(second_audits, state / "topic_relevance_second_audits.jsonl")
+        self.write_topic_profile(task_dir, topic="mllm think with image")
 
     def paper_understanding_result(self, batch: dict, task_dir: Path, status: str = "resolved") -> dict:
         paper_ids = [str(pid) for pid in batch.get("paper_ids") or []]
@@ -921,6 +982,7 @@ class SurveyAutoResearchContractTest(unittest.TestCase):
 
     def populate_full_task(self, task_dir: Path) -> None:
         state, outputs = task_dir / "state", task_dir / "outputs"
+        self.write_topic_profile(task_dir)
         raw_candidates = self.raw_candidates()
         papers = self.papers()
         citation_plan = self.citation_plan()
@@ -1581,6 +1643,7 @@ class SurveyAutoResearchContractTest(unittest.TestCase):
 
         with tempfile.TemporaryDirectory() as tmp:
             task_dir = initialize_task(Path(tmp), "fresh discovery run", target="full")
+            self.write_topic_profile(task_dir, topic="fresh discovery run")
             status = run_survey_until_complete(task_dir, target="full", max_steps=5)
             self.assertEqual(status["status"], "blocked_discovery_agent_spawn_required", status)
             self.assertEqual(status["next_action"], "spawn_discovery_agents")
@@ -1618,6 +1681,9 @@ class SurveyAutoResearchContractTest(unittest.TestCase):
 
         with tempfile.TemporaryDirectory() as tmp:
             task_dir = initialize_task(Path(tmp), "topic profile first", target="full")
+            phase_before = evaluate_phase_barriers(task_dir, "full")
+            self.assertEqual(phase_before["blocked_by_phase"], "topic_profile")
+            self.assertEqual(phase_before["allowed_next_phase"], "topic_profile")
             status = run_public_runner(task_dir, target="full", max_steps=5)
             self.assertEqual(status["component"], "runner")
             self.assertEqual(status["status"], "blocked_topic_profile_agent_spawn_required", status)
@@ -1674,6 +1740,9 @@ class SurveyAutoResearchContractTest(unittest.TestCase):
             ]
             recorded = record_topic_profile_result(task_dir, valid_profile, "topic-agent-001")
             self.assertEqual(recorded["status"], "recorded", recorded)
+            phase_after_profile = evaluate_phase_barriers(task_dir, "full")
+            self.assertTrue(phase_after_profile["phases"]["topic_profile"]["passed"])
+            self.assertEqual(phase_after_profile["blocked_by_phase"], "discovery")
             next_status = run_public_runner(task_dir, target="full", max_steps=5)
             self.assertEqual(next_status["next_action"], "spawn_discovery_agents")
             discovery_request = next_status["spawn_requests"][0]
@@ -2200,6 +2269,7 @@ class SurveyAutoResearchContractTest(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             task_dir = initialize_task(Path(tmp), "topic second audit route", target="full")
             state = task_dir / "state"
+            self.write_topic_profile(task_dir, topic="mllm think with image")
             write_jsonl(state / "raw_candidates.jsonl", raw)
             write_jsonl(state / "search_routes.jsonl", self.search_routes())
             write_jsonl(state / "lqs_scores.jsonl", self.lqs_scores())
@@ -2239,6 +2309,7 @@ class SurveyAutoResearchContractTest(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             task_dir = initialize_task(Path(tmp), "topic second audit valid", target="full")
             state = task_dir / "state"
+            self.write_topic_profile(task_dir, topic="mllm think with image")
             write_jsonl(state / "raw_candidates.jsonl", raw)
             write_jsonl(state / "search_routes.jsonl", self.search_routes())
             write_jsonl(state / "lqs_scores.jsonl", self.lqs_scores())
