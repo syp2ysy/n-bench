@@ -77,11 +77,12 @@ Important barriers:
 | Record worker output | `python3 scripts/task_queue.py --task-dir <run> --record-agent-output <request-id> --output-file <file>` |
 | Validate, explain, or route gates | `python3 scripts/gate_engine.py --task-dir <run> --target <target> [--phase <phase>|--explain|--route-repair]` |
 | Mirror paper cards | `python3 scripts/paper_card_store.py --task-dir <run> --mirror` |
+| Prepare/record knowledge tree | `python3 scripts/knowledge_tree_builder.py --task-dir <run> --target <target> --prepare` / `--record-result <json>` |
 | Sync knowledge tree/spine | `python3 scripts/knowledge_tree_store.py --task-dir <run> --mirror` / `--validate` |
 | Record review failures | `python3 scripts/failure_ledger.py --task-dir <run> --append-from-adjudication` |
 | Promote final survey | `python3 scripts/promote_survey_release.py --task-dir <run> --target <target>` |
 
-All other scripts are internal helpers unless a contract below explicitly says otherwise. In particular, `survey_driver.py`, `phase_gate.py`, `gate_check.py`, `runtime_dispatcher.py`, topic-relevance, paper-understanding, and Gate 7 runtime executors prepare or record compatibility state; `runner.py`, `gate_engine.py`, `task_queue.py`, and `corpus_pipeline.py` are the public orchestration facade.
+All other scripts are internal helpers unless a contract below explicitly says otherwise. In particular, `survey_driver.py`, `phase_gate.py`, `gate_check.py`, `runtime_dispatcher.py`, topic-relevance, paper-understanding, and Gate 7 runtime executors prepare or record compatibility state; `runner.py`, `gate_engine.py`, `task_queue.py`, `corpus_pipeline.py`, and `knowledge_tree_builder.py` are the public orchestration facade.
 
 ## Required Contracts
 

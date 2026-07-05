@@ -1732,6 +1732,117 @@ class SurveyAutoResearchContractTest(unittest.TestCase):
             self.assertEqual(collected["corpus_step"], "topic_relevance_audit")
             self.assertGreater(collected["summary"]["pending_batch_count"], 0)
 
+    def knowledge_tree_worker_result(self) -> dict:
+        return {
+            "batch_id": "KT001",
+            "status": "resolved",
+            "knowledge_tree": {
+                "schema_version": 1,
+                "root_claim": "Memory research is organized by how evidence changes downstream decisions.",
+                "branches": [
+                    {
+                        "name": "retrieval memory",
+                        "definition": "Systems that retrieve past evidence to condition later decisions.",
+                        "included_papers": ["p001", "p002"],
+                        "representative_papers": ["p001"],
+                        "shared_assumptions_or_boundaries": "Retrieval is useful only when evidence is grounded and timely.",
+                        "evidence_standard": "Requires no-memory, oracle-evidence, and wrong-evidence comparisons.",
+                        "failure_modes": ["wrong evidence", "stale evidence"],
+                        "related_survey_delta": "Existing surveys discuss retrieval but not evidence-to-action failure tests.",
+                    }
+                ],
+                "candidate_taxonomies": ["method-first", "evidence-flow-first"],
+                "selected_spine": "evidence-flow-first",
+            },
+            "paper_clusters": [{"cluster_id": "KT001", "name": "retrieval memory", "paper_ids": ["p001", "p002"]}],
+            "taxonomy_candidates": {"candidate_taxonomies": ["method-first", "evidence-flow-first"], "selected_spine": "evidence-flow-first"},
+            "spine_decision": (
+                "# Spine Decision\n\n"
+                "Existing related surveys organize the topic by method families and benchmark settings.\n\n"
+                "Candidate taxonomies: method-first and evidence-flow-first.\n\n"
+                "Why this spine is better for the current corpus: paper-card evidence shows evidence flow changes downstream claims.\n\n"
+                "Section-to-evidence map: retrieval memory uses p001 and p002.\n"
+            ),
+            "validator_results": [{"validator": "validate_knowledge_tree", "status": "passed"}],
+            "remaining_blockers": [],
+        }
+
+    def test_knowledge_tree_builder_records_worker_artifacts(self):
+        from scripts.knowledge_tree_builder import prepare_knowledge_tree_request, record_knowledge_tree_result
+        from scripts.knowledge_tree_store import mirror_knowledge_tree, validate_knowledge_tree_store
+        from scripts.paper_card_store import mirror_paper_cards
+
+        with tempfile.TemporaryDirectory() as tmp:
+            task_dir = initialize_task(Path(tmp), "knowledge tree missing cards", target="full")
+            blocked = prepare_knowledge_tree_request(task_dir, target="full")
+            self.assertEqual(blocked["status"], "blocked_paper_cards_required", blocked)
+            self.assertFalse((task_dir / "state/knowledge_tree_spawn_requests.json").exists())
+
+        with tempfile.TemporaryDirectory() as tmp:
+            task_dir = initialize_task(Path(tmp), "knowledge tree worker", target="full")
+            self.populate_full_task(task_dir)
+            mirror_paper_cards(task_dir)
+            for relative in [
+                "outputs/contribution_tree.yml",
+                "outputs/knowledge_tree.yml",
+                "state/paper_clusters.jsonl",
+                "state/taxonomy_candidates.yml",
+                "state/spine_decision.md",
+            ]:
+                path = task_dir / relative
+                if path.exists():
+                    path.unlink()
+
+            prepared = prepare_knowledge_tree_request(task_dir, target="full")
+            self.assertEqual(prepared["status"], "blocked_knowledge_tree_agent_spawn_required", prepared)
+            self.assertEqual(prepared["next_action"], "spawn_knowledge_tree_agents")
+            self.assertEqual(prepared["spawn_requests"][0]["request_type"], "knowledge_tree")
+            recorded = record_knowledge_tree_result(task_dir, self.knowledge_tree_worker_result(), "knowledge-tree-agent-001")
+            self.assertEqual(recorded["status"], "recorded", recorded)
+            self.assertTrue((task_dir / "outputs/knowledge_tree.yml").exists())
+            self.assertTrue((task_dir / "outputs/contribution_tree.yml").exists())
+            self.assertTrue((task_dir / "state/paper_clusters.jsonl").exists())
+            self.assertTrue((task_dir / "state/spine_decision.md").exists())
+            self.assertTrue(validate_knowledge_tree_store(task_dir)["valid"])
+
+            mirrored = mirror_knowledge_tree(task_dir)
+            self.assertEqual(mirrored["status"], "mirrored")
+
+    def test_survey_driver_routes_missing_knowledge_tree_to_worker_queue(self):
+        from scripts.runner import run_until_complete as run_public_runner
+        from scripts.runtime_dispatcher import mark_spawned
+        from scripts.task_queue import collect_pending, record_agent_output
+
+        with tempfile.TemporaryDirectory() as tmp:
+            task_dir = initialize_task(Path(tmp), "knowledge tree driver", target="full")
+            self.populate_full_task(task_dir)
+            for relative in [
+                "outputs/contribution_tree.yml",
+                "outputs/knowledge_tree.yml",
+                "state/paper_clusters.jsonl",
+                "state/taxonomy_candidates.yml",
+                "state/spine_decision.md",
+            ]:
+                path = task_dir / relative
+                if path.exists():
+                    path.unlink()
+
+            status = run_public_runner(task_dir, target="full", max_steps=5)
+            self.assertEqual(status["status"], "blocked_knowledge_tree_agent_spawn_required", status)
+            self.assertEqual(status["next_action"], "spawn_knowledge_tree_agents")
+            pending = collect_pending(task_dir)
+            self.assertEqual([row["request_type"] for row in pending["tasks"]], ["knowledge_tree"])
+            request = pending["tasks"][0]
+            packet = json.loads((task_dir / request["packet"]).read_text(encoding="utf-8"))
+            self.assertIn("knowledge_tree_builder.py", packet["record_command"])
+            mark_spawned(task_dir, request["task_id"], "knowledge-tree-agent-001")
+            output_file = Path(tmp) / "knowledge-tree-result.json"
+            output_file.write_text(json.dumps(self.knowledge_tree_worker_result(), sort_keys=True), encoding="utf-8")
+            recorded = record_agent_output(task_dir, request["task_id"], output_file)
+            self.assertEqual(recorded["status"], "result_recorded", recorded)
+            self.assertEqual(recorded["record_result"]["status"], "recorded")
+            self.assertTrue((task_dir / "outputs/knowledge_tree.yml").exists())
+
     def test_runner_requires_topic_profile_before_discovery(self):
         from scripts.runner import run_until_complete as run_public_runner
         from scripts.runtime_dispatcher import collect_pending

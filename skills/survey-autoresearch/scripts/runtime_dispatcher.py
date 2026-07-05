@@ -14,6 +14,7 @@ try:  # pragma: no cover - script import fallback
     from .discovery_runtime_executor import record_discovery_result
     from .gate7_loop import record_review_report, record_targeted_rereview
     from .gate7_runtime_executor import record_runtime_repair_result
+    from .knowledge_tree_builder import record_knowledge_tree_result
     from .paper_understanding_runtime_executor import record_paper_understanding_result
     from .run_expert_reviews import read_json, read_jsonl, write_json, write_jsonl
     from .status_schema import status_envelope
@@ -23,6 +24,7 @@ except ImportError:  # pragma: no cover
     from discovery_runtime_executor import record_discovery_result
     from gate7_loop import record_review_report, record_targeted_rereview
     from gate7_runtime_executor import record_runtime_repair_result
+    from knowledge_tree_builder import record_knowledge_tree_result
     from paper_understanding_runtime_executor import record_paper_understanding_result
     from run_expert_reviews import read_json, read_jsonl, write_json, write_jsonl
     from status_schema import status_envelope
@@ -74,6 +76,8 @@ def _record_command(task_dir: Path, request_type: str) -> str:
         return f"python3 scripts/topic_relevance_runtime_executor.py --task-dir {task_dir.resolve()} --record-result <result.json> --subagent-session-id <subagent-session-id>"
     if request_type == "topic_relevance_second_audit":
         return f"python3 scripts/topic_relevance_runtime_executor.py --task-dir {task_dir.resolve()} --record-second-audit <result.json> --subagent-session-id <subagent-session-id>"
+    if request_type == "knowledge_tree":
+        return f"python3 scripts/knowledge_tree_builder.py --task-dir {task_dir.resolve()} --record-result <result.json> --subagent-session-id <subagent-session-id>"
     elif request_type == "paper_understanding":
         script = "paper_understanding_runtime_executor.py"
     elif request_type == "gate7_repair":
@@ -98,6 +102,8 @@ def _request_type(source_file: str, next_action: str, request: dict) -> str:
         return "topic_relevance"
     if source_file.endswith("paper_understanding_spawn_requests.json"):
         return "paper_understanding"
+    if source_file.endswith("knowledge_tree_spawn_requests.json"):
+        return "knowledge_tree"
     if next_action == "spawn_repair_agents" or str(request.get("request_id") or "").startswith("repair-"):
         return "gate7_repair"
     if next_action == "spawn_reviewers":
@@ -116,6 +122,7 @@ def _source_requests(task_dir: Path, intent: dict) -> list[dict]:
         ("state/discovery_spawn_requests.json", read_json(state / "discovery_spawn_requests.json")),
         ("state/topic_relevance_spawn_requests.json", read_json(state / "topic_relevance_spawn_requests.json")),
         ("state/paper_understanding_spawn_requests.json", read_json(state / "paper_understanding_spawn_requests.json")),
+        ("state/knowledge_tree_spawn_requests.json", read_json(state / "knowledge_tree_spawn_requests.json")),
         ("state/gate7_spawn_requests.json", read_json(state / "gate7_spawn_requests.json")),
     ]
     rows: list[dict] = []
@@ -409,6 +416,8 @@ def _route_result(task_dir: Path, row: dict, result: dict, subagent_session_id: 
         return record_topic_relevance_second_audit_result(task_dir, result, subagent_session_id)
     if request_type == "paper_understanding":
         return record_paper_understanding_result(task_dir, result, subagent_session_id)
+    if request_type == "knowledge_tree":
+        return record_knowledge_tree_result(task_dir, result, subagent_session_id)
     if request_type == "gate7_repair":
         return record_runtime_repair_result(task_dir, result, subagent_session_id)
     if request_type == "gate7_reviewer":

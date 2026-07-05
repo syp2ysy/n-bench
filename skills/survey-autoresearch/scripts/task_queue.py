@@ -34,6 +34,7 @@ PHASE_BY_REQUEST_TYPE = {
     "topic_relevance": "corpus",
     "topic_relevance_second_audit": "corpus",
     "paper_understanding": "paper_understanding",
+    "knowledge_tree": "knowledge_tree",
     "gate7_reviewer": "review",
     "gate7_repair": "review_repair",
     "gate7_targeted_rereview": "review_repair",

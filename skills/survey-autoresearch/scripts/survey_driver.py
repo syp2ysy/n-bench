@@ -13,6 +13,7 @@ try:  # pragma: no cover - script import fallback
     from .discovery_runtime_executor import prepare_discovery_batches
     from .full_text_source_planner import build_full_text_fetch_plan
     from .gate7_driver import run_until_complete as run_gate7_until_complete
+    from .knowledge_tree_builder import prepare_knowledge_tree_request
     from .paper_understanding_runtime_executor import prepare_paper_understanding_batches
     from .phase_gate import evaluate_phase_barriers
     from .rebalance_ab_selection import rebalance_ab_selection
@@ -25,6 +26,7 @@ except ImportError:  # pragma: no cover
     from discovery_runtime_executor import prepare_discovery_batches
     from full_text_source_planner import build_full_text_fetch_plan
     from gate7_driver import run_until_complete as run_gate7_until_complete
+    from knowledge_tree_builder import prepare_knowledge_tree_request
     from paper_understanding_runtime_executor import prepare_paper_understanding_batches
     from phase_gate import evaluate_phase_barriers
     from rebalance_ab_selection import rebalance_ab_selection
@@ -43,6 +45,7 @@ REQUEST_TYPES_BY_ACTION = {
     "spawn_topic_relevance_agents": ["topic_relevance"],
     "spawn_topic_relevance_second_audit_agents": ["topic_relevance_second_audit"],
     "spawn_paper_understanding_agents": ["paper_understanding"],
+    "spawn_knowledge_tree_agents": ["knowledge_tree"],
     "spawn_reviewers": ["gate7_reviewer"],
     "spawn_repair_agents": ["gate7_repair"],
     "spawn_targeted_rereviewers": ["gate7_targeted_rereview"],
@@ -61,6 +64,13 @@ def _sha256_file(path: Path) -> str:
     if not path.exists():
         return ""
     digest = hashlib.sha256()
+    if path.is_dir():
+        for child in sorted(item for item in path.rglob("*") if item.is_file()):
+            digest.update(str(child.relative_to(path)).encode("utf-8"))
+            digest.update(b"\0")
+            digest.update(child.read_bytes())
+            digest.update(b"\0")
+        return digest.hexdigest()
     digest.update(path.read_bytes())
     return digest.hexdigest()
 
@@ -106,6 +116,15 @@ INTENT_HASH_FILES_BY_ACTION = {
         "state/paper_mechanism_cards.jsonl",
         "state/paper_understanding_spawn_requests.json",
     ],
+    "spawn_knowledge_tree_agents": [
+        "state/paper_cards",
+        "state/taxonomy_alignment.jsonl",
+        "outputs/knowledge_tree.yml",
+        "state/paper_clusters.jsonl",
+        "state/taxonomy_candidates.yml",
+        "state/spine_decision.md",
+        "state/knowledge_tree_spawn_requests.json",
+    ],
     "spawn_reviewers": [
         "outputs/survey_candidate.md",
         "outputs/appendix.md",
@@ -145,6 +164,13 @@ PROGRESS_HASH_FILES = [
     "state/paper_understanding_spawn_requests.json",
     "state/full_text_sources.jsonl",
     "state/paper_mechanism_cards.jsonl",
+    "state/paper_cards",
+    "outputs/knowledge_tree.yml",
+    "state/paper_clusters.jsonl",
+    "state/taxonomy_candidates.yml",
+    "state/spine_decision.md",
+    "state/knowledge_tree_runtime_action.json",
+    "state/knowledge_tree_spawn_requests.json",
     "state/gate7_runtime_action.json",
     "state/gate7_spawn_requests.json",
     "state/gate7_repair_plan.json",
@@ -331,6 +357,22 @@ def _delegate_gate7(task_dir: Path, target: str, max_steps: int) -> dict:
     }
 
 
+def _synthesis_needs_knowledge_tree(phase_status: dict) -> bool:
+    synthesis = ((phase_status.get("phases") or {}).get("synthesis") or {}).get("details") or {}
+    contribution = synthesis.get("contribution_tree") or {}
+    errors = set(contribution.get("errors") or [])
+    return bool(
+        errors
+        & {
+            "missing_contribution_statements",
+            "missing_root_claim",
+            "missing_branches",
+            "invalid_contribution_tree",
+            "argument_graph_missing_contribution_tree",
+        }
+    )
+
+
 def _pending_rebalance(task_dir: Path) -> tuple[list[str], list[str]]:
     state = _state(task_dir)
     status = read_json(state / "runtime_rebalance_status.json")
@@ -456,6 +498,9 @@ def run_until_complete(task_dir: Path, target: str = "full", max_steps: int = 25
             continue
         if blocked_by == "paper_understanding":
             runtime = prepare_paper_understanding_batches(task_dir)
+            return _finish(task_dir, runtime, actions, phase_status)
+        if blocked_by == "synthesis" and _synthesis_needs_knowledge_tree(phase_status):
+            runtime = prepare_knowledge_tree_request(task_dir, target)
             return _finish(task_dir, runtime, actions, phase_status)
         if blocked_by == "expert_review":
             return _finish(task_dir, _delegate_gate7(task_dir, target, max_steps), actions, phase_status)
