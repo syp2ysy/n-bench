@@ -1,0 +1,65 @@
+topic: MLLM think with image: visual intermediate-state reasoning in multimodal large language models
+primary_type: method-family
+secondary_lenses:
+  - benchmark/evaluation
+  - system-object
+why_this_type: The field is best organized by families of mechanisms that create, inspect, edit, mark, or verify visual intermediate states during reasoning.
+why_not_other_types: A pure system-object spine would over-emphasize components and miss cross-paper method assumptions; a pure benchmark spine would hide mechanism families.
+exemplar_alignment:
+  - Adjacent multimodal reasoning surveys move from capabilities and prompting to tool use, grounding, benchmarks, and risks.
+  - Vision-language model surveys define task families, model interfaces, datasets, evaluation, and open problems.
+  - This survey follows field-map and evaluation patterns but centers visual intermediate state as the organizing object.
+community_native_taxonomy:
+  - visual workspace and sketchpad reasoning
+  - grounded visual search and marking
+  - tool driven visual exploration
+  - programmatic visual manipulation
+  - intrinsic visual imagination and generation
+  - reliability verification and noisy thinking control
+  - benchmarks and evaluation
+exemplar_section_patterns:
+  - scope and definitions before taxonomy
+  - related-survey positioning before new taxonomy
+  - method families with representative papers and evidence limits
+  - benchmark and evaluation recipe before open problems
+candidate_article_spines:
+  - visual-state lifecycle spine: create, localize, transform, inspect, verify, evaluate
+  - method-family spine: sketchpad, grounding/search, tool use, programming, generation, reliability, benchmarks
+  - benchmark-first spine: capabilities, datasets, metrics, confounders, methods
+selected_article_spine: visual-state lifecycle spine with method-family subsections
+why_not_exemplar_spine: Existing broad multimodal surveys organize by model capability or prompting; this topic needs a spine around visual intermediate states because the key distinction is whether images are produced, modified, searched, or checked during reasoning.
+figure_first_plan:
+  - taxonomy_roadmap: visual-state lifecycle from perception to externalized visual thought to verification
+  - method_evolution_or_timeline: visual CoT and tool-use methods from programmatic VQA to generated-image reasoning agents
+  - data_ecosystem: source images, generated images, edited canvases, crops, masks, diagrams, and benchmark traces
+  - evaluation_protocol_matrix: task, visual-state operation, metric, baseline, ablation/control, confounder
+science_paradigm_profile: ML/AI systems
+evidence_norms:
+  - benchmark results, ablations, task protocols, full-text method descriptions, and failure analysis are needed for strong claims
+required_evidence_units:
+  - benchmark
+  - metric
+  - baseline
+  - ablation or control
+  - full-text method evidence
+  - limitation or confounder
+common_confounders:
+  - language-only shortcut solving
+  - OCR or object-detection leakage
+  - generated image drift
+  - visual-state operation not isolated by ablation
+  - benchmark contamination
+article_skeleton:
+  - Scope and Thesis: From Static Perception to Visual State
+  - Related Surveys and Taxonomy Delta
+  - A Lifecycle Taxonomy of Thinking with Images
+  - Visual Workspaces, Grounded Search, and Marking
+  - Tool-Driven and Programmatic Visual Manipulation
+  - Intrinsic Generation and Visual Imagination
+  - Reliability, Verification, and Noisy Visual Thoughts
+  - Benchmark and Evaluation Recipes
+  - Open Problems and Conclusion
+excluded_templates:
+  - flat chronological paper list
+  - generic multimodal chain-of-thought survey
+  - system-component-only survey

@@ -7,6 +7,8 @@ Required synthesis outputs:
 - `state/paper_contribution_statements.jsonl`
 - `outputs/contribution_tree.yml`
 - `state/scenario_definitions.yml`
+- `state/taxonomy_alignment.jsonl`
+- `state/comparative_evidence_matrix.jsonl`
 - `outputs/method_family_dossiers/`
 - `outputs/benchmark_dossiers/`
 - `outputs/related_survey_matrix.md`
@@ -16,6 +18,12 @@ Required synthesis outputs:
 Method-family dossiers should explain motivation, assumptions, representative A papers, supporting B papers, shared mechanism pattern, differences among representative papers, relation graph, common benchmarks, evidence strength, failure modes, open questions, and how the family advances the central story.
 
 Benchmark dossiers should explain capability tested, task formulation, input/output, environment or dataset, metrics, baselines, reported memory-specific ablations, missing diagnostic controls, what the benchmark can and cannot support, representative papers, and confounders.
+
+`state/taxonomy_alignment.jsonl` must compare the article taxonomy with verified related surveys or field roadmaps. Full targets need at least six top related-survey records, and CSUR targets need at least ten. Each record must identify the source, include `paper_id` or `source_paper_id`, explain why it is a top related survey, extract the existing taxonomy and relevant sections, state coverage overlap, coverage gap, taxonomy delta, and article-taxonomy necessity, map article categories to existing categories, justify agreement and delta, and back each article-category delta with A/B paper evidence. The linked related-survey ID must be retained, source-verified, and audited as `direct_related_survey`; raw survey-like candidates that were not retained and verified do not satisfy alignment.
+
+`validate_related_survey_alignment.py` audits recorded related-survey alignment; it does not replace discovery. Missing important surveys remains a discovery/coverage and expert-review failure.
+
+`state/comparative_evidence_matrix.jsonl` grounds recommendations in papers. Each method, evaluation, or design recommendation should list supporting papers and show whether those papers report protocol, metric, baseline, ablation/control, and confounder. Minimum evaluation packages must be derived from this matrix, not from author preference alone.
 
 `state/argument_graph.yml` must include:
 

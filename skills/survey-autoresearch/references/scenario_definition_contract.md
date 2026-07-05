@@ -21,5 +21,10 @@ Each scenario/context needs:
 - evaluation pressure;
 - failure risks or confounders;
 - unsuitable claims that the article must not overstate.
+- `centrality`: `core`, `adjacent`, or `excluded`;
+- `supporting_a_b_papers`;
+- `why_in_scope`.
+
+Core scenarios need A/B full-text support. A supporting paper ID is not enough: the matching mechanism card must contain the scenario in `scenario_links` or show task, benchmark, evaluation, or field-evidence text that supports the scenario. Adjacent scenarios can appear as brief context only. Excluded scenarios should not become article-body sections. Do not turn broad application domains into major survey sections unless the A/B corpus supports them.
 
 The article may teach these definitions, but must not mention this state file or expose internal routing labels.

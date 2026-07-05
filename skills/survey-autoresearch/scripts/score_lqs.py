@@ -7,6 +7,8 @@ import argparse
 import json
 from pathlib import Path
 
+DEPTH_RANK = {"D": 0, "exclude": 0, "C": 1, "B": 2, "A": 3}
+
 
 def recency_score(months: float | int | None) -> float:
     if months is None:
@@ -181,7 +183,7 @@ def score_paper(paper: dict) -> dict:
             + components["institution"] * 0.10
             + components["acceptance"] * 0.15
         )
-        model = "legacy-metadata"
+        model = "metadata-baseline"
     scored = dict(paper)
     scored["lqs_components"] = components
     scored["lqs"] = round(lqs, 2)
@@ -194,14 +196,19 @@ def classify_depth(scored_paper: dict, role: str = "") -> str:
     bucket = scored_paper.get("lqs_bucket") or lqs_bucket(float(scored_paper.get("lqs", 0)))
     role = role.lower()
     if bucket == "drop":
-        return "D"
-    if "section" in role or "protagonist" in role or "seminal" in role:
-        return "A" if bucket == "must-cite" else "B"
-    if "support" in role or "context" in role:
-        return "C"
-    if bucket == "must-cite":
-        return "B"
-    return "C"
+        depth = "D"
+    elif "section" in role or "protagonist" in role or "seminal" in role:
+        depth = "A" if bucket == "must-cite" else "B"
+    elif "support" in role or "context" in role:
+        depth = "C"
+    elif bucket == "must-cite":
+        depth = "B"
+    else:
+        depth = "C"
+    allowed = str(scored_paper.get("topic_allowed_depth") or scored_paper.get("allowed_depth") or "").strip()
+    if allowed and DEPTH_RANK.get(depth, 0) > DEPTH_RANK.get(allowed, 0):
+        return "D" if allowed == "exclude" else allowed
+    return depth
 
 
 def iter_jsonl(path: Path):

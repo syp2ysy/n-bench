@@ -11,4 +11,4 @@ CSUR-style moves:
 - benchmark/evaluation: capability -> protocol -> metric -> baseline -> confounder;
 - open problems: evidence gap -> why hard -> concrete research move.
 
-CSUR imitation is a writing guide, not article content. Do not expose exemplar notes, DOI pools, or rhetoric-mining labels in `review.md`.
+CSUR imitation is a writing guide, not article content. Do not expose exemplar notes, DOI pools, or rhetoric-mining labels in `survey.md`.

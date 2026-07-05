@@ -1,0 +1,17 @@
+{
+  "curated_lists_checked": [
+    "real topic-anchor fixture from mllm run"
+  ],
+  "expansion_rounds": [],
+  "largest_visible_external_count": 60,
+  "recent_surveys_checked": [
+    "real topic-anchor fixture from mllm run"
+  ],
+  "required": false,
+  "retained_candidate_count": 60,
+  "status": "not_required",
+  "triggered_by": [],
+  "visible_external_count": 60,
+  "waiver_reason": "",
+  "why_retained_corpus_is_sufficient": "Short fixture uses real metadata rows with positive topic relevance audit support."
+}

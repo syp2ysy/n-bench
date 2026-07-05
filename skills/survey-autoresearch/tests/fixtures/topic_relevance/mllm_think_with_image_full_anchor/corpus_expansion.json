@@ -1,0 +1,17 @@
+{
+  "curated_lists_checked": [
+    "OpenAlex works search, 20 typed routes"
+  ],
+  "generated_at": "2026-07-03T20:05:29.364359+00:00",
+  "largest_visible_external_count": 79420,
+  "recent_surveys_checked": [
+    "multimodal reasoning survey large multimodal models visual reasoning",
+    "large multimodal model agent survey tool use vision",
+    "vision language model grounding survey visual reasoning"
+  ],
+  "required": true,
+  "retained_candidate_count": 260,
+  "status": "complete",
+  "visible_external_count": 79420,
+  "why_retained_corpus_is_sufficient": "Clean-start OpenAlex discovery used 20 typed routes across all planned visual-intermediate-state families. Retained candidates and verified metadata records exceed full target thresholds, and all core families have route/raw/verified/A-B support for source-verification entry. OpenAlex visible result counts are larger than the retained set, so this run treats expansion as required and complete: the retained subset is a scoped, deduplicated high-recall corpus above full thresholds, with route coverage and source identity checks recorded."
+}

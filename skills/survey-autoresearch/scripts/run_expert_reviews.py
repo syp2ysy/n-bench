@@ -56,7 +56,7 @@ def freeze_review_round(task_dir: Path, review_round_id: str | None = None) -> d
     outputs = task_dir / "outputs"
     round_id = review_round_id or f"round-{utc_now()}"
     artifacts = [
-        outputs / "review.md",
+        outputs / "survey_candidate.md",
         outputs / "appendix.md",
         state / "argument_graph.yml",
         state / "section_evidence_plans.jsonl",
@@ -69,7 +69,7 @@ def freeze_review_round(task_dir: Path, review_round_id: str | None = None) -> d
             "review_round_id": round_id,
             "started_at": utc_now(),
             "frozen_artifacts": frozen,
-            "article_hash": frozen.get("outputs/review.md", ""),
+            "article_hash": frozen.get("outputs/survey_candidate.md", ""),
         },
         "all_reports_received": False,
         "reviewers_expected": len(REQUIRED_REVIEWERS),
@@ -81,6 +81,7 @@ def freeze_review_round(task_dir: Path, review_round_id: str | None = None) -> d
 
 
 def dispatch_packets(task_dir: Path, review_round_id: str | None = None) -> dict:
+    """Generate reviewer packets without pretending independent review ran."""
     state = task_dir / "state"
     packets_dir = state / "expert_review_packets"
     packets_dir.mkdir(exist_ok=True)
@@ -98,10 +99,12 @@ def dispatch_packets(task_dir: Path, review_round_id: str | None = None) -> dict
             "instructions": (
                 "Use a fresh context. Read the article and selected evidence artifacts. "
                 "Do not read previous reviewer reports or repair actions from this round. "
-                "Return one JSONL row matching expert_review_contract.md."
+                "Return one JSONL row matching expert_gate_contract.md, including persona-specific checks for "
+                "field-evidence consistency, named-entity citation alignment, core-family coverage, "
+                "related-survey delta, padding, and candidate/final release boundary."
             ),
             "inputs": [
-                "outputs/review.md",
+                "outputs/survey_candidate.md",
                 "outputs/appendix.md",
                 "state/paper_mechanism_cards.jsonl",
                 "state/claim_evidence_spans.jsonl",
@@ -123,13 +126,24 @@ def dispatch_packets(task_dir: Path, review_round_id: str | None = None) -> dict
                 "inputs": packet["inputs"],
                 "forbidden_inputs": packet["forbidden_inputs"],
                 "output": packet["output"],
-                "status": "dispatched",
+                "status": "blocked_waiting_external_review",
                 "packet": str(packet_path.relative_to(task_dir)),
+                "blocked_reason": "packet-only dispatch does not create a fresh reviewer context",
                 "timestamp": utc_now(),
             }
         )
     write_jsonl(state / "expert_review_invocations.jsonl", invocations)
-    return {"status": "dispatched", "review_round_id": round_id, "packets": len(invocations)}
+    status["status"] = "blocked_waiting_external_review"
+    status["expert_review_blocked_by_unavailable_independent_review"] = True
+    status["all_reports_received"] = False
+    status["reviewers_returned"] = 0
+    write_json(state / "expert_review_round_status.json", status)
+    return {
+        "status": "blocked_waiting_external_review",
+        "review_round_id": round_id,
+        "packets": len(invocations),
+        "expert_review_blocked_by_unavailable_independent_review": True,
+    }
 
 
 def collect_status(task_dir: Path) -> dict:
@@ -159,17 +173,17 @@ def main() -> int:
     parser.add_argument("--task-dir", required=True, type=Path)
     parser.add_argument("--review-round-id")
     parser.add_argument("--freeze", action="store_true")
-    parser.add_argument("--dispatch", action="store_true")
+    parser.add_argument("--dispatch-packets-only", action="store_true")
     parser.add_argument("--collect", action="store_true")
     args = parser.parse_args()
     if args.freeze:
         result = freeze_review_round(args.task_dir, args.review_round_id)
-    elif args.dispatch:
+    elif args.dispatch_packets_only:
         result = dispatch_packets(args.task_dir, args.review_round_id)
     elif args.collect:
         result = collect_status(args.task_dir)
     else:
-        result = {"error": "choose --freeze, --dispatch, or --collect"}
+        result = {"error": "choose --freeze, --dispatch-packets-only, or --collect"}
     print(json.dumps(result, indent=2, sort_keys=True, ensure_ascii=False))
     return 0 if "error" not in result else 1
 

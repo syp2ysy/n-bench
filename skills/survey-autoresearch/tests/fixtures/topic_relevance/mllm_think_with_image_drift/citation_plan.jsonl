@@ -1,0 +1,180 @@
+{"depth": "A", "paper_id": "P001", "rationale": "survey / tool driven visual exploration / clean-start OpenAlex LQS 9.5"}
+{"depth": "A", "paper_id": "P008", "rationale": "survey / benchmarks and evaluation / clean-start OpenAlex LQS 9.4"}
+{"depth": "A", "paper_id": "P006", "rationale": "survey / grounded visual search and marking / clean-start OpenAlex LQS 9.4"}
+{"depth": "A", "paper_id": "P010", "rationale": "survey / grounded visual search and marking / clean-start OpenAlex LQS 9.4"}
+{"depth": "A", "paper_id": "P012", "rationale": "survey / grounded visual search and marking / clean-start OpenAlex LQS 9.4"}
+{"depth": "A", "paper_id": "P004", "rationale": "survey / grounded visual search and marking / clean-start OpenAlex LQS 9.4"}
+{"depth": "A", "paper_id": "P005", "rationale": "survey / intrinsic visual imagination and generation / clean-start OpenAlex LQS 9.4"}
+{"depth": "A", "paper_id": "P013", "rationale": "survey / intrinsic visual imagination and generation / clean-start OpenAlex LQS 9.4"}
+{"depth": "A", "paper_id": "P015", "rationale": "survey / intrinsic visual imagination and generation / clean-start OpenAlex LQS 9.4"}
+{"depth": "A", "paper_id": "P007", "rationale": "survey / tool driven visual exploration / clean-start OpenAlex LQS 9.4"}
+{"depth": "A", "paper_id": "P002", "rationale": "survey / tool driven visual exploration / clean-start OpenAlex LQS 9.4"}
+{"depth": "A", "paper_id": "P003", "rationale": "survey / tool driven visual exploration / clean-start OpenAlex LQS 9.4"}
+{"depth": "A", "paper_id": "P011", "rationale": "survey / tool driven visual exploration / clean-start OpenAlex LQS 9.4"}
+{"depth": "A", "paper_id": "P014", "rationale": "survey / tool driven visual exploration / clean-start OpenAlex LQS 9.4"}
+{"depth": "A", "paper_id": "P009", "rationale": "survey / visual workspace and sketchpad reasoning / clean-start OpenAlex LQS 9.4"}
+{"depth": "A", "paper_id": "P018", "rationale": "survey / grounded visual search and marking / clean-start OpenAlex LQS 9.1"}
+{"depth": "A", "paper_id": "P019", "rationale": "survey / grounded visual search and marking / clean-start OpenAlex LQS 9.1"}
+{"depth": "A", "paper_id": "P017", "rationale": "survey / intrinsic visual imagination and generation / clean-start OpenAlex LQS 9.1"}
+{"depth": "A", "paper_id": "P021", "rationale": "survey / intrinsic visual imagination and generation / clean-start OpenAlex LQS 9.1"}
+{"depth": "A", "paper_id": "P022", "rationale": "survey / intrinsic visual imagination and generation / clean-start OpenAlex LQS 9.1"}
+{"depth": "A", "paper_id": "P016", "rationale": "survey / tool driven visual exploration / clean-start OpenAlex LQS 9.1"}
+{"depth": "A", "paper_id": "P020", "rationale": "survey / tool driven visual exploration / clean-start OpenAlex LQS 9.1"}
+{"depth": "A", "paper_id": "P023", "rationale": "survey / tool driven visual exploration / clean-start OpenAlex LQS 9.1"}
+{"depth": "A", "paper_id": "P064", "rationale": "survey / benchmarks and evaluation / clean-start OpenAlex LQS 9.0"}
+{"depth": "A", "paper_id": "P039", "rationale": "survey / benchmarks and evaluation / clean-start OpenAlex LQS 9.0"}
+{"depth": "C", "paper_id": "P052", "rationale": "survey / benchmarks and evaluation / clean-start OpenAlex LQS 9.0 | demoted after reliability-family support balancing"}
+{"depth": "B", "paper_id": "P137", "rationale": "benchmark / benchmarks and evaluation / clean-start OpenAlex LQS 9.0"}
+{"depth": "B", "paper_id": "P028", "rationale": "survey / benchmarks and evaluation / clean-start OpenAlex LQS 9.0"}
+{"depth": "B", "paper_id": "P138", "rationale": "benchmark / benchmarks and evaluation / clean-start OpenAlex LQS 9.0"}
+{"depth": "B", "paper_id": "P034", "rationale": "survey / benchmarks and evaluation / clean-start OpenAlex LQS 9.0"}
+{"depth": "B", "paper_id": "P140", "rationale": "benchmark / benchmarks and evaluation / clean-start OpenAlex LQS 9.0"}
+{"depth": "B", "paper_id": "P037", "rationale": "survey / grounded visual search and marking / clean-start OpenAlex LQS 9.0"}
+{"depth": "B", "paper_id": "P059", "rationale": "survey / grounded visual search and marking / clean-start OpenAlex LQS 9.0"}
+{"depth": "B", "paper_id": "P069", "rationale": "survey / grounded visual search and marking / clean-start OpenAlex LQS 9.0"}
+{"depth": "B", "paper_id": "P060", "rationale": "survey / grounded visual search and marking / clean-start OpenAlex LQS 9.0"}
+{"depth": "B", "paper_id": "P040", "rationale": "survey / grounded visual search and marking / clean-start OpenAlex LQS 9.0"}
+{"depth": "B", "paper_id": "P041", "rationale": "survey / grounded visual search and marking / clean-start OpenAlex LQS 9.0"}
+{"depth": "B", "paper_id": "P024", "rationale": "survey / grounded visual search and marking / clean-start OpenAlex LQS 9.0"}
+{"depth": "B", "paper_id": "P051", "rationale": "survey / grounded visual search and marking / clean-start OpenAlex LQS 9.0"}
+{"depth": "B", "paper_id": "P027", "rationale": "survey / grounded visual search and marking / clean-start OpenAlex LQS 9.0"}
+{"depth": "B", "paper_id": "P029", "rationale": "survey / grounded visual search and marking / clean-start OpenAlex LQS 9.0"}
+{"depth": "B", "paper_id": "P031", "rationale": "survey / grounded visual search and marking / clean-start OpenAlex LQS 9.0"}
+{"depth": "B", "paper_id": "P032", "rationale": "survey / grounded visual search and marking / clean-start OpenAlex LQS 9.0"}
+{"depth": "B", "paper_id": "P139", "rationale": "benchmark / grounded visual search and marking / clean-start OpenAlex LQS 9.0"}
+{"depth": "B", "paper_id": "P033", "rationale": "survey / grounded visual search and marking / clean-start OpenAlex LQS 9.0"}
+{"depth": "B", "paper_id": "P044", "rationale": "survey / grounded visual search and marking / clean-start OpenAlex LQS 9.0"}
+{"depth": "B", "paper_id": "P047", "rationale": "survey / grounded visual search and marking / clean-start OpenAlex LQS 9.0"}
+{"depth": "B", "paper_id": "P036", "rationale": "survey / grounded visual search and marking / clean-start OpenAlex LQS 9.0"}
+{"depth": "B", "paper_id": "P038", "rationale": "survey / intrinsic visual imagination and generation / clean-start OpenAlex LQS 9.0"}
+{"depth": "B", "paper_id": "P055", "rationale": "survey / intrinsic visual imagination and generation / clean-start OpenAlex LQS 9.0"}
+{"depth": "B", "paper_id": "P035", "rationale": "survey / intrinsic visual imagination and generation / clean-start OpenAlex LQS 9.0"}
+{"depth": "B", "paper_id": "P068", "rationale": "survey / programmatic visual manipulation / clean-start OpenAlex LQS 9.0"}
+{"depth": "B", "paper_id": "P050", "rationale": "survey / programmatic visual manipulation / clean-start OpenAlex LQS 9.0"}
+{"depth": "B", "paper_id": "P065", "rationale": "survey / programmatic visual manipulation / clean-start OpenAlex LQS 9.0"}
+{"depth": "B", "paper_id": "P058", "rationale": "survey / reliability verification and noisy thinking control / clean-start OpenAlex LQS 9.0"}
+{"depth": "B", "paper_id": "P136", "rationale": "benchmark / tool driven visual exploration / clean-start OpenAlex LQS 9.0"}
+{"depth": "B", "paper_id": "P056", "rationale": "survey / tool driven visual exploration / clean-start OpenAlex LQS 9.0"}
+{"depth": "B", "paper_id": "P042", "rationale": "survey / tool driven visual exploration / clean-start OpenAlex LQS 9.0"}
+{"depth": "B", "paper_id": "P025", "rationale": "survey / tool driven visual exploration / clean-start OpenAlex LQS 9.0"}
+{"depth": "B", "paper_id": "P026", "rationale": "survey / tool driven visual exploration / clean-start OpenAlex LQS 9.0"}
+{"depth": "B", "paper_id": "P043", "rationale": "survey / tool driven visual exploration / clean-start OpenAlex LQS 9.0"}
+{"depth": "B", "paper_id": "P061", "rationale": "survey / tool driven visual exploration / clean-start OpenAlex LQS 9.0"}
+{"depth": "B", "paper_id": "P070", "rationale": "survey / tool driven visual exploration / clean-start OpenAlex LQS 9.0"}
+{"depth": "B", "paper_id": "P066", "rationale": "survey / tool driven visual exploration / clean-start OpenAlex LQS 9.0"}
+{"depth": "B", "paper_id": "P062", "rationale": "survey / tool driven visual exploration / clean-start OpenAlex LQS 9.0"}
+{"depth": "B", "paper_id": "P135", "rationale": "benchmark / tool driven visual exploration / clean-start OpenAlex LQS 9.0"}
+{"depth": "B", "paper_id": "P063", "rationale": "survey / tool driven visual exploration / clean-start OpenAlex LQS 9.0"}
+{"depth": "B", "paper_id": "P045", "rationale": "survey / tool driven visual exploration / clean-start OpenAlex LQS 9.0"}
+{"depth": "B", "paper_id": "P053", "rationale": "survey / tool driven visual exploration / clean-start OpenAlex LQS 9.0"}
+{"depth": "B", "paper_id": "P054", "rationale": "survey / tool driven visual exploration / clean-start OpenAlex LQS 9.0"}
+{"depth": "B", "paper_id": "P046", "rationale": "survey / tool driven visual exploration / clean-start OpenAlex LQS 9.0"}
+{"depth": "B", "paper_id": "P057", "rationale": "survey / tool driven visual exploration / clean-start OpenAlex LQS 9.0"}
+{"depth": "B", "paper_id": "P071", "rationale": "survey / tool driven visual exploration / clean-start OpenAlex LQS 9.0"}
+{"depth": "B", "paper_id": "P048", "rationale": "survey / tool driven visual exploration / clean-start OpenAlex LQS 9.0"}
+{"depth": "B", "paper_id": "P049", "rationale": "survey / tool driven visual exploration / clean-start OpenAlex LQS 9.0"}
+{"depth": "B", "paper_id": "P030", "rationale": "survey / visual workspace and sketchpad reasoning / clean-start OpenAlex LQS 9.0"}
+{"depth": "B", "paper_id": "P067", "rationale": "survey / visual workspace and sketchpad reasoning / clean-start OpenAlex LQS 9.0"}
+{"depth": "B", "paper_id": "P072", "rationale": "survey / visual workspace and sketchpad reasoning / clean-start OpenAlex LQS 9.0"}
+{"depth": "B", "paper_id": "P075", "rationale": "survey / grounded visual search and marking / clean-start OpenAlex LQS 8.8"}
+{"depth": "B", "paper_id": "P076", "rationale": "survey / grounded visual search and marking / clean-start OpenAlex LQS 8.8"}
+{"depth": "B", "paper_id": "P077", "rationale": "survey / grounded visual search and marking / clean-start OpenAlex LQS 8.8"}
+{"depth": "B", "paper_id": "P079", "rationale": "survey / grounded visual search and marking / clean-start OpenAlex LQS 8.8"}
+{"depth": "B", "paper_id": "P080", "rationale": "survey / tool driven visual exploration / clean-start OpenAlex LQS 8.8"}
+{"depth": "B", "paper_id": "P074", "rationale": "survey / tool driven visual exploration / clean-start OpenAlex LQS 8.8"}
+{"depth": "B", "paper_id": "P081", "rationale": "survey / tool driven visual exploration / clean-start OpenAlex LQS 8.8"}
+{"depth": "B", "paper_id": "P073", "rationale": "survey / visual workspace and sketchpad reasoning / clean-start OpenAlex LQS 8.8"}
+{"depth": "B", "paper_id": "P078", "rationale": "survey / visual workspace and sketchpad reasoning / clean-start OpenAlex LQS 8.8"}
+{"depth": "B", "paper_id": "P094", "rationale": "survey / benchmarks and evaluation / clean-start OpenAlex LQS 8.7"}
+{"depth": "B", "paper_id": "P088", "rationale": "survey / benchmarks and evaluation / clean-start OpenAlex LQS 8.7"}
+{"depth": "B", "paper_id": "P098", "rationale": "survey / benchmarks and evaluation / clean-start OpenAlex LQS 8.7"}
+{"depth": "B", "paper_id": "P142", "rationale": "benchmark / benchmarks and evaluation / clean-start OpenAlex LQS 8.7"}
+{"depth": "B", "paper_id": "P084", "rationale": "survey / grounded visual search and marking / clean-start OpenAlex LQS 8.7"}
+{"depth": "B", "paper_id": "P093", "rationale": "survey / grounded visual search and marking / clean-start OpenAlex LQS 8.7"}
+{"depth": "B", "paper_id": "P145", "rationale": "method / grounded visual search and marking / clean-start OpenAlex LQS 8.7"}
+{"depth": "B", "paper_id": "P089", "rationale": "survey / grounded visual search and marking / clean-start OpenAlex LQS 8.7"}
+{"depth": "C", "paper_id": "P149", "rationale": "method / grounded visual search and marking / clean-start OpenAlex LQS 8.7"}
+{"depth": "C", "paper_id": "P085", "rationale": "survey / intrinsic visual imagination and generation / clean-start OpenAlex LQS 8.7"}
+{"depth": "C", "paper_id": "P096", "rationale": "survey / intrinsic visual imagination and generation / clean-start OpenAlex LQS 8.7"}
+{"depth": "C", "paper_id": "P101", "rationale": "survey / intrinsic visual imagination and generation / clean-start OpenAlex LQS 8.7"}
+{"depth": "C", "paper_id": "P146", "rationale": "method / programmatic visual manipulation / clean-start OpenAlex LQS 8.7"}
+{"depth": "C", "paper_id": "P150", "rationale": "method / programmatic visual manipulation / clean-start OpenAlex LQS 8.7"}
+{"depth": "B", "paper_id": "P083", "rationale": "survey / reliability verification and noisy thinking control / clean-start OpenAlex LQS 8.7 | promoted to satisfy clean-start core-family A/B support"}
+{"depth": "C", "paper_id": "P144", "rationale": "method / reliability verification and noisy thinking control / clean-start OpenAlex LQS 8.7"}
+{"depth": "C", "paper_id": "P087", "rationale": "survey / reliability verification and noisy thinking control / clean-start OpenAlex LQS 8.7"}
+{"depth": "C", "paper_id": "P099", "rationale": "survey / reliability verification and noisy thinking control / clean-start OpenAlex LQS 8.7"}
+{"depth": "C", "paper_id": "P082", "rationale": "survey / tool driven visual exploration / clean-start OpenAlex LQS 8.7"}
+{"depth": "C", "paper_id": "P095", "rationale": "survey / tool driven visual exploration / clean-start OpenAlex LQS 8.7"}
+{"depth": "C", "paper_id": "P086", "rationale": "survey / tool driven visual exploration / clean-start OpenAlex LQS 8.7"}
+{"depth": "C", "paper_id": "P106", "rationale": "survey / benchmarks and evaluation / clean-start OpenAlex LQS 8.6"}
+{"depth": "C", "paper_id": "P114", "rationale": "survey / benchmarks and evaluation / clean-start OpenAlex LQS 8.6"}
+{"depth": "C", "paper_id": "P169", "rationale": "benchmark / benchmarks and evaluation / clean-start OpenAlex LQS 8.6"}
+{"depth": "C", "paper_id": "P156", "rationale": "benchmark / benchmarks and evaluation / clean-start OpenAlex LQS 8.6"}
+{"depth": "C", "paper_id": "P170", "rationale": "benchmark / benchmarks and evaluation / clean-start OpenAlex LQS 8.6"}
+{"depth": "C", "paper_id": "P158", "rationale": "benchmark / benchmarks and evaluation / clean-start OpenAlex LQS 8.6"}
+{"depth": "C", "paper_id": "P109", "rationale": "survey / benchmarks and evaluation / clean-start OpenAlex LQS 8.6"}
+{"depth": "C", "paper_id": "P178", "rationale": "benchmark / benchmarks and evaluation / clean-start OpenAlex LQS 8.6"}
+{"depth": "C", "paper_id": "P183", "rationale": "benchmark / benchmarks and evaluation / clean-start OpenAlex LQS 8.6"}
+{"depth": "C", "paper_id": "P160", "rationale": "benchmark / grounded visual search and marking / clean-start OpenAlex LQS 8.6"}
+{"depth": "C", "paper_id": "P112", "rationale": "survey / grounded visual search and marking / clean-start OpenAlex LQS 8.6"}
+{"depth": "C", "paper_id": "P151", "rationale": "benchmark / grounded visual search and marking / clean-start OpenAlex LQS 8.6"}
+{"depth": "C", "paper_id": "P181", "rationale": "benchmark / intrinsic visual imagination and generation / clean-start OpenAlex LQS 8.6"}
+{"depth": "C", "paper_id": "P162", "rationale": "benchmark / intrinsic visual imagination and generation / clean-start OpenAlex LQS 8.6"}
+{"depth": "C", "paper_id": "P154", "rationale": "benchmark / intrinsic visual imagination and generation / clean-start OpenAlex LQS 8.6"}
+{"depth": "C", "paper_id": "P165", "rationale": "benchmark / intrinsic visual imagination and generation / clean-start OpenAlex LQS 8.6"}
+{"depth": "C", "paper_id": "P166", "rationale": "benchmark / intrinsic visual imagination and generation / clean-start OpenAlex LQS 8.6"}
+{"depth": "C", "paper_id": "P172", "rationale": "benchmark / intrinsic visual imagination and generation / clean-start OpenAlex LQS 8.6"}
+{"depth": "C", "paper_id": "P173", "rationale": "benchmark / intrinsic visual imagination and generation / clean-start OpenAlex LQS 8.6"}
+{"depth": "C", "paper_id": "P118", "rationale": "survey / intrinsic visual imagination and generation / clean-start OpenAlex LQS 8.6"}
+{"depth": "C", "paper_id": "P176", "rationale": "benchmark / intrinsic visual imagination and generation / clean-start OpenAlex LQS 8.6"}
+{"depth": "C", "paper_id": "P116", "rationale": "survey / programmatic visual manipulation / clean-start OpenAlex LQS 8.6"}
+{"depth": "C", "paper_id": "P153", "rationale": "benchmark / programmatic visual manipulation / clean-start OpenAlex LQS 8.6"}
+{"depth": "C", "paper_id": "P164", "rationale": "benchmark / programmatic visual manipulation / clean-start OpenAlex LQS 8.6"}
+{"depth": "C", "paper_id": "P174", "rationale": "benchmark / programmatic visual manipulation / clean-start OpenAlex LQS 8.6"}
+{"depth": "C", "paper_id": "P161", "rationale": "benchmark / reliability verification and noisy thinking control / clean-start OpenAlex LQS 8.6"}
+{"depth": "C", "paper_id": "P107", "rationale": "survey / visual workspace and sketchpad reasoning / clean-start OpenAlex LQS 8.6"}
+{"depth": "C", "paper_id": "P177", "rationale": "benchmark / visual workspace and sketchpad reasoning / clean-start OpenAlex LQS 8.6"}
+{"depth": "C", "paper_id": "P175", "rationale": "benchmark / visual workspace and sketchpad reasoning / clean-start OpenAlex LQS 8.6"}
+{"depth": "C", "paper_id": "P120", "rationale": "survey / intrinsic visual imagination and generation / clean-start OpenAlex LQS 8.4"}
+{"depth": "C", "paper_id": "P131", "rationale": "survey / programmatic visual manipulation / clean-start OpenAlex LQS 8.4"}
+{"depth": "C", "paper_id": "P119", "rationale": "survey / reliability verification and noisy thinking control / clean-start OpenAlex LQS 8.4"}
+{"depth": "C", "paper_id": "P186", "rationale": "benchmark / tool driven visual exploration / clean-start OpenAlex LQS 8.4"}
+{"depth": "C", "paper_id": "P128", "rationale": "survey / tool driven visual exploration / clean-start OpenAlex LQS 8.4"}
+{"depth": "C", "paper_id": "P123", "rationale": "survey / tool driven visual exploration / clean-start OpenAlex LQS 8.4"}
+{"depth": "C", "paper_id": "P191", "rationale": "method / tool driven visual exploration / clean-start OpenAlex LQS 8.4"}
+{"depth": "C", "paper_id": "P192", "rationale": "benchmark / tool driven visual exploration / clean-start OpenAlex LQS 8.4"}
+{"depth": "C", "paper_id": "P125", "rationale": "survey / tool driven visual exploration / clean-start OpenAlex LQS 8.4"}
+{"depth": "C", "paper_id": "P129", "rationale": "survey / visual workspace and sketchpad reasoning / clean-start OpenAlex LQS 8.4"}
+{"depth": "C", "paper_id": "P196", "rationale": "method / visual workspace and sketchpad reasoning / clean-start OpenAlex LQS 8.4"}
+{"depth": "C", "paper_id": "P197", "rationale": "method / benchmarks and evaluation / clean-start OpenAlex LQS 8.3"}
+{"depth": "C", "paper_id": "P225", "rationale": "method / benchmarks and evaluation / clean-start OpenAlex LQS 8.3"}
+{"depth": "C", "paper_id": "P247", "rationale": "method / benchmarks and evaluation / clean-start OpenAlex LQS 8.3"}
+{"depth": "C", "paper_id": "P202", "rationale": "method / benchmarks and evaluation / clean-start OpenAlex LQS 8.3"}
+{"depth": "C", "paper_id": "P204", "rationale": "method / benchmarks and evaluation / clean-start OpenAlex LQS 8.3"}
+{"depth": "C", "paper_id": "P243", "rationale": "method / benchmarks and evaluation / clean-start OpenAlex LQS 8.3"}
+{"depth": "C", "paper_id": "P250", "rationale": "method / benchmarks and evaluation / clean-start OpenAlex LQS 8.3"}
+{"depth": "C", "paper_id": "P213", "rationale": "benchmark / grounded visual search and marking / clean-start OpenAlex LQS 8.3"}
+{"depth": "C", "paper_id": "P241", "rationale": "method / grounded visual search and marking / clean-start OpenAlex LQS 8.3"}
+{"depth": "C", "paper_id": "P242", "rationale": "method / grounded visual search and marking / clean-start OpenAlex LQS 8.3"}
+{"depth": "C", "paper_id": "P218", "rationale": "method / grounded visual search and marking / clean-start OpenAlex LQS 8.3"}
+{"depth": "C", "paper_id": "P198", "rationale": "method / grounded visual search and marking / clean-start OpenAlex LQS 8.3"}
+{"depth": "C", "paper_id": "P220", "rationale": "benchmark / grounded visual search and marking / clean-start OpenAlex LQS 8.3"}
+{"depth": "C", "paper_id": "P223", "rationale": "method / grounded visual search and marking / clean-start OpenAlex LQS 8.3"}
+{"depth": "C", "paper_id": "P224", "rationale": "benchmark / grounded visual search and marking / clean-start OpenAlex LQS 8.3"}
+{"depth": "C", "paper_id": "P203", "rationale": "method / grounded visual search and marking / clean-start OpenAlex LQS 8.3"}
+{"depth": "C", "paper_id": "P227", "rationale": "benchmark / grounded visual search and marking / clean-start OpenAlex LQS 8.3"}
+{"depth": "C", "paper_id": "P229", "rationale": "method / grounded visual search and marking / clean-start OpenAlex LQS 8.3"}
+{"depth": "C", "paper_id": "P248", "rationale": "method / grounded visual search and marking / clean-start OpenAlex LQS 8.3"}
+{"depth": "C", "paper_id": "P206", "rationale": "benchmark / grounded visual search and marking / clean-start OpenAlex LQS 8.3"}
+{"depth": "C", "paper_id": "P232", "rationale": "benchmark / grounded visual search and marking / clean-start OpenAlex LQS 8.3"}
+{"depth": "C", "paper_id": "P210", "rationale": "benchmark / grounded visual search and marking / clean-start OpenAlex LQS 8.3"}
+{"depth": "C", "paper_id": "P212", "rationale": "method / grounded visual search and marking / clean-start OpenAlex LQS 8.3"}
+{"depth": "C", "paper_id": "P237", "rationale": "method / intrinsic visual imagination and generation / clean-start OpenAlex LQS 8.3"}
+{"depth": "C", "paper_id": "P133", "rationale": "survey / intrinsic visual imagination and generation / clean-start OpenAlex LQS 8.3"}
+{"depth": "C", "paper_id": "P230", "rationale": "benchmark / intrinsic visual imagination and generation / clean-start OpenAlex LQS 8.3"}
+{"depth": "C", "paper_id": "P231", "rationale": "method / intrinsic visual imagination and generation / clean-start OpenAlex LQS 8.3"}
+{"depth": "C", "paper_id": "P236", "rationale": "method / intrinsic visual imagination and generation / clean-start OpenAlex LQS 8.3"}
+{"depth": "C", "paper_id": "P134", "rationale": "survey / programmatic visual manipulation / clean-start OpenAlex LQS 8.3"}
+{"depth": "C", "paper_id": "P216", "rationale": "benchmark / programmatic visual manipulation / clean-start OpenAlex LQS 8.3"}
+{"depth": "C", "paper_id": "P245", "rationale": "method / programmatic visual manipulation / clean-start OpenAlex LQS 8.3"}
+{"depth": "C", "paper_id": "P199", "rationale": "benchmark / programmatic visual manipulation / clean-start OpenAlex LQS 8.3"}

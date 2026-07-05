@@ -89,6 +89,8 @@ def validate_exemplar_alignment(
     argument_graph,
     article_plan: str,
     target: str = "full",
+    taxonomy_alignment: list[dict] | None = None,
+    mechanism_cards: list[dict] | None = None,
 ) -> dict:
     if target == "short":
         return {"valid": True, "required": False, "errors": []}
@@ -108,6 +110,8 @@ def validate_exemplar_alignment(
     exemplar_alignment = survey.get("exemplar_alignment")
     if _list_len(exemplar_alignment) < 1:
         errors.append("too_few_exemplars")
+    if not taxonomy_alignment:
+        errors.append("missing_taxonomy_alignment")
 
     if _list_len(survey.get("community_native_taxonomy")) < 2:
         errors.append("community_native_taxonomy_too_thin")
@@ -183,12 +187,16 @@ def main() -> int:
     parser.add_argument("--argument-graph", required=True, type=Path)
     parser.add_argument("--article-plan", required=True, type=Path)
     parser.add_argument("--target", choices=["short", "full", "csur"], default="full")
+    parser.add_argument("--taxonomy-alignment", type=Path)
+    parser.add_argument("--paper-mechanism-cards", type=Path)
     args = parser.parse_args()
     result = validate_exemplar_alignment(
         args.survey_type_plan.read_text(encoding="utf-8"),
         args.argument_graph.read_text(encoding="utf-8"),
         args.article_plan.read_text(encoding="utf-8"),
         args.target,
+        [json.loads(line) for line in args.taxonomy_alignment.read_text(encoding="utf-8").splitlines() if line.strip()] if args.taxonomy_alignment and args.taxonomy_alignment.exists() else None,
+        [json.loads(line) for line in args.paper_mechanism_cards.read_text(encoding="utf-8").splitlines() if line.strip()] if args.paper_mechanism_cards and args.paper_mechanism_cards.exists() else None,
     )
     print(json.dumps(result, indent=2, sort_keys=True, ensure_ascii=False))
     return 0 if result["valid"] else 1

@@ -26,6 +26,7 @@ REQUIRED_DIMENSIONS = {
     "benchmark_and_evaluation_quality",
     "evidence_factuality_and_citation_accuracy",
     "synthesis_not_catalog",
+    "information_density",
     "publication_prose",
     "newcomer_value",
     "expert_value",
@@ -59,7 +60,7 @@ ROUTE_EVIDENCE_REQUIREMENTS = {
     "section_evidence_plan": {"section_evidence_plans"},
     "benchmark_dossiers": {"benchmark_dossiers", "claim_evidence_spans"},
     "coverage": {"coverage_matrix", "raw_candidates"},
-    "article_quality": {"review", "claim_evidence_spans", "argument_graph"},
+    "article_quality": {"survey", "claim_evidence_spans", "argument_graph"},
 }
 
 
@@ -131,6 +132,20 @@ def _valid_audit_items(items, min_items: int = MIN_AUDIT_ITEMS) -> bool:
         if _nonempty_text(item.get("finding") or item.get("comment") or item.get("assessment"), 20) and str(item.get("verdict") or "").strip():
             valid += 1
     return valid >= min_items
+
+
+def _audit_items_have_field(items, field: str, min_items: int = MIN_AUDIT_ITEMS) -> bool:
+    if not isinstance(items, list) or len(items) < min_items:
+        return False
+    valid = 0
+    for item in items:
+        if isinstance(item, dict) and _nonempty_text(item.get(field), 18):
+            valid += 1
+    return valid >= min_items
+
+
+def _audit_dict_has_fields(audit: dict, fields: list[str], min_chars: int = 30) -> bool:
+    return isinstance(audit, dict) and all(_nonempty_text(audit.get(field), min_chars) for field in fields)
 
 
 def _audit_dimension_name(value: str) -> str:
@@ -226,7 +241,7 @@ def _valid_invocations(
         if expected_round and str(invocation.get("review_round_id") or "") != expected_round:
             item_errors.append("review_round_mismatch")
         inputs = [str(item).lower() for item in invocation.get("inputs") or []]
-        if not any("review.md" in item for item in inputs):
+        if not any("survey_candidate.md" in item for item in inputs):
             item_errors.append("missing_review_input")
         if any(any(term in item for term in REVIEWER_REPORT_TERMS) for item in inputs):
             item_errors.append("reviewer_report_used_as_input")
@@ -262,7 +277,7 @@ def _round_status_errors(
     if not isinstance(freeze, dict) or not str(freeze.get("review_round_id") or "").strip() or not isinstance(frozen, dict):
         errors.append("missing_review_freeze")
     else:
-        for artifact in ["outputs/review.md", "outputs/appendix.md", "state/argument_graph.yml", "state/section_evidence_plans.jsonl"]:
+        for artifact in ["outputs/survey_candidate.md", "outputs/appendix.md", "state/argument_graph.yml", "state/section_evidence_plans.jsonl"]:
             if not str(frozen.get(artifact) or "").strip():
                 errors.append("incomplete_review_freeze")
                 break
@@ -300,19 +315,23 @@ def _adjudication_status(
             continue
         wid = str(item.get("weakness_id") or "").strip()
         item_errors = []
-        for field in [
+        required_nonempty = [
             "weakness_id",
             "severity",
             "source_reviewers",
             "affected_sections",
-            "affected_papers",
-            "affected_claims",
             "route_to",
             "required_evidence_check",
             "repair_acceptance_criteria",
-        ]:
+        ]
+        for field in required_nonempty:
             if not item.get(field):
                 item_errors.append(f"missing_{field}")
+        for field in ["affected_papers", "affected_claims"]:
+            if field not in item:
+                item_errors.append(f"missing_{field}")
+            elif not isinstance(item.get(field), list):
+                item_errors.append(f"invalid_{field}")
         if str(item.get("route_to") or "") not in VALID_ROUTES:
             item_errors.append("invalid_route_to")
         if not isinstance(item.get("source_weakness_ids") or [], list):
@@ -325,8 +344,21 @@ def _adjudication_status(
             canonical_major.append(item)
     if invalid:
         errors.append("invalid_canonical_weaknesses")
-    reported_ids = {str(item.get("weakness_id") or "") for item in reported_major if item.get("weakness_id")}
-    missing = sorted(reported_ids - covered_source_ids)
+    reported_ids = {
+        str(item.get("weakness_id") or "")
+        for item in reported_major
+        if item.get("weakness_id")
+    }
+    reported_source_ids = {
+        f"{item.get('reviewer_id')}:{item.get('weakness_id')}"
+        for item in reported_major
+        if item.get("reviewer_id") and item.get("weakness_id")
+    }
+    missing = sorted(
+        source_id
+        for source_id in (reported_source_ids or reported_ids)
+        if source_id not in covered_source_ids and source_id.split(":", 1)[-1] not in covered_source_ids
+    )
     if missing:
         errors.append("unadjudicated_major_weaknesses")
     if reported_major and adjudication.get("all_major_weaknesses_adjudicated") is not True:
@@ -358,6 +390,12 @@ def _repair_status(
     invalid_checks: dict[str, list[str]] = {}
     invalid_rereviews: dict[str, list[str]] = {}
     repaired_article_hash = str((round_status or {}).get("repaired_article_hash") or "")
+    frozen_article_hash = str((((round_status or {}).get("review_freeze") or {}).get("article_hash")) or "")
+    if unresolved_major:
+        if not repaired_article_hash:
+            errors.append("missing_repaired_article_hash")
+        elif frozen_article_hash and repaired_article_hash == frozen_article_hash:
+            errors.append("repair_did_not_change_candidate")
     for weakness in unresolved_major:
         wid = str(weakness.get("weakness_id") or _weakness_id({}, weakness))
         repair = repairs_by_id.get(wid)
@@ -409,6 +447,10 @@ def _repair_status(
             rereview_errors.append("missing_targeted_rereview")
         for rereview in rereviews:
             item_errors = []
+            if rereview.get("fresh_context") is not True:
+                item_errors.append("targeted_rereview_not_fresh_context")
+            if not str(rereview.get("subagent_session_id") or "").strip():
+                item_errors.append("missing_targeted_rereview_subagent_session_id")
             if str(rereview.get("verdict") or "") == "introduced_regression":
                 item_errors.append("introduced_regression")
             if str(rereview.get("verdict") or "") != "resolved":
@@ -416,7 +458,9 @@ def _repair_status(
             for field in ["reviewer_id", "persona", "checked_changed_artifacts", "checked_evidence_refs", "evidence_quote_after_repair", "remaining_risk"]:
                 if not rereview.get(field):
                     item_errors.append(f"missing_{field}")
-            if repaired_article_hash and str(rereview.get("article_hash") or "") != repaired_article_hash:
+            if not str(rereview.get("article_hash") or "").strip():
+                item_errors.append("missing_targeted_rereview_article_hash")
+            elif repaired_article_hash and str(rereview.get("article_hash") or "") != repaired_article_hash:
                 item_errors.append("targeted_rereview_article_hash_mismatch")
             if item_errors:
                 rereview_errors.extend(item_errors)
@@ -466,6 +510,9 @@ def validate_expert_reviews(
         }
     errors: list[str] = []
     invalid_reports: dict[str, list[str]] = {}
+    reports_missing = len(reports) == 0
+    if reports_missing:
+        errors.extend(["expert_review_not_executed", "no_expert_review_reports_returned"])
     if len(reports) < REQUIRED_REVIEWER_COUNT:
         errors.append("too_few_expert_reviews")
 
@@ -479,7 +526,7 @@ def validate_expert_reviews(
 
     scores: list[float] = []
     reported_major: list[dict] = []
-    weakness_routes: list[dict] = []
+    routed_weaknesses: list[dict] = []
     article_sections = _article_sections(review_text)
     require_full_article_audit = target in {"full", "csur"}
     summaries = []
@@ -543,20 +590,28 @@ def validate_expert_reviews(
             persona = str(report.get("persona") or "")
             if persona == "Domain Expert Reviewer" and not _valid_audit_items(report.get("paper_mechanism_audits")):
                 item_errors.append("missing_paper_mechanism_audits")
+            if persona == "Domain Expert Reviewer" and not _audit_items_have_field(report.get("paper_mechanism_audits"), "field_evidence_consistency"):
+                item_errors.append("missing_field_evidence_consistency_audit")
             if persona == "Evidence/Factuality Reviewer" and not _valid_audit_items(report.get("claim_citation_audits")):
                 item_errors.append("missing_claim_citation_audits")
+            if persona == "Evidence/Factuality Reviewer" and not _audit_items_have_field(report.get("claim_citation_audits"), "named_entity_alignment"):
+                item_errors.append("missing_named_entity_alignment_audit")
             if persona == "Survey Architect Reviewer":
                 audit = report.get("flow_taxonomy_audit") or {}
-                if not isinstance(audit, dict) or not all(_nonempty_text(audit.get(field), 30) for field in ["section_flow", "taxonomy_coherence", "synthesis_vs_catalog"]):
+                if not _audit_dict_has_fields(audit, ["section_flow", "taxonomy_coherence", "synthesis_vs_catalog"]):
                     item_errors.append("missing_flow_taxonomy_audit")
+                if not _audit_dict_has_fields(audit, ["core_family_coverage", "related_survey_delta"]):
+                    item_errors.append("missing_core_coverage_taxonomy_audit")
             if persona == "Newcomer/Tutorial Reviewer":
                 audit = report.get("tutorial_audit") or {}
-                if not isinstance(audit, dict) or not all(_nonempty_text(audit.get(field), 30) for field in ["glossary_clarity", "running_example_usefulness", "confusing_terms"]):
+                if not _audit_dict_has_fields(audit, ["glossary_clarity", "running_example_usefulness", "confusing_terms"]):
                     item_errors.append("missing_tutorial_audit")
             if persona == "Style/Publication Reviewer":
                 audit = report.get("style_audit") or {}
-                if not isinstance(audit, dict) or not all(_nonempty_text(audit.get(field), 30) for field in ["repetition", "artifact_leakage", "table_interpretation", "transition_quality"]):
+                if not _audit_dict_has_fields(audit, ["repetition", "artifact_leakage", "table_interpretation", "transition_quality"]):
                     item_errors.append("missing_style_audit")
+                if not _audit_dict_has_fields(audit, ["padding", "candidate_final_boundary"]):
+                    item_errors.append("missing_release_boundary_style_audit")
         weaknesses = report.get("blocking_weaknesses") or []
         if not isinstance(weaknesses, list):
             item_errors.append("invalid_blocking_weaknesses")
@@ -574,7 +629,7 @@ def validate_expert_reviews(
                 "repair_action": weakness.get("repair_action"),
                 "evidence_quote": weakness.get("evidence_quote"),
             }
-            weakness_routes.append(route)
+            routed_weaknesses.append(route)
             if str(weakness.get("severity")).lower() in BLOCKING_SEVERITIES:
                 reported_major.append(route)
         if report.get("pass_recommendation") is not True and not weaknesses and score is not None and score >= _threshold(target):
@@ -592,7 +647,7 @@ def validate_expert_reviews(
             errors.append("identical_dimension_scores")
     median_score = statistics.median(scores) if scores else None
     threshold = _threshold(target)
-    if median_score is None or median_score < threshold:
+    if not reports_missing and (median_score is None or median_score < threshold):
         errors.append("median_score_below_threshold")
     dimension_medians = {}
     dimension_floor = DIMENSION_FLOOR.get(target, 0.0)
@@ -602,7 +657,7 @@ def validate_expert_reviews(
             dimension_medians[name] = statistics.median(values)
             if dimension_medians[name] < dimension_floor:
                 errors.append("dimension_median_below_threshold")
-        else:
+        elif not reports_missing:
             dimension_medians[name] = None
             errors.append("missing_dimension_median")
     round_errors = _round_status_errors(reports, round_status, repair_actions)
@@ -650,7 +705,7 @@ def validate_expert_reviews(
         "invalid_regression_checks": invalid_regression_checks,
         "invalid_targeted_rereviews": invalid_targeted_rereviews,
         "unresolved_major_weaknesses": unresolved_major,
-        "weakness_routes": weakness_routes,
+        "routed_weaknesses": routed_weaknesses,
         "canonical_major_weaknesses": canonical_major,
         "quality_limited": quality_limited,
         "article_sections_required": len(article_sections),
@@ -661,7 +716,7 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--expert-review-reports", required=True, type=Path)
     parser.add_argument("--review-iteration-status", type=Path)
-    parser.add_argument("--review", type=Path)
+    parser.add_argument("--survey", type=Path)
     parser.add_argument("--claims", type=Path)
     parser.add_argument("--paper-mechanism-cards", type=Path)
     parser.add_argument("--section-evidence-plans", type=Path)
@@ -677,7 +732,7 @@ def main() -> int:
         read_jsonl(args.expert_review_reports),
         args.target,
         read_json(args.review_iteration_status) if args.review_iteration_status else None,
-        args.review.read_text(encoding="utf-8") if args.review and args.review.exists() else "",
+        args.survey.read_text(encoding="utf-8") if args.survey and args.survey.exists() else "",
         read_jsonl(args.claims) if args.claims else None,
         read_jsonl(args.paper_mechanism_cards) if args.paper_mechanism_cards else None,
         read_jsonl(args.section_evidence_plans) if args.section_evidence_plans else None,

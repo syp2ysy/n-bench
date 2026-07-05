@@ -9,26 +9,47 @@ import re
 from datetime import datetime, timezone
 from pathlib import Path
 
+try:  # pragma: no cover - script import fallback
+    from .status_schema import STATUS_SCHEMA_VERSION, status_envelope
+except ImportError:  # pragma: no cover
+    from status_schema import STATUS_SCHEMA_VERSION, status_envelope
+
 
 STATE_FILES = [
+    "discovery_results.jsonl",
     "raw_candidates.jsonl",
     "search_routes.jsonl",
     "papers.jsonl",
     "lqs_scores.jsonl",
     "citation_plan.jsonl",
+    "topic_relevance_audit.jsonl",
+    "topic_relevance_second_audits.jsonl",
+    "topic_relevance_results.jsonl",
     "paper_mechanism_cards.jsonl",
     "full_text_sources.jsonl",
     "paper_contribution_statements.jsonl",
+    "taxonomy_alignment.jsonl",
+    "comparative_evidence_matrix.jsonl",
     "claim_evidence_spans.jsonl",
     "section_evidence_plans.jsonl",
+    "expansion_audit.jsonl",
     "expert_review_reports.jsonl",
     "expert_review_invocations.jsonl",
-    "weakness_routes.jsonl",
+    "expert_review_round_history.jsonl",
+    "survey_driver_history.jsonl",
+    "paper_understanding_results.jsonl",
+    "full_text_fetch_plan.jsonl",
+    "full_text_fetch_status.jsonl",
+    "ab_rebalance_decisions.jsonl",
+    "runtime_dispatch_queue.jsonl",
+    "runtime_agent_sessions.jsonl",
+    "runtime_agent_results.jsonl",
+    "gate7_driver_history.jsonl",
+    "gate7_repair_results.jsonl",
     "repair_actions.jsonl",
     "regression_checks.jsonl",
+    "gate7_regression_requests.jsonl",
     "targeted_rereview_reports.jsonl",
-    "review_rounds.jsonl",
-    "phase_summaries.jsonl",
 ]
 
 LOG_FILES = [
@@ -40,16 +61,12 @@ LOG_FILES = [
 ]
 
 OUTPUT_FILES = {
-    "review.md": "",
-    "review_body_draft.md": "",
-    "article_plan.md": "",
-    "appendix.md": "",
     "coverage_matrix.md": "",
     "related_survey_matrix.md": "",
     "references.bib": "",
     "final_report.md": "",
-    "figures_plan.md": "",
     "contribution_tree.yml": "",
+    "release_manifest.json": json.dumps({"released": False, "survey_complete": False, "release_allowed": False}, indent=2, sort_keys=True) + "\n",
 }
 
 
@@ -121,7 +138,45 @@ def initialize_task(
             "gate_5_argument_graph": False,
             "gate_6_article_quality": False,
             "gate_7_expert_review": False,
-            "final_review_status": False,
+            "final_survey_status": False,
+        },
+    )
+    discovery_summary = {
+        "batch_count": 0,
+        "active_batch_id": None,
+        "pending_batch_count": 0,
+        "resolved_batch_count": 0,
+    }
+    write_json(
+        state / "discovery_batches.json",
+        {
+            "schema_version": STATUS_SCHEMA_VERSION,
+            "active_batch_id": None,
+            "batches": [],
+            "summary": discovery_summary,
+        },
+    )
+    write_json(
+        state / "discovery_runtime_action.json",
+        {
+            **status_envelope(
+                "discovery_runtime_executor",
+                "not_started",
+                next_action=None,
+                terminal=False,
+                blocked=False,
+                blocked_by_phase=None,
+                active_batch_id=None,
+                summary=discovery_summary,
+            ),
+            "active_batch_id": None,
+        },
+    )
+    write_json(
+        state / "discovery_spawn_requests.json",
+        {
+            "next_action": None,
+            "spawn_requests": [],
         },
     )
     write_json(
@@ -148,14 +203,243 @@ def initialize_task(
     write_json(
         state / "expert_review_adjudication.json",
         {
+            "schema_version": 2,
             "review_round_id": None,
+            "review_reports_hash": "",
+            "adjudicated_at": None,
             "all_major_weaknesses_adjudicated": False,
             "canonical_weaknesses": [],
         },
     )
     write_json(
+        state / "gate7_repair_plan.json",
+        {
+            "schema_version": STATUS_SCHEMA_VERSION,
+            "review_round_id": None,
+            "candidate_hash": None,
+            "major_rebuild_required": False,
+            "rerun_policy": None,
+            "repair_items": [],
+            "summary": {
+                "repair_item_count": 0,
+                "rollback_phase_counts": {},
+                "first_rollback_phase": None,
+                "route_counts": {},
+                "rerun_policy": None,
+                "major_rebuild_required": False,
+            },
+        },
+    )
+    runtime_summary = {
+        "batch_count": 0,
+        "active_batch_id": None,
+        "active_rollback_phase": None,
+        "pending_batch_count": 0,
+        "resolved_batch_count": 0,
+        "rerun_policy": None,
+        "major_rebuild_required": False,
+    }
+    write_json(
+        state / "gate7_runtime_action.json",
+        {
+            **status_envelope(
+                "gate7_runtime_executor",
+                "not_started",
+                next_action=None,
+                terminal=False,
+                blocked=False,
+                active_batch_id=None,
+                summary=runtime_summary,
+            ),
+            "status": "not_started",
+            "next_action": None,
+            "active_batch_id": None,
+        },
+    )
+    write_json(
+        state / "gate7_repair_batches.json",
+        {
+            "schema_version": STATUS_SCHEMA_VERSION,
+            "active_batch_id": None,
+            "batches": [],
+            "summary": runtime_summary,
+        },
+    )
+    write_json(
+        state / "gate7_spawn_requests.json",
+        {
+            "next_action": None,
+            "spawn_requests": [],
+        },
+    )
+    paper_runtime_summary = {
+        "batch_count": 0,
+        "active_batch_id": None,
+        "active_batch_ids": [],
+        "active_paper_ids": [],
+        "pending_batch_count": 0,
+        "resolved_batch_count": 0,
+        "paper_required_count": 0,
+        "paper_completed_count": 0,
+        "batch_size": 5,
+    }
+    write_json(
+        state / "paper_understanding_batches.json",
+        {
+            "schema_version": STATUS_SCHEMA_VERSION,
+            "active_batch_id": None,
+            "active_batch_ids": [],
+            "batches": [],
+            "summary": paper_runtime_summary,
+        },
+    )
+    topic_runtime_summary = {
+        "batch_count": 0,
+        "active_batch_id": None,
+        "active_paper_ids": [],
+        "pending_batch_count": 0,
+        "resolved_batch_count": 0,
+        "paper_count": 0,
+        "batch_size": 25,
+    }
+    write_json(
+        state / "topic_relevance_batches.json",
+        {
+            "schema_version": STATUS_SCHEMA_VERSION,
+            "active_batch_id": None,
+            "batches": [],
+            "summary": topic_runtime_summary,
+        },
+    )
+    write_json(
+        state / "topic_relevance_second_audit_batches.json",
+        {
+            "schema_version": STATUS_SCHEMA_VERSION,
+            "active_batch_id": None,
+            "batches": [],
+            "summary": topic_runtime_summary,
+        },
+    )
+    write_json(
+        state / "topic_relevance_runtime_action.json",
+        {
+            **status_envelope(
+                "topic_relevance_runtime_executor",
+                "not_started",
+                next_action=None,
+                terminal=False,
+                blocked=False,
+                blocked_by_phase=None,
+                active_batch_id=None,
+                summary=topic_runtime_summary,
+            ),
+            "active_batch_id": None,
+        },
+    )
+    write_json(
+        state / "topic_relevance_spawn_requests.json",
+        {
+            "next_action": None,
+            "spawn_requests": [],
+        },
+    )
+    write_json(
+        state / "paper_understanding_runtime_action.json",
+        {
+            **status_envelope(
+                "paper_understanding_runtime_executor",
+                "not_started",
+                next_action=None,
+                terminal=False,
+                blocked=False,
+                blocked_by_phase=None,
+                active_batch_id=None,
+                summary=paper_runtime_summary,
+            ),
+            "active_batch_id": None,
+            "active_batch_ids": [],
+        },
+    )
+    write_json(
+        state / "paper_understanding_spawn_requests.json",
+        {
+            "next_action": None,
+            "spawn_requests": [],
+        },
+    )
+    write_json(
+        state / "full_text_source_plan_status.json",
+        {
+            **status_envelope(
+                "full_text_source_planner",
+                "not_started",
+                next_action=None,
+                terminal=False,
+                blocked=False,
+                summary={"planned_paper_count": 0, "with_candidate_url_count": 0, "blocked_no_route_count": 0},
+            )
+        },
+    )
+    write_json(
+        state / "runtime_dispatch_status.json",
+        {
+            **status_envelope(
+                "runtime_dispatcher",
+                "idle",
+                next_action="run_survey_driver",
+                terminal=False,
+                blocked=False,
+                summary={
+                    "queue_count": 0,
+                    "pending_spawn_count": 0,
+                    "spawned_count": 0,
+                    "result_recorded_count": 0,
+                    "invalid_result_count": 0,
+                    "rebalance_required_count": 0,
+                },
+            ),
+            "queue": [],
+        },
+    )
+    write_json(
+        state / "runtime_active_intent.json",
+        {
+            "schema_version": STATUS_SCHEMA_VERSION,
+            "active_phase": None,
+            "next_action": None,
+            "allowed_request_types": [],
+            "phase_generation": "",
+            "source_hashes": {},
+            "generated_at": None,
+        },
+    )
+    write_json(
+        state / "runtime_rebalance_status.json",
+        {
+            "handled_result_hashes": [],
+            "last_rebalance": None,
+        },
+    )
+    write_json(
         state / "phase_status.json",
         {
+            **status_envelope(
+                "phase_gate",
+                "blocked",
+                next_action="discovery",
+                terminal=False,
+                blocked=True,
+                blocked_by_phase="discovery",
+                active_batch_id=None,
+                summary={
+                    "valid": False,
+                    "blocked_by_phase": "discovery",
+                    "last_passed_phase": None,
+                    "allowed_next_phase": "discovery",
+                    "phase_count": 7,
+                    "passed_phase_count": 0,
+                },
+            ),
             "valid": False,
             "all_required_phases_passed": False,
             "blocked_by_phase": "discovery",

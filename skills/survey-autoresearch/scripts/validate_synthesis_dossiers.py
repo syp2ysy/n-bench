@@ -77,6 +77,46 @@ def _paper_ids(cards: list[dict]) -> set[str]:
     return {str(card.get("paper_id")) for card in cards if card.get("paper_id")}
 
 
+def _validate_comparative_evidence_matrix(matrix: list[dict] | None, card_ids: set[str], target: str) -> tuple[list[str], dict[str, list[str]]]:
+    if target == "short":
+        return [], {}
+    errors: list[str] = []
+    invalid: dict[str, list[str]] = {}
+    rows = matrix or []
+    if not rows:
+        return ["missing_comparative_evidence_matrix"], invalid
+    required_columns = ["protocol", "metric", "baseline", "ablation", "confounder"]
+    for idx, row in enumerate(rows, start=1):
+        key = str(row.get("recommendation_id") or row.get("recommendation") or f"recommendation_{idx}")
+        item_errors = []
+        for field in ["recommendation", "supporting_papers", "paper_evidence", "derived_gap", "evidence_refs"]:
+            if not _nonempty(row.get(field)):
+                item_errors.append(f"missing_{field}")
+        support = [str(pid) for pid in row.get("supporting_papers") or []]
+        unknown = [pid for pid in support if pid not in card_ids]
+        if unknown:
+            item_errors.append("unknown_supporting_papers:" + ",".join(unknown))
+        paper_evidence = row.get("paper_evidence") or []
+        if not isinstance(paper_evidence, list) or not paper_evidence:
+            item_errors.append("missing_paper_evidence")
+        else:
+            evidence_papers = {str(item.get("paper_id") or "") for item in paper_evidence if isinstance(item, dict)}
+            if support and not set(support) <= evidence_papers:
+                item_errors.append("supporting_papers_missing_from_matrix")
+            for eidx, item in enumerate(paper_evidence, start=1):
+                if not isinstance(item, dict):
+                    item_errors.append(f"invalid_paper_evidence:{eidx}")
+                    continue
+                for column in required_columns:
+                    if not _nonempty(item.get(column)):
+                        item_errors.append(f"paper_evidence_missing_{column}:{eidx}")
+        if item_errors:
+            invalid[key] = sorted(set(item_errors))
+    if invalid:
+        errors.append("invalid_comparative_evidence_matrix")
+    return sorted(set(errors)), invalid
+
+
 def _scenario_names(scenario_definitions) -> set[str]:
     data = parse_structured_text(scenario_definitions) if isinstance(scenario_definitions, str) else (scenario_definitions or {})
     scenarios = data.get("scenarios") or data.get("contexts") or data.get("domains") or []
@@ -89,12 +129,21 @@ def _scenario_names(scenario_definitions) -> set[str]:
     return names
 
 
-def validate_synthesis_dossiers(method_dossiers: list[dict], benchmark_dossiers: list[dict], scenario_definitions, mechanism_cards: list[dict], target: str = "full") -> dict:
+def validate_synthesis_dossiers(
+    method_dossiers: list[dict],
+    benchmark_dossiers: list[dict],
+    scenario_definitions,
+    mechanism_cards: list[dict],
+    target: str = "full",
+    comparative_evidence_matrix: list[dict] | None = None,
+) -> dict:
     errors: list[str] = []
     invalid_methods: dict[str, list[str]] = {}
     invalid_benchmarks: dict[str, list[str]] = {}
     card_ids = _paper_ids(mechanism_cards)
     scenarios = _scenario_names(scenario_definitions)
+    matrix_errors, invalid_matrix = _validate_comparative_evidence_matrix(comparative_evidence_matrix, card_ids, target)
+    errors.extend(matrix_errors)
     if target != "short" and not method_dossiers:
         errors.append("missing_method_family_dossiers")
     if target != "short" and not benchmark_dossiers:
@@ -142,6 +191,7 @@ def validate_synthesis_dossiers(method_dossiers: list[dict], benchmark_dossiers:
         "benchmark_dossiers": len(benchmark_dossiers),
         "invalid_methods": invalid_methods,
         "invalid_benchmarks": invalid_benchmarks,
+        "invalid_comparative_evidence_matrix": invalid_matrix,
     }
 
 
@@ -162,6 +212,7 @@ def main() -> int:
     parser.add_argument("--scenario-definitions", required=True, type=Path)
     parser.add_argument("--paper-mechanism-cards", required=True, type=Path)
     parser.add_argument("--target", choices=["short", "full", "csur"], default="full")
+    parser.add_argument("--comparative-evidence-matrix", type=Path)
     args = parser.parse_args()
     result = validate_synthesis_dossiers(
         read_dossier_dir(args.method_family_dossiers),
@@ -169,6 +220,7 @@ def main() -> int:
         args.scenario_definitions.read_text(encoding="utf-8"),
         read_jsonl(args.paper_mechanism_cards),
         args.target,
+        read_jsonl(args.comparative_evidence_matrix) if args.comparative_evidence_matrix else None,
     )
     print(json.dumps(result, indent=2, sort_keys=True, ensure_ascii=False))
     return 0 if result["valid"] else 1

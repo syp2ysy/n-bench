@@ -5,106 +5,89 @@ description: Run unattended literature review and survey-writing workflows with 
 
 # Survey AutoResearch
 
-Use this skill when the user asks for a literature review, survey paper, research landscape, related work section, annotated bibliography, or evidence-backed field overview that should run as a long-horizon research workflow rather than a one-shot answer.
+Use this skill when the user asks for a literature review, survey paper, research landscape, related work section, annotated bibliography, or evidence-backed field overview that should run as a persistent research workflow rather than a one-shot answer.
 
-The workflow has one gated core chain:
+The workflow has one public path:
 
-`high-recall discovery -> source truth -> full-text evidence -> A/B paper understanding completion -> contribution tree -> scenario definitions -> field synthesis -> argument graph -> section evidence re-check -> publication article`
+`init_task.py -> survey_driver.py --run-until-complete -> runtime_dispatcher.py for requested workers -> phase_gate.py/gate_check.py -> promote_survey_release.py`
 
-The final `outputs/review.md` is an article. It must not read like a workflow report, evidence report, appendix, checklist, or state-file dump.
+Final `outputs/survey.md` and `outputs/survey.html` are release-only artifacts. They must not exist, or must be quarantined, until all phase gates and Gate 7 pass and `promote_survey_release.py` promotes the current candidate.
 
-## Non-Negotiable Runtime
+## Main Loop
 
-- Persist meaningful state under the task `state/`, `logs/`, and `outputs/` directories.
-- Start every major pass from state files, not conversation memory.
-- Do not ask whether to continue between phases.
-- Do not enter a phase until `scripts/phase_gate.py` passes the previous phase.
-- If a run stalls, change structure rather than repeating the same search or synthesis tactic.
-- Keep heartbeat/patrol workers separate from research workers; they may inspect liveness but must not edit research content.
-- Verify citation identity continuously and record verification evidence.
-- Treat external AutoResearch projects as design references, not authority.
+1. Initialize a run with `scripts/init_task.py`.
+2. Resume work only through `scripts/survey_driver.py --task-dir <run> --target <target> --run-until-complete`.
+3. If the driver returns a worker-spawn status, run `scripts/runtime_dispatcher.py --task-dir <run> --collect-pending`.
+4. Spawn only the pending requests returned by the dispatcher with `multi_agent_v1.spawn_agent(fork_context=false)`.
+5. Record each spawned session with `runtime_dispatcher.py --mark-spawned <request-id> --agent-id <subagent-session-id>`.
+6. Save each worker response exactly as returned and record it with `runtime_dispatcher.py --record-agent-output <request-id> --output-file <file>`.
+7. Rerun `survey_driver.py --run-until-complete` until completion, quality-limited stop, or a real blocker.
 
-Read `references/runtime_contract.md` before long-running work.
+If the current Codex runtime cannot spawn subagents, report `blocked_subagent_spawn_required`; do not claim completion. Python helpers may prepare batches, validate schemas, merge worker output, and record hashes; they must not fabricate discovery results, semantic topic audits, topic second audits, paper-understanding cards, reviewer reports, or repair results.
+
+## Stop Conditions
+
+Stop only when one of these is true:
+
+- `survey_driver.py`, `gate7_driver.py`, or a collect-status command returns `complete`.
+- The run is explicitly `quality_limited`.
+- Fresh subagents or required source documents are unavailable.
+- The same blocker recurs for three consecutive driver passes with no persisted progress.
+
+Do not stop at prompt generation, worker packets, runtime action files, repair notes, stale summaries, targeted rereview requests, or reviewer routing. Reviewer routing back to an earlier phase is a rollback action, not a stop condition.
 
 ## Phase Barriers
 
-1. **Task lock and survey type**: write `state/task_spec.md` and `state/survey_type_plan.yml`.
-2. **High-recall discovery**: collect broad candidates in `state/raw_candidates.jsonl`, `state/search_routes.jsonl`, `state/lqs_scores.jsonl`, and `state/corpus_expansion.json`; this phase must pass before source verification or citation planning.
-3. **Source verification and citation depth**: write `state/papers.jsonl` and `state/citation_plan.jsonl`; every retained paper must point back to a raw candidate.
-4. **A/B paper understanding completion**: write `state/full_text_sources.jsonl` and `state/paper_mechanism_cards.jsonl` for every A/B paper; this phase must pass before contribution abstraction, synthesis, argument graph, article plan, or drafting.
-5. **Contribution abstraction**: write `state/paper_contribution_statements.jsonl` and `outputs/contribution_tree.yml`.
-6. **Scenario/domain definitions**: write `state/scenario_definitions.yml`.
-7. **Field synthesis**: write method-family dossiers, benchmark dossiers, related-survey matrix, and `state/claim_evidence_spans.jsonl`.
-8. **Story skeleton**: write `state/argument_graph.yml`.
-9. **Section source re-check and drafting**: write `state/section_evidence_plans.jsonl`, `outputs/article_plan.md`, `outputs/review_body_draft.md`, final `outputs/review.md`, and `outputs/appendix.md`.
-10. **Expert review and repair**: freeze the article, dispatch all five independent reviewers, wait for every report, adjudicate weaknesses, repair with evidence re-checks, run targeted rereview, and rerun gates until complete or precisely blocked.
+The driver enforces this gated chain:
 
-Run `scripts/phase_gate.py --task-dir <run> --target <target> --phase <phase>` at each barrier. If a phase fails, repair that phase instead of creating downstream artifacts. If A/B paper understanding fails and downstream synthesis/article files already exist, the run is invalid until the A/B cards are completed and the phase gate passes.
+`high-recall discovery -> source identity + topic relevance audit -> A/B full-text understanding -> contribution tree -> scenario definitions -> synthesis dossiers -> argument graph -> section evidence plans -> survey candidate -> expert review -> release promotion`
+
+Run `scripts/phase_gate.py --task-dir <run> --target <target> --phase <phase>` for manual checks. If a phase fails, repair that phase instead of creating downstream artifacts.
+
+Important barriers:
+
+- Discovery is worker-produced when starting from an empty run. The worker returns real `raw_candidates`, `search_routes`, `lqs_scores`, and `corpus_expansion`; Python validates sufficiency but does not invent papers.
+- Source verification is not just DOI or metadata verification. Full and CSUR runs require worker-produced `state/topic_relevance_audit.jsonl` before A/B full-text reading.
+- High-risk A/B core topic decisions require independent worker second audit in `state/topic_relevance_second_audits.jsonl`.
+- A/B papers must be topic-audit qualified, verified, and full-text readable. Broad LLM, generic MLLM, education, medical, RAG, or XAI papers cannot enter A/B unless the audit directly supports the topic boundary.
+- Paper understanding requires `state/full_text_sources.jsonl` and `state/paper_mechanism_cards.jsonl` for every A/B paper.
+- Expert review requires five fresh independent reviewers when subagents are available. Gate 7 repair runs through phase-ordered repair batches and must record validated repair and regression results before rerun.
+
+## Public Commands
+
+| Purpose | Command |
+| --- | --- |
+| Initialize a run | `python3 scripts/init_task.py --base-dir <base> --topic "<topic>" --slug <slug> --target <short|full|csur>` |
+| Resume or drive the workflow | `python3 scripts/survey_driver.py --task-dir <run> --target <target> --run-until-complete` |
+| Collect pending worker requests | `python3 scripts/runtime_dispatcher.py --task-dir <run> --collect-pending` |
+| Record spawned worker session | `python3 scripts/runtime_dispatcher.py --task-dir <run> --mark-spawned <request-id> --agent-id <session-id>` |
+| Record worker output | `python3 scripts/runtime_dispatcher.py --task-dir <run> --record-agent-output <request-id> --output-file <file>` |
+| Validate one phase | `python3 scripts/phase_gate.py --task-dir <run> --target <target> --phase <phase>` |
+| Run final summary gates | `python3 scripts/gate_check.py --task-dir <run> --target <target>` |
+| Promote final survey | `python3 scripts/promote_survey_release.py --task-dir <run> --target <target>` |
+
+All other scripts are internal helpers unless a contract below explicitly says otherwise. In particular, topic-relevance, paper-understanding, and Gate 7 runtime executors prepare or record batches; `runtime_dispatcher.py` is the only public main-agent queue consumer.
 
 ## Required Contracts
 
-- Survey type and topic-specific artifact selection: `references/survey_type_contract.md`.
-- Scenario/domain definitions for topic-specific meanings: `references/scenario_definition_contract.md`.
-- Source identity, evidence spans, and coverage: `references/evidence_contract.md`.
-- Paper-level scientific contribution extraction: `references/paper_understanding_contract.md`.
-- Synthesis dossiers and argument graph: `references/synthesis_contract.md`.
+Read the relevant contract before touching that layer:
+
+- Runtime dispatch, active intent, phase generation, stale requests, and worker result recording: `references/runtime_contract.md`.
+- Survey type and artifact choices: `references/survey_type_contract.md`.
+- Source identity, topic relevance, evidence spans, and coverage: `references/evidence_contract.md`.
+- Paper-level full-text understanding: `references/paper_understanding_contract.md`.
+- Scenario definitions: `references/scenario_definition_contract.md`.
+- Synthesis dossiers, related-survey matrix, and argument graph: `references/synthesis_contract.md`.
 - Article plan, appendix boundary, and publication prose: `references/article_contract.md`.
-- Final review standards and repair routing: `references/review_contract.md`.
-- Independent expert review scoring and weakness routing: `references/expert_review_contract.md`.
-- CSUR style and official exemplar use for `target=csur`: `references/csur_patterns.md` and `references/csur_official_exemplars.yml`.
-
-## Final Summary Gates
-
-`scripts/gate_check.py` is a final summary check, not the phase controller. Completion requires all phase barriers plus:
-
-1. **Source Identity Gate**: A/B papers are fully verified; C papers meet the target verification rate; unverified papers do not support article claims.
-2. **A/B Paper Understanding Completion Gate**: every A/B paper has a full-text mechanism card with nonempty substantive fields, source/excerpt audit, motivation, task/problem, benchmark/environment, implementation, experiment, result, limitation, relation-to-prior-work, and overclaim boundaries.
-3. **Claim-Evidence Gate**: every important claim traces to source-backed evidence spans and section evidence plans; strong claims need quoted/extracted evidence and claim strength does not exceed evidence strength.
-4. **Coverage Gate**: discovery sufficiency, corpus expansion, retained literature breadth, family, benchmark, related-survey, and scenario gaps are all recorded and valid.
-5. **Argument Graph Gate**: contribution tree, scenario definitions, synthesis dossiers, story skeleton, and section evidence plans jointly support the article.
-6. **Article Quality Gate**: `review.md` and rendered publication artifacts are publication prose with no raw artifacts, internal methodology, run metadata, unsupported factual claims, repeated template sections, or un-interpreted tables.
-7. **Expert Review Gate**: all five independent reviewer reports meet the target score and dimension thresholds, have fresh-context invocation evidence, are adjudicated before repair, and close every major weakness with evidence-backed repair, regression checks, and targeted rereview.
-
-The default target is `full`. Use `short` only when the user explicitly asks for a short or quick draft; even short runs must pass minimum discovery and evidence checks.
-
-## Survey-Type Defaults
-
-- `system-object`: components/interfaces/lifecycle/evaluation; use component dossiers only for this type or when selected as a secondary lens.
-- `method-family`: assumptions, method families, evaluation metrics, applications, and limitations.
-- `benchmark/evaluation`: capabilities, protocols, metrics, baselines, confounders, and missing tests.
-- `risk/threat`: assets, threat model, attack surface, defenses, evaluation, and governance gaps.
-- `application-domain`: domain tasks, data, workflows, methods, deployment constraints, and evaluation.
-
-Hybrid topics must choose one primary type and explicit secondary lenses in `state/survey_type_plan.yml`.
+- Expert review scoring, adjudication, repair routing, and release criteria: `references/expert_gate_contract.md`.
+- CSUR style: `references/csur_patterns.md` and `references/csur_official_exemplars.yml`.
 
 ## Article Boundary
 
-`review.md` must not include:
+`survey_candidate.md` and final `survey.md` must not expose workflow internals: survey-type routing labels, A/B/C labels, run counts, state-file names, gate names, paper IDs such as `P001`, repair notes, reviewer comments, or scaffold phrases. Search protocol, coverage tables, and evidence logistics belong in `outputs/appendix.md` or `outputs/final_report.md`.
 
-- survey-type routing labels or internal template decisions;
-- A/B/C evidence labels, run counts, search routes, or candidate counts;
-- state-file names, gate names, extraction-card fields, repair notes, or workflow commentary;
-- phrasing such as "本文采用 system-object survey 的结构", "本节面向", "下面的表", "该工作在本文中被读作", "好的综述", or equivalent scaffold language.
+## Completion
 
-Transparent search protocol, broad coverage tables, and evidence logistics belong in `outputs/appendix.md` or `outputs/final_report.md`, not in the article body.
+Call the survey complete only when `outputs/release_manifest.json` has `released: true` and hashes matching the current candidate plus final `survey.md/html`. Otherwise call it a candidate, draft, blocked run, or automatic-check artifact.
 
-## Script Helpers
-
-- Initialize and monitor runs with `init_task.py`, heartbeat/patrol helpers, and the dashboard renderer.
-- Validate phase barriers with `phase_gate.py`; use `gate_check.py` only as the final summary.
-- Validate evidence and synthesis with the source, coverage, paper-understanding, claim-evidence, contribution-tree, scenario, dossier, argument, section-plan, and article-quality validators.
-- Run expert review with `run_expert_reviews.py` for freeze/dispatch/collect and `expert_review_gate.py` for final review closure.
-- Use scoring and bibliography helpers only for candidate triage and output cleanup.
-
-## Final Outputs
-
-Minimum full/CSUR outputs:
-
-- `outputs/review.md`
-- `outputs/appendix.md`
-- `outputs/references.bib`
-- `outputs/coverage_matrix.md`
-- `outputs/article_plan.md`
-- `outputs/final_report.md`
-
-CSUR runs additionally require CSUR exemplar notes and paragraph-style guidance recorded in state or appendix, but those notes must not leak into `review.md`.
+The default target is `full`. Use `short` only when the user explicitly asks for a short or quick draft; even short runs must pass the minimum discovery, source, and evidence gates.

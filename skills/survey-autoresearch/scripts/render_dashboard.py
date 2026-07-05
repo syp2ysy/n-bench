@@ -51,7 +51,9 @@ def render_dashboard(task_dir: Path, target: str | None = None) -> Path:
     selected_target = target or progress.get("target") or "full"
     gates = evaluate_gates(task_dir, selected_target)
     phase_barriers = gates.get("phase_barriers", {})
+    outputs = task_dir / "outputs"
     coverage = gates.get("gate_4_coverage", {})
+    phase_coverage = (((phase_barriers.get("phases") or {}).get("source_verification") or {}).get("details") or {}).get("coverage") or coverage
     gate_cards = []
     for key in [
         "gate_1_source_identity",
@@ -98,10 +100,17 @@ def render_dashboard(task_dir: Path, target: str | None = None) -> Path:
         f"<p class='muted'>last passed: {esc(phase_barriers.get('last_passed_phase'))}</p>"
         f"<p class='muted'>blocked by: {esc(phase_barriers.get('blocked_by_phase'))}</p>"
         f"<p class='muted'>allowed next: {esc(phase_barriers.get('allowed_next_phase'))}</p></div>"
+        f"<div class='card'><h3>Release</h3><p>completion: {esc(gates.get('completion_level'))}</p>"
+        f"<p class='muted'>survey complete: {esc(gates.get('survey_complete'))}</p>"
+        f"<p class='muted'>release allowed: {esc(gates.get('release_allowed'))}</p>"
+        f"<p class='muted'>candidate md: {esc((outputs / 'survey_candidate.md').exists())}</p>"
+        f"<p class='muted'>final md: {esc((outputs / 'survey.md').exists())}</p></div>"
         f"<div class='card'><h3>Discovery</h3><p class='muted'>raw candidates: {esc(coverage.get('raw_candidates', 0))}</p>"
         f"<p class='muted'>search routes: {esc(coverage.get('search_routes', 0))}</p>"
         f"<p class='muted'>related surveys: {esc(coverage.get('related_surveys', 0))}</p>"
-        f"<p class='muted'>corpus expansion: {esc(coverage.get('corpus_expansion_status'))}</p></div>"
+        f"<p class='muted'>corpus expansion: {esc(coverage.get('corpus_expansion_status'))}</p>"
+        f"<p class='muted'>retained coverage ready: {esc(not bool(phase_coverage.get('retained_missing')))}</p>"
+        f"<p class='muted'>coverage blockers: {esc(', '.join(phase_coverage.get('retained_missing') or []))}</p></div>"
         "</div>"
         f"<div class='grid'>{''.join(gate_cards)}</div>"
         f"<h2>Blocking Gates</h2><div class='{ 'pass' if gates.get('all_blocking_gates_passed') else 'fail' }'>"

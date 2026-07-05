@@ -59,6 +59,7 @@ def validate_section_evidence_plans(plans: list[dict], argument_graph, article_p
     article_sections = _article_sections(article_plan)
     card_ids = {str(card.get("paper_id")) for card in mechanism_cards if card.get("paper_id")}
     claim_ids = {str(claim.get("claim_id") or claim.get("id")) for claim in claims if claim.get("claim_id") or claim.get("id")}
+    claims_by_id = {str(claim.get("claim_id") or claim.get("id")): claim for claim in claims if claim.get("claim_id") or claim.get("id")}
     by_title = {str(plan.get("title")): plan for plan in plans if plan.get("title")}
     errors: list[str] = []
     invalid: dict[str, list[str]] = {}
@@ -76,12 +77,19 @@ def validate_section_evidence_plans(plans: list[dict], argument_graph, article_p
         node_id = str(plan.get("argument_node") or "")
         if nodes and node_id not in nodes:
             item_errors.append("unknown_argument_node")
+        node = nodes.get(node_id, {}) if isinstance(nodes, dict) else {}
         anchor_papers = [str(pid) for pid in plan.get("anchor_papers") or []]
+        supporting_papers = [str(pid) for pid in plan.get("supporting_papers") or []]
+        planned_papers = set(anchor_papers + supporting_papers)
         if not anchor_papers and not _nonempty(plan.get("explicit_reason_no_anchor")):
             item_errors.append("missing_anchor_papers")
-        unknown_papers = [pid for pid in anchor_papers + [str(pid) for pid in plan.get("supporting_papers") or []] if pid and pid not in card_ids]
+        unknown_papers = [pid for pid in anchor_papers + supporting_papers if pid and pid not in card_ids]
         if unknown_papers:
             item_errors.append("unknown_papers:" + ",".join(sorted(set(unknown_papers))))
+        node_families = {str(value).lower() for value in (node.get("method_family_links") or []) if str(value).strip()}
+        for family in [str(value).strip() for value in plan.get("method_families_used") or [] if str(value).strip()]:
+            if node_families and family.lower() not in node_families:
+                item_errors.append(f"method_family_not_in_argument_node:{family}")
         section_kind = title.lower() + " " + " ".join(str(x).lower() for x in plan.get("method_families_used") or [])
         if any(term in section_kind for term in ["method", "family", "方法"]):
             if not _nonempty(plan.get("required_comparisons")):
@@ -93,6 +101,11 @@ def validate_section_evidence_plans(plans: list[dict], argument_graph, article_p
         missing_claims = [str(cid) for cid in plan.get("must_include_evidence_spans") or [] if str(cid) not in claim_ids]
         if missing_claims:
             item_errors.append("unknown_claim_spans:" + ",".join(missing_claims))
+        for claim_id in [str(cid) for cid in plan.get("must_include_evidence_spans") or [] if str(cid) in claims_by_id]:
+            claim = claims_by_id[claim_id]
+            claim_papers = {str(pid) for pid in claim.get("paper_ids") or claim.get("cited_paper_ids") or [] if str(pid)}
+            if claim_papers and planned_papers and not (claim_papers & planned_papers):
+                item_errors.append(f"claim_evidence_papers_not_anchored:{claim_id}")
         if item_errors:
             invalid[title] = item_errors
     return {

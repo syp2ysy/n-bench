@@ -14,6 +14,9 @@ REQUIRED_SCENARIO_FIELDS = [
     "typical_benchmarks",
     "unsuitable_claims",
     "evaluation_pressure",
+    "centrality",
+    "supporting_a_b_papers",
+    "why_in_scope",
 ]
 
 
@@ -86,7 +89,59 @@ def _nonempty(value) -> bool:
     return True
 
 
-def validate_scenario_definitions(definitions, target: str = "full") -> dict:
+def _paper_ids(mechanism_cards: list[dict] | None) -> set[str]:
+    return {str(card.get("paper_id")) for card in mechanism_cards or [] if card.get("paper_id")}
+
+
+def _cards_by_id(mechanism_cards: list[dict] | None) -> dict[str, dict]:
+    return {str(card.get("paper_id")): card for card in mechanism_cards or [] if card.get("paper_id")}
+
+
+def _text_blob(value) -> str:
+    if value is None:
+        return ""
+    if isinstance(value, str):
+        return value
+    if isinstance(value, dict):
+        return " ".join(_text_blob(v) for v in value.values())
+    if isinstance(value, (list, tuple, set)):
+        return " ".join(_text_blob(v) for v in value)
+    return str(value)
+
+
+def _scenario_supported_by_card(scenario: dict, card: dict) -> bool:
+    name = str(scenario.get("scenario") or scenario.get("context") or scenario.get("domain") or "").strip().lower()
+    if not name:
+        return False
+    links = [str(item).strip().lower() for item in scenario.get("scenario_links") or card.get("scenario_links") or []]
+    if name in links:
+        return True
+    anchors = {name}
+    for field in ["typical_benchmarks", "evaluation_settings", "benchmarks"]:
+        anchors.update(str(item).strip().lower() for item in _parse_list(scenario.get(field)))
+    searchable = _text_blob(
+        [
+            card.get("task_definition"),
+            card.get("benchmark_or_dataset"),
+            card.get("benchmark_or_environment"),
+            card.get("field_evidence_map"),
+            card.get("evidence_span_locations"),
+            card.get("evidence_spans"),
+            card.get("deep_read_notes"),
+        ]
+    ).lower()
+    return any(anchor and anchor in searchable for anchor in anchors)
+
+
+def _parse_list(value) -> list:
+    if value is None:
+        return []
+    if isinstance(value, list):
+        return value
+    return [value]
+
+
+def validate_scenario_definitions(definitions, target: str = "full", mechanism_cards: list[dict] | None = None) -> dict:
     data = parse_structured_text(definitions) if isinstance(definitions, str) else (definitions or {})
     scenarios = data.get("scenarios") or data.get("contexts") or data.get("domains") or []
     if not isinstance(scenarios, list):
@@ -94,6 +149,8 @@ def validate_scenario_definitions(definitions, target: str = "full") -> dict:
     errors: list[str] = []
     invalid: dict[str, list[str]] = {}
     min_count = 0 if target == "short" else 4
+    card_ids = _paper_ids(mechanism_cards)
+    cards_by_id = _cards_by_id(mechanism_cards)
     if len(scenarios) < min_count:
         errors.append("too_few_scenarios")
     for idx, scenario in enumerate(scenarios, start=1):
@@ -108,10 +165,32 @@ def validate_scenario_definitions(definitions, target: str = "full") -> dict:
             elif field == "typical_benchmarks":
                 if not _nonempty(scenario.get("typical_benchmarks") or scenario.get("evaluation_settings") or scenario.get("benchmarks")):
                     item_errors.append("missing_typical_benchmarks")
+            elif field == "supporting_a_b_papers":
+                supporting = [str(pid) for pid in scenario.get("supporting_a_b_papers") or []]
+                if not supporting:
+                    item_errors.append("missing_supporting_a_b_papers")
+                elif card_ids:
+                    unknown = [pid for pid in supporting if pid not in card_ids]
+                    if unknown:
+                        item_errors.append("unknown_supporting_a_b_papers:" + ",".join(unknown))
+                    unsupported = [
+                        pid
+                        for pid in supporting
+                        if pid in cards_by_id and not _scenario_supported_by_card(scenario, cards_by_id[pid])
+                    ]
+                    for pid in unsupported:
+                        item_errors.append(f"scenario_support_not_evidence_backed:{pid}")
+            elif field == "centrality":
+                centrality = str(scenario.get("centrality") or "").strip().lower()
+                if centrality not in {"core", "adjacent", "excluded"}:
+                    item_errors.append("invalid_centrality")
             elif field == "failure_risks":
                 continue
             elif not _nonempty(scenario.get(field)):
                 item_errors.append(f"missing_{field}")
+        centrality = str(scenario.get("centrality") or "").strip().lower()
+        if target in {"full", "csur"} and centrality == "core" and len(scenario.get("supporting_a_b_papers") or []) < 1:
+            item_errors.append("core_scenario_without_a_b_support")
         if not _nonempty(scenario.get("failure_risks") or scenario.get("risks") or scenario.get("confounders")):
             item_errors.append("missing_failure_risks")
         if item_errors:
