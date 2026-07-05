@@ -74,7 +74,7 @@ Important barriers:
 | Collect pending worker requests | `python3 scripts/task_queue.py --task-dir <run> --collect-pending` |
 | Record spawned worker session | `python3 scripts/task_queue.py --task-dir <run> --mark-spawned <request-id> --agent-id <session-id>` |
 | Record worker output | `python3 scripts/task_queue.py --task-dir <run> --record-agent-output <request-id> --output-file <file>` |
-| Validate gates | `python3 scripts/gate_engine.py --task-dir <run> --target <target> [--phase <phase>]` |
+| Validate or explain gates | `python3 scripts/gate_engine.py --task-dir <run> --target <target> [--phase <phase>|--explain]` |
 | Mirror paper cards | `python3 scripts/paper_card_store.py --task-dir <run> --mirror` |
 | Record review failures | `python3 scripts/failure_ledger.py --task-dir <run> --append-from-adjudication` |
 | Promote final survey | `python3 scripts/promote_survey_release.py --task-dir <run> --target <target>` |

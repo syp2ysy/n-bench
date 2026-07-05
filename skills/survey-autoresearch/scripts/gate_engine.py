@@ -75,14 +75,83 @@ def evaluate_phase(task_dir: Path, target: str, phase: str) -> dict:
     }
 
 
+def _errors_from_details(details: dict) -> list[str]:
+    errors: list[str] = []
+    nested = [details]
+    nested.extend(value for value in details.values() if isinstance(value, dict))
+    for item in nested:
+        for key in ["errors", "missing", "discovery_missing", "retained_missing", "source_missing"]:
+            value = item.get(key)
+            if isinstance(value, list):
+                errors.extend(str(entry) for entry in value if str(entry).strip())
+    return sorted(set(errors))
+
+
+def _recommended_commands(task_dir: Path, target: str, allowed_next_phase: str | None) -> list[str]:
+    task = str(task_dir)
+    commands = [
+        f"python3 scripts/runner.py --task-dir {task} --target {target} --run-until-complete",
+    ]
+    if allowed_next_phase in {
+        "topic_profile",
+        "discovery",
+        "topic_relevance_audit",
+        "topic_relevance_second_audit",
+        "paper_understanding",
+        "spawn_expert_reviewers",
+        "repair_with_evidence_check",
+        "targeted_rereview",
+    }:
+        commands.append(f"python3 scripts/task_queue.py --task-dir {task} --collect-pending")
+    commands.append(f"python3 scripts/gate_engine.py --task-dir {task} --target {target} --explain")
+    return commands
+
+
+def explain_blocker(task_dir: Path, target: str = "full") -> dict:
+    """Return a compact explanation of the current blocking gate and next public action."""
+    phase_status = evaluate_phase_barriers(task_dir, target)
+    gates = evaluate_gates(task_dir, target)
+    blocked_by = gates.get("blocked_by_phase") or phase_status.get("blocked_by_phase")
+    allowed_next = gates.get("allowed_next_phase") or phase_status.get("allowed_next_phase")
+    details = dict((phase_status.get("phases") or {}).get(blocked_by) or {})
+    errors = _errors_from_details(details)
+    status = "complete" if not blocked_by and gates.get("all_blocking_gates_passed") else "blocked"
+    return {
+        **status_envelope(
+            "gate_engine",
+            status,
+            next_action=allowed_next,
+            terminal=status == "complete",
+            blocked=status != "complete",
+            blocked_by_phase=blocked_by,
+            summary={
+                "target": target,
+                "allowed_next_phase": allowed_next,
+                "validator": details.get("validator"),
+                "error_count": len(errors),
+            },
+        ),
+        "target": target,
+        "allowed_next_phase": allowed_next,
+        "validator": details.get("validator"),
+        "errors": errors,
+        "details": details.get("details") or details,
+        "recommended_commands": _recommended_commands(task_dir, target, allowed_next),
+    }
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--task-dir", required=True, type=Path)
     parser.add_argument("--target", choices=["short", "full", "csur"], default="full")
     parser.add_argument("--phase", choices=PHASE_ORDER)
+    parser.add_argument("--explain", action="store_true")
     parser.add_argument("--output", type=Path)
     args = parser.parse_args()
-    result = evaluate_phase(args.task_dir, args.target, args.phase) if args.phase else evaluate_all(args.task_dir, args.target)
+    if args.explain:
+        result = explain_blocker(args.task_dir, args.target)
+    else:
+        result = evaluate_phase(args.task_dir, args.target, args.phase) if args.phase else evaluate_all(args.task_dir, args.target)
     result["schema_version"] = STATUS_SCHEMA_VERSION
     text = json.dumps(result, indent=2, sort_keys=True, ensure_ascii=False) + "\n"
     if args.output:
