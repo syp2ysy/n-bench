@@ -1709,22 +1709,34 @@ class SurveyAutoResearchContractTest(unittest.TestCase):
             self.assertEqual([row["request_type"] for row in pending["pending_requests"]], ["discovery"])
             request = pending["pending_requests"][0]
             self.assertIn("discovery_runtime_executor.py", request["record_command"])
+            batches = json.loads((task_dir / "state/discovery_batches.json").read_text(encoding="utf-8"))
+            self.assertGreaterEqual(len(batches["batches"]), 5)
 
-            mark_spawned(task_dir, request["request_id"], "discovery-agent-001")
-            output = {
-                "batch_id": request["batch_id"],
-                "status": "resolved",
-                "raw_candidates": self.raw_candidates(),
-                "search_routes": self.search_routes(),
-                "lqs_scores": self.lqs_scores(),
-                "corpus_expansion": self.corpus_expansion(),
-                "validator_results": [{"validator": "validate_discovery", "status": "passed"}],
-                "remaining_blockers": [],
-            }
-            output_file = Path(tmp) / "discovery-output.json"
-            output_file.write_text(json.dumps(output, sort_keys=True), encoding="utf-8")
-            recorded = record_agent_output(task_dir, request["request_id"], output_file)
-            self.assertEqual(recorded["status"], "result_recorded", recorded)
+            for idx in range(len(batches["batches"])):
+                self.assertEqual(mark_spawned(task_dir, request["request_id"], f"discovery-agent-{idx + 1:03d}")["status"], "spawned")
+                output = {
+                    "batch_id": request["batch_id"],
+                    "status": "resolved",
+                    "raw_candidates": self.raw_candidates(),
+                    "search_routes": self.search_routes(),
+                    "lqs_scores": self.lqs_scores(),
+                    "corpus_expansion": self.corpus_expansion(),
+                    "validator_results": [{"validator": "validate_discovery_route", "status": "passed"}],
+                    "remaining_blockers": [],
+                }
+                output_file = Path(tmp) / f"discovery-output-{idx}.json"
+                output_file.write_text(json.dumps(output, sort_keys=True), encoding="utf-8")
+                recorded = record_agent_output(task_dir, request["request_id"], output_file)
+                self.assertEqual(recorded["status"], "result_recorded", recorded)
+                status = run_survey_until_complete(task_dir, target="full", max_steps=5)
+                if idx == 0:
+                    self.assertEqual(read_jsonl(task_dir / "state/raw_candidates.jsonl"), [])
+                    self.assertEqual(status["next_action"], "spawn_discovery_agents", status)
+                if idx < len(batches["batches"]) - 1:
+                    pending = collect_pending(task_dir)
+                    self.assertEqual(pending["status"], "pending_spawn", pending)
+                    request = pending["pending_requests"][0]
+
             self.assertGreaterEqual(len(read_jsonl(task_dir / "state/raw_candidates.jsonl")), 200)
             self.assertEqual(len(read_jsonl(task_dir / "state/search_routes.jsonl")), 8)
             after = evaluate_phase_barriers(task_dir, "full")

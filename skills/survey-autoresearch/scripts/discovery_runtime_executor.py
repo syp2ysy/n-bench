@@ -21,6 +21,7 @@ except ImportError:  # pragma: no cover
 
 COMPONENT = "discovery_runtime_executor"
 RESULT_SCHEMA_VERSION = 1
+DISCOVERY_ROUTE_PLAN_VERSION = 2
 REQUIRED_RESULT_KEYS = ["batch_id", "status", "raw_candidates", "search_routes", "lqs_scores", "corpus_expansion", "validator_results", "remaining_blockers"]
 VALID_RESULT_STATUSES = {"resolved", "partially_resolved", "blocked"}
 
@@ -92,18 +93,91 @@ def _refresh_batch_statuses(doc: dict) -> dict:
     return doc
 
 
+def _route_batches(target: str, topic_profile: dict) -> list[dict]:
+    seed_queries = [str(item) for item in topic_profile.get("search_seed_queries") or [] if str(item).strip()]
+    base = [
+        {
+            "batch_id": "D001",
+            "route_focus": "core positive-anchor keyword and snowball search",
+            "required_route_types": ["keyword", "snowball"],
+            "min_raw_candidates": 45,
+            "seed_queries": seed_queries[:4],
+        },
+        {
+            "batch_id": "D002",
+            "route_focus": "curated lists, benchmark pages, and venue-focused discovery",
+            "required_route_types": ["curated_list", "benchmark", "venue"],
+            "min_raw_candidates": 35,
+            "seed_queries": seed_queries[2:6],
+        },
+        {
+            "batch_id": "D003",
+            "route_focus": "directly related survey discovery and reference mining",
+            "required_route_types": ["related_survey_refs", "keyword"],
+            "min_raw_candidates": 30,
+            "min_related_surveys": 6 if target == "full" else 10,
+            "seed_queries": seed_queries[:6],
+        },
+        {
+            "batch_id": "D004",
+            "route_focus": "forward/backward snowballing around core systems, benchmarks, and author groups",
+            "required_route_types": ["snowball", "author_group"],
+            "min_raw_candidates": 45,
+            "seed_queries": seed_queries,
+        },
+        {
+            "batch_id": "D005",
+            "route_focus": "metadata enrichment, deduplication, corpus expansion audit, and gap-filling",
+            "required_route_types": ["keyword", "venue", "curated_list"],
+            "min_raw_candidates": 45,
+            "seed_queries": seed_queries,
+        },
+    ]
+    if target == "short":
+        return [
+            {
+                "batch_id": "D001",
+                "route_focus": "compact discovery over core positive anchors, related surveys, and one snowball pass",
+                "required_route_types": ["keyword", "snowball", "related_survey_refs", "curated_list"],
+                "min_raw_candidates": 50,
+                "min_related_surveys": 2,
+                "seed_queries": seed_queries,
+            }
+        ]
+    if target == "csur":
+        base.append(
+            {
+                "batch_id": "D006",
+                "route_focus": "CSUR-grade long-tail expansion across adjacent venues and recent surveys",
+                "required_route_types": ["venue", "related_survey_refs", "snowball"],
+                "min_raw_candidates": 120,
+                "min_related_surveys": 10,
+                "seed_queries": seed_queries,
+            }
+        )
+    return base
+
+
 def _prompt(task_dir: Path, batch: dict) -> str:
     topic_profile = _topic_profile(task_dir)
     return (
         "You are a high-recall discovery worker for survey-autoresearch.\n"
         "Use real search sources and return structured discovery state. Do not invent papers or counts.\n"
         "Follow the topic_profile exactly: positive anchors define core relevance; negative anchors define drift risks; allowed background cannot become A/B core.\n"
+        "This is one route-level discovery batch. Do not try to satisfy the full corpus alone; exhaust the assigned route, report blockers, and return only real records.\n"
         f"Task directory: {task_dir.resolve()}\n"
         f"Batch id: {batch.get('batch_id')}\n"
+        f"Route focus: {batch.get('route_focus')}\n"
+        f"Required route types: {json.dumps(batch.get('required_route_types') or [], ensure_ascii=False)}\n"
+        f"Minimum raw candidates for this route: {batch.get('min_raw_candidates')}\n"
+        f"Minimum related surveys for this route, when applicable: {batch.get('min_related_surveys') or 0}\n"
+        f"Seed queries for this route: {json.dumps(batch.get('seed_queries') or [], ensure_ascii=False)}\n"
+        f"Previous blockers for this route: {json.dumps(batch.get('last_blockers') or [], ensure_ascii=False)}\n"
         f"Task spec:\n{_task_spec(task_dir)}\n"
         f"Topic profile:\n{json.dumps(topic_profile, indent=2, sort_keys=True, ensure_ascii=False)}\n"
         f"Survey type plan:\n{_survey_type(task_dir)}\n"
-        "Return one JSON object with keys: batch_id, status, raw_candidates, search_routes, lqs_scores, corpus_expansion, validator_results, remaining_blockers."
+        "Return one JSON object with keys: batch_id, status, raw_candidates, search_routes, lqs_scores, corpus_expansion, validator_results, remaining_blockers. "
+        "For a resolved route batch, include a passed validator named validate_discovery_route or validate_discovery."
     )
 
 
@@ -118,6 +192,11 @@ def _spawn_request(task_dir: Path, batch: dict) -> dict:
         "batch_id": batch.get("batch_id"),
         "attempt": int(batch.get("attempt") or 1),
         "previous_blockers": batch.get("last_blockers") or [],
+        "route_focus": batch.get("route_focus"),
+        "required_route_types": batch.get("required_route_types") or [],
+        "min_raw_candidates": batch.get("min_raw_candidates"),
+        "min_related_surveys": batch.get("min_related_surveys") or 0,
+        "route_plan_version": DISCOVERY_ROUTE_PLAN_VERSION,
         "target": _target(task_dir),
         "task_spec": _task_spec(task_dir),
         "topic_profile": _topic_profile(task_dir),
@@ -169,14 +248,26 @@ def _write_runtime_action(task_dir: Path, doc: dict) -> dict:
 
 def prepare_discovery_batches(task_dir: Path) -> dict:
     state = _state(task_dir)
-    plan_hash = _stable_hash({"task_spec": _task_spec(task_dir), "topic_profile": _topic_profile(task_dir), "survey_type_plan": _survey_type(task_dir), "target": _target(task_dir)})
+    target = _target(task_dir)
+    route_plan = _route_batches(target, _topic_profile(task_dir))
+    plan_hash = _stable_hash(
+        {
+            "route_plan_version": DISCOVERY_ROUTE_PLAN_VERSION,
+            "task_spec": _task_spec(task_dir),
+            "topic_profile": _topic_profile(task_dir),
+            "survey_type_plan": _survey_type(task_dir),
+            "target": target,
+            "route_plan": route_plan,
+        }
+    )
     existing = read_json(state / "discovery_batches.json")
     if existing.get("plan_hash") == plan_hash and existing.get("batches"):
         doc = _refresh_batch_statuses(existing)
     else:
         doc = {
             "plan_hash": plan_hash,
-            "batches": [{"batch_id": "D001", "status": "pending_spawn"}],
+            "route_plan_version": DISCOVERY_ROUTE_PLAN_VERSION,
+            "batches": [{**batch, "status": "pending_spawn", "attempt": 1} for batch in route_plan],
         }
         doc = _refresh_batch_statuses(doc)
     doc = _with_metadata(doc)
@@ -192,7 +283,8 @@ def collect_discovery_status(task_dir: Path) -> dict:
             **status_envelope(COMPONENT, "not_prepared", next_action="prepare_discovery_batches", terminal=False, blocked=True, blocked_by_phase="discovery", summary={"batch_count": 0}),
             "batches": [],
         }
-    doc = _with_metadata(doc)
+    doc, _coverage = _finalize_discovery_if_ready(task_dir, doc, _utc_now())
+    doc = _with_metadata(_refresh_batch_statuses(doc))
     write_json(state / "discovery_batches.json", doc)
     all_resolved = all(batch.get("status") == "resolved" for batch in doc.get("batches") or [])
     return {
@@ -224,21 +316,8 @@ def _passed_validators(result: dict) -> set[str]:
     }
 
 
-def _validate_result(task_dir: Path, result: dict, batch: dict) -> list[str]:
+def _validate_result_payload(result: dict) -> tuple[list[str], list[dict], list[dict], list[dict], dict]:
     errors: list[str] = []
-    if not isinstance(result, dict):
-        return ["result_not_object"]
-    for key in REQUIRED_RESULT_KEYS:
-        if key not in result:
-            errors.append(f"missing_{key}")
-    if str(result.get("batch_id") or "") != str(batch.get("batch_id") or ""):
-        errors.append("batch_id_mismatch")
-    if str(result.get("status") or "") not in VALID_RESULT_STATUSES:
-        errors.append("invalid_status")
-    if result.get("status") != "resolved":
-        return sorted(set(errors))
-    if "validate_discovery" not in _passed_validators(result):
-        errors.append("missing_acceptance_validators")
     raw = result.get("raw_candidates")
     routes = result.get("search_routes")
     lqs = result.get("lqs_scores")
@@ -255,10 +334,182 @@ def _validate_result(task_dir: Path, result: dict, batch: dict) -> list[str]:
     if not isinstance(corpus, dict):
         errors.append("invalid_corpus_expansion")
         corpus = {}
-    coverage = validate_coverage(raw, routes, lqs, corpus, [], [], _target(task_dir))
-    if not coverage.get("discovery_sufficient"):
-        errors.append("discovery_not_sufficient")
+    return errors, raw, routes, lqs, corpus
+
+
+def _validate_result(task_dir: Path, result: dict, batch: dict) -> list[str]:
+    errors: list[str] = []
+    if not isinstance(result, dict):
+        return ["result_not_object"]
+    for key in REQUIRED_RESULT_KEYS:
+        if key not in result:
+            errors.append(f"missing_{key}")
+    if str(result.get("batch_id") or "") != str(batch.get("batch_id") or ""):
+        errors.append("batch_id_mismatch")
+    if str(result.get("status") or "") not in VALID_RESULT_STATUSES:
+        errors.append("invalid_status")
+    payload_errors, _raw, _routes, _lqs, _corpus = _validate_result_payload(result)
+    errors.extend(payload_errors)
+    if result.get("status") != "resolved":
+        return sorted(set(errors))
+    passed = _passed_validators(result)
+    if not ({"validate_discovery", "validate_discovery_route"} & passed):
+        errors.append("missing_acceptance_validators")
     return sorted(set(errors))
+
+
+def _norm_text(value) -> str:
+    return " ".join(str(value or "").strip().lower().split())
+
+
+def _dedupe_key(item: dict, fallback_prefix: str, idx: int) -> str:
+    for key in ["doi", "arxiv_id", "url", "canonical_url", "title", "route_id", "paper_id", "candidate_id", "query"]:
+        value = _norm_text(item.get(key))
+        if value:
+            return f"{key}:{value}"
+    return f"{fallback_prefix}:{idx}"
+
+
+def _merge_rows(rows: list[dict], fallback_prefix: str) -> list[dict]:
+    merged: dict[str, dict] = {}
+    for idx, item in enumerate(rows):
+        if not isinstance(item, dict):
+            continue
+        key = _dedupe_key(item, fallback_prefix, idx)
+        current = dict(merged.get(key) or {})
+        current.update({k: v for k, v in item.items() if v not in [None, "", [], {}]})
+        merged[key] = current
+    return list(merged.values())
+
+
+def _score_value(row: dict) -> float:
+    for key in ["lqs", "score", "relevance_score"]:
+        try:
+            return float(row.get(key))
+        except (TypeError, ValueError):
+            continue
+    return 0.0
+
+
+def _merge_lqs(rows: list[dict]) -> list[dict]:
+    merged: dict[str, dict] = {}
+    for idx, row in enumerate(rows):
+        if not isinstance(row, dict):
+            continue
+        key = str(row.get("paper_id") or row.get("candidate_id") or f"lqs:{idx}")
+        if key not in merged or _score_value(row) >= _score_value(merged[key]):
+            merged[key] = row
+    return list(merged.values())
+
+
+def _merge_corpus_expansion(corpora: list[dict], raw_count: int, route_count: int) -> dict:
+    def safe_int(value) -> int:
+        try:
+            return int(value or 0)
+        except (TypeError, ValueError):
+            return 0
+
+    statuses = [str(item.get("status") or "not_required") for item in corpora if isinstance(item, dict)]
+    blocked = []
+    summaries = []
+    for item in corpora:
+        if not isinstance(item, dict):
+            continue
+        blocked.extend(str(value) for value in item.get("blocked_limitations") or [] if str(value).strip())
+        summaries.append(
+            {
+                "status": item.get("status"),
+                "visible_external_count": item.get("visible_external_count"),
+                "retained_candidate_count": item.get("retained_candidate_count"),
+                "why_retained_corpus_is_sufficient": item.get("why_retained_corpus_is_sufficient"),
+            }
+        )
+    required = any(bool(item.get("required")) for item in corpora if isinstance(item, dict))
+    complete_like = {"complete", "not_required", ""}
+    status = "complete" if all(status in complete_like for status in statuses) else "in_progress"
+    return {
+        "required": required,
+        "status": status,
+        "visible_external_count": max([safe_int(item.get("visible_external_count")) for item in corpora if isinstance(item, dict)] + [raw_count]),
+        "largest_visible_external_count": max([safe_int(item.get("largest_visible_external_count") or item.get("visible_external_count")) for item in corpora if isinstance(item, dict)] + [raw_count]),
+        "retained_candidate_count": raw_count,
+        "search_route_count": route_count,
+        "curated_lists_checked": any(bool(item.get("curated_lists_checked")) for item in corpora if isinstance(item, dict)),
+        "recent_surveys_checked": any(bool(item.get("recent_surveys_checked")) for item in corpora if isinstance(item, dict)),
+        "why_retained_corpus_is_sufficient": "Merged from route-level discovery batches; full source/topic gates still verify retained corpus before paper reading.",
+        "batch_summaries": summaries,
+        "blocked_limitations": sorted(set(blocked)),
+    }
+
+
+def _latest_resolved_rows(task_dir: Path, doc: dict) -> list[dict]:
+    resolved_batch_ids = {str(batch.get("batch_id")) for batch in doc.get("batches") or [] if batch.get("status") == "resolved"}
+    latest: dict[str, dict] = {}
+    for row in reversed(read_jsonl(_state(task_dir) / "discovery_results.jsonl")):
+        batch_id = str(row.get("batch_id") or "")
+        if batch_id in resolved_batch_ids and batch_id not in latest and row.get("status") == "resolved":
+            latest[batch_id] = row
+    return [latest[batch_id] for batch_id in sorted(latest)]
+
+
+def _merged_discovery_payload(task_dir: Path, doc: dict) -> tuple[dict, dict]:
+    rows = _latest_resolved_rows(task_dir, doc)
+    raw = _merge_rows([item for row in rows for item in row.get("raw_candidates") or []], "raw")
+    routes = _merge_rows([item for row in rows for item in row.get("search_routes") or []], "route")
+    lqs = _merge_lqs([item for row in rows for item in row.get("lqs_scores") or []])
+    corpus = _merge_corpus_expansion([row.get("corpus_expansion") or {} for row in rows], len(raw), len(routes))
+    coverage = validate_coverage(raw, routes, lqs, corpus, [], [], _target(task_dir))
+    return {
+        "raw_candidates": raw,
+        "search_routes": routes,
+        "lqs_scores": lqs,
+        "corpus_expansion": corpus,
+    }, coverage
+
+
+def _ensure_enrichment_batch(doc: dict, blockers: list[str], recorded_at: str) -> None:
+    batch = next((item for item in doc.get("batches") or [] if item.get("batch_id") == "D999"), None)
+    if batch is None:
+        doc.setdefault("batches", []).append(
+            {
+                "batch_id": "D999",
+                "route_focus": "final coverage enrichment for unresolved discovery gaps",
+                "required_route_types": ["keyword", "snowball", "related_survey_refs", "curated_list", "venue", "benchmark", "author_group"],
+                "min_raw_candidates": 25,
+                "status": "pending_spawn",
+                "attempt": 1,
+                "last_blockers": blockers,
+                "created_at": recorded_at,
+            }
+        )
+        return
+    batch["status"] = "pending_spawn"
+    batch["attempt"] = int(batch.get("attempt") or 1) + 1
+    batch["last_blockers"] = blockers
+    batch["last_blocked_at"] = recorded_at
+
+
+def _finalize_discovery_if_ready(task_dir: Path, doc: dict, recorded_at: str) -> tuple[dict, dict | None]:
+    if not doc.get("batches") or not all(batch.get("status") == "resolved" for batch in doc.get("batches") or []):
+        return doc, None
+    payload, coverage = _merged_discovery_payload(task_dir, doc)
+    if not coverage.get("discovery_sufficient"):
+        blockers = coverage.get("discovery_missing") or coverage.get("missing") or ["discovery_not_sufficient_after_merge"]
+        _ensure_enrichment_batch(doc, blockers, recorded_at)
+        return doc, coverage
+    state = _state(task_dir)
+    write_jsonl(state / "raw_candidates.jsonl", payload["raw_candidates"])
+    write_jsonl(state / "search_routes.jsonl", payload["search_routes"])
+    write_jsonl(state / "lqs_scores.jsonl", payload["lqs_scores"])
+    write_json(state / "corpus_expansion.json", payload["corpus_expansion"])
+    doc["merged_at"] = recorded_at
+    doc["merged_coverage"] = coverage
+    doc["merged_counts"] = {
+        "raw_candidates": len(payload["raw_candidates"]),
+        "search_routes": len(payload["search_routes"]),
+        "lqs_scores": len(payload["lqs_scores"]),
+    }
+    return doc, coverage
 
 
 def record_discovery_result(task_dir: Path, result: dict, subagent_session_id: str) -> dict:
@@ -277,10 +528,6 @@ def record_discovery_result(task_dir: Path, result: dict, subagent_session_id: s
     row = {**result, "fresh_context": True, "subagent_session_id": subagent_session_id, "recorded_at": recorded_at}
     write_jsonl(state / "discovery_results.jsonl", read_jsonl(state / "discovery_results.jsonl") + [row])
     if result.get("status") == "resolved":
-        write_jsonl(state / "raw_candidates.jsonl", result.get("raw_candidates") or [])
-        write_jsonl(state / "search_routes.jsonl", result.get("search_routes") or [])
-        write_jsonl(state / "lqs_scores.jsonl", result.get("lqs_scores") or [])
-        write_json(state / "corpus_expansion.json", result.get("corpus_expansion") or {})
         batch["status"] = "resolved"
         batch["resolved_at"] = recorded_at
         batch["subagent_session_id"] = subagent_session_id
@@ -290,10 +537,16 @@ def record_discovery_result(task_dir: Path, result: dict, subagent_session_id: s
         batch["last_blocked_at"] = recorded_at
         batch["last_blockers"] = result.get("remaining_blockers") or []
         batch["last_status"] = str(result.get("status") or "")
+    doc, coverage = _finalize_discovery_if_ready(task_dir, doc, recorded_at)
     doc = _with_metadata(_refresh_batch_statuses(doc))
     write_json(state / "discovery_batches.json", doc)
     _write_runtime_action(task_dir, doc)
-    return {"status": "recorded", "batch_id": batch_id, "next_active_batch_id": doc.get("active_batch_id")}
+    return {
+        "status": "recorded",
+        "batch_id": batch_id,
+        "next_active_batch_id": doc.get("active_batch_id"),
+        "merged_discovery_sufficient": None if coverage is None else bool(coverage.get("discovery_sufficient")),
+    }
 
 
 def main() -> int:

@@ -52,7 +52,7 @@ Run `scripts/gate_engine.py --task-dir <run> --target <target> --phase <phase>` 
 
 Important barriers:
 
-- Discovery is worker-produced when starting from an empty run. The worker returns real `raw_candidates`, `search_routes`, `lqs_scores`, and `corpus_expansion`; Python validates sufficiency but does not invent papers.
+- Discovery is worker-produced when starting from an empty run. Full/CSUR discovery is split into route-level worker batches; Python records each real route result, merges/deduplicates them only after all active route batches resolve, and then validates sufficiency. It must not invent papers.
 - Topic profile is worker-produced before discovery. It defines positive anchors, negative anchors, allowed background, seed queries, and acceptance rubrics; discovery should follow that boundary rather than searching from the raw topic string alone.
 - Source verification is not just DOI or metadata verification. Full and CSUR runs require worker-produced `state/topic_relevance_audit.jsonl` before A/B full-text reading.
 - High-risk A/B core topic decisions require independent worker second audit in `state/topic_relevance_second_audits.jsonl`.

@@ -73,6 +73,7 @@ Rules:
 - Discovery sufficiency is a hard predecessor to source verification and paper understanding.
 - Source verification is not just DOI/metadata verification. Full and CSUR runs must have a worker-produced `state/topic_relevance_audit.jsonl` before A/B full-text reading begins.
 - Full and CSUR runs must record enough raw candidates, search routes, related surveys, and corpus-expansion status before selecting A/B/C papers.
+- Full and CSUR discovery should be route-level: keyword/snowball, curated-list/benchmark/venue, related-survey mining, author-group snowballing, and final enrichment can be separate worker batches. Only the merged and deduplicated route results are canonical discovery state.
 - Every retained paper in `state/papers.jsonl` must have `source_candidate_id` linking back to `state/raw_candidates.jsonl`.
 - Every raw candidate, retained paper, and A/B paper must have a topic audit record. Missing audit coverage blocks source verification with `topic_relevance_audit`.
 - A/B papers must be `core`, or a small explicitly allowed number of `direct_related_survey` records; `generic_background` and `out_of_scope` records cannot be A/B.
