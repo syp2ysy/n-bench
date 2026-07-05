@@ -42,7 +42,11 @@ def _stable_hash(value) -> str:
 
 
 def _paper_id(row: dict) -> str:
-    return str(row.get("paper_id") or "").strip()
+    for key in ["paper_id", "arxiv_id", "doi", "url", "candidate_id", "title"]:
+        value = str((row or {}).get(key) or "").strip()
+        if value:
+            return value
+    return ""
 
 
 def _read_survey_type(task_dir: Path) -> str:
@@ -58,6 +62,7 @@ def _candidate_records(task_dir: Path) -> dict[str, dict]:
         if not pid:
             continue
         records[pid] = {**row, **papers.get(pid, {})}
+        records[pid].setdefault("paper_id", pid)
         records[pid].setdefault("candidate_id", row.get("candidate_id"))
     return records
 

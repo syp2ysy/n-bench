@@ -16,11 +16,11 @@ from pathlib import Path
 try:  # pragma: no cover - script import fallback
     from .run_expert_reviews import read_json, read_jsonl, write_json, write_jsonl
     from .status_schema import STATUS_SCHEMA_VERSION, status_envelope
-    from .validate_coverage import validate_coverage
+    from .validate_coverage import VALID_ROUTE_TYPES, validate_coverage
 except ImportError:  # pragma: no cover
     from run_expert_reviews import read_json, read_jsonl, write_json, write_jsonl
     from status_schema import STATUS_SCHEMA_VERSION, status_envelope
-    from validate_coverage import validate_coverage
+    from validate_coverage import VALID_ROUTE_TYPES, validate_coverage
 
 
 COMPONENT = "discovery_runtime_executor"
@@ -669,6 +669,8 @@ def collect_discovery_status(task_dir: Path) -> dict:
     payload, current_coverage = _merged_discovery_payload(task_dir, doc)
     if payload.get("raw_candidates"):
         blockers = current_coverage.get("discovery_missing") or current_coverage.get("missing") or []
+        if current_coverage.get("discovery_sufficient"):
+            _retire_enrichment_after_discovery_sufficient(doc, recorded_at)
         _retire_obsolete_raw_enrichment_retries(task_dir, doc, blockers, recorded_at)
     doc, _coverage = _finalize_discovery_if_ready(task_dir, doc, recorded_at)
     doc = _with_metadata(_refresh_batch_statuses(doc))
@@ -725,6 +727,26 @@ def _validate_result_payload(result: dict) -> tuple[list[str], list[dict], list[
     return errors, raw, routes, lqs, corpus
 
 
+def _normalize_result_for_batch(result: dict, batch: dict) -> tuple[dict, list[str]]:
+    result = dict(result or {})
+    warnings: list[str] = []
+    routes = result.get("search_routes")
+    if not isinstance(routes, list):
+        return result, warnings
+    invalid = [
+        str(route.get("route_type") or "")
+        for route in routes
+        if isinstance(route, dict) and str(route.get("route_type") or "") not in VALID_ROUTE_TYPES
+    ]
+    if batch.get("uses_existing_candidates") and invalid:
+        result["search_routes"] = [
+            route for route in routes
+            if not isinstance(route, dict) or str(route.get("route_type") or "") in VALID_ROUTE_TYPES
+        ]
+        warnings.append("filtered_invalid_scoring_audit_routes:" + ",".join(sorted(set(invalid))))
+    return result, warnings
+
+
 def _validate_result(task_dir: Path, result: dict, batch: dict) -> list[str]:
     errors: list[str] = []
     if not isinstance(result, dict):
@@ -736,10 +758,19 @@ def _validate_result(task_dir: Path, result: dict, batch: dict) -> list[str]:
         errors.append("batch_id_mismatch")
     if str(result.get("status") or "") not in VALID_RESULT_STATUSES:
         errors.append("invalid_status")
-    payload_errors, _raw, _routes, _lqs, _corpus = _validate_result_payload(result)
+    payload_errors, _raw, routes, _lqs, _corpus = _validate_result_payload(result)
     errors.extend(payload_errors)
     if result.get("status") != "resolved":
         return sorted(set(errors))
+    invalid_route_types = sorted(
+        {
+            str(route.get("route_type") or "")
+            for route in routes
+            if isinstance(route, dict) and str(route.get("route_type") or "") not in VALID_ROUTE_TYPES
+        }
+    )
+    if invalid_route_types:
+        errors.append("invalid_search_route_types:" + ",".join(invalid_route_types))
     passed = _passed_validators(result)
     if not ({"validate_discovery", "validate_discovery_route"} & passed):
         errors.append("missing_acceptance_validators")
@@ -1077,6 +1108,23 @@ def _retire_obsolete_raw_enrichment_retries(task_dir: Path, doc: dict, blockers:
     return changed
 
 
+def _retire_enrichment_after_discovery_sufficient(doc: dict, recorded_at: str) -> bool:
+    changed = False
+    for batch in doc.get("batches") or []:
+        batch_id = str(batch.get("batch_id") or "")
+        if (
+            batch_id.startswith("D999")
+            and not _batch_terminal(batch)
+            and str(batch.get("status") or "") in {"pending_spawn", "blocked_by_upstream", "blocked", "partially_resolved", ""}
+        ):
+            batch["status"] = "superseded"
+            batch["superseded_by"] = "discovery_sufficient"
+            batch["superseded_at"] = recorded_at
+            batch["superseded_reason"] = "merged discovery already satisfies discovery thresholds; retained/source gates will handle downstream selection"
+            changed = True
+    return changed
+
+
 def _finalize_discovery_if_ready(task_dir: Path, doc: dict, recorded_at: str) -> tuple[dict, dict | None]:
     if not doc.get("batches") or not all(_batch_terminal(batch) for batch in doc.get("batches") or []):
         return doc, None
@@ -1109,11 +1157,14 @@ def record_discovery_result(task_dir: Path, result: dict, subagent_session_id: s
         return {"status": "invalid", "error": "unknown_batch_id"}
     if batch_id != str(doc.get("active_batch_id") or ""):
         return {"status": "invalid", "error": "batch_blocked_by_upstream"}
+    result, normalization_warnings = _normalize_result_for_batch(result, batch)
     errors = _validate_result(task_dir, result, batch)
     if errors:
         return {"status": "invalid", "error": "invalid_discovery_result", "errors": errors}
     recorded_at = _utc_now()
     row = {**result, "fresh_context": True, "subagent_session_id": subagent_session_id, "recorded_at": recorded_at}
+    if normalization_warnings:
+        row["normalization_warnings"] = normalization_warnings
     write_jsonl(state / "discovery_results.jsonl", read_jsonl(state / "discovery_results.jsonl") + [row])
     if result.get("status") == "resolved":
         batch["status"] = "resolved"

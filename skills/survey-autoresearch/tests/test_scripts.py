@@ -2062,6 +2062,43 @@ class SurveyAutoResearchContractTest(unittest.TestCase):
             self.assertEqual(scoring["max_search_queries"], 0)
             self.assertEqual(scoring["seed_queries"], [])
 
+    def test_scoring_result_filters_invalid_audit_route_type(self):
+        from scripts.discovery_runtime_executor import _normalize_result_for_batch, _validate_result
+
+        result = {
+            "batch_id": "D999S",
+            "status": "resolved",
+            "raw_candidates": [],
+            "search_routes": [
+                {"route_id": "audit", "route_type": "scoring_audit"},
+                {"route_id": "keyword", "route_type": "keyword"},
+            ],
+            "lqs_scores": [],
+            "corpus_expansion": {"status": "complete"},
+            "validator_results": [{"validator": "validate_discovery_route", "status": "passed"}],
+            "remaining_blockers": [],
+        }
+        normalized, warnings = _normalize_result_for_batch(result, {"batch_id": "D999S", "uses_existing_candidates": True})
+        self.assertEqual([route["route_type"] for route in normalized["search_routes"]], ["keyword"])
+        self.assertTrue(warnings)
+        self.assertNotIn("invalid_search_route_types", "\n".join(_validate_result(Path("/tmp"), normalized, {"batch_id": "D999S"})))
+
+    def test_regular_discovery_result_rejects_invalid_route_type(self):
+        from scripts.discovery_runtime_executor import _validate_result
+
+        result = {
+            "batch_id": "D001",
+            "status": "resolved",
+            "raw_candidates": [],
+            "search_routes": [{"route_id": "audit", "route_type": "scoring_audit"}],
+            "lqs_scores": [],
+            "corpus_expansion": {},
+            "validator_results": [{"validator": "validate_discovery_route", "status": "passed"}],
+            "remaining_blockers": [],
+        }
+        errors = _validate_result(Path("/tmp"), result, {"batch_id": "D001"})
+        self.assertIn("invalid_search_route_types:scoring_audit", errors)
+
     def test_corpus_expansion_merge_treats_resolved_route_audits_as_complete(self):
         from scripts.discovery_runtime_executor import _merge_corpus_expansion
 
@@ -2153,6 +2190,58 @@ class SurveyAutoResearchContractTest(unittest.TestCase):
             spawn_requests = json.loads((state / "discovery_spawn_requests.json").read_text(encoding="utf-8"))["spawn_requests"]
             self.assertEqual(spawn_requests[0]["batch_id"], "D999S")
             self.assertTrue(spawn_requests[0]["existing_raw_candidates"])
+
+    def test_discovery_sufficient_supersedes_pending_enrichment_retry(self):
+        from scripts.discovery_runtime_executor import collect_discovery_status
+
+        with tempfile.TemporaryDirectory() as tmp:
+            task_dir = initialize_task(Path(tmp), "sufficient discovery with stale retry", target="full")
+            self.write_topic_profile(task_dir, topic="mllm think with image")
+            state = task_dir / "state"
+            raw = self.raw_candidates(total=220, related_surveys=8)
+            write_jsonl(
+                state / "discovery_results.jsonl",
+                [
+                    {
+                        "batch_id": "D999S",
+                        "status": "resolved",
+                        "raw_candidates": raw,
+                        "search_routes": self.search_routes(),
+                        "lqs_scores": self.lqs_scores(total=220),
+                        "corpus_expansion": {
+                            "required": True,
+                            "status": "complete",
+                            "visible_external_count": 220,
+                            "retained_candidate_count": 220,
+                            "curated_lists_checked": ["fixture"],
+                            "recent_surveys_checked": ["fixture"],
+                            "why_retained_corpus_is_sufficient": "Fixture discovery is sufficient.",
+                        },
+                        "validator_results": [{"validator": "validate_discovery", "status": "passed"}],
+                        "remaining_blockers": [],
+                        "subagent_session_id": "fixture",
+                    }
+                ],
+            )
+            (state / "discovery_batches.json").write_text(
+                json.dumps(
+                    {
+                        "batches": [
+                            {"batch_id": "D999S", "status": "resolved"},
+                            {"batch_id": "D999C5", "status": "pending_spawn", "retry_of": "D999C"},
+                        ]
+                    },
+                    sort_keys=True,
+                ),
+                encoding="utf-8",
+            )
+            status = collect_discovery_status(task_dir)
+            batches = {batch["batch_id"]: batch for batch in status["batches"]}
+            self.assertEqual(batches["D999C5"]["status"], "superseded")
+            self.assertEqual(batches["D999C5"]["superseded_by"], "discovery_sufficient")
+            self.assertTrue(status["all_batches_resolved"])
+            self.assertTrue((state / "raw_candidates.jsonl").exists())
+            self.assertGreaterEqual(len(read_jsonl(state / "raw_candidates.jsonl")), 200)
 
     def test_pending_discovery_enrichment_clears_stale_resolved_metadata(self):
         from scripts.discovery_runtime_executor import _ensure_enrichment_batch
@@ -3139,6 +3228,31 @@ class SurveyAutoResearchContractTest(unittest.TestCase):
             self.assertTrue(
                 all(row.get("subagent_session_id") == "topic-agent-001" for row in recorded_audits if row["paper_id"] in set(active["paper_ids"]))
             )
+
+    def test_topic_relevance_prepare_uses_raw_candidates_without_paper_ids(self):
+        from scripts.topic_relevance_runtime_executor import prepare_topic_relevance_batches
+
+        with tempfile.TemporaryDirectory() as tmp:
+            task_dir = initialize_task(Path(tmp), "raw candidate topic audit", target="full")
+            state = task_dir / "state"
+            write_jsonl(
+                state / "raw_candidates.jsonl",
+                [
+                    {
+                        "candidate_id": "cand-raw-001",
+                        "arxiv_id": "2501.00001v1",
+                        "title": "Visual Scratchpad for Multimodal Reasoning",
+                        "abstract": "A visual workspace method for multimodal reasoning.",
+                        "url": "https://arxiv.org/abs/2501.00001",
+                    }
+                ],
+            )
+            status = prepare_topic_relevance_batches(task_dir)
+            self.assertEqual(status["status"], "blocked_topic_relevance_agent_spawn_required", status)
+            self.assertEqual(status["active_batch_id"], "TR001")
+            request = status["spawn_requests"][0]
+            self.assertEqual(request["paper_ids"], ["2501.00001v1"])
+            self.assertEqual(request["candidate_records"][0]["paper_id"], "2501.00001v1")
 
     def test_topic_relevance_rebalance_uses_audited_replacement_pool(self):
         from scripts.rebalance_ab_selection import rebalance_ab_selection
