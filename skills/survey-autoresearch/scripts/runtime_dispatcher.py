@@ -17,6 +17,7 @@ try:  # pragma: no cover - script import fallback
     from .paper_understanding_runtime_executor import record_paper_understanding_result
     from .run_expert_reviews import read_json, read_jsonl, write_json, write_jsonl
     from .status_schema import status_envelope
+    from .topic_profile import record_topic_profile_result
     from .topic_relevance_runtime_executor import record_topic_relevance_result, record_topic_relevance_second_audit_result
 except ImportError:  # pragma: no cover
     from discovery_runtime_executor import record_discovery_result
@@ -25,6 +26,7 @@ except ImportError:  # pragma: no cover
     from paper_understanding_runtime_executor import record_paper_understanding_result
     from run_expert_reviews import read_json, read_jsonl, write_json, write_jsonl
     from status_schema import status_envelope
+    from topic_profile import record_topic_profile_result
     from topic_relevance_runtime_executor import record_topic_relevance_result, record_topic_relevance_second_audit_result
 
 
@@ -64,6 +66,8 @@ def _active_intent(task_dir: Path) -> dict:
 
 
 def _record_command(task_dir: Path, request_type: str) -> str:
+    if request_type == "topic_profile":
+        return f"python3 scripts/topic_profile.py --task-dir {task_dir.resolve()} --record-result <result.json> --subagent-session-id <subagent-session-id>"
     if request_type == "discovery":
         return f"python3 scripts/discovery_runtime_executor.py --task-dir {task_dir.resolve()} --record-result <result.json> --subagent-session-id <subagent-session-id>"
     if request_type == "topic_relevance":
@@ -84,6 +88,8 @@ def _record_command(task_dir: Path, request_type: str) -> str:
 
 
 def _request_type(source_file: str, next_action: str, request: dict) -> str:
+    if source_file.endswith("topic_profile_spawn_requests.json"):
+        return "topic_profile"
     if source_file.endswith("discovery_spawn_requests.json"):
         return "discovery"
     if source_file.endswith("topic_relevance_spawn_requests.json"):
@@ -106,6 +112,7 @@ def _source_requests(task_dir: Path, intent: dict) -> list[dict]:
     allowed_types = set(intent.get("allowed_request_types") or [])
     phase_generation = str(intent.get("phase_generation") or "")
     sources = [
+        ("state/topic_profile_spawn_requests.json", read_json(state / "topic_profile_spawn_requests.json")),
         ("state/discovery_spawn_requests.json", read_json(state / "discovery_spawn_requests.json")),
         ("state/topic_relevance_spawn_requests.json", read_json(state / "topic_relevance_spawn_requests.json")),
         ("state/paper_understanding_spawn_requests.json", read_json(state / "paper_understanding_spawn_requests.json")),
@@ -392,6 +399,8 @@ def _unavailable_paper_ids(result: dict) -> list[str]:
 
 def _route_result(task_dir: Path, row: dict, result: dict, subagent_session_id: str) -> dict:
     request_type = row.get("request_type")
+    if request_type == "topic_profile":
+        return record_topic_profile_result(task_dir, result, subagent_session_id)
     if request_type == "discovery":
         return record_discovery_result(task_dir, result, subagent_session_id)
     if request_type == "topic_relevance":

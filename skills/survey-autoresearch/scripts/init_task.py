@@ -25,6 +25,7 @@ STATE_FILES = [
     "topic_relevance_audit.jsonl",
     "topic_relevance_second_audits.jsonl",
     "topic_relevance_results.jsonl",
+    "topic_profile_results.jsonl",
     "paper_mechanism_cards.jsonl",
     "full_text_sources.jsonl",
     "paper_contribution_statements.jsonl",
@@ -50,6 +51,8 @@ STATE_FILES = [
     "regression_checks.jsonl",
     "gate7_regression_requests.jsonl",
     "targeted_rereview_reports.jsonl",
+    "tasks.jsonl",
+    "failure_ledger.jsonl",
 ]
 
 LOG_FILES = [
@@ -98,11 +101,19 @@ def initialize_task(
     state.mkdir(parents=True, exist_ok=True)
     logs.mkdir(parents=True, exist_ok=True)
     outputs.mkdir(parents=True, exist_ok=True)
+    (state / "paper_cards").mkdir(exist_ok=True)
 
     now = utc_now()
     (state / "task_spec.md").write_text(
         f"# Task Spec\n\nTopic: {topic}\nTarget: {target}\nOutput mode: {output_mode}\n",
         encoding="utf-8",
+    )
+    write_json(
+        state / "topic_profile_spawn_requests.json",
+        {
+            "next_action": None,
+            "spawn_requests": [],
+        },
     )
     (state / "survey_type_plan.yml").write_text("", encoding="utf-8")
     (state / "scenario_definitions.yml").write_text("", encoding="utf-8")
@@ -139,6 +150,30 @@ def initialize_task(
             "gate_6_article_quality": False,
             "gate_7_expert_review": False,
             "final_survey_status": False,
+        },
+    )
+    write_json(
+        state / "run_state.json",
+        {
+            "schema_version": STATUS_SCHEMA_VERSION,
+            "component": "run_state",
+            "target": target,
+            "topic": topic,
+            "status": "initialized",
+            "workflow": {
+                "public_entrypoint": "runner.py",
+                "legacy_driver": "survey_driver.py",
+                "queue": "tasks.jsonl",
+            },
+            "research_assets": {
+                "topic_profile": {"canonical": "state/topic_profile.json", "status": "missing"},
+                "paper_cards": {"canonical": "state/paper_cards", "status": "empty"},
+                "knowledge_tree": {"canonical": "outputs/knowledge_tree.yml", "status": "missing"},
+                "spine_decision": {"canonical": "state/spine_decision.md", "status": "missing"},
+                "failure_ledger": {"canonical": "state/failure_ledger.jsonl", "status": "empty"},
+            },
+            "created_at": now,
+            "updated_at": now,
         },
     )
     discovery_summary = {

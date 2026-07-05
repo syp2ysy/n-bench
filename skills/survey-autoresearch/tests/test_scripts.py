@@ -1610,6 +1610,21 @@ class SurveyAutoResearchContractTest(unittest.TestCase):
             self.assertTrue(after["phases"]["discovery"]["passed"])
             self.assertEqual(after["blocked_by_phase"], "source_verification")
 
+    def test_runner_requires_topic_profile_before_discovery(self):
+        from scripts.runner import run_until_complete as run_public_runner
+        from scripts.runtime_dispatcher import collect_pending
+
+        with tempfile.TemporaryDirectory() as tmp:
+            task_dir = initialize_task(Path(tmp), "topic profile first", target="full")
+            status = run_public_runner(task_dir, target="full", max_steps=5)
+            self.assertEqual(status["component"], "runner")
+            self.assertEqual(status["status"], "blocked_topic_profile_agent_spawn_required", status)
+            self.assertEqual(status["next_action"], "spawn_topic_profile_agents")
+            self.assertEqual(status["blocked_by_phase"], "topic_profile")
+            pending = collect_pending(task_dir)
+            self.assertEqual([row["request_type"] for row in pending["pending_requests"]], ["topic_profile"])
+            self.assertEqual(read_jsonl(task_dir / "state/tasks.jsonl")[0]["phase"], "topic_profile")
+
     def test_survey_driver_repeated_blocker_does_not_preempt_runtime_intent_rebuild(self):
         from scripts.runtime_dispatcher import collect_pending, mark_spawned
         from scripts.survey_driver import run_until_complete as run_survey_until_complete
@@ -2936,6 +2951,10 @@ class SurveyAutoResearchContractTest(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             task_dir = initialize_task(Path(tmp), "runner topic")
             for relative in [
+                "state/run_state.json",
+                "state/tasks.jsonl",
+                "state/failure_ledger.jsonl",
+                "state/paper_cards",
                 "state/expert_review_round_status.json",
                 "state/expert_review_adjudication.json",
                 "state/targeted_rereview_reports.jsonl",
@@ -3105,11 +3124,62 @@ class SurveyAutoResearchContractTest(unittest.TestCase):
             self.assertIn('href="#ref-p001"', page)
             self.assertIn('id="ref-p001"', page)
 
+    def test_v2_slim_core_facades_derive_authoritative_state(self):
+        from scripts.failure_ledger import append_failures_from_adjudication, collect_failure_ledger
+        from scripts.gate_engine import evaluate_all, evaluate_phase
+        from scripts.paper_card_store import mirror_paper_cards, validate_paper_card_store
+        from scripts.run_state import sync_run_state
+        from scripts.task_queue import sync_tasks
+
+        with tempfile.TemporaryDirectory() as tmp:
+            task_dir = initialize_task(Path(tmp), "slim core topic", target="full")
+            self.populate_full_task(task_dir)
+
+            gates = evaluate_all(task_dir, "full")
+            self.assertEqual(gates["component"], "gate_engine")
+            self.assertTrue(gates["all_blocking_gates_passed"])
+            phase = evaluate_phase(task_dir, "full", "paper_understanding")
+            self.assertEqual(phase["component"], "gate_engine")
+            self.assertEqual(phase["phase"], "paper_understanding")
+            self.assertTrue(phase["passed"])
+
+            run_state = sync_run_state(task_dir, "full")
+            self.assertEqual(run_state["component"], "run_state")
+            self.assertEqual(run_state["target"], "full")
+            self.assertEqual(run_state["research_assets"]["paper_cards"]["canonical"], "state/paper_cards")
+            self.assertEqual(run_state["research_assets"]["failure_ledger"]["status"], "empty")
+            self.assertEqual(run_state["workflow"]["public_entrypoint"], "runner.py")
+
+            mirrored = mirror_paper_cards(task_dir)
+            self.assertEqual(mirrored["status"], "mirrored")
+            card_path = task_dir / "state/paper_cards/p001.json"
+            self.assertTrue(card_path.exists())
+            card = json.loads(card_path.read_text(encoding="utf-8"))
+            self.assertIn("survey_use", card)
+            self.assertTrue(card["survey_use"]["changes_knowledge_tree"])
+            card_status = validate_paper_card_store(task_dir)
+            self.assertTrue(card_status["valid"], card_status)
+
+            (task_dir / "state/expert_review_adjudication.json").write_text(json.dumps(self.adjudication("CW001")), encoding="utf-8")
+            ledger = append_failures_from_adjudication(task_dir)
+            self.assertEqual(ledger["status"], "recorded")
+            failures = collect_failure_ledger(task_dir)
+            self.assertEqual(failures["unresolved_count"], 1)
+            self.assertEqual(failures["failures"][0]["root_cause"], "taxonomy_not_field_native")
+
+            tasks = sync_tasks(task_dir)
+            self.assertEqual(tasks["component"], "task_queue")
+            self.assertTrue((task_dir / "state/tasks.jsonl").exists())
+            task_rows = read_jsonl(task_dir / "state/tasks.jsonl")
+            self.assertIsInstance(task_rows, list)
+
     def test_clean_main_flow_has_no_legacy_schema_terms(self):
         self.assertFalse((ROOT / "references" / ("review" + "_contract.md")).exists())
         main_text = "\n".join(path.read_text(encoding="utf-8") for path in [ROOT / "SKILL.md", ROOT / "scripts/gate_check.py", ROOT / "scripts/init_task.py", ROOT / "scripts/run_expert_reviews.py"])
-        for old in ["paper_" + "cards", "section_" + "cards", "worked_" + "examples", "review_" + "scorecard", "review_" + "depth"]:
+        for old in ["section_" + "cards", "worked_" + "examples", "review_" + "scorecard", "review_" + "depth"]:
             self.assertNotIn(old, main_text)
+        self.assertIn("paper_cards", main_text)
+        self.assertIn("knowledge tree", main_text.lower())
         for unused in ["review" + "_contract", "weakness" + "_routes", "review" + "_rounds", "phase" + "_summaries", "figures" + "_plan", "dispatch-" + "subagents", "dispatch_" + "subagents"]:
             self.assertNotIn(unused, main_text)
         self.assertNotIn("outputs/" + "review" + ".md", main_text)

@@ -12,7 +12,9 @@ Use a long-running file-backed workflow.
 
 Runtime success means the run can be resumed from disk without relying on conversation history.
 
-Use `survey_driver.py --run-until-complete` as the global resume point. Runtime action files such as `discovery_runtime_action.json`, `topic_relevance_runtime_action.json`, `paper_understanding_runtime_action.json`, and `gate7_runtime_action.json` are queue state, not completed work; a phase advances only after the corresponding executor records validated worker output.
+Use `runner.py --run-until-complete` as the global public resume point. It delegates to the hardened `survey_driver.py`, then refreshes `state/tasks.jsonl`, `state/run_state.json`, and the paper-card mirror. Runtime action files such as `discovery_runtime_action.json`, `topic_relevance_runtime_action.json`, `paper_understanding_runtime_action.json`, and `gate7_runtime_action.json` are queue state, not completed work; a phase advances only after the corresponding executor records validated worker output.
+
+`state/tasks.jsonl` is the compact public queue view. It is derived from dispatcher rows and should be used for debugging and resume decisions. The dispatcher queue remains the compatibility execution log until the legacy spawn-request files are retired.
 
 ## Active Intent
 
@@ -37,6 +39,7 @@ Use `survey_driver.py --run-until-complete` as the global resume point. Runtime 
 Request type mapping:
 
 - `spawn_topic_relevance_agents` -> `topic_relevance`
+- `spawn_topic_profile_agents` -> `topic_profile`
 - `spawn_topic_relevance_second_audit_agents` -> `topic_relevance_second_audit`
 - `spawn_paper_understanding_agents` -> `paper_understanding`
 - `spawn_reviewers` -> `gate7_reviewer`
@@ -48,17 +51,17 @@ When the driver rolls back from a downstream phase to source verification/topic 
 
 ## Dispatcher Rules
 
-When the driver asks for workers, always route through `runtime_dispatcher.py`. The dispatcher reads `discovery_spawn_requests.json`, `topic_relevance_spawn_requests.json`, `paper_understanding_spawn_requests.json`, and `gate7_spawn_requests.json`, writes normalized rows to `state/runtime_dispatch_queue.jsonl`, records spawn sessions in `state/runtime_agent_sessions.jsonl`, and routes returned worker JSON to the correct recorder. Main-agent loop:
+When the runner or driver asks for workers, always route through `runtime_dispatcher.py`. The dispatcher reads `topic_profile_spawn_requests.json`, `discovery_spawn_requests.json`, `topic_relevance_spawn_requests.json`, `paper_understanding_spawn_requests.json`, and `gate7_spawn_requests.json`, writes normalized rows to `state/runtime_dispatch_queue.jsonl`, records spawn sessions in `state/runtime_agent_sessions.jsonl`, and routes returned worker JSON to the correct recorder. Main-agent loop:
 
-1. `python3 scripts/survey_driver.py --task-dir <run> --target <target> --run-until-complete`
+1. `python3 scripts/runner.py --task-dir <run> --target <target> --run-until-complete`
 2. If a worker-spawn status is returned, `python3 scripts/runtime_dispatcher.py --task-dir <run> --collect-pending`
 3. Spawn each pending request with `multi_agent_v1.spawn_agent(fork_context=false)`
 4. `python3 scripts/runtime_dispatcher.py --task-dir <run> --mark-spawned <request-id> --agent-id <subagent-session-id>`
 5. Save each worker response and record it with `python3 scripts/runtime_dispatcher.py --task-dir <run> --record-agent-output <request-id> --output-file <file>`
-6. Rerun the survey driver.
+6. Rerun the public runner.
 
-The dispatcher must expose only request types allowed by the current active intent. If no active intent exists, `--collect-pending` returns `blocked_runtime_intent_required`; the user must rerun `survey_driver.py`.
+The dispatcher must expose only request types allowed by the current active intent. If no active intent exists, `--collect-pending` returns `blocked_runtime_intent_required`; the user must rerun `runner.py`.
 
 If an unspawned queue row does not match the current intent, mark it `stale_superseded`. If the same legal source request reappears under the current intent, reactivate an unspawned stale row as `pending_spawn`; if the old row had already spawned, keep it as stale audit history and create a new retry attempt. If a spawned row no longer matches, do not record its output into research state; return `stale_request_rejected` and append an audit entry. `--mark-spawned` and `--record-agent-output` must reject any request whose `phase_generation` differs from the current intent.
 
-The dispatcher never edits paper, article, or Gate 7 state directly. Non-JSON worker output is `invalid_result`. Discovery output is routed to `discovery_runtime_executor.py --record-result`. Topic-relevance primary output is routed to `topic_relevance_runtime_executor.py --record-result`; independent second-audit output is routed to `topic_relevance_runtime_executor.py --record-second-audit`. Source verification can proceed only after the executor records audit rows that cover the real raw candidates, retained papers, and A/B papers, plus valid second-audit rows for high-risk A/B core decisions. Primary topic-audit rows must carry the actual `subagent_session_id` that produced them. Secondary audit rows must reference that primary session and must use a different `subagent_session_id`; missing or same-session evidence cannot clear a second-audit blocker. If paper-understanding output reports unavailable A/B papers, the dispatcher marks `rebalance_required`; the survey driver handles downgrade/replacement and rebuilds paper-understanding batches.
+The dispatcher never edits paper, article, or Gate 7 state directly. Non-JSON worker output is `invalid_result`. Topic-boundary output is routed to `topic_profile.py --record-result`. Discovery output is routed to `discovery_runtime_executor.py --record-result`. Topic-relevance primary output is routed to `topic_relevance_runtime_executor.py --record-result`; independent second-audit output is routed to `topic_relevance_runtime_executor.py --record-second-audit`. Source verification can proceed only after the executor records audit rows that cover the real raw candidates, retained papers, and A/B papers, plus valid second-audit rows for high-risk A/B core decisions. Primary topic-audit rows must carry the actual `subagent_session_id` that produced them. Secondary audit rows must reference that primary session and must use a different `subagent_session_id`; missing or same-session evidence cannot clear a second-audit blocker. If paper-understanding output reports unavailable A/B papers, the dispatcher marks `rebalance_required`; the survey driver handles downgrade/replacement and rebuilds paper-understanding batches.

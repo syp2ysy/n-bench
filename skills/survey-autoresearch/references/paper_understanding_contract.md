@@ -1,6 +1,6 @@
 # Paper Understanding Contract
 
-`state/paper_mechanism_cards.jsonl` is the single deep-reading interpretation source. `state/full_text_sources.jsonl` is the full-text audit source that each A/B card must bind to.
+`state/paper_cards/{paper_id}.json` is the public deep-reading card store. `state/paper_mechanism_cards.jsonl` remains the compatibility append-only source produced by existing workers, and `state/full_text_sources.jsonl` is the full-text audit source that each A/B card must bind to.
 
 Reading depth is explicit:
 
@@ -36,6 +36,8 @@ Every A/B paper needs:
 - `entity_aliases`
 
 The card explains a scientific contribution, not a survey bucket. It must answer why the paper exists, what task it studies, how the method works, how it was evaluated, what the results support, what they do not support, and how the paper changes the survey argument.
+
+The mirrored v2 paper card must include `survey_use`: possible sections, supported claims, one-sentence contribution, and especially `changes_knowledge_tree`. This field is required because downstream knowledge-tree and spine planning must know what the paper changes about the field structure, not just what the paper did.
 
 Every required A/B field must contain substantive content. Empty strings, empty lists, empty dicts, placeholder prose, and generic sentences such as "this paper is important", "related to prior work", or "read the paper" fail the Paper Understanding Completion Gate. If a field is genuinely not applicable, use a structured `not_applicable_reason` with an evidence-backed explanation; do not leave the field blank.
 

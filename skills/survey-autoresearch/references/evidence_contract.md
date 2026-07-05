@@ -87,7 +87,8 @@ Rules:
 - If a public curated list or recent survey visibly contains far more relevant papers than the retained corpus, `state/corpus_expansion.json` must mark expansion required and complete it before the run proceeds.
 - A/B papers must be verified.
 - A/B papers must have auditable full-text source records.
-- A/B full-text understanding must be recorded through paper-understanding worker results. Python validators may merge and check `state/full_text_sources.jsonl` and `state/paper_mechanism_cards.jsonl`, but they must not fabricate deep-read conclusions.
+- A/B full-text understanding must be recorded through paper-understanding worker results. Python validators may merge and check `state/full_text_sources.jsonl` and compatibility `state/paper_mechanism_cards.jsonl`, then mirror them into `state/paper_cards/{paper_id}.json`; they must not fabricate deep-read conclusions.
+- A/B paper cards must have survey utility. Each mirrored `state/paper_cards/{paper_id}.json` needs `survey_use.changes_knowledge_tree` or an equivalent evidence-backed statement explaining how the paper changes the knowledge tree, spine, claim structure, or evidence gap. A paper that is merely adjacent background cannot enter A/B even if it has metadata relevance.
 - C papers must meet the target verification rate.
 - Unverified papers cannot support article-body claims.
 - Claim strength cannot exceed evidence-span strength.
