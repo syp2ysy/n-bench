@@ -348,6 +348,9 @@ class SurveyAutoResearchContractTest(unittest.TestCase):
                 "limitations_and_confounders": [f"perception and controller strength may confound aggregate success for p{idx:03d}", f"the p{idx:03d} evidence does not isolate all deployment-time failures"],
                 "relation_to_prior_work": "extends prior context-only systems with explicit evidence use.",
                 "what_it_changes_in_the_survey_argument": "It supports the claim that memory must be evaluated through evidence and control interfaces.",
+                "possible_sections": ["Method Families", "Evaluation Protocol"],
+                "supports_claims": [{"claim_type": "evidence-control evaluation", "claim_hint": "memory utility depends on evidence/control interfaces"}],
+                "one_sentence_contribution": f"Paper p{idx:03d} connects structured evidence use to measurable control performance under Benchmark-X.",
                 "must_not_overclaim": ["does not demonstrate general memory causality without negative controls"],
                 "evidence_spans": ["Section 4, Table 2 reports the comparison."],
                 "scenario_links": ["navigation", "EQA", "manipulation", "VLA", "lifelong"],
@@ -1095,6 +1098,11 @@ class SurveyAutoResearchContractTest(unittest.TestCase):
         ]
         template_card[0]["field_evidence_map"]["method_pipeline"] = [{"source_ref": "src-p001", "location": "Section 3, page 4", "evidence_span": "The card records how the paper fits the survey taxonomy rather than extracting the actual method."}]
         cases["template_card_records_how"] = template_card
+        missing_survey_use = self.mechanism_cards(1)
+        missing_survey_use[0]["what_it_changes_in_the_survey_argument"] = ""
+        missing_survey_use[0]["possible_sections"] = []
+        missing_survey_use[0]["one_sentence_contribution"] = ""
+        cases["missing_survey_use_tree_utility"] = missing_survey_use
         for name, cards in cases.items():
             with self.subTest(name=name):
                 citation_plan = [{"paper_id": "p001", "depth": "A"}]
@@ -1102,6 +1110,10 @@ class SurveyAutoResearchContractTest(unittest.TestCase):
                     citation_plan.append({"paper_id": "p002", "depth": "A"})
                 status = validate_paper_understanding(cards, citation_plan, self.full_text_sources(2))
                 self.assertFalse(status["valid"], status)
+                if name == "missing_survey_use_tree_utility":
+                    self.assertIn("missing_survey_use_changes_knowledge_tree", status["invalid_cards"]["p001"])
+                    self.assertIn("missing_possible_sections", status["invalid_cards"]["p001"])
+                    self.assertIn("missing_one_sentence_contribution", status["invalid_cards"]["p001"])
 
     def test_claim_evidence_contract(self):
         base_claim = self.claims()[0]

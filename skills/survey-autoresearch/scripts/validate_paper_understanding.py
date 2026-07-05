@@ -197,6 +197,36 @@ GENERIC_FIELD_PATTERNS = {
     },
 }
 
+SURVEY_USE_TERMS = {
+    "argument",
+    "claim",
+    "section",
+    "spine",
+    "taxonomy",
+    "tree",
+    "cluster",
+    "evidence",
+    "evaluation",
+    "benchmark",
+    "method",
+    "failure",
+    "limitation",
+    "open problem",
+    "control",
+    "interface",
+    "论证",
+    "主张",
+    "章节",
+    "骨架",
+    "分类",
+    "知识树",
+    "证据",
+    "评测",
+    "方法",
+    "失败",
+    "限制",
+}
+
 TEMPLATE_CARD_PATTERNS = {
     "the card records how",
     "the card explains how",
@@ -521,6 +551,33 @@ def _has_template_card_language(value) -> bool:
     return bool(text) and any(pattern in text for pattern in TEMPLATE_CARD_PATTERNS)
 
 
+def _survey_use_errors(card: dict) -> list[str]:
+    errors: list[str] = []
+    changes = card.get("what_it_changes_in_the_survey_argument") or card.get("changes_knowledge_tree")
+    if not _nonempty(changes):
+        errors.append("missing_survey_use_changes_knowledge_tree")
+    else:
+        text = _text_blob(changes).lower()
+        if _is_generic_field("what_it_changes_in_the_survey_argument", changes):
+            errors.append("generic_survey_use_changes_knowledge_tree")
+        if _has_template_card_language(changes):
+            errors.append("template_survey_use_changes_knowledge_tree")
+        if not any(term in text for term in SURVEY_USE_TERMS):
+            errors.append("survey_use_not_tied_to_tree_or_argument")
+    possible_sections = card.get("possible_sections") or card.get("survey_sections")
+    if not isinstance(possible_sections, list) or not [item for item in possible_sections if _nonempty(item)]:
+        errors.append("missing_possible_sections")
+    contribution = card.get("one_sentence_contribution") or card.get("contribution_statement")
+    if not _nonempty(contribution):
+        errors.append("missing_one_sentence_contribution")
+    elif _has_template_card_language(contribution):
+        errors.append("template_one_sentence_contribution")
+    claim_support = card.get("supports_claims") or card.get("supported_claim_types") or card.get("possible_claims")
+    if not _nonempty(claim_support):
+        errors.append("missing_supported_claim_hint")
+    return errors
+
+
 def _boilerplate_noise_fields(card: dict) -> list[str]:
     fields = []
     for field in NOISE_SENSITIVE_FIELDS:
@@ -598,6 +655,7 @@ def validate_paper_understanding(
             card_errors.extend(_field_evidence_errors(card, source_refs))
             card_errors.extend(_field_consistency_errors(card))
             card_errors.extend(_alias_errors(card, source_refs))
+            card_errors.extend(_survey_use_errors(card))
         if not _has_benchmark(card):
             card_errors.append("missing_benchmark_or_dataset")
         if not isinstance(card.get("method_pipeline"), list) or len(card.get("method_pipeline", [])) < 3:

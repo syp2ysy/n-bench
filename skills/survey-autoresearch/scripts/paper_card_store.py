@@ -125,8 +125,15 @@ def validate_paper_card_store(task_dir: Path) -> dict:
             missing.append(paper_id)
             continue
         data = json.loads(path.read_text(encoding="utf-8"))
-        if not ((data.get("survey_use") or {}).get("changes_knowledge_tree")):
+        survey_use = data.get("survey_use") or {}
+        if not survey_use.get("changes_knowledge_tree"):
             invalid[paper_id] = ["missing_survey_use_changes_knowledge_tree"]
+        if not survey_use.get("possible_sections"):
+            invalid.setdefault(paper_id, []).append("missing_possible_sections")
+        if not survey_use.get("one_sentence_contribution"):
+            invalid.setdefault(paper_id, []).append("missing_one_sentence_contribution")
+        if not (data.get("evidence_map") or {}):
+            invalid.setdefault(paper_id, []).append("missing_evidence_map")
         if not ((data.get("reading_status") or {}).get("source_refs")):
             invalid.setdefault(paper_id, []).append("missing_source_refs")
     valid = not missing and not invalid
