@@ -6,6 +6,9 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import urllib.parse
+import urllib.request
+import xml.etree.ElementTree as ET
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -21,7 +24,8 @@ except ImportError:  # pragma: no cover
 
 COMPONENT = "discovery_runtime_executor"
 RESULT_SCHEMA_VERSION = 1
-DISCOVERY_ROUTE_PLAN_VERSION = 3
+DISCOVERY_ROUTE_PLAN_VERSION = 4
+PREFETCH_FILE = "discovery_prefetch_snapshots.jsonl"
 REQUIRED_RESULT_KEYS = ["batch_id", "status", "raw_candidates", "search_routes", "lqs_scores", "corpus_expansion", "validator_results", "remaining_blockers"]
 VALID_RESULT_STATUSES = {"resolved", "partially_resolved", "blocked"}
 
@@ -91,6 +95,173 @@ def _refresh_batch_statuses(doc: dict) -> dict:
             batch["status"] = "blocked_by_upstream"
     doc["active_batch_id"] = active_batch_id
     return doc
+
+
+def _safe_json_from_url(url: str, timeout: int = 8) -> tuple[dict, str | None]:
+    try:
+        request = urllib.request.Request(url, headers={"User-Agent": "survey-autoresearch/0.1"})
+        with urllib.request.urlopen(request, timeout=timeout) as response:
+            return json.loads(response.read().decode("utf-8")), None
+    except Exception as exc:  # pragma: no cover - network-dependent
+        return {}, f"{type(exc).__name__}: {exc}"
+
+
+def _safe_text_from_url(url: str, timeout: int = 8) -> tuple[str, str | None]:
+    try:
+        request = urllib.request.Request(url, headers={"User-Agent": "survey-autoresearch/0.1"})
+        with urllib.request.urlopen(request, timeout=timeout) as response:
+            return response.read().decode("utf-8", errors="replace"), None
+    except Exception as exc:  # pragma: no cover - network-dependent
+        return "", f"{type(exc).__name__}: {exc}"
+
+
+def _openalex_candidates(query: str, batch_id: str, route_id: str, limit: int = 8) -> tuple[list[dict], str | None]:
+    params = urllib.parse.urlencode(
+        {
+            "search": query,
+            "per-page": max(1, min(limit, 25)),
+            "filter": "from_publication_date:2018-01-01",
+            "select": "id,doi,title,display_name,publication_year,authorships,primary_location,locations,type",
+        }
+    )
+    payload, error = _safe_json_from_url(f"https://api.openalex.org/works?{params}")
+    if error:
+        return [], f"openalex:{error}"
+    rows = []
+    for idx, item in enumerate(payload.get("results") or []):
+        if not isinstance(item, dict):
+            continue
+        title = item.get("title") or item.get("display_name") or ""
+        if not title:
+            continue
+        authors = []
+        for author in item.get("authorships") or []:
+            if isinstance(author, dict):
+                name = ((author.get("author") or {}).get("display_name") or "").strip()
+                if name:
+                    authors.append(name)
+        primary = item.get("primary_location") or {}
+        landing = (primary.get("landing_page_url") if isinstance(primary, dict) else "") or item.get("id") or ""
+        rows.append(
+            {
+                "candidate_id": f"{batch_id}-openalex-{idx + 1:03d}",
+                "title": title,
+                "authors": authors[:8],
+                "year": item.get("publication_year"),
+                "doi": item.get("doi"),
+                "url": landing,
+                "source": "OpenAlex",
+                "source_api": "openalex",
+                "query": query,
+                "route_id": route_id,
+                "route_type": "keyword",
+                "source_record_id": item.get("id"),
+                "relevance_note": "Prefetched metadata; worker must audit topic relevance before retained selection.",
+            }
+        )
+    return rows, None
+
+
+def _arxiv_candidates(query: str, batch_id: str, route_id: str, limit: int = 8) -> tuple[list[dict], str | None]:
+    search_query = urllib.parse.quote(f'all:"{query}"')
+    url = f"https://export.arxiv.org/api/query?search_query={search_query}&start=0&max_results={max(1, min(limit, 20))}&sortBy=relevance&sortOrder=descending"
+    text, error = _safe_text_from_url(url)
+    if error:
+        return [], f"arxiv:{error}"
+    rows = []
+    try:
+        root = ET.fromstring(text)
+    except ET.ParseError as exc:
+        return [], f"arxiv:ParseError: {exc}"
+    ns = {"atom": "http://www.w3.org/2005/Atom"}
+    for idx, entry in enumerate(root.findall("atom:entry", ns)):
+        title = " ".join((entry.findtext("atom:title", default="", namespaces=ns) or "").split())
+        if not title:
+            continue
+        entry_id = (entry.findtext("atom:id", default="", namespaces=ns) or "").strip()
+        arxiv_id = entry_id.rstrip("/").split("/")[-1] if entry_id else ""
+        authors = [
+            " ".join((author.findtext("atom:name", default="", namespaces=ns) or "").split())
+            for author in entry.findall("atom:author", ns)
+        ]
+        published = entry.findtext("atom:published", default="", namespaces=ns) or ""
+        rows.append(
+            {
+                "candidate_id": f"{batch_id}-arxiv-{idx + 1:03d}",
+                "title": title,
+                "authors": [name for name in authors if name][:8],
+                "year": int(published[:4]) if published[:4].isdigit() else None,
+                "arxiv_id": arxiv_id,
+                "url": entry_id,
+                "source": "arXiv",
+                "source_api": "arxiv",
+                "query": query,
+                "route_id": route_id,
+                "route_type": "keyword",
+                "abstract": " ".join((entry.findtext("atom:summary", default="", namespaces=ns) or "").split())[:1200],
+                "relevance_note": "Prefetched metadata; worker must audit topic relevance before retained selection.",
+            }
+        )
+    return rows, None
+
+
+def _latest_prefetch(task_dir: Path, batch_id: str) -> dict:
+    rows = [
+        row for row in read_jsonl(_state(task_dir) / PREFETCH_FILE)
+        if str(row.get("batch_id") or "") == str(batch_id)
+        and int(row.get("route_plan_version") or 0) == DISCOVERY_ROUTE_PLAN_VERSION
+    ]
+    return rows[-1] if rows else {}
+
+
+def prefetch_active_discovery_sources(task_dir: Path, per_query_limit: int = 8) -> dict:
+    state = _state(task_dir)
+    doc = _refresh_batch_statuses(read_json(state / "discovery_batches.json"))
+    active = next((batch for batch in doc.get("batches") or [] if batch.get("batch_id") == doc.get("active_batch_id")), None)
+    if not active:
+        return {**status_envelope(COMPONENT, "no_active_discovery_batch", terminal=False, blocked=True), "prefetched_candidates": 0}
+    batch_id = str(active.get("batch_id") or "")
+    queries = [str(item) for item in active.get("seed_queries") or [] if str(item).strip()]
+    queries = queries[: int(active.get("max_search_queries") or len(queries))]
+    candidates: list[dict] = []
+    errors: list[str] = []
+    for idx, query in enumerate(queries, start=1):
+        route_id = f"{batch_id}-prefetch-{idx:02d}"
+        route_rows, error = _openalex_candidates(query, batch_id, route_id, per_query_limit)
+        candidates.extend(route_rows)
+        if error:
+            errors.append(error)
+        route_rows, error = _arxiv_candidates(query, batch_id, route_id, per_query_limit)
+        candidates.extend(route_rows)
+        if error:
+            errors.append(error)
+    deduped = _merge_rows(candidates, "prefetch")[: max(1, per_query_limit) * max(1, len(queries)) * 2]
+    snapshot = {
+        "schema_version": STATUS_SCHEMA_VERSION,
+        "route_plan_version": DISCOVERY_ROUTE_PLAN_VERSION,
+        "batch_id": batch_id,
+        "route_focus": active.get("route_focus"),
+        "seed_queries": queries,
+        "prefetched_candidates": deduped,
+        "prefetch_errors": errors,
+        "prefetched_at": _utc_now(),
+    }
+    write_jsonl(state / PREFETCH_FILE, read_jsonl(state / PREFETCH_FILE) + [snapshot])
+    _write_runtime_action(task_dir, _with_metadata(doc))
+    return {
+        **status_envelope(
+            COMPONENT,
+            "prefetched" if deduped else "prefetch_empty",
+            next_action="spawn_discovery_agents",
+            terminal=False,
+            blocked=not bool(deduped),
+            blocked_by_phase="discovery",
+            active_batch_id=batch_id,
+            summary={"prefetched_candidate_count": len(deduped), "prefetch_error_count": len(errors), "query_count": len(queries)},
+        ),
+        "prefetched_candidate_count": len(deduped),
+        "prefetch_errors": errors[:10],
+    }
 
 
 def _route_batches(target: str, topic_profile: dict) -> list[dict]:
@@ -244,6 +415,8 @@ def _route_batches(target: str, topic_profile: dict) -> list[dict]:
 
 def _prompt(task_dir: Path, batch: dict) -> str:
     topic_profile = _topic_profile(task_dir)
+    prefetch = _latest_prefetch(task_dir, str(batch.get("batch_id") or ""))
+    prefetched_count = len(prefetch.get("prefetched_candidates") or [])
     return (
         "You are a high-recall discovery worker for survey-autoresearch.\n"
         "Use real search sources and return structured discovery state. Do not invent papers or counts.\n"
@@ -259,6 +432,7 @@ def _prompt(task_dir: Path, batch: dict) -> str:
         f"Maximum search queries for this route: {batch.get('max_search_queries') or len(batch.get('seed_queries') or [])}\n"
         f"Seed queries for this route: {json.dumps(batch.get('seed_queries') or [], ensure_ascii=False)}\n"
         f"Previous blockers for this route: {json.dumps(batch.get('last_blockers') or [], ensure_ascii=False)}\n"
+        f"Prefetched metadata candidates available in the request payload: {prefetched_count}\n"
         f"Task spec:\n{_task_spec(task_dir)}\n"
         f"Topic profile:\n{json.dumps(topic_profile, indent=2, sort_keys=True, ensure_ascii=False)}\n"
         f"Survey type plan:\n{_survey_type(task_dir)}\n"
@@ -269,6 +443,7 @@ def _prompt(task_dir: Path, batch: dict) -> str:
 
 
 def _spawn_request(task_dir: Path, batch: dict) -> dict:
+    prefetch = _latest_prefetch(task_dir, str(batch.get("batch_id") or ""))
     return {
         "request_id": f"discovery-{batch.get('batch_id')}",
         "next_action": "spawn_discovery_agents",
@@ -285,6 +460,9 @@ def _spawn_request(task_dir: Path, batch: dict) -> dict:
         "min_related_surveys": batch.get("min_related_surveys") or 0,
         "max_search_queries": batch.get("max_search_queries") or len(batch.get("seed_queries") or []),
         "route_plan_version": DISCOVERY_ROUTE_PLAN_VERSION,
+        "prefetched_candidates": (prefetch.get("prefetched_candidates") or [])[:50],
+        "prefetch_errors": prefetch.get("prefetch_errors") or [],
+        "prefetch_snapshot_at": prefetch.get("prefetched_at"),
         "target": _target(task_dir),
         "task_spec": _task_spec(task_dir),
         "topic_profile": _topic_profile(task_dir),
@@ -642,6 +820,7 @@ def main() -> int:
     parser.add_argument("--task-dir", required=True, type=Path)
     parser.add_argument("--prepare", action="store_true")
     parser.add_argument("--collect-status", action="store_true")
+    parser.add_argument("--prefetch-active", action="store_true")
     parser.add_argument("--record-result", type=Path)
     parser.add_argument("--subagent-session-id")
     args = parser.parse_args()
@@ -649,6 +828,8 @@ def main() -> int:
         result = prepare_discovery_batches(args.task_dir)
     elif args.collect_status:
         result = collect_discovery_status(args.task_dir)
+    elif args.prefetch_active:
+        result = prefetch_active_discovery_sources(args.task_dir)
     elif args.record_result:
         if not args.subagent_session_id:
             result = {"status": "invalid", "error": "missing_subagent_session_id"}

@@ -1779,6 +1779,40 @@ class SurveyAutoResearchContractTest(unittest.TestCase):
             self.assertEqual(retry_request["request_type"], "discovery")
             self.assertNotEqual(retry_request["request_id"], first["request_id"])
 
+    def test_discovery_prefetch_snapshot_is_carried_in_worker_request(self):
+        from scripts.discovery_runtime_executor import prepare_discovery_batches
+
+        with tempfile.TemporaryDirectory() as tmp:
+            task_dir = initialize_task(Path(tmp), "prefetched discovery request", target="full")
+            self.write_topic_profile(task_dir, topic="prefetched discovery request")
+            first = prepare_discovery_batches(task_dir)
+            self.assertEqual(first["next_action"], "spawn_discovery_agents")
+            write_jsonl(
+                task_dir / "state/discovery_prefetch_snapshots.jsonl",
+                [
+                    {
+                        "schema_version": 1,
+                        "route_plan_version": 4,
+                        "batch_id": "D001",
+                        "prefetched_candidates": [
+                            {
+                                "candidate_id": "prefetch-001",
+                                "title": "Visual Workspace Reasoning",
+                                "url": "https://example.org/visual-workspace",
+                                "source": "OpenAlex",
+                                "query": "visual workspace multimodal reasoning",
+                            }
+                        ],
+                        "prefetch_errors": [],
+                        "prefetched_at": "2026-07-05T00:00:00+00:00",
+                    }
+                ],
+            )
+            refreshed = prepare_discovery_batches(task_dir)
+            request = refreshed["spawn_requests"][0]
+            self.assertEqual(request["prefetched_candidates"][0]["candidate_id"], "prefetch-001")
+            self.assertEqual(request["prefetch_snapshot_at"], "2026-07-05T00:00:00+00:00")
+
     def test_corpus_pipeline_facade_preserves_topic_boundary_before_discovery(self):
         from scripts.corpus_pipeline import collect_status as collect_corpus_status
         from scripts.corpus_pipeline import prepare as prepare_corpus
