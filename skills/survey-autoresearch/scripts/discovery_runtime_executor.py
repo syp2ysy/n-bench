@@ -54,6 +54,10 @@ def _survey_type(task_dir: Path) -> str:
     return path.read_text(encoding="utf-8") if path.exists() else ""
 
 
+def _topic_profile(task_dir: Path) -> dict:
+    return read_json(_state(task_dir) / "topic_profile.json")
+
+
 def _summary(doc: dict) -> dict:
     batches = doc.get("batches") or []
     pending = [batch for batch in batches if batch.get("status") != "resolved"]
@@ -89,12 +93,15 @@ def _refresh_batch_statuses(doc: dict) -> dict:
 
 
 def _prompt(task_dir: Path, batch: dict) -> str:
+    topic_profile = _topic_profile(task_dir)
     return (
         "You are a high-recall discovery worker for survey-autoresearch.\n"
         "Use real search sources and return structured discovery state. Do not invent papers or counts.\n"
+        "Follow the topic_profile exactly: positive anchors define core relevance; negative anchors define drift risks; allowed background cannot become A/B core.\n"
         f"Task directory: {task_dir.resolve()}\n"
         f"Batch id: {batch.get('batch_id')}\n"
         f"Task spec:\n{_task_spec(task_dir)}\n"
+        f"Topic profile:\n{json.dumps(topic_profile, indent=2, sort_keys=True, ensure_ascii=False)}\n"
         f"Survey type plan:\n{_survey_type(task_dir)}\n"
         "Return one JSON object with keys: batch_id, status, raw_candidates, search_routes, lqs_scores, corpus_expansion, validator_results, remaining_blockers."
     )
@@ -111,6 +118,7 @@ def _spawn_request(task_dir: Path, batch: dict) -> dict:
         "batch_id": batch.get("batch_id"),
         "target": _target(task_dir),
         "task_spec": _task_spec(task_dir),
+        "topic_profile": _topic_profile(task_dir),
         "survey_type_plan": _survey_type(task_dir),
         "record_command": f"python3 scripts/discovery_runtime_executor.py --task-dir {task_dir.resolve()} --record-result <result.json> --subagent-session-id <subagent-session-id>",
         "message": _prompt(task_dir, batch),
@@ -159,7 +167,7 @@ def _write_runtime_action(task_dir: Path, doc: dict) -> dict:
 
 def prepare_discovery_batches(task_dir: Path) -> dict:
     state = _state(task_dir)
-    plan_hash = _stable_hash({"task_spec": _task_spec(task_dir), "survey_type_plan": _survey_type(task_dir), "target": _target(task_dir)})
+    plan_hash = _stable_hash({"task_spec": _task_spec(task_dir), "topic_profile": _topic_profile(task_dir), "survey_type_plan": _survey_type(task_dir), "target": _target(task_dir)})
     existing = read_json(state / "discovery_batches.json")
     if existing.get("plan_hash") == plan_hash and existing.get("batches"):
         doc = _refresh_batch_statuses(existing)

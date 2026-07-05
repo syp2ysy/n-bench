@@ -12,21 +12,11 @@ from pathlib import Path
 try:  # pragma: no cover - script import fallback
     from .run_expert_reviews import read_jsonl, write_json, write_jsonl
     from .status_schema import STATUS_SCHEMA_VERSION, status_envelope
+    from .validate_topic_profile import REQUIRED_FIELDS, validate_topic_profile
 except ImportError:  # pragma: no cover
     from run_expert_reviews import read_jsonl, write_json, write_jsonl
     from status_schema import STATUS_SCHEMA_VERSION, status_envelope
-
-
-REQUIRED_FIELDS = [
-    "topic",
-    "central_question",
-    "positive_anchors",
-    "negative_anchors",
-    "allowed_background",
-    "core_claim_types",
-    "search_seed_queries",
-    "acceptance_rubric",
-]
+    from validate_topic_profile import REQUIRED_FIELDS, validate_topic_profile
 
 
 def _utc_now() -> str:
@@ -127,21 +117,11 @@ def prepare_topic_profile_request(task_dir: Path, target: str = "full") -> dict:
 
 def _profile_errors(result: dict) -> list[str]:
     errors = []
-    for field in REQUIRED_FIELDS:
-        value = result.get(field)
-        if value in [None, "", [], {}]:
-            errors.append(f"missing_{field}")
-    rubric = result.get("acceptance_rubric") or {}
-    if isinstance(rubric, dict):
-        for key in ["paper_relevance", "survey_spine", "paper_understanding"]:
-            if not rubric.get(key):
-                errors.append(f"missing_acceptance_rubric_{key}")
-    else:
-        errors.append("invalid_acceptance_rubric")
+    errors.extend(validate_topic_profile(result).get("errors") or [])
     validators = result.get("validator_results") or []
     if not any((row.get("validator") or row.get("name")) == "validate_topic_profile" and row.get("status") == "passed" for row in validators if isinstance(row, dict)):
         errors.append("missing_validate_topic_profile_pass")
-    return errors
+    return sorted(set(errors))
 
 
 def record_topic_profile_result(task_dir: Path, result: dict, subagent_session_id: str) -> dict:

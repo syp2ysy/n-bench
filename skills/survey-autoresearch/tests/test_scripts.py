@@ -1614,6 +1614,7 @@ class SurveyAutoResearchContractTest(unittest.TestCase):
         from scripts.runner import run_until_complete as run_public_runner
         from scripts.runtime_dispatcher import collect_pending
         from scripts.task_queue import sync_tasks
+        from scripts.topic_profile import record_topic_profile_result
 
         with tempfile.TemporaryDirectory() as tmp:
             task_dir = initialize_task(Path(tmp), "topic profile first", target="full")
@@ -1638,6 +1639,47 @@ class SurveyAutoResearchContractTest(unittest.TestCase):
             tasks = sync_tasks(task_dir)
             self.assertEqual([task["request_type"] for task in tasks["tasks"]], ["topic_profile"])
             self.assertEqual(tasks["summary"]["task_count"], 1)
+
+            invalid_profile = {
+                "topic": "topic profile first",
+                "central_question": "How should the survey boundary be set?",
+                "positive_anchors": ["visual scratchpad"],
+                "negative_anchors": [],
+                "allowed_background": ["generic MLLM surveys as background only"],
+                "core_claim_types": ["taxonomy claims"],
+                "search_seed_queries": ["visual scratchpad multimodal reasoning"],
+                "acceptance_rubric": {
+                    "paper_relevance": "directly studies visual intermediate-state reasoning",
+                    "survey_spine": "spine follows paper-card evidence",
+                    "paper_understanding": "A/B papers require full-text cards",
+                },
+                "validator_results": [{"validator": "validate_topic_profile", "status": "passed"}],
+                "remaining_blockers": [],
+            }
+            invalid_record = record_topic_profile_result(task_dir, invalid_profile, "topic-agent-invalid")
+            self.assertEqual(invalid_record["status"], "invalid")
+            self.assertFalse((task_dir / "state/topic_profile.json").exists())
+
+            valid_profile = dict(invalid_profile)
+            valid_profile["negative_anchors"] = ["generic LLM survey without visual workspace reasoning"]
+            valid_profile["positive_anchors"] = [
+                "visual scratchpad",
+                "image-as-workspace",
+                "visual intermediate-state reasoning",
+            ]
+            valid_profile["search_seed_queries"] = [
+                "visual scratchpad multimodal reasoning",
+                "image as workspace MLLM reasoning",
+                "visual intermediate state reasoning",
+            ]
+            recorded = record_topic_profile_result(task_dir, valid_profile, "topic-agent-001")
+            self.assertEqual(recorded["status"], "recorded", recorded)
+            next_status = run_public_runner(task_dir, target="full", max_steps=5)
+            self.assertEqual(next_status["next_action"], "spawn_discovery_agents")
+            discovery_request = next_status["spawn_requests"][0]
+            self.assertIn("topic_profile", discovery_request)
+            self.assertIn("visual scratchpad", discovery_request["message"])
+            self.assertIn("generic LLM survey", discovery_request["message"])
 
     def test_survey_driver_repeated_blocker_does_not_preempt_runtime_intent_rebuild(self):
         from scripts.runtime_dispatcher import collect_pending, mark_spawned
