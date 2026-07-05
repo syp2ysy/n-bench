@@ -32,7 +32,7 @@ Stop only when one of these is true:
 - `survey_driver.py`, `gate7_driver.py`, or a collect-status command returns `complete`.
 - The run is explicitly `quality_limited`.
 - Fresh subagents or required source documents are unavailable.
-- The same blocker recurs for three consecutive driver passes with no persisted progress.
+- The same non-worker blocker recurs for three consecutive driver passes with no persisted progress. Worker-spawn states must first rebuild `runtime_active_intent.json` and expose dispatcher pending/spawned/result status.
 
 Do not stop at prompt generation, worker packets, runtime action files, repair notes, stale summaries, targeted rereview requests, or reviewer routing. Reviewer routing back to an earlier phase is a rollback action, not a stop condition.
 
@@ -88,6 +88,6 @@ Read the relevant contract before touching that layer:
 
 ## Completion
 
-Call the survey complete only when `outputs/release_manifest.json` has `released: true` and hashes matching the current candidate plus final `survey.md/html`. Otherwise call it a candidate, draft, blocked run, or automatic-check artifact.
+Call the survey complete only when `outputs/release_manifest.json` has `released: true`, hashes matching the current candidate plus final `survey.md/html`, and a current gate hash proving the present state still passes. Otherwise call it a candidate, draft, blocked run, or automatic-check artifact.
 
 The default target is `full`. Use `short` only when the user explicitly asks for a short or quick draft; even short runs must pass the minimum discovery, source, and evidence gates.

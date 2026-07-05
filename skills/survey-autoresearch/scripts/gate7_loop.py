@@ -13,10 +13,12 @@ from pathlib import Path
 try:  # pragma: no cover - script import fallback
     from .run_expert_reviews import REQUIRED_REVIEWERS, freeze_review_round, read_json, read_jsonl, write_json, write_jsonl
     from .expert_review_gate import REQUIRED_DIMENSIONS, REQUIRED_PERSONAS, ROUTE_EVIDENCE_REQUIREMENTS, VALID_ROUTES
+    from .gate_freshness import release_manifest_fresh
     from .status_schema import STATUS_SCHEMA_VERSION, status_envelope
 except ImportError:  # pragma: no cover
     from run_expert_reviews import REQUIRED_REVIEWERS, freeze_review_round, read_json, read_jsonl, write_json, write_jsonl
     from expert_review_gate import REQUIRED_DIMENSIONS, REQUIRED_PERSONAS, ROUTE_EVIDENCE_REQUIREMENTS, VALID_ROUTES
+    from gate_freshness import release_manifest_fresh
     from status_schema import STATUS_SCHEMA_VERSION, status_envelope
 
 
@@ -85,21 +87,9 @@ def _nonempty_file(path: Path) -> bool:
     return path.exists() and path.read_text(encoding="utf-8").strip() != ""
 
 
-def _release_manifest_fresh(task_dir: Path, manifest: dict) -> bool:
-    outputs = task_dir / "outputs"
-    candidate_md = outputs / "survey_candidate.md"
-    final_md = outputs / "survey.md"
-    final_html = outputs / "survey.html"
-    return (
-        manifest.get("released") is True
-        and str(manifest.get("released_at") or "").strip() != ""
-        and str(manifest.get("gate_check_hash") or "").strip() != ""
-        and _nonempty_file(final_md)
-        and _nonempty_file(final_html)
-        and str(manifest.get("candidate_hash") or "") == _sha256_file(candidate_md)
-        and str(manifest.get("survey_hash") or "") == _sha256_file(final_md)
-        and str(manifest.get("survey_html_hash") or "") == _sha256_file(final_html)
-    )
+def _release_manifest_fresh(task_dir: Path, manifest: dict, target: str = "full") -> bool:
+    fresh, _details = release_manifest_fresh(task_dir, manifest, target)
+    return fresh
 
 
 def _state(task_dir: Path) -> Path:
@@ -736,7 +726,7 @@ def reset_gate7_round_for_full_rerun(task_dir: Path) -> dict:
     }
 
 
-def collect_gate7_status(task_dir: Path) -> dict:
+def collect_gate7_status(task_dir: Path, target: str = "full") -> dict:
     state = _state(task_dir)
     reports = read_jsonl(state / "expert_review_reports.jsonl")
     status = read_json(state / "expert_review_round_status.json")
@@ -748,7 +738,7 @@ def collect_gate7_status(task_dir: Path) -> dict:
     regression_checks = read_jsonl(state / "regression_checks.jsonl")
     rereviews = read_jsonl(state / "targeted_rereview_reports.jsonl")
     release_manifest = read_json(task_dir / "outputs" / "release_manifest.json")
-    gate_summary = read_json(state / "gate_check_full.json")
+    gate_summary = read_json(state / f"gate_check_{target}.json")
     current_candidate_hash = _sha256_file(task_dir / "outputs" / "survey_candidate.md")
     gate_fresh = (
         gate_summary.get("release_allowed") is True
@@ -756,7 +746,7 @@ def collect_gate7_status(task_dir: Path) -> dict:
         and str(gate_summary.get("generated_at") or "").strip()
         and str(gate_summary.get("candidate_hash") or "") == current_candidate_hash
     )
-    if _release_manifest_fresh(task_dir, release_manifest):
+    if _release_manifest_fresh(task_dir, release_manifest, target):
         next_action = "complete"
     elif str(iteration_status.get("status") or "") == "quality_limited" and not gate_fresh:
         next_action = "quality_limited_stop"
@@ -824,6 +814,7 @@ def _all_repaired_weaknesses_have_passing_checks(adjudication: dict, checks: lis
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--task-dir", required=True, type=Path)
+    parser.add_argument("--target", choices=["full", "csur"], default="full")
     parser.add_argument("--review-round-id")
     parser.add_argument("--make-reviewer-prompts", action="store_true")
     parser.add_argument("--record-review", type=Path)
@@ -859,7 +850,7 @@ def main() -> int:
         else:
             result = record_targeted_rereview(args.task_dir, json.loads(args.record_targeted_rereview.read_text(encoding="utf-8")), args.subagent_session_id)
     elif args.collect_status:
-        result = collect_gate7_status(args.task_dir)
+        result = collect_gate7_status(args.task_dir, args.target)
     else:
         result = {"status": "invalid", "error": "choose an action"}
     print(json.dumps(result, indent=2, sort_keys=True, ensure_ascii=False))

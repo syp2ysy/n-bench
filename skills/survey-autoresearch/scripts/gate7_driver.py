@@ -243,7 +243,7 @@ def _write_gate_summary(task_dir: Path, target: str) -> dict:
 def run_until_complete(task_dir: Path, target: str = "full", max_steps: int = 25) -> dict:
     actions = []
     for _ in range(max_steps):
-        status = collect_gate7_status(task_dir)
+        status = collect_gate7_status(task_dir, target)
         action = status.get("next_action")
         actions.append(action)
         if action == "complete":

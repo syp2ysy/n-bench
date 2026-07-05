@@ -82,6 +82,11 @@ def sha256_jsonl_rows(rows: list[dict]) -> str:
     return hashlib.sha256(payload).hexdigest()
 
 
+def stable_gate_hash(gates: dict) -> str:
+    payload = {key: value for key, value in gates.items() if key not in {"generated_at", "release_manifest", "survey_complete", "completion_level"}}
+    return hashlib.sha256(json.dumps(payload, sort_keys=True, ensure_ascii=False).encode("utf-8")).hexdigest()
+
+
 class SurveyAutoResearchContractTest(unittest.TestCase):
     dimensions = [
         "narrative_coherence",
@@ -1605,6 +1610,63 @@ class SurveyAutoResearchContractTest(unittest.TestCase):
             self.assertTrue(after["phases"]["discovery"]["passed"])
             self.assertEqual(after["blocked_by_phase"], "source_verification")
 
+    def test_survey_driver_repeated_blocker_does_not_preempt_runtime_intent_rebuild(self):
+        from scripts.runtime_dispatcher import collect_pending, mark_spawned
+        from scripts.survey_driver import run_until_complete as run_survey_until_complete
+
+        with tempfile.TemporaryDirectory() as tmp:
+            task_dir = initialize_task(Path(tmp), "old topic runtime history", target="full")
+            self.populate_source_verified_task(task_dir)
+            (task_dir / "state/topic_relevance_audit.jsonl").write_text("", encoding="utf-8")
+            stale_history_row = {
+                "status": "blocked_topic_relevance_agent_spawn_required",
+                "next_action": "spawn_topic_relevance_agents",
+                "blocked_by_phase": "source_verification",
+                "active_batch_id": "TR001",
+                "candidate_hash": "",
+                "paper_cards_hash": "",
+                "full_text_sources_hash": "",
+                "blocker_fingerprint": "blocked_topic_relevance_agent_spawn_required|spawn_topic_relevance_agents|source_verification|TR001",
+            }
+            write_jsonl(task_dir / "state/survey_driver_history.jsonl", [stale_history_row, stale_history_row, stale_history_row])
+            (task_dir / "state/runtime_active_intent.json").write_text(
+                json.dumps(
+                    {
+                        "schema_version": 1,
+                        "active_phase": None,
+                        "next_action": None,
+                        "allowed_request_types": [],
+                        "phase_generation": "",
+                        "source_hashes": {},
+                        "generated_at": None,
+                    }
+                ),
+                encoding="utf-8",
+            )
+
+            rebuilt = run_survey_until_complete(task_dir, target="full", max_steps=5)
+            self.assertEqual(rebuilt["status"], "blocked_topic_relevance_agent_spawn_required", rebuilt)
+            self.assertEqual(rebuilt["next_action"], "spawn_topic_relevance_agents")
+            self.assertNotEqual(rebuilt["status"], "blocked_repeated_no_progress")
+            pending = collect_pending(task_dir)
+            self.assertEqual(pending["status"], "pending_spawn", pending)
+            self.assertEqual([row["request_type"] for row in pending["pending_requests"]], ["topic_relevance"])
+
+        with tempfile.TemporaryDirectory() as tmp:
+            task_dir = initialize_task(Path(tmp), "runtime progress fingerprint", target="full")
+            self.populate_source_verified_task(task_dir)
+            (task_dir / "state/topic_relevance_audit.jsonl").write_text("", encoding="utf-8")
+            first = run_survey_until_complete(task_dir, target="full", max_steps=5)
+            first_generation = json.loads((task_dir / "state/runtime_active_intent.json").read_text(encoding="utf-8"))["phase_generation"]
+            request = collect_pending(task_dir)["pending_requests"][0]
+            self.assertEqual(mark_spawned(task_dir, request["request_id"], "topic-agent-progress")["status"], "spawned")
+            after_spawn_generation = json.loads((task_dir / "state/runtime_active_intent.json").read_text(encoding="utf-8"))["phase_generation"]
+            self.assertEqual(first_generation, after_spawn_generation)
+            for _ in range(3):
+                status = run_survey_until_complete(task_dir, target="full", max_steps=5)
+                self.assertEqual(status["status"], first["status"], status)
+                self.assertNotEqual(status["status"], "blocked_repeated_no_progress")
+
     def test_runtime_dispatcher_requires_active_intent_and_prunes_stale_downstream_requests(self):
         from scripts.paper_understanding_runtime_executor import collect_paper_understanding_status, prepare_paper_understanding_batches
         from scripts.runtime_dispatcher import collect_pending, mark_spawned, record_agent_output
@@ -2057,6 +2119,13 @@ class SurveyAutoResearchContractTest(unittest.TestCase):
         repaired = validate_topic_relevance(raw, papers, citation, audit, "", "full", secondary_audits=second_audits)
         self.assertNotIn("topic_relevance_second_audit_required", repaired["errors"])
 
+        missing_primary_session_audit = [{key: value for key, value in row.items() if key not in {"subagent_session_id", "auditor_id"}} for row in audit]
+        missing_session = validate_topic_relevance(raw, papers, citation, missing_primary_session_audit, "", "full", secondary_audits=second_audits)
+        self.assertFalse(missing_session["valid"], missing_session)
+        self.assertIn("topic_relevance_second_audit_required", missing_session["errors"])
+        self.assertIn("invalid_topic_relevance_second_audit", missing_session["errors"])
+        self.assertIn("missing_primary_audit_session_id:p001", missing_session["secondary_audit_errors"])
+
         with tempfile.TemporaryDirectory() as tmp:
             task_dir = initialize_task(Path(tmp), "topic second audit route", target="full")
             state = task_dir / "state"
@@ -2167,7 +2236,11 @@ class SurveyAutoResearchContractTest(unittest.TestCase):
             recorded = record_agent_output(task_dir, request["request_id"], output_file)
             self.assertEqual(recorded["status"], "result_recorded", recorded)
             self.assertEqual(recorded["record_result"]["status"], "recorded")
-            self.assertTrue((task_dir / "state/topic_relevance_audit.jsonl").read_text(encoding="utf-8").strip())
+            recorded_audits = read_jsonl(task_dir / "state/topic_relevance_audit.jsonl")
+            self.assertTrue(recorded_audits)
+            self.assertTrue(
+                all(row.get("subagent_session_id") == "topic-agent-001" for row in recorded_audits if row["paper_id"] in set(active["paper_ids"]))
+            )
 
     def test_topic_relevance_rebalance_uses_audited_replacement_pool(self):
         from scripts.rebalance_ab_selection import rebalance_ab_selection
@@ -2835,6 +2908,10 @@ class SurveyAutoResearchContractTest(unittest.TestCase):
             self.assertTrue((task_dir / "outputs/survey.html").exists())
             self.assertTrue(evaluate_gates(task_dir, "full")["all_blocking_gates_passed"])
             self.assertTrue(evaluate_gates(task_dir, "full")["survey_complete"])
+            self.assertEqual(collect_gate7_status(task_dir, "full")["next_action"], "complete")
+            topic_rows = read_jsonl(task_dir / "state/topic_relevance_audit.jsonl")
+            write_jsonl(task_dir / "state/topic_relevance_audit.jsonl", topic_rows[:-1])
+            self.assertNotEqual(collect_gate7_status(task_dir, "full")["next_action"], "complete")
         with tempfile.TemporaryDirectory() as tmp:
             task_dir = initialize_task(Path(tmp), "embodied memory system", target="full")
             self.populate_full_task(task_dir)
@@ -2983,7 +3060,17 @@ class SurveyAutoResearchContractTest(unittest.TestCase):
                 "survey_html_hash": sha256_file(task_dir / "outputs/survey.html"),
                 "gate_check_hash": "gate-hash",
             }), encoding="utf-8")
-            self.assertEqual(collect_gate7_status(task_dir)["next_action"], "complete")
+            self.assertEqual(collect_gate7_status(task_dir)["next_action"], "promote_release")
+            current_gate_hash = stable_gate_hash(evaluate_gates(task_dir, "full"))
+            (task_dir / "outputs/release_manifest.json").write_text(json.dumps({
+                "released": True,
+                "released_at": "2026-07-03T00:01:00Z",
+                "candidate_hash": repaired_hash,
+                "survey_hash": sha256_file(task_dir / "outputs/survey.md"),
+                "survey_html_hash": sha256_file(task_dir / "outputs/survey.html"),
+                "gate_check_hash": current_gate_hash,
+            }), encoding="utf-8")
+            self.assertNotEqual(collect_gate7_status(task_dir)["next_action"], "complete")
             self.assertEqual(dispatch_expansion_audit_packet(task_dir, "audit-test")["status"], "dispatched")
             self.assertFalse(collect_expansion_audit_status(task_dir)["returned"])
             write_jsonl(task_dir / "state/expansion_audit.jsonl", self.expansion_audit())

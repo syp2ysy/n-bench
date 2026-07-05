@@ -205,7 +205,7 @@ def _topic_boundary_rationale_present(audit: dict) -> bool:
 
 
 def _audit_session_id(audit: dict) -> str:
-    return str(audit.get("subagent_session_id") or audit.get("auditor_id") or "").strip()
+    return str(audit.get("subagent_session_id") or "").strip()
 
 
 def second_audit_trigger_reasons(audit: dict, actual_depth: str) -> list[str]:
@@ -270,13 +270,17 @@ def secondary_audit_record_errors(record: dict, primary_audit: dict | None, actu
     primary_session = _audit_session_id(primary_audit or {})
     record_primary = str(record.get("primary_audit_session_id") or "").strip()
     secondary_session = str(record.get("subagent_session_id") or "").strip()
+    expected_reasons = set(second_audit_trigger_reasons(primary_audit or {}, actual_depth))
+    if expected_reasons and not primary_session:
+        errors.append("missing_primary_audit_session_id")
+    if expected_reasons and not record_primary:
+        errors.append("missing_secondary_primary_audit_session_id")
     if primary_session and record_primary and record_primary != primary_session:
         errors.append("primary_audit_session_mismatch")
     if primary_session and secondary_session == primary_session:
         errors.append("secondary_audit_not_independent")
     if not secondary_session:
         errors.append("missing_secondary_subagent_session_id")
-    expected_reasons = set(second_audit_trigger_reasons(primary_audit or {}, actual_depth))
     supplied_reasons = {str(item) for item in record.get("trigger_reasons") or []}
     if expected_reasons and not expected_reasons.issubset(supplied_reasons):
         errors.append("secondary_audit_missing_trigger_responses")
@@ -377,10 +381,13 @@ def validate_topic_relevance(
         if secondary:
             decision = str(secondary.get("decision") or "")
             allowed_depth = str(secondary.get("allowed_depth") or "")
-            if decision == "confirm_core" and not _actual_depth_exceeds_allowed(actual_depth, allowed_depth):
+            primary_grade = str(audit.get("relevance_grade") or "")
+            primary_allowed_depth = str(audit.get("allowed_depth") or "")
+            primary_core = primary_grade == "core" and audit.get("family_label_supported") is True and not _actual_depth_exceeds_allowed(actual_depth, primary_allowed_depth)
+            if decision == "confirm_core" and primary_core and not _actual_depth_exceeds_allowed(actual_depth, allowed_depth):
                 core_ab.append(pid)
                 continue
-            if decision == "direct_related_survey" and not _actual_depth_exceeds_allowed(actual_depth, allowed_depth):
+            if decision == "direct_related_survey" and primary_grade in {"core", "direct_related_survey"} and not _actual_depth_exceeds_allowed(actual_depth, allowed_depth):
                 direct_ab.append(pid)
                 continue
             invalid_ab.append(pid)

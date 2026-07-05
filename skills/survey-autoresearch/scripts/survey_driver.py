@@ -62,18 +62,117 @@ def _sha256_file(path: Path) -> str:
     return digest.hexdigest()
 
 
-def _source_hashes(task_dir: Path) -> dict:
+INTENT_HASH_FILES_BY_ACTION = {
+    "spawn_discovery_agents": [
+        "state/task_spec.md",
+        "state/survey_type_plan.yml",
+        "state/progress.json",
+        "state/discovery_spawn_requests.json",
+    ],
+    "spawn_topic_relevance_agents": [
+        "state/raw_candidates.jsonl",
+        "state/search_routes.jsonl",
+        "state/lqs_scores.jsonl",
+        "state/corpus_expansion.json",
+        "state/papers.jsonl",
+        "state/citation_plan.jsonl",
+        "state/survey_type_plan.yml",
+        "state/topic_relevance_spawn_requests.json",
+    ],
+    "spawn_topic_relevance_second_audit_agents": [
+        "state/raw_candidates.jsonl",
+        "state/papers.jsonl",
+        "state/citation_plan.jsonl",
+        "state/survey_type_plan.yml",
+        "state/topic_relevance_audit.jsonl",
+        "state/topic_relevance_second_audits.jsonl",
+        "state/topic_relevance_spawn_requests.json",
+    ],
+    "spawn_paper_understanding_agents": [
+        "state/papers.jsonl",
+        "state/citation_plan.jsonl",
+        "state/topic_relevance_audit.jsonl",
+        "state/topic_relevance_second_audits.jsonl",
+        "state/full_text_fetch_plan.json",
+        "state/full_text_sources.jsonl",
+        "state/paper_mechanism_cards.jsonl",
+        "state/paper_understanding_spawn_requests.json",
+    ],
+    "spawn_reviewers": [
+        "outputs/survey_candidate.md",
+        "outputs/appendix.md",
+        "state/paper_mechanism_cards.jsonl",
+        "state/claim_evidence_spans.jsonl",
+        "state/section_evidence_plans.jsonl",
+        "state/gate7_spawn_requests.json",
+    ],
+    "spawn_repair_agents": [
+        "outputs/survey_candidate.md",
+        "state/expert_review_adjudication.json",
+        "state/gate7_repair_plan.json",
+        "state/gate7_repair_batches.json",
+        "state/gate7_spawn_requests.json",
+    ],
+    "spawn_targeted_rereviewers": [
+        "outputs/survey_candidate.md",
+        "state/repair_actions.jsonl",
+        "state/regression_checks.jsonl",
+        "state/gate7_spawn_requests.json",
+    ],
+}
+
+PROGRESS_HASH_FILES = [
+    "state/raw_candidates.jsonl",
+    "state/search_routes.jsonl",
+    "state/lqs_scores.jsonl",
+    "state/corpus_expansion.json",
+    "state/papers.jsonl",
+    "state/citation_plan.jsonl",
+    "state/topic_relevance_audit.jsonl",
+    "state/topic_relevance_second_audits.jsonl",
+    "state/topic_relevance_runtime_action.json",
+    "state/topic_relevance_spawn_requests.json",
+    "state/topic_relevance_results.jsonl",
+    "state/paper_understanding_runtime_action.json",
+    "state/paper_understanding_spawn_requests.json",
+    "state/full_text_sources.jsonl",
+    "state/paper_mechanism_cards.jsonl",
+    "state/gate7_runtime_action.json",
+    "state/gate7_spawn_requests.json",
+    "state/gate7_repair_plan.json",
+    "state/runtime_active_intent.json",
+    "state/runtime_dispatch_queue.jsonl",
+    "state/runtime_agent_sessions.jsonl",
+    "state/runtime_agent_results.jsonl",
+    "outputs/survey_candidate.md",
+    "outputs/survey_candidate.html",
+]
+
+
+def _artifact_hashes(task_dir: Path, relative_paths: list[str]) -> dict:
+    return {relative: _sha256_file(task_dir / relative) for relative in relative_paths}
+
+
+def _intent_source_hashes(task_dir: Path, next_action: str) -> dict:
+    return _artifact_hashes(task_dir, INTENT_HASH_FILES_BY_ACTION.get(next_action, []))
+
+
+def _progress_hashes(task_dir: Path) -> dict:
+    return _artifact_hashes(task_dir, PROGRESS_HASH_FILES)
+
+
+def _progress_hash(task_dir: Path) -> str:
+    return _stable_hash(_progress_hashes(task_dir))
+
+
+def _runtime_activity_summary(task_dir: Path) -> dict:
     state = _state(task_dir)
-    outputs = task_dir / "outputs"
+    rows = read_jsonl(state / "runtime_dispatch_queue.jsonl")
     return {
-        "raw_candidates": _sha256_file(state / "raw_candidates.jsonl"),
-        "papers": _sha256_file(state / "papers.jsonl"),
-        "citation_plan": _sha256_file(state / "citation_plan.jsonl"),
-        "topic_relevance_audit": _sha256_file(state / "topic_relevance_audit.jsonl"),
-        "paper_mechanism_cards": _sha256_file(state / "paper_mechanism_cards.jsonl"),
-        "full_text_sources": _sha256_file(state / "full_text_sources.jsonl"),
-        "survey_candidate": _sha256_file(outputs / "survey_candidate.md"),
-        "gate7_repair_plan": _sha256_file(state / "gate7_repair_plan.json"),
+        "pending_spawn_count": len([row for row in rows if row.get("status") == "pending_spawn"]),
+        "spawned_count": len([row for row in rows if row.get("status") == "spawned"]),
+        "invalid_result_count": len([row for row in rows if row.get("status") == "invalid_result"]),
+        "rebalance_required_count": len([row for row in rows if row.get("status") == "rebalance_required"]),
     }
 
 
@@ -111,7 +210,7 @@ def _write_runtime_intent(task_dir: Path, result: dict, phase_status: dict) -> N
     next_action = str(result.get("next_action") or "")
     allowed = REQUEST_TYPES_BY_ACTION.get(next_action, [])
     active_phase = result.get("blocked_by_phase") or phase_status.get("blocked_by_phase")
-    hashes = _source_hashes(task_dir)
+    hashes = _intent_source_hashes(task_dir, next_action)
     generation_payload = {
         "active_phase": active_phase,
         "next_action": next_action,
@@ -152,7 +251,8 @@ def _finish(task_dir: Path, result: dict, actions: list[str], phase_status: dict
     output = {**result, **envelope, "actions": actions}
     _write_runtime_intent(task_dir, output, phase_status)
     _append_history(task_dir, output, phase_status)
-    return output
+    repeated = _maybe_repeated_blocker_after_finish(task_dir, output)
+    return repeated or output
 
 
 def _append_history(task_dir: Path, result: dict, phase_status: dict) -> None:
@@ -163,39 +263,51 @@ def _append_history(task_dir: Path, result: dict, phase_status: dict) -> None:
         "next_action": result.get("next_action"),
         "blocked_by_phase": result.get("blocked_by_phase") or phase_status.get("blocked_by_phase"),
         "active_batch_id": result.get("active_batch_id"),
-        "candidate_hash": _sha256_file(task_dir / "outputs" / "survey_candidate.md"),
-        "paper_cards_hash": _sha256_file(state / "paper_mechanism_cards.jsonl"),
-        "full_text_sources_hash": _sha256_file(state / "full_text_sources.jsonl"),
+        "progress_hash": _progress_hash(task_dir),
+        "progress_hashes": _progress_hashes(task_dir),
+        "runtime_activity": _runtime_activity_summary(task_dir),
     }
     row["blocker_fingerprint"] = "|".join(str(row.get(key) or "") for key in ["status", "next_action", "blocked_by_phase", "active_batch_id"])
     history_path = state / "survey_driver_history.jsonl"
     write_jsonl(history_path, read_jsonl(history_path) + [row])
 
 
-def _repeated_blocker(task_dir: Path) -> dict | None:
+def _maybe_repeated_blocker_after_finish(task_dir: Path, result: dict) -> dict | None:
+    if str(result.get("status") or "") in {"complete", "quality_limited_stop"}:
+        return None
+    if str(result.get("next_action") or "") in REQUEST_TYPES_BY_ACTION:
+        return None
     history = read_jsonl(_state(task_dir) / "survey_driver_history.jsonl")
     if len(history) < 3:
         return None
     last_three = history[-3:]
+    if not all(item.get("progress_hash") for item in last_three):
+        return None
     same_blocker = len({item.get("blocker_fingerprint") for item in last_three}) == 1
-    same_hashes = len({
-        (
-            item.get("candidate_hash"),
-            item.get("paper_cards_hash"),
-            item.get("full_text_sources_hash"),
-            item.get("active_batch_id"),
-        )
-        for item in last_three
-    }) == 1
-    if not (same_blocker and same_hashes):
+    same_progress = len({item.get("progress_hash") for item in last_three}) == 1
+    runtime = _runtime_activity_summary(task_dir)
+    runtime_waiting = any(runtime.get(key, 0) for key in ["pending_spawn_count", "spawned_count", "invalid_result_count", "rebalance_required_count"])
+    if not (same_blocker and same_progress) or runtime_waiting:
         return None
     return {
-        "status": "blocked_repeated_no_progress",
-        "next_action": "inspect_survey_driver",
-        "terminal": True,
-        "blocked": True,
+        **status_envelope(
+            COMPONENT,
+            "blocked_repeated_no_progress",
+            next_action="inspect_survey_driver",
+            terminal=True,
+            blocked=True,
+            blocked_by_phase=result.get("blocked_by_phase"),
+            active_batch_id=result.get("active_batch_id"),
+            summary={
+                "blocker_fingerprint": last_three[-1].get("blocker_fingerprint"),
+                "progress_hash": last_three[-1].get("progress_hash"),
+                "history_count": len(history),
+            },
+        ),
         "blocker_fingerprint": last_three[-1].get("blocker_fingerprint"),
+        "progress_hash": last_three[-1].get("progress_hash"),
         "history_count": len(history),
+        "actions": result.get("actions") or [],
     }
 
 
@@ -271,9 +383,6 @@ def run_until_complete(task_dir: Path, target: str = "full", max_steps: int = 25
             build_full_text_fetch_plan(task_dir)
             runtime = prepare_paper_understanding_batches(task_dir)
             return _finish(task_dir, runtime, actions, {"blocked_by_phase": "paper_understanding"})
-        repeated = _repeated_blocker(task_dir)
-        if repeated:
-            return _finish(task_dir, repeated, actions)
         phase_status = evaluate_phase_barriers(task_dir, target)
         blocked_by = phase_status.get("blocked_by_phase")
         next_action = phase_status.get("next_action") or phase_status.get("allowed_next_phase")

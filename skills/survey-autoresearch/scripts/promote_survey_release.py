@@ -11,8 +11,10 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 try:
+    from .gate_freshness import stable_gate_hash
     from .gate_check import evaluate_gates
 except ImportError:  # pragma: no cover
+    from gate_freshness import stable_gate_hash
     from gate_check import evaluate_gates
 
 
@@ -93,8 +95,7 @@ def promote_release(task_dir: Path, target: str = "full", gate_check_path: Path 
     final_report = outputs / "final_report.md"
 
     gates = evaluate_gates(task_dir, target)
-    gate_payload = json.dumps(gates, sort_keys=True, ensure_ascii=False).encode("utf-8")
-    gate_hash = hashlib.sha256(gate_payload).hexdigest()
+    gate_hash = stable_gate_hash(gates)
     level = completion_level(gates)
     allowed = bool(gates.get("release_allowed") and gates.get("all_blocking_gates_passed"))
 

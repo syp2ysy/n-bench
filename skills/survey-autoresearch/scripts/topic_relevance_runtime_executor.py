@@ -497,14 +497,20 @@ def record_topic_relevance_result(task_dir: Path, result: dict, subagent_session
     errors = _validate_result(task_dir, result, batch)
     if errors:
         return {"status": "invalid", "error": "invalid_topic_relevance_result", "errors": errors}
-    row = {**result, "fresh_context": True, "subagent_session_id": subagent_session_id, "recorded_at": _utc_now()}
+    recorded_at = _utc_now()
+    stamped_records = [
+        {**record, "fresh_context": True, "subagent_session_id": subagent_session_id, "recorded_at": recorded_at}
+        for record in result.get("audit_records") or []
+        if isinstance(record, dict)
+    ]
+    row = {**result, "audit_records": stamped_records, "fresh_context": True, "subagent_session_id": subagent_session_id, "recorded_at": recorded_at}
     write_jsonl(state / "topic_relevance_results.jsonl", read_jsonl(state / "topic_relevance_results.jsonl") + [row])
     if result.get("status") == "resolved":
         paper_ids = {str(pid) for pid in batch.get("paper_ids") or []}
-        merged = _merge_audits(read_jsonl(state / "topic_relevance_audit.jsonl"), result.get("audit_records") or [], paper_ids)
+        merged = _merge_audits(read_jsonl(state / "topic_relevance_audit.jsonl"), stamped_records, paper_ids)
         write_jsonl(state / "topic_relevance_audit.jsonl", merged)
         batch["status"] = "resolved"
-        batch["resolved_at"] = row["recorded_at"]
+        batch["resolved_at"] = recorded_at
         batch["subagent_session_id"] = subagent_session_id
     else:
         batch["status"] = str(result.get("status"))
