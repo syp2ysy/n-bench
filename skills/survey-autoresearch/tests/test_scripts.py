@@ -3228,6 +3228,15 @@ class SurveyAutoResearchContractTest(unittest.TestCase):
             self.assertTrue(
                 all(row.get("subagent_session_id") == "topic-agent-001" for row in recorded_audits if row["paper_id"] in set(active["paper_ids"]))
             )
+            self.assertTrue(
+                all(row.get("batch_id") == active["batch_id"] for row in recorded_audits if row["paper_id"] in set(active["paper_ids"]))
+            )
+            self.assertTrue(
+                all(row.get("source_batch_id") == active["batch_id"] for row in recorded_audits if row["paper_id"] in set(active["paper_ids"]))
+            )
+            self.assertTrue(
+                all(row.get("result_hash") for row in recorded_audits if row["paper_id"] in set(active["paper_ids"]))
+            )
 
     def test_topic_relevance_prepare_uses_raw_candidates_without_paper_ids(self):
         from scripts.topic_relevance_runtime_executor import prepare_topic_relevance_batches

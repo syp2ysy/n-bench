@@ -503,12 +503,28 @@ def record_topic_relevance_result(task_dir: Path, result: dict, subagent_session
     if errors:
         return {"status": "invalid", "error": "invalid_topic_relevance_result", "errors": errors}
     recorded_at = _utc_now()
+    result_hash = _stable_hash(result)
     stamped_records = [
-        {**record, "fresh_context": True, "subagent_session_id": subagent_session_id, "recorded_at": recorded_at}
+        {
+            **record,
+            "fresh_context": True,
+            "batch_id": batch_id,
+            "source_batch_id": batch_id,
+            "result_hash": result_hash,
+            "subagent_session_id": subagent_session_id,
+            "recorded_at": recorded_at,
+        }
         for record in result.get("audit_records") or []
         if isinstance(record, dict)
     ]
-    row = {**result, "audit_records": stamped_records, "fresh_context": True, "subagent_session_id": subagent_session_id, "recorded_at": recorded_at}
+    row = {
+        **result,
+        "audit_records": stamped_records,
+        "fresh_context": True,
+        "result_hash": result_hash,
+        "subagent_session_id": subagent_session_id,
+        "recorded_at": recorded_at,
+    }
     write_jsonl(state / "topic_relevance_results.jsonl", read_jsonl(state / "topic_relevance_results.jsonl") + [row])
     if result.get("status") == "resolved":
         paper_ids = {str(pid) for pid in batch.get("paper_ids") or []}
