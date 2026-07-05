@@ -23,6 +23,8 @@ COMPONENT = "topic_relevance_runtime_executor"
 RESULT_SCHEMA_VERSION = 1
 DEFAULT_BATCH_SIZE = 25
 DEFAULT_SECOND_AUDIT_BATCH_SIZE = 10
+RETRY_SPLIT_FAILURE_THRESHOLD = 2
+RETRY_SPLIT_BATCH_SIZE = 8
 REQUIRED_RESULT_KEYS = ["batch_id", "status", "audit_records", "validator_results", "remaining_blockers"]
 SECOND_AUDIT_RESULT_KEYS = ["batch_id", "status", "paper_ids", "secondary_audit_records", "validator_results", "remaining_blockers"]
 VALID_RESULT_STATUSES = {"resolved", "partially_resolved", "blocked"}
@@ -220,6 +222,65 @@ def _make_batches(paper_ids: list[str], batch_size: int) -> list[dict]:
     return batches
 
 
+def _topic_batch_worker_failure_count(task_dir: Path, batch_id: str) -> int:
+    failures = 0
+    for row in read_jsonl(_state(task_dir) / "runtime_dispatch_queue.jsonl"):
+        if row.get("request_type") != "topic_relevance":
+            continue
+        if str(row.get("batch_id") or "") != str(batch_id):
+            continue
+        status = str(row.get("status") or "")
+        error = str(row.get("error") or "")
+        if status == "stale_spawned" and error:
+            failures += 1
+    return failures
+
+
+def _split_active_batch_after_worker_failures(task_dir: Path, doc: dict) -> dict:
+    active_id = str(doc.get("active_batch_id") or "")
+    if not active_id:
+        return doc
+    batches = list(doc.get("batches") or [])
+    active_index = next((idx for idx, batch in enumerate(batches) if str(batch.get("batch_id") or "") == active_id), None)
+    if active_index is None:
+        return doc
+    active = batches[active_index]
+    paper_ids = [str(pid) for pid in active.get("paper_ids") or [] if str(pid)]
+    if active.get("split_from") or len(paper_ids) <= RETRY_SPLIT_BATCH_SIZE:
+        return doc
+    failure_count = _topic_batch_worker_failure_count(task_dir, active_id)
+    if failure_count < RETRY_SPLIT_FAILURE_THRESHOLD:
+        return doc
+    split_at = _utc_now()
+    split_batches = []
+    for idx, start in enumerate(range(0, len(paper_ids), RETRY_SPLIT_BATCH_SIZE), start=1):
+        ids = paper_ids[start:start + RETRY_SPLIT_BATCH_SIZE]
+        split_batches.append(
+            {
+                "batch_id": f"{active_id}S{idx:02d}",
+                "status": "pending_spawn" if idx == 1 else "blocked_by_upstream",
+                "paper_ids": ids,
+                "paper_count": len(ids),
+                "split_from": active_id,
+                "split_at": split_at,
+                "split_reason": "repeated_topic_relevance_worker_failures",
+                "split_failure_count": failure_count,
+            }
+        )
+    doc["batches"] = batches[:active_index] + split_batches + batches[active_index + 1:]
+    doc["split_events"] = list(doc.get("split_events") or []) + [
+        {
+            "ts": split_at,
+            "batch_id": active_id,
+            "failure_count": failure_count,
+            "split_batch_ids": [batch["batch_id"] for batch in split_batches],
+            "split_batch_size": RETRY_SPLIT_BATCH_SIZE,
+        }
+    ]
+    doc["active_batch_id"] = split_batches[0]["batch_id"] if split_batches else None
+    return doc
+
+
 def _make_second_audit_batches(paper_ids: list[str], batch_size: int) -> list[dict]:
     batches = []
     for idx, start in enumerate(range(0, len(paper_ids), batch_size), start=1):
@@ -325,6 +386,8 @@ def prepare_topic_relevance_batches(task_dir: Path, batch_size: int = DEFAULT_BA
     existing = read_json(state / "topic_relevance_batches.json")
     if existing.get("plan_hash") == plan_hash and existing.get("batches"):
         doc = _refresh_batch_statuses(existing)
+        doc = _split_active_batch_after_worker_failures(task_dir, doc)
+        doc = _refresh_batch_statuses(doc)
     else:
         doc = {
             "plan_hash": plan_hash,

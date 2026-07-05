@@ -3307,6 +3307,64 @@ class SurveyAutoResearchContractTest(unittest.TestCase):
             self.assertIn("Allowed allowed_role values only: core, related_survey, background, exclude", request["message"])
             self.assertIn("evidence_used must be a list of objects", request["message"])
 
+    def test_topic_relevance_repeated_worker_failures_split_active_batch(self):
+        from scripts.topic_relevance_runtime_executor import prepare_topic_relevance_batches
+
+        with tempfile.TemporaryDirectory() as tmp:
+            task_dir = initialize_task(Path(tmp), "topic relevance retry splitting", target="full")
+            state = task_dir / "state"
+            write_jsonl(
+                state / "raw_candidates.jsonl",
+                [
+                    {
+                        "paper_id": f"p{idx:03d}",
+                        "title": f"Visual Scratchpad Candidate {idx}",
+                        "abstract": "A candidate about visual intermediate-state reasoning.",
+                        "url": f"https://example.org/p{idx:03d}",
+                    }
+                    for idx in range(20)
+                ],
+            )
+            first = prepare_topic_relevance_batches(task_dir, batch_size=20)
+            self.assertEqual(first["active_batch_id"], "TR001")
+            write_jsonl(
+                state / "runtime_dispatch_queue.jsonl",
+                [
+                    {
+                        "request_id": "topic-relevance-TR001",
+                        "request_type": "topic_relevance",
+                        "batch_id": "TR001",
+                        "status": "stale_spawned",
+                        "spawned_agent_id": "topic-agent-001",
+                        "error": "worker_stream_disconnected",
+                    },
+                    {
+                        "request_id": "topic-relevance-TR001-retry02",
+                        "request_type": "topic_relevance",
+                        "batch_id": "TR001",
+                        "status": "stale_spawned",
+                        "spawned_agent_id": "topic-agent-002",
+                        "error": "worker_stream_disconnected_retry",
+                    },
+                    {
+                        "request_id": "topic-relevance-TR001-retry03",
+                        "request_type": "topic_relevance",
+                        "batch_id": "TR001",
+                        "status": "pending_spawn",
+                    },
+                ],
+            )
+            split = prepare_topic_relevance_batches(task_dir, batch_size=20)
+            self.assertEqual(split["active_batch_id"], "TR001S01")
+            self.assertLessEqual(len(split["spawn_requests"][0]["paper_ids"]), 8)
+            doc = json.loads((state / "topic_relevance_batches.json").read_text(encoding="utf-8"))
+            split_batches = [batch for batch in doc["batches"] if batch.get("split_from") == "TR001"]
+            self.assertEqual([batch["batch_id"] for batch in split_batches], ["TR001S01", "TR001S02", "TR001S03"])
+            self.assertEqual(sum(len(batch["paper_ids"]) for batch in split_batches), 20)
+            self.assertEqual(split_batches[0]["status"], "pending_spawn")
+            self.assertTrue(all(batch["status"] == "blocked_by_upstream" for batch in split_batches[1:]))
+            self.assertEqual(doc["split_events"][0]["failure_count"], 2)
+
     def test_topic_relevance_rebalance_uses_audited_replacement_pool(self):
         from scripts.rebalance_ab_selection import rebalance_ab_selection
         from scripts.validate_topic_relevance import validate_topic_relevance
