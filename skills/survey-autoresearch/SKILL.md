@@ -71,6 +71,7 @@ Important barriers:
 | Sync compact run state | `python3 scripts/run_state.py --task-dir <run> --target <target> --sync` |
 | Sync compact task queue | `python3 scripts/task_queue.py --task-dir <run> --sync` |
 | Prepare/record topic profile | `python3 scripts/topic_profile.py --task-dir <run> --prepare` / `--record-result <json>` |
+| Inspect or prepare corpus pipeline | `python3 scripts/corpus_pipeline.py --task-dir <run> --target <target> --collect-status` / `--prepare` |
 | Collect pending worker requests | `python3 scripts/task_queue.py --task-dir <run> --collect-pending` |
 | Record spawned worker session | `python3 scripts/task_queue.py --task-dir <run> --mark-spawned <request-id> --agent-id <session-id>` |
 | Record worker output | `python3 scripts/task_queue.py --task-dir <run> --record-agent-output <request-id> --output-file <file>` |
@@ -80,7 +81,7 @@ Important barriers:
 | Record review failures | `python3 scripts/failure_ledger.py --task-dir <run> --append-from-adjudication` |
 | Promote final survey | `python3 scripts/promote_survey_release.py --task-dir <run> --target <target>` |
 
-All other scripts are internal helpers unless a contract below explicitly says otherwise. In particular, `survey_driver.py`, `phase_gate.py`, `gate_check.py`, `runtime_dispatcher.py`, topic-relevance, paper-understanding, and Gate 7 runtime executors prepare or record compatibility state; `runner.py`, `gate_engine.py`, and `task_queue.py` are the public orchestration facade.
+All other scripts are internal helpers unless a contract below explicitly says otherwise. In particular, `survey_driver.py`, `phase_gate.py`, `gate_check.py`, `runtime_dispatcher.py`, topic-relevance, paper-understanding, and Gate 7 runtime executors prepare or record compatibility state; `runner.py`, `gate_engine.py`, `task_queue.py`, and `corpus_pipeline.py` are the public orchestration facade.
 
 ## Required Contracts
 

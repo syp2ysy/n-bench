@@ -1689,6 +1689,49 @@ class SurveyAutoResearchContractTest(unittest.TestCase):
             self.assertTrue(after["phases"]["discovery"]["passed"])
             self.assertEqual(after["blocked_by_phase"], "source_verification")
 
+    def test_corpus_pipeline_facade_preserves_topic_boundary_before_discovery(self):
+        from scripts.corpus_pipeline import collect_status as collect_corpus_status
+        from scripts.corpus_pipeline import prepare as prepare_corpus
+
+        with tempfile.TemporaryDirectory() as tmp:
+            task_dir = initialize_task(Path(tmp), "corpus facade empty", target="full")
+            empty = prepare_corpus(task_dir, target="full")
+            self.assertEqual(empty["status"], "blocked_topic_profile_required", empty)
+            self.assertEqual(empty["next_action"], "spawn_topic_profile_agents")
+            self.assertFalse((task_dir / "state/discovery_spawn_requests.json").exists())
+
+            self.write_topic_profile(task_dir, topic="corpus facade empty")
+            discovery = prepare_corpus(task_dir, target="full")
+            self.assertEqual(discovery["status"], "blocked_discovery_agent_spawn_required", discovery)
+            self.assertEqual(discovery["next_action"], "spawn_discovery_agents")
+            self.assertEqual(discovery["corpus_step"], "discovery")
+            self.assertEqual(discovery["component"], "corpus_pipeline")
+            self.assertTrue((task_dir / "state/discovery_spawn_requests.json").exists())
+
+            status = collect_corpus_status(task_dir, target="full")
+            self.assertEqual(status["status"], "blocked_discovery_agent_spawn_required", status)
+            self.assertEqual(status["corpus_step"], "discovery")
+
+    def test_corpus_pipeline_facade_routes_source_corpus_audits(self):
+        from scripts.corpus_pipeline import collect_status as collect_corpus_status
+        from scripts.corpus_pipeline import prepare as prepare_corpus
+
+        with tempfile.TemporaryDirectory() as tmp:
+            task_dir = initialize_task(Path(tmp), "corpus facade topic audit", target="full")
+            self.populate_source_verified_task(task_dir)
+            (task_dir / "state/topic_relevance_audit.jsonl").write_text("", encoding="utf-8")
+
+            status = prepare_corpus(task_dir, target="full")
+            self.assertEqual(status["status"], "blocked_topic_relevance_agent_spawn_required", status)
+            self.assertEqual(status["next_action"], "spawn_topic_relevance_agents")
+            self.assertEqual(status["corpus_step"], "topic_relevance_audit")
+            self.assertEqual(status["summary"]["public_artifacts"]["topic_relevance_audit"], "missing")
+
+            collected = collect_corpus_status(task_dir, target="full")
+            self.assertEqual(collected["status"], "blocked_topic_relevance_agent_spawn_required", collected)
+            self.assertEqual(collected["corpus_step"], "topic_relevance_audit")
+            self.assertGreater(collected["summary"]["pending_batch_count"], 0)
+
     def test_runner_requires_topic_profile_before_discovery(self):
         from scripts.runner import run_until_complete as run_public_runner
         from scripts.runtime_dispatcher import collect_pending
