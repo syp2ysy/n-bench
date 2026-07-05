@@ -21,7 +21,7 @@ Every top-level tree branch needs:
 - related-survey taxonomy support or an explicit taxonomy delta
 - representative papers and supporting papers
 
-`state/spine_decision.md` must answer:
+`spine_planner.py` is the public facade for preparing and recording worker-selected spine refinements after `knowledge_tree_builder.py` has produced the tree. `state/spine_decision.md` must answer:
 
 1. how existing related surveys organize the topic
 2. what those surveys cover and miss

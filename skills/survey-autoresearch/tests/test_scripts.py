@@ -1809,6 +1809,24 @@ class SurveyAutoResearchContractTest(unittest.TestCase):
             "remaining_blockers": [],
         }
 
+    def spine_plan_worker_result(self) -> dict:
+        return {
+            "batch_id": "SP001",
+            "status": "resolved",
+            "selected_spine": "evidence-flow-first",
+            "candidate_taxonomies": ["method-first", "evidence-flow-first"],
+            "spine_decision": (
+                "# Spine Decision\n\n"
+                "Existing related surveys organize the topic by method families, benchmark recipes, and deployment assumptions.\n\n"
+                "Candidate taxonomies: method-first and evidence-flow-first.\n\n"
+                "Why this spine is better for the current corpus: p001 and p002 show that evidence flow, not paper chronology, changes downstream claims.\n\n"
+                "Section-to-evidence map: S1 uses p001 and p002 to explain retrieval memory evidence flow.\n"
+            ),
+            "section_to_evidence_map": {"S1": {"paper_ids": ["p001", "p002"], "role": "retrieval evidence flow"}},
+            "validator_results": [{"validator": "validate_spine_plan", "status": "passed"}],
+            "remaining_blockers": [],
+        }
+
     def test_knowledge_tree_builder_records_worker_artifacts(self):
         from scripts.knowledge_tree_builder import prepare_knowledge_tree_request, record_knowledge_tree_result
         from scripts.knowledge_tree_store import mirror_knowledge_tree, validate_knowledge_tree_store
@@ -1850,6 +1868,42 @@ class SurveyAutoResearchContractTest(unittest.TestCase):
             mirrored = mirror_knowledge_tree(task_dir)
             self.assertEqual(mirrored["status"], "mirrored")
 
+    def test_spine_planner_prepares_and_records_worker_spine(self):
+        from scripts.knowledge_tree_builder import record_knowledge_tree_result
+        from scripts.paper_card_store import mirror_paper_cards
+        from scripts.spine_planner import prepare_spine_plan_request, record_spine_plan_result, validate_spine_plan
+
+        with tempfile.TemporaryDirectory() as tmp:
+            task_dir = initialize_task(Path(tmp), "spine planner missing tree", target="full")
+            blocked = prepare_spine_plan_request(task_dir, target="full")
+            self.assertEqual(blocked["status"], "blocked_knowledge_tree_required", blocked)
+            self.assertFalse((task_dir / "state/spine_planner_spawn_requests.json").exists())
+
+        with tempfile.TemporaryDirectory() as tmp:
+            task_dir = initialize_task(Path(tmp), "spine planner worker", target="full")
+            self.populate_full_task(task_dir)
+            mirror_paper_cards(task_dir)
+            recorded_tree = record_knowledge_tree_result(task_dir, self.knowledge_tree_worker_result(), "knowledge-tree-agent-001")
+            self.assertEqual(recorded_tree["status"], "recorded", recorded_tree)
+            (task_dir / "state/spine_decision.md").write_text("# Weak Spine\n\nThis does not compare surveys or map evidence.\n", encoding="utf-8")
+            invalid = validate_spine_plan(task_dir, target="full")
+            self.assertFalse(invalid["valid"], invalid)
+            self.assertIn("spine_decision_missing_existing_related_surveys", invalid["errors"])
+
+            prepared = prepare_spine_plan_request(task_dir, target="full")
+            self.assertEqual(prepared["status"], "blocked_spine_planner_agent_spawn_required", prepared)
+            self.assertEqual(prepared["next_action"], "spawn_spine_planner_agents")
+            self.assertEqual(prepared["spawn_requests"][0]["request_type"], "spine_planner")
+            self.assertIn("spine_planner.py", prepared["spawn_requests"][0]["record_command"])
+
+            recorded = record_spine_plan_result(task_dir, self.spine_plan_worker_result(), "spine-agent-001")
+            self.assertEqual(recorded["status"], "recorded", recorded)
+            valid = validate_spine_plan(task_dir, target="full")
+            self.assertTrue(valid["valid"], valid)
+            self.assertIn("p001", valid["trace_paper_ids"])
+            tree = json.loads((task_dir / "outputs/knowledge_tree.yml").read_text(encoding="utf-8"))
+            self.assertEqual(tree["selected_spine"], "evidence-flow-first")
+
     def test_survey_driver_routes_missing_knowledge_tree_to_worker_queue(self):
         from scripts.runner import run_until_complete as run_public_runner
         from scripts.runtime_dispatcher import mark_spawned
@@ -1884,6 +1938,36 @@ class SurveyAutoResearchContractTest(unittest.TestCase):
             self.assertEqual(recorded["status"], "result_recorded", recorded)
             self.assertEqual(recorded["record_result"]["status"], "recorded")
             self.assertTrue((task_dir / "outputs/knowledge_tree.yml").exists())
+
+    def test_runtime_dispatcher_routes_spine_planner_output(self):
+        from scripts.knowledge_tree_builder import record_knowledge_tree_result
+        from scripts.paper_card_store import mirror_paper_cards
+        from scripts.runner import run_until_complete as run_public_runner
+        from scripts.task_queue import collect_pending, mark_spawned, record_agent_output
+
+        with tempfile.TemporaryDirectory() as tmp:
+            task_dir = initialize_task(Path(tmp), "spine planner driver", target="full")
+            self.populate_full_task(task_dir)
+            mirror_paper_cards(task_dir)
+            recorded_tree = record_knowledge_tree_result(task_dir, self.knowledge_tree_worker_result(), "knowledge-tree-agent-001")
+            self.assertEqual(recorded_tree["status"], "recorded", recorded_tree)
+            (task_dir / "state/spine_decision.md").write_text("# Weak Spine\n\nNo related survey comparison.\n", encoding="utf-8")
+
+            status = run_public_runner(task_dir, target="full", max_steps=5)
+            self.assertEqual(status["status"], "blocked_spine_planner_agent_spawn_required", status)
+            self.assertEqual(status["next_action"], "spawn_spine_planner_agents")
+            pending = collect_pending(task_dir)
+            self.assertEqual([row["request_type"] for row in pending["tasks"]], ["spine_planner"])
+            request = pending["tasks"][0]
+            packet = json.loads((task_dir / request["packet"]).read_text(encoding="utf-8"))
+            self.assertIn("spine_planner.py", packet["record_command"])
+            mark_spawned(task_dir, request["task_id"], "spine-agent-001")
+            output_file = Path(tmp) / "spine-plan-result.json"
+            output_file.write_text(json.dumps(self.spine_plan_worker_result(), sort_keys=True), encoding="utf-8")
+            recorded = record_agent_output(task_dir, request["task_id"], output_file)
+            self.assertEqual(recorded["status"], "result_recorded", recorded)
+            self.assertEqual(recorded["record_result"]["status"], "recorded")
+            self.assertIn("evidence-flow-first", (task_dir / "state/spine_decision.md").read_text(encoding="utf-8"))
 
     def test_runner_requires_topic_profile_before_discovery(self):
         from scripts.runner import run_until_complete as run_public_runner

@@ -17,6 +17,7 @@ try:  # pragma: no cover - script import fallback
     from .phase_gate import evaluate_phase_barriers
     from .rebalance_ab_selection import rebalance_ab_selection
     from .run_expert_reviews import read_json, read_jsonl, write_json, write_jsonl
+    from .spine_planner import prepare_spine_plan_request, validate_spine_plan
     from .status_schema import STATUS_SCHEMA_VERSION
     from .status_schema import status_envelope
     from .topic_profile import prepare_topic_profile_request
@@ -29,6 +30,7 @@ except ImportError:  # pragma: no cover
     from phase_gate import evaluate_phase_barriers
     from rebalance_ab_selection import rebalance_ab_selection
     from run_expert_reviews import read_json, read_jsonl, write_json, write_jsonl
+    from spine_planner import prepare_spine_plan_request, validate_spine_plan
     from status_schema import STATUS_SCHEMA_VERSION
     from status_schema import status_envelope
     from topic_profile import prepare_topic_profile_request
@@ -44,6 +46,7 @@ REQUEST_TYPES_BY_ACTION = {
     "spawn_topic_relevance_second_audit_agents": ["topic_relevance_second_audit"],
     "spawn_paper_understanding_agents": ["paper_understanding"],
     "spawn_knowledge_tree_agents": ["knowledge_tree"],
+    "spawn_spine_planner_agents": ["spine_planner"],
     "spawn_reviewers": ["gate7_reviewer"],
     "spawn_repair_agents": ["gate7_repair"],
     "spawn_targeted_rereviewers": ["gate7_targeted_rereview"],
@@ -123,6 +126,15 @@ INTENT_HASH_FILES_BY_ACTION = {
         "state/spine_decision.md",
         "state/knowledge_tree_spawn_requests.json",
     ],
+    "spawn_spine_planner_agents": [
+        "state/paper_cards",
+        "state/taxonomy_alignment.jsonl",
+        "outputs/knowledge_tree.yml",
+        "state/paper_clusters.jsonl",
+        "state/taxonomy_candidates.yml",
+        "state/spine_decision.md",
+        "state/spine_planner_spawn_requests.json",
+    ],
     "spawn_reviewers": [
         "outputs/survey_candidate.md",
         "outputs/appendix.md",
@@ -169,6 +181,9 @@ PROGRESS_HASH_FILES = [
     "state/spine_decision.md",
     "state/knowledge_tree_runtime_action.json",
     "state/knowledge_tree_spawn_requests.json",
+    "state/spine_planner_runtime_action.json",
+    "state/spine_planner_spawn_requests.json",
+    "state/spine_planner_results.jsonl",
     "state/gate7_runtime_action.json",
     "state/gate7_spawn_requests.json",
     "state/gate7_repair_plan.json",
@@ -371,6 +386,16 @@ def _synthesis_needs_knowledge_tree(phase_status: dict) -> bool:
     )
 
 
+def _public_spine_needs_planning(task_dir: Path, target: str) -> bool:
+    status = validate_spine_plan(task_dir, target)
+    if status.get("valid"):
+        return False
+    errors = set(status.get("errors") or [])
+    if "missing_knowledge_tree" in errors or "missing_paper_cards" in errors:
+        return False
+    return bool(errors)
+
+
 def _pending_rebalance(task_dir: Path) -> tuple[list[str], list[str]]:
     state = _state(task_dir)
     status = read_json(state / "runtime_rebalance_status.json")
@@ -434,19 +459,6 @@ def run_until_complete(task_dir: Path, target: str = "full", max_steps: int = 25
         blocked_by = phase_status.get("blocked_by_phase")
         next_action = phase_status.get("next_action") or phase_status.get("allowed_next_phase")
         actions.append(str(next_action))
-        if not blocked_by:
-            return _finish(
-                task_dir,
-                {
-                    "status": "complete",
-                    "next_action": "complete",
-                    "terminal": True,
-                    "blocked": False,
-                    "summary": {"last_passed_phase": phase_status.get("last_passed_phase")},
-                },
-                actions,
-                phase_status,
-            )
         if blocked_by == "topic_profile":
             runtime = prepare_topic_profile_request(task_dir, target)
             return _finish(task_dir, runtime, actions, phase_status)
@@ -499,6 +511,22 @@ def run_until_complete(task_dir: Path, target: str = "full", max_steps: int = 25
         if blocked_by == "synthesis" and _synthesis_needs_knowledge_tree(phase_status):
             runtime = prepare_knowledge_tree_request(task_dir, target)
             return _finish(task_dir, runtime, actions, phase_status)
+        if (not blocked_by or blocked_by in {"synthesis", "argument", "article", "expert_review"}) and _public_spine_needs_planning(task_dir, target):
+            runtime = prepare_spine_plan_request(task_dir, target)
+            return _finish(task_dir, runtime, actions, phase_status)
+        if not blocked_by:
+            return _finish(
+                task_dir,
+                {
+                    "status": "complete",
+                    "next_action": "complete",
+                    "terminal": True,
+                    "blocked": False,
+                    "summary": {"last_passed_phase": phase_status.get("last_passed_phase")},
+                },
+                actions,
+                phase_status,
+            )
         if blocked_by == "expert_review":
             return _finish(task_dir, _delegate_gate7(task_dir, target, max_steps), actions, phase_status)
         return _finish(
