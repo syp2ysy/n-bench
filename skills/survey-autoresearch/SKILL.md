@@ -76,6 +76,7 @@ Important barriers:
 | Record worker output | `python3 scripts/task_queue.py --task-dir <run> --record-agent-output <request-id> --output-file <file>` |
 | Validate, explain, or route gates | `python3 scripts/gate_engine.py --task-dir <run> --target <target> [--phase <phase>|--explain|--route-repair]` |
 | Mirror paper cards | `python3 scripts/paper_card_store.py --task-dir <run> --mirror` |
+| Sync knowledge tree/spine | `python3 scripts/knowledge_tree_store.py --task-dir <run> --mirror` / `--validate` |
 | Record review failures | `python3 scripts/failure_ledger.py --task-dir <run> --append-from-adjudication` |
 | Promote final survey | `python3 scripts/promote_survey_release.py --task-dir <run> --target <target>` |
 

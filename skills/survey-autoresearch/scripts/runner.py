@@ -8,11 +8,13 @@ import json
 from pathlib import Path
 
 try:  # pragma: no cover - script import fallback
+    from .knowledge_tree_store import mirror_knowledge_tree
     from .paper_card_store import mirror_paper_cards
     from .run_state import sync_run_state
     from .survey_driver import run_until_complete as run_legacy_driver
     from .task_queue import sync_tasks
 except ImportError:  # pragma: no cover
+    from knowledge_tree_store import mirror_knowledge_tree
     from paper_card_store import mirror_paper_cards
     from run_state import sync_run_state
     from survey_driver import run_until_complete as run_legacy_driver
@@ -24,6 +26,8 @@ def run_until_complete(task_dir: Path, target: str = "full", max_steps: int = 25
     tasks = sync_tasks(task_dir)
     if (task_dir / "state" / "paper_mechanism_cards.jsonl").exists():
         mirror_paper_cards(task_dir)
+    if (task_dir / "outputs" / "contribution_tree.yml").exists():
+        mirror_knowledge_tree(task_dir)
     run_state = sync_run_state(task_dir, target)
     return {
         **driver,

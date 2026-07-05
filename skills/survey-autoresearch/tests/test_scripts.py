@@ -3254,6 +3254,7 @@ class SurveyAutoResearchContractTest(unittest.TestCase):
     def test_v2_slim_core_facades_derive_authoritative_state(self):
         from scripts.failure_ledger import append_failures_from_adjudication, collect_failure_ledger
         from scripts.gate_engine import evaluate_all, evaluate_phase, explain_blocker, route_repair
+        from scripts.knowledge_tree_store import mirror_knowledge_tree, validate_knowledge_tree_store
         from scripts.paper_card_store import mirror_paper_cards, validate_paper_card_store
         from scripts.run_state import sync_run_state
         from scripts.task_queue import sync_tasks
@@ -3286,6 +3287,19 @@ class SurveyAutoResearchContractTest(unittest.TestCase):
             self.assertTrue(card["survey_use"]["changes_knowledge_tree"])
             card_status = validate_paper_card_store(task_dir)
             self.assertTrue(card_status["valid"], card_status)
+
+            tree = mirror_knowledge_tree(task_dir)
+            self.assertEqual(tree["status"], "mirrored", tree)
+            self.assertTrue((task_dir / "outputs/knowledge_tree.yml").exists())
+            self.assertTrue((task_dir / "state/paper_clusters.jsonl").exists())
+            self.assertTrue((task_dir / "state/taxonomy_candidates.yml").exists())
+            self.assertTrue((task_dir / "state/spine_decision.md").exists())
+            tree_status = validate_knowledge_tree_store(task_dir)
+            self.assertTrue(tree_status["valid"], tree_status)
+            self.assertIn("p001", tree_status["paper_ids_with_cards"])
+            synced_after_tree = sync_run_state(task_dir, "full")
+            self.assertEqual(synced_after_tree["research_assets"]["knowledge_tree"]["status"], "ready")
+            self.assertEqual(synced_after_tree["research_assets"]["spine_decision"]["status"], "ready")
 
             (task_dir / "state/expert_review_adjudication.json").write_text(json.dumps(self.adjudication("CW001")), encoding="utf-8")
             ledger = append_failures_from_adjudication(task_dir)
