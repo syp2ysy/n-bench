@@ -3300,6 +3300,37 @@ class SurveyAutoResearchContractTest(unittest.TestCase):
             task_rows = read_jsonl(task_dir / "state/tasks.jsonl")
             self.assertIsInstance(task_rows, list)
 
+    def test_task_queue_facade_records_worker_output(self):
+        from scripts.runner import run_until_complete as run_public_runner
+        from scripts.task_queue import collect_pending, mark_spawned, record_agent_output
+
+        with tempfile.TemporaryDirectory() as tmp:
+            task_dir = initialize_task(Path(tmp), "task queue facade topic", target="full")
+            status = run_public_runner(task_dir, target="full", max_steps=5)
+            self.assertEqual(status["status"], "blocked_topic_profile_agent_spawn_required", status)
+
+            pending = collect_pending(task_dir)
+            self.assertEqual(pending["component"], "task_queue")
+            self.assertEqual([task["request_type"] for task in pending["tasks"]], ["topic_profile"])
+            task = pending["tasks"][0]
+            self.assertEqual(task["status"], "pending")
+
+            spawned = mark_spawned(task_dir, task["task_id"], "topic-profile-agent-001")
+            self.assertEqual(spawned["component"], "task_queue")
+            self.assertEqual(spawned["status"], "spawned", spawned)
+
+            output_file = Path(tmp) / "topic-profile-output.json"
+            profile = self.topic_profile("task queue facade topic")
+            profile["validator_results"] = [{"validator": "validate_topic_profile", "status": "passed"}]
+            profile["remaining_blockers"] = []
+            output_file.write_text(json.dumps(profile, sort_keys=True), encoding="utf-8")
+            recorded = record_agent_output(task_dir, task["task_id"], output_file)
+            self.assertEqual(recorded["component"], "task_queue")
+            self.assertEqual(recorded["status"], "result_recorded", recorded)
+            self.assertTrue((task_dir / "state/topic_profile.json").exists())
+            tasks = read_jsonl(task_dir / "state/tasks.jsonl")
+            self.assertEqual(tasks[0]["status"], "result_recorded")
+
     def test_clean_main_flow_has_no_legacy_schema_terms(self):
         self.assertFalse((ROOT / "references" / ("review" + "_contract.md")).exists())
         main_text = "\n".join(path.read_text(encoding="utf-8") for path in [ROOT / "SKILL.md", ROOT / "scripts/gate_check.py", ROOT / "scripts/init_task.py", ROOT / "scripts/run_expert_reviews.py"])

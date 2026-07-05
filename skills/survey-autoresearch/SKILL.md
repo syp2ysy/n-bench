@@ -9,7 +9,7 @@ Use this skill when the user asks for a literature review, survey paper, researc
 
 The workflow has one public path:
 
-`init_task.py -> runner.py --run-until-complete -> task_queue.py/runtime_dispatcher.py for requested workers -> gate_engine.py -> promote_survey_release.py`
+`init_task.py -> runner.py --run-until-complete -> task_queue.py for requested workers -> gate_engine.py -> promote_survey_release.py`
 
 Final `outputs/survey.md` and `outputs/survey.html` are release-only artifacts. They must not exist, or must be quarantined, until all phase gates and Gate 7 pass and `promote_survey_release.py` promotes the current candidate.
 
@@ -23,10 +23,10 @@ Treat `state/run_state.json`, `state/tasks.jsonl`, `state/paper_cards/`, `output
 
 1. Initialize a run with `scripts/init_task.py`.
 2. Resume work only through `scripts/runner.py --task-dir <run> --target <target> --run-until-complete`.
-3. If the runner returns a worker-spawn status, run `scripts/runtime_dispatcher.py --task-dir <run> --collect-pending` or inspect the normalized `state/tasks.jsonl`.
-4. Spawn only the pending requests returned by the dispatcher with `multi_agent_v1.spawn_agent(fork_context=false)`.
-5. Record each spawned session with `runtime_dispatcher.py --mark-spawned <request-id> --agent-id <subagent-session-id>`.
-6. Save each worker response exactly as returned and record it with `runtime_dispatcher.py --record-agent-output <request-id> --output-file <file>`.
+3. If the runner returns a worker-spawn status, run `scripts/task_queue.py --task-dir <run> --collect-pending` or inspect the normalized `state/tasks.jsonl`.
+4. Spawn only the pending requests returned by the task queue with `multi_agent_v1.spawn_agent(fork_context=false)`.
+5. Record each spawned session with `task_queue.py --mark-spawned <request-id> --agent-id <subagent-session-id>`.
+6. Save each worker response exactly as returned and record it with `task_queue.py --record-agent-output <request-id> --output-file <file>`.
 7. Rerun `runner.py --run-until-complete` until completion, quality-limited stop, or a real blocker.
 
 If the current Codex runtime cannot spawn subagents, report `blocked_subagent_spawn_required`; do not claim completion. Python helpers may prepare batches, validate schemas, merge worker output, and record hashes; they must not fabricate discovery results, semantic topic audits, topic second audits, paper-understanding cards, reviewer reports, or repair results.
@@ -71,15 +71,15 @@ Important barriers:
 | Sync compact run state | `python3 scripts/run_state.py --task-dir <run> --target <target> --sync` |
 | Sync compact task queue | `python3 scripts/task_queue.py --task-dir <run> --sync` |
 | Prepare/record topic profile | `python3 scripts/topic_profile.py --task-dir <run> --prepare` / `--record-result <json>` |
-| Collect pending worker requests | `python3 scripts/runtime_dispatcher.py --task-dir <run> --collect-pending` |
-| Record spawned worker session | `python3 scripts/runtime_dispatcher.py --task-dir <run> --mark-spawned <request-id> --agent-id <session-id>` |
-| Record worker output | `python3 scripts/runtime_dispatcher.py --task-dir <run> --record-agent-output <request-id> --output-file <file>` |
+| Collect pending worker requests | `python3 scripts/task_queue.py --task-dir <run> --collect-pending` |
+| Record spawned worker session | `python3 scripts/task_queue.py --task-dir <run> --mark-spawned <request-id> --agent-id <session-id>` |
+| Record worker output | `python3 scripts/task_queue.py --task-dir <run> --record-agent-output <request-id> --output-file <file>` |
 | Validate gates | `python3 scripts/gate_engine.py --task-dir <run> --target <target> [--phase <phase>]` |
 | Mirror paper cards | `python3 scripts/paper_card_store.py --task-dir <run> --mirror` |
 | Record review failures | `python3 scripts/failure_ledger.py --task-dir <run> --append-from-adjudication` |
 | Promote final survey | `python3 scripts/promote_survey_release.py --task-dir <run> --target <target>` |
 
-All other scripts are internal helpers unless a contract below explicitly says otherwise. In particular, `survey_driver.py`, `phase_gate.py`, `gate_check.py`, topic-relevance, paper-understanding, and Gate 7 runtime executors prepare or record compatibility state; `runner.py`, `gate_engine.py`, and `task_queue.py` are the public orchestration facade.
+All other scripts are internal helpers unless a contract below explicitly says otherwise. In particular, `survey_driver.py`, `phase_gate.py`, `gate_check.py`, `runtime_dispatcher.py`, topic-relevance, paper-understanding, and Gate 7 runtime executors prepare or record compatibility state; `runner.py`, `gate_engine.py`, and `task_queue.py` are the public orchestration facade.
 
 ## Required Contracts
 

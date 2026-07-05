@@ -10,11 +10,17 @@ from pathlib import Path
 
 try:  # pragma: no cover - script import fallback
     from .run_expert_reviews import read_jsonl, write_jsonl
-    from .runtime_dispatcher import collect_status
+    from .runtime_dispatcher import collect_pending as dispatcher_collect_pending
+    from .runtime_dispatcher import collect_status as dispatcher_collect_status
+    from .runtime_dispatcher import mark_spawned as dispatcher_mark_spawned
+    from .runtime_dispatcher import record_agent_output as dispatcher_record_agent_output
     from .status_schema import status_envelope
 except ImportError:  # pragma: no cover
     from run_expert_reviews import read_jsonl, write_jsonl
-    from runtime_dispatcher import collect_status
+    from runtime_dispatcher import collect_pending as dispatcher_collect_pending
+    from runtime_dispatcher import collect_status as dispatcher_collect_status
+    from runtime_dispatcher import mark_spawned as dispatcher_mark_spawned
+    from runtime_dispatcher import record_agent_output as dispatcher_record_agent_output
     from status_schema import status_envelope
 
 
@@ -56,7 +62,7 @@ def _task_from_queue_row(row: dict) -> dict:
 
 
 def sync_tasks(task_dir: Path) -> dict:
-    status = collect_status(task_dir)
+    status = dispatcher_collect_status(task_dir)
     rows = status.get("queue") or read_jsonl(task_dir / "state" / "runtime_dispatch_queue.jsonl")
     active_rows = [row for row in rows if not str(row.get("status") or "").startswith("stale")]
     tasks = [_task_from_queue_row(row) for row in active_rows]
@@ -81,14 +87,64 @@ def sync_tasks(task_dir: Path) -> dict:
     }
 
 
+def _with_tasks(task_dir: Path, component_result: dict) -> dict:
+    tasks = sync_tasks(task_dir)
+    return {
+        **component_result,
+        "component": "task_queue",
+        "tasks_path": "state/tasks.jsonl",
+        "tasks": tasks.get("tasks") or [],
+        "task_summary": tasks.get("summary") or {},
+        "dispatcher_component": component_result.get("component"),
+    }
+
+
+def collect_pending(task_dir: Path) -> dict:
+    result = dispatcher_collect_pending(task_dir)
+    return _with_tasks(task_dir, result)
+
+
+def collect_status(task_dir: Path) -> dict:
+    result = dispatcher_collect_status(task_dir)
+    return _with_tasks(task_dir, result)
+
+
+def mark_spawned(task_dir: Path, request_id: str, agent_id: str) -> dict:
+    result = dispatcher_mark_spawned(task_dir, request_id, agent_id)
+    return _with_tasks(task_dir, result)
+
+
+def record_agent_output(task_dir: Path, request_id: str, output_file: Path) -> dict:
+    result = dispatcher_record_agent_output(task_dir, request_id, output_file)
+    return _with_tasks(task_dir, result)
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--task-dir", required=True, type=Path)
     parser.add_argument("--sync", action="store_true")
+    parser.add_argument("--collect-pending", action="store_true")
+    parser.add_argument("--collect-status", action="store_true")
+    parser.add_argument("--mark-spawned")
+    parser.add_argument("--agent-id")
+    parser.add_argument("--record-agent-output")
+    parser.add_argument("--output-file", type=Path)
     args = parser.parse_args()
-    result = sync_tasks(args.task_dir)
+    if args.collect_pending:
+        result = collect_pending(args.task_dir)
+    elif args.collect_status:
+        result = collect_status(args.task_dir)
+    elif args.mark_spawned:
+        result = mark_spawned(args.task_dir, args.mark_spawned, args.agent_id or "")
+    elif args.record_agent_output:
+        if not args.output_file:
+            result = {"component": "task_queue", "status": "invalid", "error": "missing_output_file"}
+        else:
+            result = record_agent_output(args.task_dir, args.record_agent_output, args.output_file)
+    else:
+        result = sync_tasks(args.task_dir)
     print(json.dumps(result, indent=2, sort_keys=True, ensure_ascii=False))
-    return 0
+    return 0 if result.get("status") != "invalid" else 1
 
 
 if __name__ == "__main__":
