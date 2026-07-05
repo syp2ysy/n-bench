@@ -1848,6 +1848,44 @@ class SurveyAutoResearchContractTest(unittest.TestCase):
             old = next(row for row in queue if row["request_id"] == first_request["request_id"])
             self.assertEqual(old["status"], "stale_superseded")
 
+    def test_discovery_prefetch_can_record_route_result_without_canonical_corpus(self):
+        from scripts.discovery_runtime_executor import prepare_discovery_batches, record_prefetch_as_discovery_result
+
+        with tempfile.TemporaryDirectory() as tmp:
+            task_dir = initialize_task(Path(tmp), "record prefetch discovery", target="full")
+            self.write_topic_profile(task_dir, topic="record prefetch discovery")
+            prepare_discovery_batches(task_dir)
+            write_jsonl(
+                task_dir / "state/discovery_prefetch_snapshots.jsonl",
+                [
+                    {
+                        "schema_version": 1,
+                        "route_plan_version": 4,
+                        "batch_id": "D001",
+                        "prefetched_candidates": [
+                            {
+                                "candidate_id": "prefetch-001",
+                                "title": "Visual Workspace Reasoning",
+                                "url": "https://example.org/visual-workspace",
+                                "source": "OpenAlex",
+                                "query": "visual workspace multimodal reasoning",
+                                "route_id": "D001-prefetch-01",
+                                "route_type": "keyword",
+                            }
+                        ],
+                        "prefetch_errors": [],
+                        "prefetched_at": "2026-07-05T00:00:00+00:00",
+                    }
+                ],
+            )
+            recorded = record_prefetch_as_discovery_result(task_dir, "prefetch-script")
+            self.assertEqual(recorded["status"], "recorded", recorded)
+            self.assertEqual(recorded["batch_id"], "D001")
+            batches = json.loads((task_dir / "state/discovery_batches.json").read_text(encoding="utf-8"))
+            self.assertEqual(batches["batches"][0]["status"], "resolved")
+            self.assertEqual(batches["active_batch_id"], "D002")
+            self.assertEqual(read_jsonl(task_dir / "state/raw_candidates.jsonl"), [])
+
     def test_corpus_pipeline_facade_preserves_topic_boundary_before_discovery(self):
         from scripts.corpus_pipeline import collect_status as collect_corpus_status
         from scripts.corpus_pipeline import prepare as prepare_corpus
