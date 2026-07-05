@@ -1813,6 +1813,41 @@ class SurveyAutoResearchContractTest(unittest.TestCase):
             self.assertEqual(request["prefetched_candidates"][0]["candidate_id"], "prefetch-001")
             self.assertEqual(request["prefetch_snapshot_at"], "2026-07-05T00:00:00+00:00")
 
+    def test_dispatcher_stales_discovery_request_when_prefetch_changes_payload(self):
+        from scripts.discovery_runtime_executor import prepare_discovery_batches
+        from scripts.runtime_dispatcher import collect_pending
+        from scripts.survey_driver import run_until_complete as run_survey_until_complete
+
+        with tempfile.TemporaryDirectory() as tmp:
+            task_dir = initialize_task(Path(tmp), "prefetch stale discovery row", target="full")
+            self.write_topic_profile(task_dir, topic="prefetch stale discovery row")
+            run_survey_until_complete(task_dir, target="full", max_steps=5)
+            first_pending = collect_pending(task_dir)
+            first_request = first_pending["pending_requests"][0]
+            self.assertEqual(first_request["request_type"], "discovery")
+
+            write_jsonl(
+                task_dir / "state/discovery_prefetch_snapshots.jsonl",
+                [
+                    {
+                        "schema_version": 1,
+                        "route_plan_version": 4,
+                        "batch_id": "D001",
+                        "prefetched_candidates": [{"candidate_id": "prefetch-001", "title": "Visual Workspace Reasoning"}],
+                        "prefetch_errors": [],
+                        "prefetched_at": "2026-07-05T00:00:00+00:00",
+                    }
+                ],
+            )
+            prepare_discovery_batches(task_dir)
+            run_survey_until_complete(task_dir, target="full", max_steps=5)
+            refreshed = collect_pending(task_dir)
+            self.assertEqual(len(refreshed["pending_requests"]), 1, refreshed)
+            self.assertNotEqual(refreshed["pending_requests"][0]["request_id"], first_request["request_id"])
+            queue = read_jsonl(task_dir / "state/runtime_dispatch_queue.jsonl")
+            old = next(row for row in queue if row["request_id"] == first_request["request_id"])
+            self.assertEqual(old["status"], "stale_superseded")
+
     def test_corpus_pipeline_facade_preserves_topic_boundary_before_discovery(self):
         from scripts.corpus_pipeline import collect_status as collect_corpus_status
         from scripts.corpus_pipeline import prepare as prepare_corpus

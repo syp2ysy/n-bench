@@ -214,8 +214,10 @@ def _sync_queue(task_dir: Path) -> list[dict]:
     intent = _active_intent(task_dir)
     existing = {str(row.get("request_id") or ""): row for row in read_jsonl(state / QUEUE_FILE) if row.get("request_id")}
     ordered_ids = [str(row.get("request_id")) for row in read_jsonl(state / QUEUE_FILE) if row.get("request_id")]
+    source_rows: list[dict] = []
     if intent.get("valid"):
-        for row in _source_requests(task_dir, intent):
+        source_rows = _source_requests(task_dir, intent)
+        for row in source_rows:
             live = _live_row_for_source(existing, row)
             if live:
                 _merge_source_row(live, row)
@@ -247,11 +249,20 @@ def _sync_queue(task_dir: Path) -> list[dict]:
                 ordered_ids.append(row["request_id"])
     allowed = set(intent.get("allowed_request_types") or [])
     generation = str(intent.get("phase_generation") or "")
+    current_sources = {
+        (row.get("request_type"), row.get("phase_generation"), row.get("source_fingerprint"))
+        for row in source_rows
+    }
     for row in existing.values():
+        source_is_current = (
+            not intent.get("valid")
+            or (row.get("request_type"), row.get("phase_generation"), row.get("source_fingerprint")) in current_sources
+        )
         if row.get("status") == "pending_spawn" and (
             not intent.get("valid")
             or row.get("request_type") not in allowed
             or str(row.get("phase_generation") or "") != generation
+            or not source_is_current
         ):
             row["status"] = "stale_superseded"
             row["error"] = "runtime_intent_changed"
@@ -259,6 +270,7 @@ def _sync_queue(task_dir: Path) -> list[dict]:
             not intent.get("valid")
             or row.get("request_type") not in allowed
             or str(row.get("phase_generation") or "") != generation
+            or not source_is_current
         ):
             row["status"] = "stale_spawned"
             row["error"] = "runtime_intent_changed_after_spawn"
