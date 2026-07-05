@@ -3253,7 +3253,7 @@ class SurveyAutoResearchContractTest(unittest.TestCase):
 
     def test_v2_slim_core_facades_derive_authoritative_state(self):
         from scripts.failure_ledger import append_failures_from_adjudication, collect_failure_ledger
-        from scripts.gate_engine import evaluate_all, evaluate_phase, explain_blocker
+        from scripts.gate_engine import evaluate_all, evaluate_phase, explain_blocker, route_repair
         from scripts.paper_card_store import mirror_paper_cards, validate_paper_card_store
         from scripts.run_state import sync_run_state
         from scripts.task_queue import sync_tasks
@@ -3310,6 +3310,14 @@ class SurveyAutoResearchContractTest(unittest.TestCase):
             self.assertIn("missing_topic", explanation["errors"])
             self.assertIn("runner.py --task-dir", explanation["recommended_commands"][0])
             self.assertIn("task_queue.py --task-dir", explanation["recommended_commands"][1])
+            route = route_repair(blocked_task, "full")
+            self.assertEqual(route["component"], "gate_engine")
+            self.assertEqual(route["status"], "blocked_worker_required")
+            self.assertEqual(route["repair_route"]["blocked_by_phase"], "topic_profile")
+            self.assertEqual(route["repair_route"]["next_public_action"], "spawn_topic_profile_agents")
+            self.assertEqual(route["repair_route"]["queue_request_type"], "topic_profile")
+            self.assertIn("state/topic_profile.json", route["repair_route"]["required_artifacts"])
+            self.assertIn("task_queue.py --task-dir", route["recommended_commands"][1])
 
     def test_task_queue_facade_records_worker_output(self):
         from scripts.runner import run_until_complete as run_public_runner

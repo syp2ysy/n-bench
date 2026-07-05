@@ -48,7 +48,7 @@ The runner enforces this gated chain:
 
 `topic/corpus boundary -> source identity + topic relevance audit -> A/B full-text understanding -> paper_cards -> knowledge tree/taxonomy -> survey spine -> section evidence plans -> survey candidate -> expert review -> release promotion`
 
-Run `scripts/phase_gate.py --task-dir <run> --target <target> --phase <phase>` for manual checks. If a phase fails, repair that phase instead of creating downstream artifacts.
+Run `scripts/gate_engine.py --task-dir <run> --target <target> --phase <phase>` for manual checks, or `--explain` / `--route-repair` for compact next-step guidance. If a phase fails, repair that phase instead of creating downstream artifacts.
 
 Important barriers:
 
@@ -74,7 +74,7 @@ Important barriers:
 | Collect pending worker requests | `python3 scripts/task_queue.py --task-dir <run> --collect-pending` |
 | Record spawned worker session | `python3 scripts/task_queue.py --task-dir <run> --mark-spawned <request-id> --agent-id <session-id>` |
 | Record worker output | `python3 scripts/task_queue.py --task-dir <run> --record-agent-output <request-id> --output-file <file>` |
-| Validate or explain gates | `python3 scripts/gate_engine.py --task-dir <run> --target <target> [--phase <phase>|--explain]` |
+| Validate, explain, or route gates | `python3 scripts/gate_engine.py --task-dir <run> --target <target> [--phase <phase>|--explain|--route-repair]` |
 | Mirror paper cards | `python3 scripts/paper_card_store.py --task-dir <run> --mirror` |
 | Record review failures | `python3 scripts/failure_ledger.py --task-dir <run> --append-from-adjudication` |
 | Promote final survey | `python3 scripts/promote_survey_release.py --task-dir <run> --target <target>` |

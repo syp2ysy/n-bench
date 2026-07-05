@@ -107,6 +107,66 @@ def _recommended_commands(task_dir: Path, target: str, allowed_next_phase: str |
     return commands
 
 
+REPAIR_ROUTE_BY_NEXT_PHASE = {
+    "topic_profile": {
+        "next_public_action": "spawn_topic_profile_agents",
+        "queue_request_type": "topic_profile",
+        "required_artifacts": ["state/topic_profile.json"],
+        "repair_owner": "Topic Boundary Agent",
+        "prevention_rule": "Lock positive and negative topic anchors before discovery.",
+    },
+    "discovery": {
+        "next_public_action": "spawn_discovery_agents",
+        "queue_request_type": "discovery",
+        "required_artifacts": ["state/raw_candidates.jsonl", "state/search_routes.jsonl", "state/lqs_scores.jsonl", "state/corpus_expansion.json"],
+        "repair_owner": "Corpus Discovery Agent",
+        "prevention_rule": "Search from topic_profile anchors and keep broad background out of A/B selection.",
+    },
+    "topic_relevance_audit": {
+        "next_public_action": "spawn_topic_relevance_agents",
+        "queue_request_type": "topic_relevance",
+        "required_artifacts": ["state/topic_relevance_audit.jsonl"],
+        "repair_owner": "Relevance Verifier Agent",
+        "prevention_rule": "Every retained and A/B paper needs evidence-backed relevance role and allowed depth.",
+    },
+    "topic_relevance_second_audit": {
+        "next_public_action": "spawn_topic_relevance_second_audit_agents",
+        "queue_request_type": "topic_relevance_second_audit",
+        "required_artifacts": ["state/topic_relevance_second_audits.jsonl"],
+        "repair_owner": "Independent Relevance Verifier Agent",
+        "prevention_rule": "High-risk A/B core decisions require independent session evidence.",
+    },
+    "paper_understanding": {
+        "next_public_action": "spawn_paper_understanding_agents",
+        "queue_request_type": "paper_understanding",
+        "required_artifacts": ["state/full_text_sources.jsonl", "state/paper_mechanism_cards.jsonl", "state/paper_cards/"],
+        "repair_owner": "Paper Reader Agent",
+        "prevention_rule": "Downstream synthesis must derive from full-text paper cards, not metadata.",
+    },
+    "spawn_expert_reviewers": {
+        "next_public_action": "spawn_reviewers",
+        "queue_request_type": "gate7_reviewer",
+        "required_artifacts": ["state/expert_review_reports.jsonl", "state/expert_review_invocations.jsonl"],
+        "repair_owner": "Review Committee Agent",
+        "prevention_rule": "Gate 7 requires fresh independent reviewers before release.",
+    },
+    "repair_with_evidence_check": {
+        "next_public_action": "spawn_repair_agents",
+        "queue_request_type": "gate7_repair",
+        "required_artifacts": ["state/repair_actions.jsonl", "state/regression_checks.jsonl", "state/failure_ledger.jsonl"],
+        "repair_owner": "Repair Planner Agent",
+        "prevention_rule": "Major weaknesses must become evidence-backed repairs and failure-ledger rules.",
+    },
+    "targeted_rereview": {
+        "next_public_action": "spawn_targeted_rereviewers",
+        "queue_request_type": "gate7_targeted_rereview",
+        "required_artifacts": ["state/targeted_rereview_reports.jsonl"],
+        "repair_owner": "Targeted Review Agent",
+        "prevention_rule": "Targeted rereview is allowed only after validated local repair.",
+    },
+}
+
+
 def explain_blocker(task_dir: Path, target: str = "full") -> dict:
     """Return a compact explanation of the current blocking gate and next public action."""
     phase_status = evaluate_phase_barriers(task_dir, target)
@@ -140,15 +200,59 @@ def explain_blocker(task_dir: Path, target: str = "full") -> dict:
     }
 
 
+def route_repair(task_dir: Path, target: str = "full") -> dict:
+    """Route the current blocker to the next public repair action without editing state."""
+    explanation = explain_blocker(task_dir, target)
+    allowed_next = explanation.get("allowed_next_phase")
+    route = dict(REPAIR_ROUTE_BY_NEXT_PHASE.get(str(allowed_next) or "") or {})
+    route.setdefault("next_public_action", allowed_next or "inspect_gate_engine")
+    route.setdefault("queue_request_type", None)
+    route.setdefault("required_artifacts", [])
+    route.setdefault("repair_owner", "Main Agent")
+    route.setdefault("prevention_rule", "Inspect the gate explanation and repair the blocked public artifact.")
+    route.update(
+        {
+            "blocked_by_phase": explanation.get("blocked_by_phase"),
+            "allowed_next_phase": allowed_next,
+            "validator": explanation.get("validator"),
+            "errors": explanation.get("errors") or [],
+        }
+    )
+    needs_worker = bool(route.get("queue_request_type"))
+    status = "complete" if explanation.get("status") == "complete" else ("blocked_worker_required" if needs_worker else "blocked_local_repair_required")
+    return {
+        **status_envelope(
+            "gate_engine",
+            status,
+            next_action=route.get("next_public_action"),
+            terminal=status == "complete",
+            blocked=status != "complete",
+            blocked_by_phase=route.get("blocked_by_phase"),
+            summary={
+                "target": target,
+                "repair_owner": route.get("repair_owner"),
+                "queue_request_type": route.get("queue_request_type"),
+                "required_artifact_count": len(route.get("required_artifacts") or []),
+            },
+        ),
+        "target": target,
+        "repair_route": route,
+        "recommended_commands": _recommended_commands(task_dir, target, allowed_next),
+    }
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--task-dir", required=True, type=Path)
     parser.add_argument("--target", choices=["short", "full", "csur"], default="full")
     parser.add_argument("--phase", choices=PHASE_ORDER)
     parser.add_argument("--explain", action="store_true")
+    parser.add_argument("--route-repair", action="store_true")
     parser.add_argument("--output", type=Path)
     args = parser.parse_args()
-    if args.explain:
+    if args.route_repair:
+        result = route_repair(args.task_dir, args.target)
+    elif args.explain:
         result = explain_blocker(args.task_dir, args.target)
     else:
         result = evaluate_phase(args.task_dir, args.target, args.phase) if args.phase else evaluate_all(args.task_dir, args.target)
