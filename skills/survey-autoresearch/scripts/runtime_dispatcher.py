@@ -15,7 +15,7 @@ try:  # pragma: no cover - script import fallback
     from .gate7_loop import record_review_report, record_targeted_rereview
     from .gate7_runtime_executor import record_runtime_repair_result
     from .knowledge_tree_builder import record_knowledge_tree_result
-    from .paper_understanding_runtime_executor import record_paper_understanding_result
+    from .paper_reader import record_result as record_paper_reader_result
     from .run_expert_reviews import read_json, read_jsonl, write_json, write_jsonl
     from .status_schema import status_envelope
     from .topic_profile import record_topic_profile_result
@@ -25,7 +25,7 @@ except ImportError:  # pragma: no cover
     from gate7_loop import record_review_report, record_targeted_rereview
     from gate7_runtime_executor import record_runtime_repair_result
     from knowledge_tree_builder import record_knowledge_tree_result
-    from paper_understanding_runtime_executor import record_paper_understanding_result
+    from paper_reader import record_result as record_paper_reader_result
     from run_expert_reviews import read_json, read_jsonl, write_json, write_jsonl
     from status_schema import status_envelope
     from topic_profile import record_topic_profile_result
@@ -79,7 +79,7 @@ def _record_command(task_dir: Path, request_type: str) -> str:
     if request_type == "knowledge_tree":
         return f"python3 scripts/knowledge_tree_builder.py --task-dir {task_dir.resolve()} --record-result <result.json> --subagent-session-id <subagent-session-id>"
     elif request_type == "paper_understanding":
-        script = "paper_understanding_runtime_executor.py"
+        script = "paper_reader.py"
     elif request_type == "gate7_repair":
         script = "gate7_runtime_executor.py"
     elif request_type == "gate7_reviewer":
@@ -415,7 +415,7 @@ def _route_result(task_dir: Path, row: dict, result: dict, subagent_session_id: 
     if request_type == "topic_relevance_second_audit":
         return record_topic_relevance_second_audit_result(task_dir, result, subagent_session_id)
     if request_type == "paper_understanding":
-        return record_paper_understanding_result(task_dir, result, subagent_session_id)
+        return record_paper_reader_result(task_dir, result, subagent_session_id)
     if request_type == "knowledge_tree":
         return record_knowledge_tree_result(task_dir, result, subagent_session_id)
     if request_type == "gate7_repair":

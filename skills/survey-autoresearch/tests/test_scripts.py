@@ -1687,7 +1687,9 @@ class SurveyAutoResearchContractTest(unittest.TestCase):
             recorded = record_agent_output(task_dir, first["request_id"], output_file)
             self.assertEqual(recorded["status"], "result_recorded", recorded)
             self.assertEqual(recorded["record_result"]["status"], "recorded")
+            self.assertEqual(recorded["record_result"]["component"], "paper_reader")
             self.assertEqual(len((task_dir / "state/paper_mechanism_cards.jsonl").read_text(encoding="utf-8").splitlines()), 5)
+            self.assertTrue((task_dir / "state/paper_cards/p001.json").exists())
             queue = [json.loads(line) for line in (task_dir / "state/runtime_dispatch_queue.jsonl").read_text(encoding="utf-8").splitlines() if line.strip()]
             self.assertEqual(next(row for row in queue if row["request_id"] == first["request_id"])["status"], "result_recorded")
             sessions = [json.loads(line) for line in (task_dir / "state/runtime_agent_sessions.jsonl").read_text(encoding="utf-8").splitlines() if line.strip()]
