@@ -2767,6 +2767,47 @@ class SurveyAutoResearchContractTest(unittest.TestCase):
             self.assertNotEqual(retry_request["request_id"], first_request["request_id"])
             self.assertEqual(retry_request["previous_request_id"], first_request["request_id"])
 
+    def test_survey_driver_does_not_rebalance_partial_topic_relevance_audit(self):
+        from scripts.runtime_dispatcher import collect_pending
+        from scripts.survey_driver import run_until_complete as run_survey_until_complete
+
+        with tempfile.TemporaryDirectory() as tmp:
+            task_dir = initialize_task(Path(tmp), "partial topic audit before rebalance", target="full")
+            self.populate_source_verified_task(task_dir)
+            state = task_dir / "state"
+            first_audit = {
+                **self.topic_relevance_audit()[0],
+                "relevance_grade": "out_of_scope",
+                "allowed_depth": "exclude",
+                "allowed_role": "exclude",
+                "family_label_supported": False,
+                "negative_drift_signals": ["partial audit deliberately marks first A/B as drift"],
+            }
+            write_jsonl(state / "topic_relevance_audit.jsonl", [first_audit])
+            (state / "topic_relevance_batches.json").write_text(
+                json.dumps(
+                    {
+                        "plan_hash": "partial-audit-plan",
+                        "batch_size": 25,
+                        "paper_count": 2,
+                        "active_batch_id": "TR002",
+                        "batches": [
+                            {"batch_id": "TR001", "paper_ids": ["p001"], "status": "resolved"},
+                            {"batch_id": "TR002", "paper_ids": ["p002"], "status": "pending"},
+                        ],
+                    },
+                    sort_keys=True,
+                ),
+                encoding="utf-8",
+            )
+
+            status = run_survey_until_complete(task_dir, target="full", max_steps=5)
+            self.assertEqual(status["next_action"], "spawn_topic_relevance_agents", status)
+            self.assertNotEqual(status["status"], "blocked_topic_relevance_rebalance", status)
+            self.assertIn("continue_topic_relevance_audit_before_rebalance", status["actions"])
+            pending = collect_pending(task_dir)
+            self.assertEqual([row["request_type"] for row in pending["pending_requests"]], ["topic_relevance"])
+
     def test_runtime_dispatcher_rejects_invalid_output_and_routes_gate7_repair(self):
         from scripts.gate7_runtime_executor import collect_runtime_repair_status
         from scripts.runtime_dispatcher import collect_pending, mark_spawned, record_agent_output
@@ -3214,9 +3255,9 @@ class SurveyAutoResearchContractTest(unittest.TestCase):
             output_file = Path(tmp) / "topic-worker-output.json"
             output = {
                 "batch_id": active["batch_id"],
-                "status": "resolved",
+                "status": "completed",
                 "audit_records": [row for row in fixture_rows if row["paper_id"] in set(active["paper_ids"])],
-                "validator_results": [{"validator": "validate_topic_relevance", "status": "passed", "command": "validate_topic_relevance", "result": "OK"}],
+                "validator_results": [{"validator": "topic_relevance_worker_output_schema_v1", "passed": True, "result": "OK"}],
                 "remaining_blockers": [],
             }
             output_file.write_text(json.dumps(output, sort_keys=True), encoding="utf-8")
@@ -3262,6 +3303,9 @@ class SurveyAutoResearchContractTest(unittest.TestCase):
             request = status["spawn_requests"][0]
             self.assertEqual(request["paper_ids"], ["2501.00001v1"])
             self.assertEqual(request["candidate_records"][0]["paper_id"], "2501.00001v1")
+            self.assertIn("Allowed allowed_depth values only: A, B, C, exclude", request["message"])
+            self.assertIn("Allowed allowed_role values only: core, related_survey, background, exclude", request["message"])
+            self.assertIn("evidence_used must be a list of objects", request["message"])
 
     def test_topic_relevance_rebalance_uses_audited_replacement_pool(self):
         from scripts.rebalance_ab_selection import rebalance_ab_selection

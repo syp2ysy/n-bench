@@ -26,6 +26,8 @@ DEFAULT_SECOND_AUDIT_BATCH_SIZE = 10
 REQUIRED_RESULT_KEYS = ["batch_id", "status", "audit_records", "validator_results", "remaining_blockers"]
 SECOND_AUDIT_RESULT_KEYS = ["batch_id", "status", "paper_ids", "secondary_audit_records", "validator_results", "remaining_blockers"]
 VALID_RESULT_STATUSES = {"resolved", "partially_resolved", "blocked"}
+PRIMARY_VALIDATOR_ALIASES = {"topic_relevance_worker_output_schema_v1": "validate_topic_relevance"}
+SECONDARY_VALIDATOR_ALIASES = {"topic_relevance_second_audit_worker_output_schema_v1": "validate_topic_relevance_second_audit"}
 
 
 def _state(task_dir: Path) -> Path:
@@ -88,10 +90,17 @@ def _batch_prompt(task_dir: Path, batch: dict) -> str:
         f"Task directory: {task_dir.resolve()}\n"
         f"Batch id: {batch.get('batch_id')}\n"
         f"Paper ids: {', '.join(batch.get('paper_ids') or [])}\n"
-        "Return one JSON object with keys: batch_id, status, audit_records, validator_results, remaining_blockers. "
-        "Each audit record must include paper_id, candidate_id/source_candidate_id, evidence_used, positive_topic_signals, "
+        "Return one strict JSON object with keys: batch_id, status, audit_records, validator_results, remaining_blockers. "
+        "Use status=resolved only when every listed paper_id has exactly one valid audit record; otherwise use blocked or partially_resolved. "
+        "Each audit record must include paper_id, candidate_id or source_candidate_id, evidence_used, positive_topic_signals, "
         "negative_drift_signals, relevance_grade, allowed_depth, allowed_role, family_label_supported, corrected_family, and rationale. "
-        "Allowed relevance_grade values: core, direct_related_survey, adjacent_background, generic_background, out_of_scope."
+        "Allowed relevance_grade values: core, direct_related_survey, adjacent_background, generic_background, out_of_scope. "
+        "Allowed allowed_depth values only: A, B, C, exclude. Use A/B only for topic-core papers that can support full or medium-depth reading; "
+        "use C for background/adjacent records; use exclude for out_of_scope. "
+        "Allowed allowed_role values only: core, related_survey, background, exclude. "
+        "For direct_related_survey, allowed_role must be related_survey. For out_of_scope, allowed_depth must be exclude and allowed_role must be exclude. "
+        "evidence_used must be a list of objects like {\"field\":\"title|abstract_snippet|query|source_metadata\", \"text\":\"...\"}, not a dictionary. "
+        "validator_results must include {\"validator\":\"validate_topic_relevance\", \"status\":\"passed\"} only if the batch is schema-valid."
     )
 
 
@@ -397,13 +406,33 @@ def _passed_validators(result: dict) -> set[str]:
     validators = result.get("validator_results")
     if not isinstance(validators, list):
         return set()
-    return {
-        str(item.get("validator") or item.get("name") or "").strip()
-        for item in validators
-        if isinstance(item, dict)
-        and str(item.get("status") or "").lower() == "passed"
-        and str(item.get("validator") or item.get("name") or "").strip()
-    }
+    passed: set[str] = set()
+    for item in validators:
+        if not isinstance(item, dict):
+            continue
+        name = str(item.get("validator") or item.get("name") or "").strip()
+        if not name:
+            continue
+        ok = str(item.get("status") or "").lower() == "passed" or item.get("passed") is True
+        if not ok:
+            continue
+        passed.add(name)
+        if name in PRIMARY_VALIDATOR_ALIASES:
+            passed.add(PRIMARY_VALIDATOR_ALIASES[name])
+        if name in SECONDARY_VALIDATOR_ALIASES:
+            passed.add(SECONDARY_VALIDATOR_ALIASES[name])
+    return passed
+
+
+def _normalize_result_status(result: dict) -> dict:
+    if not isinstance(result, dict):
+        return result
+    if str(result.get("status") or "").lower() == "completed":
+        normalized = dict(result)
+        normalized["status"] = "resolved"
+        normalized["status_normalized_from"] = "completed"
+        return normalized
+    return result
 
 
 def _merge_audits(existing: list[dict], replacements: list[dict], paper_ids: set[str]) -> list[dict]:
@@ -491,6 +520,7 @@ def _validate_second_audit_result(task_dir: Path, result: dict, batch: dict, sub
 
 
 def record_topic_relevance_result(task_dir: Path, result: dict, subagent_session_id: str) -> dict:
+    result = _normalize_result_status(result)
     state = _state(task_dir)
     doc = _refresh_batch_statuses(read_json(state / "topic_relevance_batches.json"))
     batch_id = str(result.get("batch_id") or "")
@@ -542,6 +572,7 @@ def record_topic_relevance_result(task_dir: Path, result: dict, subagent_session
 
 
 def record_topic_relevance_second_audit_result(task_dir: Path, result: dict, subagent_session_id: str) -> dict:
+    result = _normalize_result_status(result)
     state = _state(task_dir)
     doc = _refresh_batch_statuses(read_json(state / "topic_relevance_second_audit_batches.json"))
     batch_id = str(result.get("batch_id") or "")

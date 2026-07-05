@@ -370,6 +370,14 @@ def _delegate_gate7(task_dir: Path, target: str, max_steps: int) -> dict:
     }
 
 
+def _topic_relevance_audit_incomplete(task_dir: Path) -> bool:
+    doc = read_json(_state(task_dir) / "topic_relevance_batches.json")
+    batches = doc.get("batches") or []
+    if not batches:
+        return False
+    return any(str(batch.get("status") or "") != "resolved" for batch in batches)
+
+
 def _synthesis_needs_knowledge_tree(phase_status: dict) -> bool:
     synthesis = ((phase_status.get("phases") or {}).get("synthesis") or {}).get("details") or {}
     contribution = synthesis.get("contribution_tree") or {}
@@ -472,6 +480,10 @@ def run_until_complete(task_dir: Path, target: str = "full", max_steps: int = 25
             runtime = prepare_topic_relevance_second_audit_batches(task_dir)
             return _finish(task_dir, runtime, actions, phase_status)
         if blocked_by == "source_verification" and next_action == "topic_relevance_rebalance":
+            if _topic_relevance_audit_incomplete(task_dir):
+                actions.append("continue_topic_relevance_audit_before_rebalance")
+                runtime = prepare_topic_relevance_batches(task_dir)
+                return _finish(task_dir, runtime, actions, phase_status)
             topic = ((phase_status.get("phases") or {}).get("source_verification") or {}).get("details", {}).get("topic_relevance", {})
             invalid_ids = topic.get("invalid_ab_paper_ids") or []
             actions.append("rebalance_topic_relevance_ab_selection")
