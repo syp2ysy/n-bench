@@ -11,10 +11,9 @@ from pathlib import Path
 
 try:  # pragma: no cover - script import fallback
     from .discovery_runtime_executor import prepare_discovery_batches
-    from .full_text_source_planner import build_full_text_fetch_plan
     from .gate7_driver import run_until_complete as run_gate7_until_complete
     from .knowledge_tree_builder import prepare_knowledge_tree_request
-    from .paper_understanding_runtime_executor import prepare_paper_understanding_batches
+    from .paper_reader import prepare_paper_reading
     from .phase_gate import evaluate_phase_barriers
     from .rebalance_ab_selection import rebalance_ab_selection
     from .run_expert_reviews import read_json, read_jsonl, write_json, write_jsonl
@@ -24,10 +23,9 @@ try:  # pragma: no cover - script import fallback
     from .topic_relevance_runtime_executor import prepare_topic_relevance_batches, prepare_topic_relevance_second_audit_batches
 except ImportError:  # pragma: no cover
     from discovery_runtime_executor import prepare_discovery_batches
-    from full_text_source_planner import build_full_text_fetch_plan
     from gate7_driver import run_until_complete as run_gate7_until_complete
     from knowledge_tree_builder import prepare_knowledge_tree_request
-    from paper_understanding_runtime_executor import prepare_paper_understanding_batches
+    from paper_reader import prepare_paper_reading
     from phase_gate import evaluate_phase_barriers
     from rebalance_ab_selection import rebalance_ab_selection
     from run_expert_reviews import read_json, read_jsonl, write_json, write_jsonl
@@ -430,8 +428,7 @@ def run_until_complete(task_dir: Path, target: str = "full", max_steps: int = 25
                     actions,
                 )
             _mark_rebalance_handled(task_dir, rebalance_hashes, rebalance)
-            build_full_text_fetch_plan(task_dir)
-            runtime = prepare_paper_understanding_batches(task_dir)
+            runtime = prepare_paper_reading(task_dir, target, allow_source_repair_gap=True)
             return _finish(task_dir, runtime, actions, {"blocked_by_phase": "paper_understanding"})
         phase_status = evaluate_phase_barriers(task_dir, target)
         blocked_by = phase_status.get("blocked_by_phase")
@@ -497,7 +494,7 @@ def run_until_complete(task_dir: Path, target: str = "full", max_steps: int = 25
                 )
             continue
         if blocked_by == "paper_understanding":
-            runtime = prepare_paper_understanding_batches(task_dir)
+            runtime = prepare_paper_reading(task_dir, target)
             return _finish(task_dir, runtime, actions, phase_status)
         if blocked_by == "synthesis" and _synthesis_needs_knowledge_tree(phase_status):
             runtime = prepare_knowledge_tree_request(task_dir, target)

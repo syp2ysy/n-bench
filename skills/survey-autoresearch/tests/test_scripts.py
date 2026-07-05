@@ -1612,6 +1612,46 @@ class SurveyAutoResearchContractTest(unittest.TestCase):
             self.assertEqual(len((task_dir / "state/paper_mechanism_cards.jsonl").read_text(encoding="utf-8").splitlines()), 5)
             self.assertEqual(len((task_dir / "state/full_text_sources.jsonl").read_text(encoding="utf-8").splitlines()), 5)
 
+    def test_paper_reader_public_facade_prepares_and_records_cards(self):
+        from scripts.paper_card_store import validate_paper_card_store
+        from scripts.paper_reader import collect_status, prepare_paper_reading, record_result
+
+        with tempfile.TemporaryDirectory() as tmp:
+            task_dir = initialize_task(Path(tmp), "paper reader empty", target="full")
+            blocked = prepare_paper_reading(task_dir, target="full")
+            self.assertEqual(blocked["component"], "paper_reader")
+            self.assertEqual(blocked["status"], "blocked_source_verification_required")
+            self.assertFalse((task_dir / "state/paper_understanding_spawn_requests.json").exists())
+
+        with tempfile.TemporaryDirectory() as tmp:
+            task_dir = initialize_task(Path(tmp), "paper reader source ready", target="full")
+            self.populate_source_verified_task(task_dir)
+            prepared = prepare_paper_reading(task_dir, target="full", batch_size=5)
+            self.assertEqual(prepared["component"], "paper_reader")
+            self.assertEqual(prepared["legacy_component"], "paper_understanding_runtime_executor")
+            self.assertEqual(prepared["status"], "blocked_paper_understanding_agent_spawn_required")
+            self.assertEqual(prepared["next_action"], "spawn_paper_understanding_agents")
+            self.assertEqual(prepared["active_batch_ids"], ["PU001", "PU002", "PU003"])
+            self.assertEqual(prepared["summary"]["paper_required_count"], 95)
+            self.assertEqual(prepared["summary"]["public_card_missing_count"], 95)
+            self.assertTrue((task_dir / "state/full_text_fetch_plan.jsonl").exists())
+            spawn = json.loads((task_dir / "state/paper_understanding_spawn_requests.json").read_text(encoding="utf-8"))
+            self.assertIn("paper_reader.py", spawn["spawn_requests"][0]["record_command"])
+            self.assertIn("paper_understanding_runtime_executor.py", spawn["spawn_requests"][0]["legacy_record_command"])
+
+            active = json.loads((task_dir / "state/paper_understanding_batches.json").read_text(encoding="utf-8"))["batches"][0]
+            recorded = record_result(task_dir, self.paper_understanding_result(active, task_dir), "paper-agent-public", target="full")
+            self.assertEqual(recorded["component"], "paper_reader")
+            self.assertEqual(recorded["status"], "recorded", recorded)
+            self.assertEqual(recorded["summary"]["public_card_missing_count"], 90)
+            self.assertTrue((task_dir / "state/paper_cards/p001.json").exists())
+            card_status = validate_paper_card_store(task_dir)
+            self.assertFalse(card_status["valid"])
+            self.assertEqual(card_status["summary"]["missing_count"], 90)
+            after = collect_status(task_dir, target="full")
+            self.assertEqual(after["component"], "paper_reader")
+            self.assertEqual(after["summary"]["paper_completed_count"], 5)
+
     def test_runtime_dispatcher_queues_and_records_paper_worker_output(self):
         from scripts.paper_understanding_runtime_executor import collect_paper_understanding_status
         from scripts.runtime_dispatcher import collect_pending, mark_spawned, record_agent_output
@@ -1632,7 +1672,7 @@ class SurveyAutoResearchContractTest(unittest.TestCase):
             self.assertEqual(first["request_type"], "paper_understanding")
             self.assertEqual(first["phase_generation"], json.loads((task_dir / "state/runtime_active_intent.json").read_text(encoding="utf-8"))["phase_generation"])
             self.assertEqual(first["source_file"], "state/paper_understanding_spawn_requests.json")
-            self.assertIn("paper_understanding_runtime_executor.py", first["record_command"])
+            self.assertIn("paper_reader.py", first["record_command"])
             self.assertEqual(first["expected_result_schema_version"], 2)
 
             marked = mark_spawned(task_dir, first["request_id"], "paper-agent-001")
