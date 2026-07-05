@@ -58,7 +58,8 @@ def _task_from_queue_row(row: dict) -> dict:
 def sync_tasks(task_dir: Path) -> dict:
     status = collect_status(task_dir)
     rows = status.get("queue") or read_jsonl(task_dir / "state" / "runtime_dispatch_queue.jsonl")
-    tasks = [_task_from_queue_row(row) for row in rows]
+    active_rows = [row for row in rows if not str(row.get("status") or "").startswith("stale")]
+    tasks = [_task_from_queue_row(row) for row in active_rows]
     write_jsonl(task_dir / "state" / "tasks.jsonl", tasks)
     return {
         **status_envelope(
@@ -71,6 +72,7 @@ def sync_tasks(task_dir: Path) -> dict:
             summary={
                 "task_count": len(tasks),
                 "pending_task_count": len([task for task in tasks if task.get("status") == "pending"]),
+                "stale_runtime_rows_hidden": len(rows) - len(active_rows),
                 "source_component": status.get("component"),
                 "synced_at": _utc_now(),
             },

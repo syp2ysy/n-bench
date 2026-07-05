@@ -1613,6 +1613,7 @@ class SurveyAutoResearchContractTest(unittest.TestCase):
     def test_runner_requires_topic_profile_before_discovery(self):
         from scripts.runner import run_until_complete as run_public_runner
         from scripts.runtime_dispatcher import collect_pending
+        from scripts.task_queue import sync_tasks
 
         with tempfile.TemporaryDirectory() as tmp:
             task_dir = initialize_task(Path(tmp), "topic profile first", target="full")
@@ -1624,6 +1625,19 @@ class SurveyAutoResearchContractTest(unittest.TestCase):
             pending = collect_pending(task_dir)
             self.assertEqual([row["request_type"] for row in pending["pending_requests"]], ["topic_profile"])
             self.assertEqual(read_jsonl(task_dir / "state/tasks.jsonl")[0]["phase"], "topic_profile")
+
+            stale_discovery = {
+                "request_id": "discovery-stale",
+                "request_type": "discovery",
+                "phase_generation": "old",
+                "source_file": "state/discovery_spawn_requests.json",
+                "status": "stale_superseded",
+                "error": "runtime_intent_changed",
+            }
+            write_jsonl(task_dir / "state/runtime_dispatch_queue.jsonl", read_jsonl(task_dir / "state/runtime_dispatch_queue.jsonl") + [stale_discovery])
+            tasks = sync_tasks(task_dir)
+            self.assertEqual([task["request_type"] for task in tasks["tasks"]], ["topic_profile"])
+            self.assertEqual(tasks["summary"]["task_count"], 1)
 
     def test_survey_driver_repeated_blocker_does_not_preempt_runtime_intent_rebuild(self):
         from scripts.runtime_dispatcher import collect_pending, mark_spawned
