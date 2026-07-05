@@ -56,6 +56,10 @@ def read_jsonl(path: Path) -> list[dict]:
     return [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines() if line.strip()]
 
 
+def read_text_if_exists(path: Path) -> str:
+    return path.read_text(encoding="utf-8") if path.exists() else ""
+
+
 def sha256_file(path: Path) -> str:
     digest = hashlib.sha256()
     digest.update(path.read_bytes())
@@ -1571,8 +1575,8 @@ class SurveyAutoResearchContractTest(unittest.TestCase):
             recorded_partial = record_paper_understanding_result(task_dir, partial, "paper-agent-partial")
             self.assertEqual(recorded_partial["status"], "invalid", recorded_partial)
             self.assertIn("missing_batch_paper_ids", recorded_partial["errors"])
-            self.assertEqual((task_dir / "state/paper_mechanism_cards.jsonl").read_text(encoding="utf-8"), "")
-            self.assertEqual((task_dir / "state/full_text_sources.jsonl").read_text(encoding="utf-8"), "")
+            self.assertEqual(read_text_if_exists(task_dir / "state/paper_mechanism_cards.jsonl"), "")
+            self.assertEqual(read_text_if_exists(task_dir / "state/full_text_sources.jsonl"), "")
 
             metadata_only = self.paper_understanding_result(active, task_dir)
             metadata_only["full_text_sources"][0]["source_kind"] = "semantic scholar metadata"
@@ -1584,7 +1588,7 @@ class SurveyAutoResearchContractTest(unittest.TestCase):
             recorded_metadata = record_paper_understanding_result(task_dir, metadata_only, "paper-agent-metadata")
             self.assertEqual(recorded_metadata["status"], "invalid", recorded_metadata)
             self.assertIn("invalid_paper_understanding_batch", recorded_metadata["errors"])
-            self.assertEqual((task_dir / "state/paper_mechanism_cards.jsonl").read_text(encoding="utf-8"), "")
+            self.assertEqual(read_text_if_exists(task_dir / "state/paper_mechanism_cards.jsonl"), "")
 
             valid = self.paper_understanding_result(active, task_dir)
             recorded = record_paper_understanding_result(task_dir, valid, "paper-agent-001")
@@ -1846,8 +1850,8 @@ class SurveyAutoResearchContractTest(unittest.TestCase):
             output_file.write_text(json.dumps(self.paper_understanding_result(active, task_dir), sort_keys=True), encoding="utf-8")
             stale_record = record_agent_output(task_dir, stale_paper_request["request_id"], output_file)
             self.assertEqual(stale_record["status"], "stale_request_rejected", stale_record)
-            self.assertEqual((task_dir / "state/paper_mechanism_cards.jsonl").read_text(encoding="utf-8"), "")
-            self.assertEqual((task_dir / "state/full_text_sources.jsonl").read_text(encoding="utf-8"), "")
+            self.assertEqual(read_text_if_exists(task_dir / "state/paper_mechanism_cards.jsonl"), "")
+            self.assertEqual(read_text_if_exists(task_dir / "state/full_text_sources.jsonl"), "")
 
         with tempfile.TemporaryDirectory() as tmp:
             task_dir = initialize_task(Path(tmp), "dispatcher stale topic reactivation", target="full")
@@ -1937,8 +1941,8 @@ class SurveyAutoResearchContractTest(unittest.TestCase):
             output_file.write_text("worker returned prose instead of JSON", encoding="utf-8")
             recorded = record_agent_output(task_dir, first["request_id"], output_file)
             self.assertEqual(recorded["status"], "invalid_result", recorded)
-            self.assertEqual((task_dir / "state/paper_mechanism_cards.jsonl").read_text(encoding="utf-8"), "")
-            self.assertEqual((task_dir / "state/full_text_sources.jsonl").read_text(encoding="utf-8"), "")
+            self.assertEqual(read_text_if_exists(task_dir / "state/paper_mechanism_cards.jsonl"), "")
+            self.assertEqual(read_text_if_exists(task_dir / "state/full_text_sources.jsonl"), "")
 
         with tempfile.TemporaryDirectory() as tmp:
             task_dir = initialize_task(Path(tmp), "dispatcher gate7 repair", target="full")
@@ -2899,12 +2903,16 @@ class SurveyAutoResearchContractTest(unittest.TestCase):
             active = next(batch for batch in runtime["batches"] if batch["batch_id"] == runtime["active_batch_id"])
             recorded = record_runtime_repair_result(task_dir, self.runtime_repair_result(active, task_dir), "repair-agent-full")
             self.assertEqual(recorded["status"], "recorded", recorded)
+            write_jsonl(
+                task_dir / "state/gate7_regression_requests.jsonl",
+                [{"request_id": "regression-before-reround", "status": "pending"}],
+            )
 
             second = run_until_complete(task_dir, target="full", max_steps=10)
             self.assertEqual(second["status"], "blocked_subagent_spawn_required")
             self.assertEqual(second["next_action"], "spawn_reviewers")
             self.assertEqual(second["spawn_request_count"], 5)
-            self.assertEqual((task_dir / "state/expert_review_reports.jsonl").read_text(encoding="utf-8"), "")
+            self.assertEqual(read_text_if_exists(task_dir / "state/expert_review_reports.jsonl"), "")
             self.assertEqual((task_dir / "state/repair_actions.jsonl").read_text(encoding="utf-8"), "")
             self.assertTrue(list((task_dir / "state/gate7_rounds").glob("*")))
             active_adjudication = json.loads((task_dir / "state/expert_review_adjudication.json").read_text(encoding="utf-8"))
@@ -3078,41 +3086,46 @@ class SurveyAutoResearchContractTest(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             task_dir = initialize_task(Path(tmp), "runner topic")
             for relative in [
+                "state/task_spec.md",
+                "state/progress.json",
+                "state/heartbeat.json",
                 "state/run_state.json",
                 "state/tasks.jsonl",
                 "state/failure_ledger.jsonl",
                 "state/paper_cards",
-                "state/expert_review_round_status.json",
-                "state/expert_review_adjudication.json",
-                "state/targeted_rereview_reports.jsonl",
-                "state/search_routes.jsonl",
-                "state/topic_relevance_audit.jsonl",
-                "state/topic_relevance_second_audits.jsonl",
-                "state/topic_relevance_results.jsonl",
-                "state/topic_relevance_batches.json",
-                "state/topic_relevance_runtime_action.json",
-                "state/topic_relevance_spawn_requests.json",
-                "state/expansion_audit.jsonl",
-                "state/taxonomy_alignment.jsonl",
-                "state/comparative_evidence_matrix.jsonl",
-                "state/paper_understanding_batches.json",
-                "state/paper_understanding_runtime_action.json",
-                "state/paper_understanding_spawn_requests.json",
-                "state/survey_driver_history.jsonl",
-                "state/full_text_fetch_plan.jsonl",
-                "state/ab_rebalance_decisions.jsonl",
-                "state/runtime_dispatch_queue.jsonl",
-                "state/runtime_agent_sessions.jsonl",
-                "state/runtime_agent_results.jsonl",
-                "state/runtime_dispatch_status.json",
-                "state/runtime_rebalance_status.json",
-                "state/runtime_active_intent.json",
-                "state/discovery_batches.json",
-                "state/discovery_runtime_action.json",
-                "state/discovery_spawn_requests.json",
-                "state/discovery_results.jsonl",
+                "outputs/release_manifest.json",
+                "logs/orchestrator.jsonl",
             ]:
                 self.assertTrue((task_dir / relative).exists())
+            for relative in [
+                "state/raw_candidates.jsonl",
+                "state/search_routes.jsonl",
+                "state/papers.jsonl",
+                "state/citation_plan.jsonl",
+                "state/topic_relevance_audit.jsonl",
+                "state/topic_relevance_second_audits.jsonl",
+                "state/paper_mechanism_cards.jsonl",
+                "state/full_text_sources.jsonl",
+                "state/claim_evidence_spans.jsonl",
+                "state/section_evidence_plans.jsonl",
+                "state/expert_review_reports.jsonl",
+                "state/runtime_dispatch_queue.jsonl",
+                "state/runtime_active_intent.json",
+                "state/discovery_batches.json",
+                "state/topic_relevance_batches.json",
+                "state/paper_understanding_batches.json",
+                "state/gate7_repair_batches.json",
+                "outputs/coverage_matrix.md",
+                "outputs/related_survey_matrix.md",
+                "outputs/references.bib",
+                "outputs/final_report.md",
+                "outputs/contribution_tree.yml",
+                "outputs/knowledge_tree.yml",
+                "state/spine_decision.md",
+            ]:
+                self.assertFalse((task_dir / relative).exists(), relative)
+            self.assertEqual(read_jsonl(task_dir / "state/tasks.jsonl"), [])
+            self.assertEqual(read_jsonl(task_dir / "state/failure_ledger.jsonl"), [])
             self.assertFalse((task_dir / "outputs/survey_candidate.md").exists())
             self.assertFalse((task_dir / "outputs/survey_body_draft.md").exists())
             self.assertFalse((task_dir / "outputs/survey_candidate.html").exists())
@@ -3135,7 +3148,7 @@ class SurveyAutoResearchContractTest(unittest.TestCase):
             invocations = [json.loads(line) for line in (task_dir / "state/expert_review_invocations.jsonl").read_text(encoding="utf-8").splitlines() if line.strip()]
             self.assertTrue(all(item["status"] == "blocked_waiting_external_review" for item in invocations))
             self.assertTrue(all(item["fresh_context"] is False for item in invocations))
-            self.assertEqual((task_dir / "state/expert_review_reports.jsonl").read_text(encoding="utf-8"), "")
+            self.assertEqual(read_text_if_exists(task_dir / "state/expert_review_reports.jsonl"), "")
             prompts = make_reviewer_prompts(task_dir)
             self.assertEqual(len(prompts["reviewer_prompts"]), 5)
             self.assertIn("multi_agent_v1.spawn_agent", prompts["execution_note"])
