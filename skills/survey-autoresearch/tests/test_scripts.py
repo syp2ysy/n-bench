@@ -3369,9 +3369,24 @@ class SurveyAutoResearchContractTest(unittest.TestCase):
 
             pending = collect_pending(task_dir)
             self.assertEqual(pending["component"], "task_queue")
+            self.assertNotIn("pending_requests", pending)
             self.assertEqual([task["request_type"] for task in pending["tasks"]], ["topic_profile"])
             task = pending["tasks"][0]
             self.assertEqual(task["status"], "pending")
+            self.assertIn("packet", task)
+            self.assertNotIn("payload", task)
+            self.assertNotIn("message", task)
+            self.assertNotIn("record_command", task)
+            packet_path = task_dir / task["packet"]
+            self.assertTrue(packet_path.exists())
+            packet = json.loads(packet_path.read_text(encoding="utf-8"))
+            self.assertEqual(packet["task_id"], task["task_id"])
+            self.assertEqual(packet["request_type"], "topic_profile")
+            self.assertIn("Topic Boundary Agent", packet["message"])
+            self.assertIn("topic_profile.py", packet["record_command"])
+            task_rows = read_jsonl(task_dir / "state/tasks.jsonl")
+            self.assertEqual(task_rows[0]["packet"], task["packet"])
+            self.assertNotIn("payload", task_rows[0])
 
             spawned = mark_spawned(task_dir, task["task_id"], "topic-profile-agent-001")
             self.assertEqual(spawned["component"], "task_queue")

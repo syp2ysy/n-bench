@@ -24,7 +24,7 @@ Treat `state/run_state.json`, `state/tasks.jsonl`, `state/paper_cards/`, `output
 1. Initialize a run with `scripts/init_task.py`.
 2. Resume work only through `scripts/runner.py --task-dir <run> --target <target> --run-until-complete`.
 3. If the runner returns a worker-spawn status, run `scripts/task_queue.py --task-dir <run> --collect-pending` or inspect the normalized `state/tasks.jsonl`.
-4. Spawn only the pending requests returned by the task queue with `multi_agent_v1.spawn_agent(fork_context=false)`.
+4. For each pending task, open its `packet` file under `state/task_packets/` for the worker prompt and result contract, then spawn only that task with `multi_agent_v1.spawn_agent(fork_context=false)`.
 5. Record each spawned session with `task_queue.py --mark-spawned <request-id> --agent-id <subagent-session-id>`.
 6. Save each worker response exactly as returned and record it with `task_queue.py --record-agent-output <request-id> --output-file <file>`.
 7. Rerun `runner.py --run-until-complete` until completion, quality-limited stop, or a real blocker.

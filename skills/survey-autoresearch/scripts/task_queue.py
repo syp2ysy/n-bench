@@ -9,14 +9,14 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 try:  # pragma: no cover - script import fallback
-    from .run_expert_reviews import read_jsonl, write_jsonl
+    from .run_expert_reviews import read_jsonl, write_json, write_jsonl
     from .runtime_dispatcher import collect_pending as dispatcher_collect_pending
     from .runtime_dispatcher import collect_status as dispatcher_collect_status
     from .runtime_dispatcher import mark_spawned as dispatcher_mark_spawned
     from .runtime_dispatcher import record_agent_output as dispatcher_record_agent_output
     from .status_schema import status_envelope
 except ImportError:  # pragma: no cover
-    from run_expert_reviews import read_jsonl, write_jsonl
+    from run_expert_reviews import read_jsonl, write_json, write_jsonl
     from runtime_dispatcher import collect_pending as dispatcher_collect_pending
     from runtime_dispatcher import collect_status as dispatcher_collect_status
     from runtime_dispatcher import mark_spawned as dispatcher_mark_spawned
@@ -40,17 +40,62 @@ PHASE_BY_REQUEST_TYPE = {
 }
 
 
-def _task_from_queue_row(row: dict) -> dict:
+def _safe_task_id(value: object) -> str:
+    text = str(value or "task").strip()
+    return "".join(ch if ch.isalnum() or ch in {"-", "_", "."} else "_" for ch in text) or "task"
+
+
+def _task_packet(task_dir: Path, row: dict) -> str:
+    state = task_dir / "state"
+    packets = state / "task_packets"
+    packets.mkdir(exist_ok=True)
+    request_type = str(row.get("request_type") or "unknown")
+    phase = PHASE_BY_REQUEST_TYPE.get(request_type, "runtime")
+    task_id = str(row.get("request_id") or "")
+    packet = {
+        "schema_version": 1,
+        "task_id": task_id,
+        "phase": phase,
+        "request_type": request_type,
+        "status": row.get("status"),
+        "agent_type": row.get("agent_type") or request_type,
+        "fork_context": bool(row.get("fork_context", False)),
+        "batch_id": row.get("batch_id"),
+        "source_file": row.get("source_file"),
+        "source_request_id": row.get("source_request_id"),
+        "phase_generation": row.get("phase_generation"),
+        "expected_result_schema_version": row.get("expected_result_schema_version"),
+        "record_command": row.get("record_command"),
+        "message": row.get("message"),
+        "payload": row.get("payload") or {},
+        "updated_at": _utc_now(),
+    }
+    relative = Path("state") / "task_packets" / f"{_safe_task_id(task_id)}.json"
+    write_json(task_dir / relative, packet)
+    return str(relative)
+
+
+def _expected_outputs(row: dict) -> list[str]:
+    payload = row.get("payload") or {}
+    outputs = payload.get("expected_changed_artifacts") or payload.get("expected_output_artifacts") or payload.get("outputs") or []
+    if isinstance(outputs, str):
+        return [outputs]
+    return [str(item) for item in outputs if str(item).strip()]
+
+
+def _task_from_queue_row(task_dir: Path, row: dict) -> dict:
     request_type = str(row.get("request_type") or "unknown")
     status = str(row.get("status") or "pending_spawn")
+    packet = _task_packet(task_dir, row)
     return {
         "task_id": row.get("request_id"),
         "phase": PHASE_BY_REQUEST_TYPE.get(request_type, "runtime"),
         "status": "pending" if status == "pending_spawn" else status,
         "agent": row.get("agent_type") or request_type,
         "request_type": request_type,
-        "inputs": [row.get("source_file")] if row.get("source_file") else [],
-        "outputs": [row.get("record_command")] if row.get("record_command") else [],
+        "packet": packet,
+        "inputs": [item for item in [row.get("source_file"), packet] if item],
+        "outputs": _expected_outputs(row),
         "validator": row.get("payload", {}).get("expected_acceptance_validators") or row.get("payload", {}).get("expected_validators") or [],
         "retry_of": row.get("previous_request_id"),
         "created_by": "task_queue",
@@ -65,7 +110,7 @@ def sync_tasks(task_dir: Path) -> dict:
     status = dispatcher_collect_status(task_dir)
     rows = status.get("queue") or read_jsonl(task_dir / "state" / "runtime_dispatch_queue.jsonl")
     active_rows = [row for row in rows if not str(row.get("status") or "").startswith("stale")]
-    tasks = [_task_from_queue_row(row) for row in active_rows]
+    tasks = [_task_from_queue_row(task_dir, row) for row in active_rows]
     write_jsonl(task_dir / "state" / "tasks.jsonl", tasks)
     return {
         **status_envelope(
@@ -89,8 +134,9 @@ def sync_tasks(task_dir: Path) -> dict:
 
 def _with_tasks(task_dir: Path, component_result: dict) -> dict:
     tasks = sync_tasks(task_dir)
+    public_result = {key: value for key, value in component_result.items() if key not in {"pending_requests", "queue"}}
     return {
-        **component_result,
+        **public_result,
         "component": "task_queue",
         "tasks_path": "state/tasks.jsonl",
         "tasks": tasks.get("tasks") or [],
