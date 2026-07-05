@@ -194,6 +194,8 @@ def _live_row_for_source(existing: dict[str, dict], row: dict) -> dict | None:
 
 def _merge_source_row(current: dict, row: dict) -> None:
     preserved = {
+        "request_id": current.get("request_id") or row.get("request_id"),
+        "previous_request_id": current.get("previous_request_id"),
         "status": current.get("status") or row["status"],
         "spawned_agent_id": current.get("spawned_agent_id", ""),
         "spawned_at": current.get("spawned_at"),
@@ -201,7 +203,6 @@ def _merge_source_row(current: dict, row: dict) -> None:
         "recorded_at": current.get("recorded_at"),
         "error": current.get("error"),
         "reactivated_at": current.get("reactivated_at"),
-        "previous_request_id": current.get("previous_request_id"),
         "attempt": current.get("attempt"),
     }
     current.update(row)
@@ -383,6 +384,62 @@ def mark_spawned(task_dir: Path, request_id: str, agent_id: str) -> dict:
     return {"status": "spawned", "request_id": request_id, "spawned_agent_id": agent_id}
 
 
+def mark_failed(task_dir: Path, request_id: str, reason: str = "worker_failed") -> dict:
+    rows = _sync_queue(task_dir)
+    row = next((item for item in rows if item.get("request_id") == request_id), None)
+    if not row:
+        return {"status": "invalid", "error": "unknown_request_id"}
+    current_status = str(row.get("status") or "")
+    if current_status in {"result_recorded", "rebalance_required"}:
+        return {"status": "invalid", "error": "result_already_recorded", "request_id": request_id}
+    if current_status.startswith("stale"):
+        return {"status": "stale_request_rejected", "error": row.get("error") or "runtime_intent_changed", "request_id": request_id}
+    now = _utc_now()
+    if current_status == "spawned" or row.get("spawned_agent_id"):
+        row["status"] = "stale_spawned"
+        row["error"] = reason or "worker_failed"
+        row["failed_at"] = now
+        existing = {str(item.get("request_id") or ""): item for item in rows if item.get("request_id")}
+        retry_id = _next_retry_id(existing, request_id)
+        retry = dict(row)
+        retry["request_id"] = retry_id
+        retry["previous_request_id"] = request_id
+        retry["status"] = "pending_spawn"
+        retry["spawned_agent_id"] = ""
+        retry["attempt"] = int(row.get("attempt") or 1) + 1
+        retry["reactivated_at"] = now
+        retry.pop("spawned_at", None)
+        retry.pop("failed_at", None)
+        retry.pop("result_hash", None)
+        retry.pop("recorded_at", None)
+        retry.pop("error", None)
+        rows.append(retry)
+    else:
+        row["status"] = "stale_superseded"
+        row["error"] = reason or "worker_failed"
+        row["failed_at"] = now
+    write_jsonl(_state(task_dir) / QUEUE_FILE, rows)
+    _append_result_row(
+        task_dir,
+        {
+            "ts": now,
+            "request_id": request_id,
+            "request_type": row.get("request_type"),
+            "status": "worker_failed",
+            "error": reason or "worker_failed",
+            "spawned_agent_id": row.get("spawned_agent_id"),
+        },
+    )
+    status = collect_pending(task_dir)
+    return {
+        "status": "worker_failed",
+        "request_id": request_id,
+        "error": reason or "worker_failed",
+        "next_action": status.get("next_action"),
+        "pending_count": len(status.get("pending_requests") or []),
+    }
+
+
 def _parse_agent_output(output_file: Path) -> tuple[dict | None, str | None]:
     text = output_file.read_text(encoding="utf-8")
     stripped = text.strip()
@@ -530,7 +587,9 @@ def main() -> int:
     parser.add_argument("--collect-pending", action="store_true")
     parser.add_argument("--collect-status", action="store_true")
     parser.add_argument("--mark-spawned")
+    parser.add_argument("--mark-failed")
     parser.add_argument("--agent-id")
+    parser.add_argument("--reason", default="worker_failed")
     parser.add_argument("--record-agent-output")
     parser.add_argument("--output-file", type=Path)
     args = parser.parse_args()
@@ -543,6 +602,8 @@ def main() -> int:
             result = {"status": "invalid", "error": "missing_agent_id"}
         else:
             result = mark_spawned(args.task_dir, args.mark_spawned, args.agent_id)
+    elif args.mark_failed:
+        result = mark_failed(args.task_dir, args.mark_failed, args.reason)
     elif args.record_agent_output:
         if not args.output_file:
             result = {"status": "invalid", "error": "missing_output_file"}

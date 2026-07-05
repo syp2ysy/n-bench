@@ -82,7 +82,7 @@ def _refresh_batch_statuses(doc: dict) -> dict:
         if batch.get("status") == "resolved":
             continue
         if active_batch_id is None:
-            if batch.get("status") in {"blocked_by_upstream", "", None}:
+            if batch.get("status") in {"blocked_by_upstream", "blocked", "partially_resolved", "", None}:
                 batch["status"] = "pending_spawn"
             if batch.get("status") == "pending_spawn":
                 active_batch_id = batch.get("batch_id")
@@ -116,6 +116,8 @@ def _spawn_request(task_dir: Path, batch: dict) -> dict:
         "result_schema_version": RESULT_SCHEMA_VERSION,
         "required_result_keys": list(REQUIRED_RESULT_KEYS),
         "batch_id": batch.get("batch_id"),
+        "attempt": int(batch.get("attempt") or 1),
+        "previous_blockers": batch.get("last_blockers") or [],
         "target": _target(task_dir),
         "task_spec": _task_spec(task_dir),
         "topic_profile": _topic_profile(task_dir),
@@ -283,7 +285,11 @@ def record_discovery_result(task_dir: Path, result: dict, subagent_session_id: s
         batch["resolved_at"] = recorded_at
         batch["subagent_session_id"] = subagent_session_id
     else:
-        batch["status"] = str(result.get("status"))
+        batch["status"] = "pending_spawn"
+        batch["attempt"] = int(batch.get("attempt") or 1) + 1
+        batch["last_blocked_at"] = recorded_at
+        batch["last_blockers"] = result.get("remaining_blockers") or []
+        batch["last_status"] = str(result.get("status") or "")
     doc = _with_metadata(_refresh_batch_statuses(doc))
     write_json(state / "discovery_batches.json", doc)
     _write_runtime_action(task_dir, doc)

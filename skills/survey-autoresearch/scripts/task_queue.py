@@ -12,6 +12,7 @@ try:  # pragma: no cover - script import fallback
     from .run_expert_reviews import read_jsonl, write_json, write_jsonl
     from .runtime_dispatcher import collect_pending as dispatcher_collect_pending
     from .runtime_dispatcher import collect_status as dispatcher_collect_status
+    from .runtime_dispatcher import mark_failed as dispatcher_mark_failed
     from .runtime_dispatcher import mark_spawned as dispatcher_mark_spawned
     from .runtime_dispatcher import record_agent_output as dispatcher_record_agent_output
     from .status_schema import status_envelope
@@ -19,6 +20,7 @@ except ImportError:  # pragma: no cover
     from run_expert_reviews import read_jsonl, write_json, write_jsonl
     from runtime_dispatcher import collect_pending as dispatcher_collect_pending
     from runtime_dispatcher import collect_status as dispatcher_collect_status
+    from runtime_dispatcher import mark_failed as dispatcher_mark_failed
     from runtime_dispatcher import mark_spawned as dispatcher_mark_spawned
     from runtime_dispatcher import record_agent_output as dispatcher_record_agent_output
     from status_schema import status_envelope
@@ -162,6 +164,11 @@ def mark_spawned(task_dir: Path, request_id: str, agent_id: str) -> dict:
     return _with_tasks(task_dir, result)
 
 
+def mark_failed(task_dir: Path, request_id: str, reason: str = "worker_failed") -> dict:
+    result = dispatcher_mark_failed(task_dir, request_id, reason)
+    return _with_tasks(task_dir, result)
+
+
 def record_agent_output(task_dir: Path, request_id: str, output_file: Path) -> dict:
     result = dispatcher_record_agent_output(task_dir, request_id, output_file)
     return _with_tasks(task_dir, result)
@@ -174,7 +181,9 @@ def main() -> int:
     parser.add_argument("--collect-pending", action="store_true")
     parser.add_argument("--collect-status", action="store_true")
     parser.add_argument("--mark-spawned")
+    parser.add_argument("--mark-failed")
     parser.add_argument("--agent-id")
+    parser.add_argument("--reason", default="worker_failed")
     parser.add_argument("--record-agent-output")
     parser.add_argument("--output-file", type=Path)
     args = parser.parse_args()
@@ -184,6 +193,8 @@ def main() -> int:
         result = collect_status(args.task_dir)
     elif args.mark_spawned:
         result = mark_spawned(args.task_dir, args.mark_spawned, args.agent_id or "")
+    elif args.mark_failed:
+        result = mark_failed(args.task_dir, args.mark_failed, args.reason)
     elif args.record_agent_output:
         if not args.output_file:
             result = {"component": "task_queue", "status": "invalid", "error": "missing_output_file"}

@@ -1654,7 +1654,7 @@ class SurveyAutoResearchContractTest(unittest.TestCase):
 
     def test_runtime_dispatcher_queues_and_records_paper_worker_output(self):
         from scripts.paper_understanding_runtime_executor import collect_paper_understanding_status
-        from scripts.runtime_dispatcher import collect_pending, mark_spawned, record_agent_output
+        from scripts.runtime_dispatcher import collect_pending, mark_failed, mark_spawned, record_agent_output
         from scripts.survey_driver import run_until_complete as run_survey_until_complete
 
         with tempfile.TemporaryDirectory() as tmp:
@@ -1696,7 +1696,7 @@ class SurveyAutoResearchContractTest(unittest.TestCase):
             self.assertEqual(sessions[-1]["spawned_agent_id"], "paper-agent-001")
 
     def test_survey_driver_dispatches_discovery_workers_from_empty_run(self):
-        from scripts.runtime_dispatcher import collect_pending, mark_spawned, record_agent_output
+        from scripts.runtime_dispatcher import collect_pending, mark_failed, mark_spawned, record_agent_output
         from scripts.survey_driver import run_until_complete as run_survey_until_complete
 
         with tempfile.TemporaryDirectory() as tmp:
@@ -1730,6 +1730,42 @@ class SurveyAutoResearchContractTest(unittest.TestCase):
             after = evaluate_phase_barriers(task_dir, "full")
             self.assertTrue(after["phases"]["discovery"]["passed"])
             self.assertEqual(after["blocked_by_phase"], "source_verification")
+
+    def test_blocked_discovery_result_reopens_batch_for_retry(self):
+        from scripts.runtime_dispatcher import collect_pending, mark_spawned, record_agent_output
+        from scripts.survey_driver import run_until_complete as run_survey_until_complete
+
+        with tempfile.TemporaryDirectory() as tmp:
+            task_dir = initialize_task(Path(tmp), "blocked discovery retry", target="full")
+            self.write_topic_profile(task_dir, topic="blocked discovery retry")
+            status = run_survey_until_complete(task_dir, target="full", max_steps=5)
+            self.assertEqual(status["next_action"], "spawn_discovery_agents")
+            first = collect_pending(task_dir)["pending_requests"][0]
+            self.assertEqual(mark_spawned(task_dir, first["request_id"], "discovery-agent-001")["status"], "spawned")
+            output = {
+                "batch_id": first["batch_id"],
+                "status": "blocked",
+                "raw_candidates": [{"paper_id": "p001", "title": "real but insufficient"}],
+                "search_routes": [{"route_id": "r1", "route_type": "arXiv keyword", "result_count": 1}],
+                "lqs_scores": [{"paper_id": "p001", "score": 90}],
+                "corpus_expansion": {"blocked_limitations": ["insufficient_raw_candidates"]},
+                "validator_results": [{"validator": "validate_discovery", "status": "not_passed"}],
+                "remaining_blockers": ["insufficient_raw_candidates"],
+            }
+            output_file = Path(tmp) / "blocked-discovery-output.json"
+            output_file.write_text(json.dumps(output, sort_keys=True), encoding="utf-8")
+            recorded = record_agent_output(task_dir, first["request_id"], output_file)
+            self.assertEqual(recorded["status"], "result_recorded", recorded)
+            self.assertEqual(read_jsonl(task_dir / "state/raw_candidates.jsonl"), [])
+            batches = json.loads((task_dir / "state/discovery_batches.json").read_text(encoding="utf-8"))
+            self.assertEqual(batches["active_batch_id"], "D001")
+            self.assertEqual(batches["batches"][0]["status"], "pending_spawn")
+            self.assertEqual(batches["batches"][0]["attempt"], 2)
+            retry = collect_pending(task_dir)
+            self.assertEqual(retry["status"], "pending_spawn", retry)
+            retry_request = retry["pending_requests"][0]
+            self.assertEqual(retry_request["request_type"], "discovery")
+            self.assertNotEqual(retry_request["request_id"], first["request_id"])
 
     def test_corpus_pipeline_facade_preserves_topic_boundary_before_discovery(self):
         from scripts.corpus_pipeline import collect_status as collect_corpus_status
@@ -2105,7 +2141,7 @@ class SurveyAutoResearchContractTest(unittest.TestCase):
 
     def test_runtime_dispatcher_requires_active_intent_and_prunes_stale_downstream_requests(self):
         from scripts.paper_understanding_runtime_executor import collect_paper_understanding_status, prepare_paper_understanding_batches
-        from scripts.runtime_dispatcher import collect_pending, mark_spawned, record_agent_output
+        from scripts.runtime_dispatcher import collect_pending, mark_failed, mark_spawned, record_agent_output
         from scripts.survey_driver import run_until_complete as run_survey_until_complete
 
         with tempfile.TemporaryDirectory() as tmp:
@@ -2217,6 +2253,20 @@ class SurveyAutoResearchContractTest(unittest.TestCase):
             stale_old_output.write_text(json.dumps({"batch_id": first_request["batch_id"], "status": "blocked"}), encoding="utf-8")
             stale_record = record_agent_output(task_dir, first_request["request_id"], stale_old_output)
             self.assertEqual(stale_record["status"], "stale_request_rejected", stale_record)
+
+        with tempfile.TemporaryDirectory() as tmp:
+            task_dir = initialize_task(Path(tmp), "dispatcher spawned failure retry", target="full")
+            self.write_topic_profile(task_dir, topic="dispatcher spawned failure retry")
+            run_survey_until_complete(task_dir, target="full", max_steps=5)
+            first_request = collect_pending(task_dir)["pending_requests"][0]
+            self.assertEqual(mark_spawned(task_dir, first_request["request_id"], "discovery-agent-timeout")["status"], "spawned")
+            failed = mark_failed(task_dir, first_request["request_id"], "worker_timeout")
+            self.assertEqual(failed["status"], "worker_failed", failed)
+            retry_pending = collect_pending(task_dir)
+            self.assertEqual(retry_pending["status"], "pending_spawn", retry_pending)
+            retry_request = retry_pending["pending_requests"][0]
+            self.assertNotEqual(retry_request["request_id"], first_request["request_id"])
+            self.assertEqual(retry_request["previous_request_id"], first_request["request_id"])
 
     def test_runtime_dispatcher_rejects_invalid_output_and_routes_gate7_repair(self):
         from scripts.gate7_runtime_executor import collect_runtime_repair_status
