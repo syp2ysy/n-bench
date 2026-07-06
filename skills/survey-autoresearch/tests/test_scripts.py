@@ -1153,6 +1153,27 @@ class SurveyAutoResearchContractTest(unittest.TestCase):
         self.assertFalse(unknown_name["valid"])
         self.assertTrue(any("unregistered_named_entity_near_citation" in item for item in unknown_name["article_alignment_errors"]))
         self.assertTrue(validate_claim_evidence(self.claims(), self.mechanism_cards(1), self.section_evidence_plans(), full_text_sources=self.full_text_sources(1), article_text="Verified Paper 1 shows a result [@p001].")["valid"])
+        dotted_cards = self.mechanism_cards(1)
+        dotted_cards[0]["citation_key"] = "2505.15510v2"
+        dotted_cards[0]["aliases"] = ["https://arxiv.org/abs/2505.15510"]
+        self.assertTrue(
+            validate_claim_evidence(
+                self.claims(),
+                dotted_cards,
+                self.section_evidence_plans(),
+                full_text_sources=self.full_text_sources(1),
+                article_text="Verified Paper 1 reports a result [@2505.15510v2].",
+            )["valid"]
+        )
+        self.assertTrue(
+            validate_claim_evidence(
+                self.claims(),
+                dotted_cards,
+                self.section_evidence_plans(),
+                full_text_sources=self.full_text_sources(1),
+                article_text="Verified Paper 1 reports a result (https://arxiv.org/abs/2505.15510).",
+            )["valid"]
+        )
 
     def test_synthesis_and_argument_contracts(self):
         self.assertTrue(validate_contribution_tree(self.contribution_statements(), json.dumps(self.contribution_tree()), self.citation_plan(), self.argument_graph(), "full")["valid"])
@@ -2358,7 +2379,67 @@ class SurveyAutoResearchContractTest(unittest.TestCase):
                 "Section-to-evidence map: S1 uses p001 and p002 to explain retrieval memory evidence flow.\n"
             ),
             "section_to_evidence_map": {"S1": {"paper_ids": ["p001", "p002"], "role": "retrieval evidence flow"}},
+            "taxonomy_alignment": self.taxonomy_alignment(),
             "validator_results": [{"validator": "validate_spine_plan", "status": "passed"}],
+            "remaining_blockers": [],
+        }
+
+    def synthesis_worker_result(self) -> dict:
+        return {
+            "batch_id": "SY001",
+            "status": "resolved",
+            "paper_contribution_statements": self.contribution_statements(),
+            "scenario_definitions": self.scenario_definitions(),
+            "method_family_dossiers": [self.method_dossier()],
+            "benchmark_dossiers": [self.benchmark_dossier()],
+            "comparative_evidence_matrix": self.comparative_evidence_matrix(),
+            "argument_graph": {
+                "contribution_tree": "outputs/contribution_tree.yml",
+                "candidate_spines_from_contribution_tree": ["retrieval memory", "structured map memory"],
+            },
+            "validator_results": [{"validator": "validate_synthesis_artifacts", "status": "passed"}],
+            "remaining_blockers": [],
+        }
+
+    def argument_worker_result(self) -> dict:
+        return {
+            "batch_id": "ARG001",
+            "status": "resolved",
+            "survey_type_plan": (
+                "topic: embodied memory system\n"
+                "primary_type: system-object\n"
+                "secondary_lenses:\n  - method-family\n  - benchmark/evaluation\n"
+                "why_this_type: The topic names a system object.\n"
+                "why_not_other_types: A pure task survey would fragment evidence.\n"
+                "article_skeleton:\n  - Introduction\n  - Related Surveys\n  - Method Families\n  - Benchmark and Evaluation\n"
+                "exemplar_alignment: Field Survey Exemplar uses definition -> taxonomy -> data ecosystem -> evaluation -> open challenges.\n"
+                "community_native_taxonomy:\n  - retrieval memory\n  - structured map memory\n  - episodic policy memory\n"
+                "exemplar_section_patterns:\n  - definition\n  - taxonomy\n  - data ecosystem\n  - evaluation protocol\n"
+                "candidate_article_spines:\n  - community-native method-family taxonomy\n  - system-node diagnostic lens\n"
+                "selected_article_spine: community-native method-family taxonomy\n"
+                "why_not_exemplar_spine: The article adapts the exemplar pattern to evidence-to-action interfaces.\n"
+                "figure_first_plan: taxonomy roadmap; method evolution timeline; data ecosystem; evaluation protocol matrix.\n"
+                "science_paradigm_profile: robotics/embodied-ai\n"
+                "evidence_norms:\n  - benchmark, baseline, and ablation evidence is required\n"
+                "required_evidence_units:\n  - benchmark\n  - baseline\n  - ablation\n"
+                "common_confounders:\n  - perception\n  - controller capacity\n"
+                "excluded_templates:\n  - pure chronological survey\n"
+            ),
+            "argument_graph": self.argument_graph(),
+            "article_plan": self.article_plan(),
+            "claim_evidence_spans": self.claims(),
+            "section_evidence_plans": self.section_evidence_plans(),
+            "validator_results": [{"validator": "validate_argument_plan", "status": "passed"}],
+            "remaining_blockers": [],
+        }
+
+    def article_worker_result(self, repeat: int = 2) -> dict:
+        return {
+            "batch_id": "ART001",
+            "status": "resolved",
+            "survey_candidate_md": self.review_text(repeat=repeat),
+            "appendix_md": "# Appendix\n\nSearch protocol and coverage logistics are summarized for release verification.\n",
+            "validator_results": [{"validator": "validate_article_quality", "status": "passed"}],
             "remaining_blockers": [],
         }
 
@@ -2402,6 +2483,9 @@ class SurveyAutoResearchContractTest(unittest.TestCase):
 
             mirrored = mirror_knowledge_tree(task_dir)
             self.assertEqual(mirrored["status"], "mirrored")
+            tree_after_mirror = json.loads((task_dir / "outputs/knowledge_tree.yml").read_text(encoding="utf-8"))
+            self.assertEqual(tree_after_mirror["candidate_taxonomies"], ["method-first", "evidence-flow-first"])
+            self.assertEqual(tree_after_mirror["selected_spine"], "evidence-flow-first")
 
     def test_spine_planner_prepares_and_records_worker_spine(self):
         from scripts.knowledge_tree_builder import record_knowledge_tree_result
@@ -2474,6 +2558,48 @@ class SurveyAutoResearchContractTest(unittest.TestCase):
             self.assertEqual(recorded["record_result"]["status"], "recorded")
             self.assertTrue((task_dir / "outputs/knowledge_tree.yml").exists())
 
+    def test_survey_driver_routes_missing_synthesis_artifacts_after_knowledge_tree(self):
+        from scripts.knowledge_tree_builder import record_knowledge_tree_result
+        from scripts.paper_card_store import mirror_paper_cards
+        from scripts.runner import run_until_complete as run_public_runner
+        from scripts.task_queue import collect_pending, mark_spawned, record_agent_output
+
+        with tempfile.TemporaryDirectory() as tmp:
+            task_dir = initialize_task(Path(tmp), "synthesis worker driver", target="full")
+            self.populate_full_task(task_dir)
+            mirror_paper_cards(task_dir)
+            recorded_tree = record_knowledge_tree_result(task_dir, self.knowledge_tree_worker_result(), "knowledge-tree-agent-001")
+            self.assertEqual(recorded_tree["status"], "recorded", recorded_tree)
+            for relative in [
+                "state/paper_contribution_statements.jsonl",
+                "state/scenario_definitions.yml",
+                "state/comparative_evidence_matrix.jsonl",
+                "outputs/method_family_dossiers",
+                "outputs/benchmark_dossiers",
+            ]:
+                path = task_dir / relative
+                if path.is_dir():
+                    shutil.rmtree(path)
+                elif path.exists():
+                    path.unlink()
+
+            status = run_public_runner(task_dir, target="full", max_steps=5)
+            self.assertEqual(status["status"], "blocked_synthesis_agent_spawn_required", status)
+            self.assertEqual(status["next_action"], "spawn_synthesis_agents")
+            pending = collect_pending(task_dir)
+            self.assertEqual([row["request_type"] for row in pending["tasks"]], ["synthesis"])
+            request = pending["tasks"][0]
+            packet = json.loads((task_dir / request["packet"]).read_text(encoding="utf-8"))
+            self.assertIn("synthesis_builder.py", packet["record_command"])
+            mark_spawned(task_dir, request["task_id"], "synthesis-agent-001")
+            output_file = Path(tmp) / "synthesis-result.json"
+            output_file.write_text(json.dumps(self.synthesis_worker_result(), sort_keys=True), encoding="utf-8")
+            recorded = record_agent_output(task_dir, request["task_id"], output_file)
+            self.assertEqual(recorded["status"], "result_recorded", recorded)
+            self.assertEqual(recorded["record_result"]["status"], "recorded")
+            phase = evaluate_phase_barriers(task_dir, "full")
+            self.assertTrue(phase["phases"]["synthesis"]["passed"], phase["phases"]["synthesis"])
+
     def test_runtime_dispatcher_routes_spine_planner_output(self):
         from scripts.knowledge_tree_builder import record_knowledge_tree_result
         from scripts.paper_card_store import mirror_paper_cards
@@ -2503,6 +2629,75 @@ class SurveyAutoResearchContractTest(unittest.TestCase):
             self.assertEqual(recorded["status"], "result_recorded", recorded)
             self.assertEqual(recorded["record_result"]["status"], "recorded")
             self.assertIn("evidence-flow-first", (task_dir / "state/spine_decision.md").read_text(encoding="utf-8"))
+
+    def test_runtime_dispatcher_routes_argument_builder_output(self):
+        from scripts.argument_builder import prepare_argument_request
+        from scripts.runtime_dispatcher import collect_pending, mark_spawned, record_agent_output
+        from scripts.survey_driver import run_until_complete as run_survey_until_complete
+
+        with tempfile.TemporaryDirectory() as tmp:
+            task_dir = initialize_task(Path(tmp), "argument builder driver", target="full")
+            self.populate_full_task(task_dir)
+            for relative in [
+                "outputs/article_plan.md",
+                "state/section_evidence_plans.jsonl",
+                "state/claim_evidence_spans.jsonl",
+            ]:
+                path = task_dir / relative
+                if path.exists():
+                    path.unlink()
+            status = run_survey_until_complete(task_dir, target="full", max_steps=5)
+            self.assertEqual(status["status"], "blocked_argument_agent_spawn_required", status)
+            self.assertEqual(status["next_action"], "spawn_argument_agents")
+            pending = collect_pending(task_dir)
+            self.assertEqual([row["request_type"] for row in pending["pending_requests"]], ["argument"])
+            request = pending["pending_requests"][0]
+            mark_spawned(task_dir, request["request_id"], "argument-agent-001")
+            output_file = Path(tmp) / "argument-result.json"
+            result = self.argument_worker_result()
+            result["argument_graph"].pop("contribution_tree", None)
+            output_file.write_text(json.dumps(result, sort_keys=True), encoding="utf-8")
+            recorded = record_agent_output(task_dir, request["request_id"], output_file)
+            self.assertEqual(recorded["status"], "result_recorded", recorded)
+            self.assertEqual(recorded["record_result"]["status"], "recorded")
+            phase = evaluate_phase_barriers(task_dir, "full")
+            self.assertTrue(phase["phases"]["synthesis"]["passed"], phase["phases"]["synthesis"])
+            self.assertTrue(phase["phases"]["argument"]["passed"], phase["phases"]["argument"])
+
+    def test_runtime_dispatcher_routes_article_builder_output(self):
+        from scripts.runner import run_until_complete as run_public_runner
+        from scripts.runtime_dispatcher import mark_spawned
+        from scripts.task_queue import collect_pending, record_agent_output
+
+        with tempfile.TemporaryDirectory() as tmp:
+            task_dir = initialize_task(Path(tmp), "article builder driver", target="short")
+            self.populate_full_task(task_dir)
+            for relative in [
+                "outputs/survey_candidate.md",
+                "outputs/survey_candidate.html",
+                "outputs/appendix.md",
+                "outputs/survey.md",
+                "outputs/survey.html",
+            ]:
+                path = task_dir / relative
+                if path.exists():
+                    path.unlink()
+            status = run_public_runner(task_dir, target="short", max_steps=5)
+            self.assertEqual(status["status"], "blocked_article_agent_spawn_required", status)
+            self.assertEqual(status["next_action"], "spawn_article_agents")
+            pending = collect_pending(task_dir)
+            self.assertEqual([row["request_type"] for row in pending["tasks"]], ["article"])
+            request = pending["tasks"][0]
+            mark_spawned(task_dir, request["task_id"], "article-agent-001")
+            output_file = Path(tmp) / "article-result.json"
+            output_file.write_text(json.dumps(self.article_worker_result(), sort_keys=True), encoding="utf-8")
+            recorded = record_agent_output(task_dir, request["task_id"], output_file)
+            self.assertEqual(recorded["status"], "result_recorded", recorded)
+            self.assertEqual(recorded["record_result"]["status"], "recorded")
+            self.assertTrue((task_dir / "outputs/survey_candidate.md").exists())
+            self.assertTrue((task_dir / "outputs/survey_candidate.html").exists())
+            phase = evaluate_phase_barriers(task_dir, "short")
+            self.assertTrue(phase["phases"]["article"]["passed"], phase["phases"]["article"])
 
     def test_runner_requires_topic_profile_before_discovery(self):
         from scripts.runner import run_until_complete as run_public_runner
@@ -3029,6 +3224,30 @@ class SurveyAutoResearchContractTest(unittest.TestCase):
             self.assertGreaterEqual(topic["summary"]["verified_related_survey_count"], 6)
             status = evaluate_phase_barriers(task_dir, "full")
             self.assertTrue(status["phases"]["source_verification"]["passed"], status["phases"]["source_verification"])
+
+    def test_real_topic_full_anchor_rolls_up_fine_grained_audit_families(self):
+        fixture = ROOT / "tests" / "fixtures" / "topic_relevance" / "mllm_think_with_image_full_anchor"
+        high_level_families = [
+            "boundary, evidence standards, and faithfulness tests for visual intermediate state reasoning",
+            "rendered visual workspaces and executable visual transformations",
+            "active visual evidence acquisition, search, and persistent visual memory",
+            "grounded traces, region token replay, and object bound visual reasoning",
+            "native, generated, and latent visual thought states",
+            "learning controllers for visual actions: prompting, sft, rl, rewards, and process supervision",
+            "temporal, structured, embodied, and domain specific stress tests of the visual workspace loop",
+        ]
+        status = validate_coverage(
+            read_jsonl(fixture / "raw_candidates.jsonl"),
+            read_jsonl(fixture / "search_routes.jsonl"),
+            read_jsonl(fixture / "lqs_scores.jsonl"),
+            json.loads((fixture / "corpus_expansion.json").read_text(encoding="utf-8")),
+            read_jsonl(fixture / "papers.jsonl"),
+            read_jsonl(fixture / "citation_plan.jsonl"),
+            "full",
+            core_families=high_level_families,
+            topic_relevance_audit=read_jsonl(fixture / "topic_relevance_audit.jsonl"),
+        )
+        self.assertTrue(status["valid"], status)
 
     def test_topic_coverage_support_is_layered_by_raw_verified_and_ab_sets(self):
         raw = self.raw_candidates()

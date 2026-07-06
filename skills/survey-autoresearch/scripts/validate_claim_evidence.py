@@ -175,8 +175,8 @@ def _entity_expected_paper_ids(entity, aliases: dict[str, set[str]]) -> set[str]
 
 def _citation_ids_in_sentence(sentence: str, aliases: dict[str, set[str]]) -> set[str]:
     ids: set[str] = set()
-    for match in re.finditer(r"@([A-Za-z0-9_:\-]+)|\b([Pp]\d{3})\b", sentence):
-        key = (match.group(1) or match.group(2) or "").strip().lower()
+    for match in re.finditer(r"@([A-Za-z0-9_:\-./]+)|\b([Pp]\d{3})\b|(https?://arxiv\.org/abs/[A-Za-z0-9.\-v]+)", sentence):
+        key = (match.group(1) or match.group(2) or match.group(3) or "").strip(" ,.;:()[]").lower()
         if not key:
             continue
         resolved = aliases.get(key)
@@ -185,6 +185,22 @@ def _citation_ids_in_sentence(sentence: str, aliases: dict[str, set[str]]) -> se
         else:
             ids.add(key)
     return ids
+
+
+def _arxiv_base(value: str) -> str:
+    text = str(value or "").strip().lower().rstrip(".,;:)]")
+    match = re.search(r"(?:arxiv\.org/abs/)?(\d{4}\.\d{4,5})(?:v\d+)?", text)
+    return match.group(1) if match else ""
+
+
+def _ids_overlap(left: set[str], right: set[str]) -> bool:
+    if left & right:
+        return True
+    left_bases = {_arxiv_base(item) for item in left}
+    right_bases = {_arxiv_base(item) for item in right}
+    left_bases.discard("")
+    right_bases.discard("")
+    return bool(left_bases & right_bases)
 
 
 ENTITY_STOPWORDS = {
@@ -207,8 +223,28 @@ ENTITY_STOPWORDS = {
 }
 
 
+def _looks_like_unregistered_method(entity: str) -> bool:
+    text = str(entity or "").strip()
+    if not text:
+        return False
+    if " " in text:
+        return False
+    if len(text) < 5:
+        return False
+    if re.fullmatch(r"[A-Z0-9-]+s?", text):
+        return False
+    if text.lower().endswith(("-style", "-family")):
+        return False
+    return bool(re.search(r"[A-Z].*[A-Z]|\d|-", text))
+
+
+def _is_generic_alignment_entity(entity: str) -> bool:
+    text = str(entity or "").strip()
+    return bool(re.fullmatch(r"(SFT|RL|IoU|QA|CoT|LLM|LLMs|VLM|VLMs|LVLM|LVLMs|GRPO)", text))
+
+
 def _candidate_named_entities(sentence: str) -> list[str]:
-    stripped = re.sub(r"\[@?[A-Za-z0-9_:\-;\s,]+\]", " ", sentence)
+    stripped = re.sub(r"\[@?[^\]]+\]|@[A-Za-z0-9_:\-./]+|https?://\S+", " ", sentence)
     candidates: list[str] = []
     patterns = [
         r"\b(?:[A-Z][A-Za-z0-9]*(?:-[A-Za-z0-9]+)?)(?:\s+(?:[A-Z][A-Za-z0-9]*(?:-[A-Za-z0-9]+)?|\d+))+\b",
@@ -240,18 +276,22 @@ def _article_alignment_errors(article_text: str, aliases: dict[str, set[str]]) -
     errors: list[str] = []
     normalized = re.sub(r"\s+", " ", article_text)
     sentences = re.split(r"(?<=[。！？.!?])\s+", normalized)
-    title_aliases = [(alias, pids) for alias, pids in aliases.items() if len(alias) >= 8 and not re.fullmatch(r"p\d{3}", alias)]
     for sentence in sentences:
         cited = _citation_ids_in_sentence(sentence, aliases)
         if not cited:
             continue
         sentence_lower = sentence.lower()
-        expected = {pid for alias, pids in title_aliases if alias in sentence_lower for pid in pids}
+        expected: set[str] = set()
         for entity in _candidate_named_entities(sentence):
             resolved = aliases.get(entity.lower())
             if resolved:
-                expected.update(resolved)
-            else:
+                if _is_generic_alignment_entity(entity):
+                    continue
+                if _ids_overlap(resolved, cited):
+                    continue
+                if len(resolved) == 1:
+                    expected.update(resolved)
+            elif _looks_like_unregistered_method(entity):
                 errors.append(f"unregistered_named_entity_near_citation:{entity}")
         missing = sorted(expected - cited)
         if missing:

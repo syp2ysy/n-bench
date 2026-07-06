@@ -368,7 +368,13 @@ def evaluate_phase_barriers(task_dir: Path, target: str = "full") -> dict:
         allowed_next_phase = "topic_profile"
     if blocked_by == "article":
         article_errors = set(article.get("errors") or [])
-        if "expansion_audit_missing" in article_errors or "invalid_expansion_audit" in article_errors:
+        if (
+            "missing_rendered_article" in article_errors
+            or "missing_appendix" in article_errors
+            or int(article.get("chars") or 0) == 0
+        ):
+            allowed_next_phase = "article_draft"
+        elif "expansion_audit_missing" in article_errors or "invalid_expansion_audit" in article_errors:
             allowed_next_phase = "expansion_audit"
         elif "article_too_short" in article_errors and article.get("expansion_audit_ready"):
             allowed_next_phase = "article_repair_after_expansion_audit"

@@ -93,10 +93,87 @@ def _legacy_tree(task_dir: Path) -> dict:
     return parse_structured_text(_text(outputs / "contribution_tree.yml")) or {}
 
 
+def _is_worker_native_tree(tree: dict) -> bool:
+    if not isinstance(tree, dict) or not tree.get("branches"):
+        return False
+    if tree.get("builder_kind") == "mirror_from_worker_synthesis":
+        return False
+    return bool(tree.get("candidate_taxonomies") or tree.get("selected_spine") or tree.get("subagent_session_id"))
+
+
+def _sync_from_public_tree(task_dir: Path, tree: dict, cards: dict[str, dict]) -> dict:
+    state = task_dir / "state"
+    branches = tree.get("branches") or []
+    if not isinstance(branches, list):
+        branches = []
+    clusters = [
+        {
+            "cluster_id": f"KT{idx:03d}",
+            "name": branch.get("name"),
+            "paper_ids": branch.get("included_papers") or [],
+            "source_artifact": "outputs/knowledge_tree.yml",
+        }
+        for idx, branch in enumerate(branches, start=1)
+        if isinstance(branch, dict)
+    ]
+    write_jsonl(state / "paper_clusters.jsonl", clusters)
+    write_json(
+        state / "taxonomy_candidates.yml",
+        {
+            "schema_version": 1,
+            "candidate_taxonomies": tree.get("candidate_taxonomies") or [],
+            "selected_spine": tree.get("selected_spine") or "",
+            "source_artifact": "outputs/knowledge_tree.yml",
+        },
+    )
+    spine_path = state / "spine_decision.md"
+    existing_spine = _text(spine_path)
+    if not existing_spine.strip() or "Selected spine: not selected" in existing_spine:
+        spine = [
+            "# Spine Decision",
+            "",
+            f"Selected spine: {tree.get('selected_spine') or 'not selected'}",
+            "",
+            "Existing related surveys organize the topic through the related-survey taxonomy alignment recorded in state/taxonomy_alignment.jsonl.",
+            "",
+            "Candidate taxonomies considered:",
+        ]
+        for candidate in tree.get("candidate_taxonomies") or []:
+            spine.append(f"- {candidate}")
+        spine.extend(
+            [
+                "",
+                "Why this spine is better for the current corpus:",
+                tree.get("root_claim") or "The selected spine must be justified by the worker-produced knowledge tree.",
+                "",
+                "Section-to-evidence map:",
+            ]
+        )
+        for branch in branches:
+            if isinstance(branch, dict):
+                spine.append(f"- {branch.get('name')}: {', '.join(branch.get('included_papers') or [])}")
+        spine_path.write_text("\n".join(spine) + "\n", encoding="utf-8")
+    return {
+        **status_envelope(
+            "knowledge_tree_store",
+            "mirrored",
+            terminal=False,
+            blocked=False,
+            summary={"branch_count": len(clusters), "paper_card_count": len(cards), "mode": "preserved_public_tree"},
+        ),
+        "branch_count": len(clusters),
+        "paper_card_count": len(cards),
+        "mode": "preserved_public_tree",
+    }
+
+
 def mirror_knowledge_tree(task_dir: Path) -> dict:
     state = task_dir / "state"
     outputs = task_dir / "outputs"
     cards = _load_public_cards(task_dir)
+    public_tree = parse_structured_text(_text(outputs / "knowledge_tree.yml")) or {}
+    if _is_worker_native_tree(public_tree):
+        return _sync_from_public_tree(task_dir, public_tree, cards)
     legacy = _legacy_tree(task_dir)
     branches = legacy.get("branches") or []
     if not isinstance(branches, list):

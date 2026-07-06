@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 from collections import Counter
 from pathlib import Path
 
@@ -74,8 +75,128 @@ def _normalize_family(value) -> str:
     return " ".join(str(value or "").strip().lower().replace("_", " ").replace("-", " ").split())
 
 
+_FAMILY_STOPWORDS = {
+    "and",
+    "the",
+    "for",
+    "with",
+    "from",
+    "into",
+    "this",
+    "that",
+    "visual",
+    "reasoning",
+    "state",
+    "states",
+    "intermediate",
+    "evidence",
+    "specific",
+    "family",
+    "families",
+    "core",
+    "only",
+    "raw",
+    "verified",
+    "memory",
+}
+
+
+def _family_token(value: str) -> str:
+    if value.endswith("ies") and len(value) > 5:
+        return value[:-3] + "y"
+    if value.endswith("s") and len(value) > 4:
+        return value[:-1]
+    return value
+
+
+def _family_tokens(value) -> set[str]:
+    tokens = re.sub(r"[^a-z0-9]+", " ", str(value or "").lower()).split()
+    return {
+        _family_token(token)
+        for token in tokens
+        if len(token) > 3 and token not in _FAMILY_STOPWORDS
+    }
+
+
 def _route_family(route: dict) -> str:
     return _normalize_family(route.get("core_family") or route.get("family") or route.get("topic_axis") or route.get("query_family"))
+
+
+def _has_explicit_route_family(route: dict) -> bool:
+    return any(str(route.get(key) or "").strip() for key in ("core_family", "family", "topic_axis", "query_family"))
+
+
+def _route_text(route: dict) -> str:
+    return " ".join(
+        str(route.get(key) or "")
+        for key in ("query", "route_id", "route_type", "core_family", "family", "topic_axis", "query_family")
+    )
+
+
+def _audit_text(audit: dict) -> str:
+    evidence = " ".join(
+        str(item.get("field") or "") + " " + str(item.get("text") or "")
+        for item in audit.get("evidence_used") or []
+        if isinstance(item, dict)
+    )
+    return " ".join(
+        [
+            str(audit.get("corrected_family") or ""),
+            str(audit.get("rationale") or ""),
+            " ".join(str(item) for item in audit.get("positive_topic_signals") or []),
+            evidence,
+        ]
+    )
+
+
+def _paper_id(row: dict) -> str:
+    return str(row.get("paper_id") or "").strip()
+
+
+def _verified_ids(papers: list[dict]) -> set[str]:
+    return {_paper_id(paper) for paper in papers if _paper_id(paper) and is_verified(paper)}
+
+
+def _audit_core_family_support(
+    audit_rows: list[dict] | None,
+    eligible_ids: set[str],
+    core_family_names: list[str],
+) -> Counter:
+    support = Counter()
+    if not audit_rows:
+        return support
+    core_tokens = {family: _family_tokens(family) for family in core_family_names}
+    for audit in audit_rows:
+        pid = _paper_id(audit)
+        cid = str(audit.get("candidate_id") or audit.get("source_candidate_id") or "").strip()
+        if pid not in eligible_ids and cid not in eligible_ids:
+            continue
+        if audit.get("family_label_supported") is not True or str(audit.get("relevance_grade") or "") != "core":
+            continue
+        exact_family = _normalize_family(audit.get("corrected_family"))
+        if exact_family:
+            support[exact_family] += 1
+        text_tokens = _family_tokens(_audit_text(audit))
+        for family, tokens in core_tokens.items():
+            if not tokens:
+                continue
+            if family == exact_family or tokens.intersection(text_tokens):
+                support[family] += 1
+    return support
+
+
+def _route_core_family_support(search_routes: list[dict], core_family_names: list[str]) -> Counter:
+    support = Counter()
+    core_tokens = {family: _family_tokens(family) for family in core_family_names}
+    for route in search_routes:
+        exact = _route_family(route)
+        if exact:
+            support[exact] += 1
+        text_tokens = _family_tokens(_route_text(route))
+        for family, tokens in core_tokens.items():
+            if exact == family or (tokens and tokens.intersection(text_tokens)):
+                support[family] += 1
+    return support
 
 
 def _parse_structured_list(text: str, key: str) -> list[str]:
@@ -256,6 +377,8 @@ def validate_coverage(
     normalized_family_counts = Counter(_normalize_family(key) for key, count in family_counts.items() for _ in range(count))
     if topic_support is not None:
         core_family_support = Counter(topic_support.get("ab_family_support") or topic_support.get("core_family_support") or {})
+        if core_family_names and topic_relevance_audit is not None:
+            core_family_support.update(_audit_core_family_support(topic_relevance_audit, ab_ids, core_family_names))
     else:
         core_family_support = Counter()
         for paper in papers:
@@ -271,6 +394,9 @@ def validate_coverage(
     if topic_support is not None:
         raw_family_support = Counter(topic_support.get("raw_family_support") or {})
         verified_family_support = Counter(topic_support.get("verified_family_support") or {})
+        if core_family_names and topic_relevance_audit is not None:
+            raw_family_support.update(_audit_core_family_support(topic_relevance_audit, _candidate_ids(raw_candidates), core_family_names))
+            verified_family_support.update(_audit_core_family_support(topic_relevance_audit, _verified_ids(papers), core_family_names))
     else:
         raw_family_support = Counter(_normalize_family(item.get("family") or item.get("topic_axis") or item.get("survey_role")) for item in raw_candidates)
         verified_family_support = Counter(
@@ -278,10 +404,18 @@ def validate_coverage(
             for paper in papers
             if is_verified(paper)
         )
-    route_family_support = Counter(_route_family(route) for route in search_routes if _route_family(route))
+    exact_route_family_support = Counter(_route_family(route) for route in search_routes if _route_family(route))
+    route_family_support = _route_core_family_support(search_routes, core_family_names) if core_family_names else Counter(
+        _route_family(route) for route in search_routes if _route_family(route)
+    )
+    route_has_exact_core_overlap = bool(core_family_names and any(exact_route_family_support.get(family, 0) for family in core_family_names))
     route_undercovered = [
         family for family in core_family_names
         if route_family_support.get(family, 0) < 1
+    ]
+    exact_route_undercovered = [
+        family for family in core_family_names
+        if exact_route_family_support.get(family, 0) < 1
     ]
     raw_undercovered = [
         family for family in core_family_names
@@ -291,7 +425,7 @@ def validate_coverage(
         family for family in core_family_names
         if verified_family_support.get(family, 0) < min_core_support
     ]
-    if core_family_names and route_undercovered and target in {"full", "csur"}:
+    if core_family_names and exact_route_undercovered and route_has_exact_core_overlap and target in {"full", "csur"}:
         retained_missing.append("core_family_route_undercovered")
     if core_family_names and raw_undercovered and target in {"full", "csur"}:
         retained_missing.append("core_family_raw_undercovered")
@@ -334,6 +468,7 @@ def validate_coverage(
         "undercovered_core_families": undercovered_core_families,
         "route_family_support": dict(route_family_support),
         "route_undercovered_core_families": route_undercovered,
+        "exact_route_undercovered_core_families": exact_route_undercovered,
         "raw_undercovered_core_families": raw_undercovered,
         "verified_undercovered_core_families": verified_undercovered,
         "scenarios": dict(scenario_counts),

@@ -10,6 +10,8 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 try:  # pragma: no cover - script import fallback
+    from .article_builder import prepare_article_request
+    from .argument_builder import prepare_argument_request
     from .discovery_runtime_executor import prepare_discovery_batches
     from .gate7_driver import run_until_complete as run_gate7_until_complete
     from .knowledge_tree_builder import prepare_knowledge_tree_request
@@ -20,9 +22,12 @@ try:  # pragma: no cover - script import fallback
     from .spine_planner import prepare_spine_plan_request, validate_spine_plan
     from .status_schema import STATUS_SCHEMA_VERSION
     from .status_schema import status_envelope
+    from .synthesis_builder import prepare_synthesis_request
     from .topic_profile import prepare_topic_profile_request
     from .topic_relevance_runtime_executor import prepare_topic_relevance_batches, prepare_topic_relevance_second_audit_batches
 except ImportError:  # pragma: no cover
+    from article_builder import prepare_article_request
+    from argument_builder import prepare_argument_request
     from discovery_runtime_executor import prepare_discovery_batches
     from gate7_driver import run_until_complete as run_gate7_until_complete
     from knowledge_tree_builder import prepare_knowledge_tree_request
@@ -33,6 +38,7 @@ except ImportError:  # pragma: no cover
     from spine_planner import prepare_spine_plan_request, validate_spine_plan
     from status_schema import STATUS_SCHEMA_VERSION
     from status_schema import status_envelope
+    from synthesis_builder import prepare_synthesis_request
     from topic_profile import prepare_topic_profile_request
     from topic_relevance_runtime_executor import prepare_topic_relevance_batches, prepare_topic_relevance_second_audit_batches
 
@@ -46,7 +52,10 @@ REQUEST_TYPES_BY_ACTION = {
     "spawn_topic_relevance_second_audit_agents": ["topic_relevance_second_audit"],
     "spawn_paper_understanding_agents": ["paper_understanding"],
     "spawn_knowledge_tree_agents": ["knowledge_tree"],
+    "spawn_synthesis_agents": ["synthesis"],
     "spawn_spine_planner_agents": ["spine_planner"],
+    "spawn_argument_agents": ["argument"],
+    "spawn_article_agents": ["article"],
     "spawn_reviewers": ["gate7_reviewer"],
     "spawn_repair_agents": ["gate7_repair"],
     "spawn_targeted_rereviewers": ["gate7_targeted_rereview"],
@@ -126,6 +135,15 @@ INTENT_HASH_FILES_BY_ACTION = {
         "state/spine_decision.md",
         "state/knowledge_tree_spawn_requests.json",
     ],
+    "spawn_synthesis_agents": [
+        "state/paper_cards",
+        "state/citation_plan.jsonl",
+        "state/full_text_sources.jsonl",
+        "outputs/knowledge_tree.yml",
+        "outputs/contribution_tree.yml",
+        "state/spine_decision.md",
+        "state/synthesis_spawn_requests.json",
+    ],
     "spawn_spine_planner_agents": [
         "state/paper_cards",
         "state/taxonomy_alignment.jsonl",
@@ -134,6 +152,31 @@ INTENT_HASH_FILES_BY_ACTION = {
         "state/taxonomy_candidates.yml",
         "state/spine_decision.md",
         "state/spine_planner_spawn_requests.json",
+    ],
+    "spawn_argument_agents": [
+        "state/task_spec.md",
+        "state/topic_profile.json",
+        "state/survey_type_plan.yml",
+        "state/taxonomy_alignment.jsonl",
+        "state/paper_mechanism_cards.jsonl",
+        "state/full_text_sources.jsonl",
+        "state/scenario_definitions.yml",
+        "outputs/knowledge_tree.yml",
+        "state/spine_decision.md",
+        "state/argument_spawn_requests.json",
+    ],
+    "spawn_article_agents": [
+        "state/task_spec.md",
+        "state/survey_type_plan.yml",
+        "state/argument_graph.yml",
+        "state/claim_evidence_spans.jsonl",
+        "state/section_evidence_plans.jsonl",
+        "state/taxonomy_alignment.jsonl",
+        "state/scenario_definitions.yml",
+        "outputs/article_plan.md",
+        "outputs/method_family_dossiers",
+        "outputs/benchmark_dossiers",
+        "state/article_spawn_requests.json",
     ],
     "spawn_reviewers": [
         "outputs/survey_candidate.md",
@@ -181,9 +224,22 @@ PROGRESS_HASH_FILES = [
     "state/spine_decision.md",
     "state/knowledge_tree_runtime_action.json",
     "state/knowledge_tree_spawn_requests.json",
+    "state/synthesis_runtime_action.json",
+    "state/synthesis_spawn_requests.json",
+    "state/synthesis_results.jsonl",
     "state/spine_planner_runtime_action.json",
     "state/spine_planner_spawn_requests.json",
     "state/spine_planner_results.jsonl",
+    "state/argument_runtime_action.json",
+    "state/argument_spawn_requests.json",
+    "state/argument_results.jsonl",
+    "state/article_runtime_action.json",
+    "state/article_spawn_requests.json",
+    "state/article_results.jsonl",
+    "state/argument_graph.yml",
+    "state/section_evidence_plans.jsonl",
+    "state/claim_evidence_spans.jsonl",
+    "outputs/article_plan.md",
     "state/gate7_runtime_action.json",
     "state/gate7_spawn_requests.json",
     "state/gate7_repair_plan.json",
@@ -382,14 +438,36 @@ def _synthesis_needs_knowledge_tree(phase_status: dict) -> bool:
     synthesis = ((phase_status.get("phases") or {}).get("synthesis") or {}).get("details") or {}
     contribution = synthesis.get("contribution_tree") or {}
     errors = set(contribution.get("errors") or [])
+    if errors & {"missing_root_claim", "missing_branches"}:
+        return True
+    if "invalid_contribution_tree" not in errors:
+        return False
+    # Empty contribution statements make otherwise valid branch representatives
+    # look unknown. Route that case to the synthesis worker, not back to KT.
+    statement_errors = {"missing_contribution_statements", "invalid_contribution_statements"}
+    return not bool(errors & statement_errors)
+
+
+def _synthesis_needs_synthesis_worker(phase_status: dict) -> bool:
+    synthesis = ((phase_status.get("phases") or {}).get("synthesis") or {}).get("details") or {}
+    contribution = synthesis.get("contribution_tree") or {}
+    scenario = synthesis.get("scenario_definitions") or {}
+    dossiers = synthesis.get("synthesis_dossiers") or {}
+    errors = set(contribution.get("errors") or []) | set(scenario.get("errors") or []) | set(dossiers.get("errors") or [])
     return bool(
         errors
         & {
             "missing_contribution_statements",
-            "missing_root_claim",
-            "missing_branches",
-            "invalid_contribution_tree",
+            "invalid_contribution_statements",
             "argument_graph_missing_contribution_tree",
+            "too_few_scenarios",
+            "invalid_scenario_definitions",
+            "missing_comparative_evidence_matrix",
+            "invalid_comparative_evidence_matrix",
+            "missing_method_family_dossiers",
+            "missing_benchmark_dossiers",
+            "invalid_method_dossiers",
+            "invalid_benchmark_dossiers",
         }
     )
 
@@ -541,8 +619,17 @@ def run_until_complete(task_dir: Path, target: str = "full", max_steps: int = 25
         if blocked_by == "synthesis" and _synthesis_needs_knowledge_tree(phase_status):
             runtime = prepare_knowledge_tree_request(task_dir, target)
             return _finish(task_dir, runtime, actions, phase_status)
+        if blocked_by == "synthesis" and _synthesis_needs_synthesis_worker(phase_status):
+            runtime = prepare_synthesis_request(task_dir, target)
+            return _finish(task_dir, runtime, actions, phase_status)
         if (not blocked_by or blocked_by in {"synthesis", "argument", "article", "expert_review"}) and _public_spine_needs_planning(task_dir, target):
             runtime = prepare_spine_plan_request(task_dir, target)
+            return _finish(task_dir, runtime, actions, phase_status)
+        if blocked_by == "argument":
+            runtime = prepare_argument_request(task_dir, target)
+            return _finish(task_dir, runtime, actions, phase_status)
+        if blocked_by == "article" and next_action in {"article_draft", "article_quality_repair", "article_repair_after_expansion_audit"}:
+            runtime = prepare_article_request(task_dir, target)
             return _finish(task_dir, runtime, actions, phase_status)
         if not blocked_by:
             return _finish(

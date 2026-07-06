@@ -13,11 +13,13 @@ try:  # pragma: no cover - script import fallback
     from .run_expert_reviews import read_json, read_jsonl, write_json, write_jsonl
     from .status_schema import status_envelope
     from .validate_argument_graph import parse_structured_text
+    from .validate_related_survey_alignment import validate_related_survey_alignment
 except ImportError:  # pragma: no cover
     from paper_card_store import mirror_paper_cards
     from run_expert_reviews import read_json, read_jsonl, write_json, write_jsonl
     from status_schema import status_envelope
     from validate_argument_graph import parse_structured_text
+    from validate_related_survey_alignment import validate_related_survey_alignment
 
 
 COMPONENT = "spine_planner"
@@ -30,6 +32,7 @@ REQUIRED_RESULT_KEYS = [
     "candidate_taxonomies",
     "spine_decision",
     "section_to_evidence_map",
+    "taxonomy_alignment",
     "validator_results",
     "remaining_blockers",
 ]
@@ -117,9 +120,28 @@ def _taxonomy_names(candidate_taxonomies) -> list[str]:
     return names
 
 
+def _selected_candidate_name(candidate_taxonomies) -> str:
+    value = candidate_taxonomies
+    if isinstance(value, dict):
+        selected = value.get("selected_spine")
+        if isinstance(selected, str) and selected.strip():
+            return selected.strip()
+        if isinstance(selected, dict):
+            name = selected.get("name") or selected.get("spine") or selected.get("title")
+            if str(name or "").strip():
+                return str(name).strip()
+        value = value.get("candidate_taxonomies") or value.get("taxonomies") or []
+    for item in value or []:
+        if isinstance(item, dict) and str(item.get("decision") or "").strip().lower() == "selected":
+            return str(item.get("name") or item.get("spine") or item.get("title") or "").strip()
+    return ""
+
+
 def _selected_spine_name(selected_spine) -> str:
     if isinstance(selected_spine, dict):
         return str(selected_spine.get("name") or selected_spine.get("spine") or selected_spine.get("title") or "").strip()
+    if isinstance(selected_spine, list):
+        return ""
     return str(selected_spine or "").strip()
 
 
@@ -163,15 +185,20 @@ def validate_spine_plan(
     selected_spine=None,
     candidate_taxonomies=None,
     section_to_evidence_map=None,
+    taxonomy_alignment=None,
 ) -> dict:
     cards = _load_cards(task_dir)
     tree = _load_structured(_outputs(task_dir) / "knowledge_tree.yml")
     taxonomy = candidate_taxonomies if candidate_taxonomies is not None else _load_structured(_state(task_dir) / "taxonomy_candidates.yml")
-    selected = _selected_spine_name(selected_spine if selected_spine is not None else tree.get("selected_spine") or taxonomy.get("selected_spine"))
-    candidates = _taxonomy_names(taxonomy or tree.get("candidate_taxonomies") or [])
+    taxonomy_source = taxonomy or tree.get("candidate_taxonomies") or []
+    raw_selected = selected_spine if selected_spine is not None else tree.get("selected_spine") or (taxonomy.get("selected_spine") if isinstance(taxonomy, dict) else "")
+    selected = _selected_spine_name(raw_selected) or _selected_candidate_name(taxonomy_source)
+    candidates = _taxonomy_names(taxonomy_source)
     spine_text = spine_decision if spine_decision is not None else _read_text(_state(task_dir) / "spine_decision.md")
     section_map = section_to_evidence_map if section_to_evidence_map is not None else {}
-    alignment = read_jsonl(_state(task_dir) / "taxonomy_alignment.jsonl")
+    alignment = taxonomy_alignment if taxonomy_alignment is not None else read_jsonl(_state(task_dir) / "taxonomy_alignment.jsonl")
+    if not isinstance(alignment, list):
+        alignment = []
     errors: list[str] = []
     if not tree:
         errors.append("missing_knowledge_tree")
@@ -226,6 +253,30 @@ def validate_spine_plan(
 
 
 def _prompt(task_dir: Path, batch_id: str, cards: dict[str, dict]) -> str:
+    related_candidates = [
+        {
+            "paper_id": row.get("paper_id"),
+            "candidate_id": row.get("candidate_id"),
+            "relevance_grade": row.get("relevance_grade"),
+            "allowed_role": row.get("allowed_role"),
+            "corrected_family": row.get("corrected_family"),
+            "rationale": row.get("rationale"),
+        }
+        for row in read_jsonl(_state(task_dir) / "topic_relevance_audit.jsonl")
+        if row.get("relevance_grade") == "direct_related_survey" and row.get("allowed_role") == "related_survey"
+    ]
+    papers_by_id = {str(row.get("paper_id")): row for row in read_jsonl(_state(task_dir) / "papers.jsonl") if row.get("paper_id")}
+    related_sources = [
+        {
+            **item,
+            "title": papers_by_id.get(str(item.get("paper_id")), {}).get("title"),
+            "abstract": papers_by_id.get(str(item.get("paper_id")), {}).get("abstract"),
+            "verification_status": papers_by_id.get(str(item.get("paper_id")), {}).get("verification_status"),
+            "survey_role": papers_by_id.get(str(item.get("paper_id")), {}).get("survey_role"),
+            "verified_source": papers_by_id.get(str(item.get("paper_id")), {}).get("source_candidate_id") or item.get("paper_id"),
+        }
+        for item in related_candidates
+    ]
     return (
         "You are the Survey Spine Planner worker for survey-autoresearch.\n"
         "Choose or repair the article spine from the worker-produced knowledge tree, paper cards, and related-survey taxonomy alignment. "
@@ -240,10 +291,14 @@ def _prompt(task_dir: Path, batch_id: str, cards: dict[str, dict]) -> str:
         f"Existing spine decision:\n{_read_text(_state(task_dir) / 'spine_decision.md')}\n"
         f"Paper-card summaries:\n{json.dumps(_paper_card_summaries(cards), indent=2, sort_keys=True, ensure_ascii=False)}\n"
         f"Related-survey taxonomy alignment:\n{json.dumps(read_jsonl(_state(task_dir) / 'taxonomy_alignment.jsonl'), indent=2, sort_keys=True, ensure_ascii=False)}\n"
+        f"Verified direct-related survey candidates from topic audit:\n{json.dumps(related_sources, indent=2, sort_keys=True, ensure_ascii=False)}\n"
         "Return one strict JSON object with keys: batch_id, status, selected_spine, candidate_taxonomies, "
-        "spine_decision, section_to_evidence_map, validator_results, remaining_blockers. "
+        "spine_decision, section_to_evidence_map, taxonomy_alignment, validator_results, remaining_blockers. "
         "spine_decision must contain the headings or phrases: Existing related surveys, Candidate taxonomies, "
-        "Why this spine, and Section-to-evidence. section_to_evidence_map must name public paper IDs from state/paper_cards."
+        "Why this spine, and Section-to-evidence. section_to_evidence_map must name public paper IDs from state/paper_cards. "
+        "taxonomy_alignment must contain full/CSUR related-survey alignment records using only verified direct-related survey candidates above, "
+        "with paper_id, title, survey_type, source_ref or verified_source, existing_taxonomy, section_extractions, taxonomy_evidence, "
+        "article_taxonomy_mapping, coverage_overlap, coverage_gap, taxonomy_delta, article_taxonomy_necessity, article_delta, and why_delta_is_justified."
     )
 
 
@@ -346,8 +401,19 @@ def _validate_result(task_dir: Path, result: dict, target: str) -> list[str]:
         selected_spine=result.get("selected_spine"),
         candidate_taxonomies=result.get("candidate_taxonomies"),
         section_to_evidence_map=result.get("section_to_evidence_map"),
+        taxonomy_alignment=result.get("taxonomy_alignment"),
     )
     errors.extend(provided.get("errors") or [])
+    related = validate_related_survey_alignment(
+        result.get("taxonomy_alignment") if isinstance(result.get("taxonomy_alignment"), list) else [],
+        read_jsonl(_state(task_dir) / "paper_mechanism_cards.jsonl"),
+        target,
+        papers=read_jsonl(_state(task_dir) / "papers.jsonl"),
+        topic_relevance_audit=read_jsonl(_state(task_dir) / "topic_relevance_audit.jsonl"),
+        citation_plan=read_jsonl(_state(task_dir) / "citation_plan.jsonl"),
+    )
+    if not related.get("valid"):
+        errors.extend(f"related_survey_alignment:{item}" for item in related.get("errors") or [])
     return sorted(set(errors))
 
 
@@ -370,6 +436,7 @@ def record_spine_plan_result(task_dir: Path, result: dict, subagent_session_id: 
     }
     write_json(_state(task_dir) / "taxonomy_candidates.yml", taxonomy)
     (_state(task_dir) / "spine_decision.md").write_text(str(result.get("spine_decision") or "").rstrip() + "\n", encoding="utf-8")
+    write_jsonl(_state(task_dir) / "taxonomy_alignment.jsonl", result.get("taxonomy_alignment") or [])
     tree = _load_structured(_outputs(task_dir) / "knowledge_tree.yml")
     if tree:
         tree["candidate_taxonomies"] = result.get("candidate_taxonomies") or tree.get("candidate_taxonomies") or []
