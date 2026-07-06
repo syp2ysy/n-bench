@@ -2880,6 +2880,7 @@ class SurveyAutoResearchContractTest(unittest.TestCase):
             (task_dir / "state/topic_relevance_audit.jsonl").write_text("", encoding="utf-8")
             topic_status = run_survey_until_complete(task_dir, target="full", max_steps=5)
             self.assertEqual(topic_status["next_action"], "spawn_topic_relevance_agents")
+            (task_dir / "state/paper_understanding_spawn_requests.json").write_text("", encoding="utf-8")
             topic_pending = collect_pending(task_dir)
             self.assertEqual([row["request_type"] for row in topic_pending["pending_requests"]], ["topic_relevance"])
             queue = read_jsonl(task_dir / "state/runtime_dispatch_queue.jsonl")

@@ -47,6 +47,19 @@ RESULTS_FILE = "runtime_agent_results.jsonl"
 STATUS_FILE = "runtime_dispatch_status.json"
 INTENT_FILE = "runtime_active_intent.json"
 
+SOURCE_REQUEST_FILES = [
+    ("state/topic_profile_spawn_requests.json", {"topic_profile"}),
+    ("state/discovery_spawn_requests.json", {"discovery"}),
+    ("state/topic_relevance_spawn_requests.json", {"topic_relevance", "topic_relevance_second_audit"}),
+    ("state/paper_understanding_spawn_requests.json", {"paper_understanding"}),
+    ("state/knowledge_tree_spawn_requests.json", {"knowledge_tree"}),
+    ("state/synthesis_spawn_requests.json", {"synthesis"}),
+    ("state/spine_planner_spawn_requests.json", {"spine_planner"}),
+    ("state/argument_spawn_requests.json", {"argument"}),
+    ("state/article_spawn_requests.json", {"article"}),
+    ("state/gate7_spawn_requests.json", {"gate7_reviewer", "gate7_repair", "gate7_targeted_rereview"}),
+]
+
 
 def _state(task_dir: Path) -> Path:
     return task_dir / "state"
@@ -141,20 +154,11 @@ def _source_requests(task_dir: Path, intent: dict) -> list[dict]:
     state = _state(task_dir)
     allowed_types = set(intent.get("allowed_request_types") or [])
     phase_generation = str(intent.get("phase_generation") or "")
-    sources = [
-        ("state/topic_profile_spawn_requests.json", read_json(state / "topic_profile_spawn_requests.json")),
-        ("state/discovery_spawn_requests.json", read_json(state / "discovery_spawn_requests.json")),
-        ("state/topic_relevance_spawn_requests.json", read_json(state / "topic_relevance_spawn_requests.json")),
-        ("state/paper_understanding_spawn_requests.json", read_json(state / "paper_understanding_spawn_requests.json")),
-        ("state/knowledge_tree_spawn_requests.json", read_json(state / "knowledge_tree_spawn_requests.json")),
-        ("state/synthesis_spawn_requests.json", read_json(state / "synthesis_spawn_requests.json")),
-        ("state/spine_planner_spawn_requests.json", read_json(state / "spine_planner_spawn_requests.json")),
-        ("state/argument_spawn_requests.json", read_json(state / "argument_spawn_requests.json")),
-        ("state/article_spawn_requests.json", read_json(state / "article_spawn_requests.json")),
-        ("state/gate7_spawn_requests.json", read_json(state / "gate7_spawn_requests.json")),
-    ]
     rows: list[dict] = []
-    for source_file, payload in sources:
+    for source_file, possible_request_types in SOURCE_REQUEST_FILES:
+        if allowed_types.isdisjoint(possible_request_types):
+            continue
+        payload = read_json(state / Path(source_file).name)
         next_action = str(payload.get("next_action") or "")
         for request in payload.get("spawn_requests") or []:
             if not isinstance(request, dict):
