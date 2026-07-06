@@ -2128,9 +2128,27 @@ class SurveyAutoResearchContractTest(unittest.TestCase):
                 },
                 {
                     "required": False,
+                    "status": "not_required_route_batch",
+                    "visible_external_count": 14,
+                    "retained_candidate_count": 14,
+                },
+                {
+                    "required": False,
                     "status": "sufficient_for_D007_route_batch_not_full_corpus",
                     "visible_external_count": 23,
                     "retained_candidate_count": 23,
+                },
+                {
+                    "required": True,
+                    "status": "complete_targeted_gap_fill_route",
+                    "visible_external_count": 34,
+                    "retained_candidate_count": 34,
+                },
+                {
+                    "required": True,
+                    "status": "complete_route_batch",
+                    "visible_external_count": 38,
+                    "retained_candidate_count": 38,
                 },
             ],
             raw_count=213,
@@ -2138,6 +2156,18 @@ class SurveyAutoResearchContractTest(unittest.TestCase):
         )
         self.assertEqual(merged["status"], "complete")
         self.assertTrue(merged["required"])
+
+    def test_discovery_enrichment_batch_records_blocker_reason(self):
+        from scripts.discovery_runtime_executor import _ensure_enrichment_batch
+
+        with tempfile.TemporaryDirectory() as tmp:
+            task_dir = initialize_task(Path(tmp), "mllm enrichment blocker reason", target="full")
+            self.write_topic_profile(task_dir, topic="mllm think with image")
+            doc = {"batches": []}
+            _ensure_enrichment_batch(task_dir, doc, ["raw_candidates", "corpus_expansion_incomplete"], "2026-07-05T00:00:00+00:00")
+            batch = next(item for item in doc["batches"] if item["batch_id"] == "D999C")
+            self.assertEqual(batch["coverage_blockers"], ["raw_candidates", "corpus_expansion_incomplete"])
+            self.assertIn("raw_candidates", batch["reason"])
 
     def test_collect_status_supersedes_obsolete_raw_enrichment_retry(self):
         from scripts.discovery_runtime_executor import collect_discovery_status

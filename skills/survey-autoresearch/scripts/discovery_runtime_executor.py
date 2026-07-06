@@ -848,6 +848,8 @@ def _merge_corpus_expansion(corpora: list[dict], raw_count: int, route_count: in
         normalized = str(status or "").strip().lower()
         return (
             normalized in {"", "complete", "not_required"}
+            or "complete" in normalized
+            or "not_required" in normalized
             or "resolved" in normalized
             or "sufficient" in normalized
         )
@@ -1048,6 +1050,8 @@ def _upsert_enrichment_batch(doc: dict, spec: dict, blockers: list[str], recorde
                 "attempt": 1,
                 "retry_of": batch_id,
                 "last_blockers": blockers,
+                "coverage_blockers": blockers,
+                "reason": "merged_discovery_blockers:" + ",".join(str(item) for item in blockers),
                 "created_at": recorded_at,
             }
         )
@@ -1059,6 +1063,8 @@ def _upsert_enrichment_batch(doc: dict, spec: dict, blockers: list[str], recorde
                 "status": "pending_spawn",
                 "attempt": 1,
                 "last_blockers": blockers,
+                "coverage_blockers": blockers,
+                "reason": "merged_discovery_blockers:" + ",".join(str(item) for item in blockers),
                 "created_at": recorded_at,
             }
         )
