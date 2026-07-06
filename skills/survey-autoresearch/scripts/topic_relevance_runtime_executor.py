@@ -116,7 +116,8 @@ def _second_audit_prompt(task_dir: Path, batch: dict) -> str:
         f"Paper ids: {', '.join(batch.get('paper_ids') or [])}\n"
         "Return one JSON object with keys: batch_id, status, paper_ids, secondary_audit_records, validator_results, remaining_blockers. "
         "Each secondary_audit_record must include paper_id, primary_audit_session_id, subagent_session_id, trigger_reasons, evidence_used, "
-        "decision, allowed_depth, allowed_role, and rationale. Allowed decision values: confirm_core, downgrade_to_C, exclude, direct_related_survey."
+        "decision, allowed_depth, allowed_role, and rationale. Allowed decision values: confirm_core, downgrade_to_C, exclude, direct_related_survey. "
+        "validator_results must include {\"validator\":\"validate_topic_relevance_second_audit\", \"status\":\"passed\"} only if the batch is schema-valid."
     )
 
 

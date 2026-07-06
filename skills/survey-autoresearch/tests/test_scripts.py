@@ -2825,6 +2825,17 @@ class SurveyAutoResearchContractTest(unittest.TestCase):
             self.assertEqual(recorded["status"], "invalid_result", recorded)
             self.assertEqual(read_text_if_exists(task_dir / "state/paper_mechanism_cards.jsonl"), "")
             self.assertEqual(read_text_if_exists(task_dir / "state/full_text_sources.jsonl"), "")
+            corrected_output = Path(tmp) / "paper-output-corrected.json"
+            corrected_output.write_text(json.dumps(self.paper_understanding_result(first["payload"], task_dir), sort_keys=True), encoding="utf-8")
+            corrected = record_agent_output(task_dir, first["request_id"], corrected_output)
+            self.assertEqual(corrected["status"], "result_recorded", corrected)
+            queue_row = next(
+                row
+                for row in read_jsonl(task_dir / "state/runtime_dispatch_queue.jsonl")
+                if row.get("request_id") == first["request_id"]
+            )
+            self.assertNotIn("error", queue_row)
+            self.assertEqual(queue_row["status"], "result_recorded")
 
         with tempfile.TemporaryDirectory() as tmp:
             task_dir = initialize_task(Path(tmp), "dispatcher gate7 repair", target="full")
@@ -3176,6 +3187,7 @@ class SurveyAutoResearchContractTest(unittest.TestCase):
             payload = request["payload"]
             self.assertEqual(payload["expected_paper_ids"], ["p001"])
             self.assertEqual(payload["trigger_reasons_by_paper"]["p001"], ["title_query_only_evidence", "missing_topic_boundary_rationale"])
+            self.assertIn("validate_topic_relevance_second_audit", request["message"])
 
             mark_spawned(task_dir, request["request_id"], "primary-topic-agent")
             same_session_output = Path(tmp) / "same-session-second-audit.json"
@@ -3390,6 +3402,96 @@ class SurveyAutoResearchContractTest(unittest.TestCase):
             self.assertTrue(all(depth[pid] == "C" for pid in blocked))
             decisions = read_jsonl(state / "ab_rebalance_decisions.jsonl")
             self.assertTrue(all(item["reason"] == "topic_relevance_failed_for_a_b" for item in decisions[-len(blocked):]))
+
+    def test_survey_driver_initializes_selection_after_complete_topic_audit(self):
+        from scripts.survey_driver import run_until_complete as run_survey_until_complete
+
+        with tempfile.TemporaryDirectory() as tmp:
+            task_dir = initialize_task(Path(tmp), "initial topic audit selection", target="full")
+            state = task_dir / "state"
+            raw = self.raw_candidates()
+            write_jsonl(state / "raw_candidates.jsonl", raw)
+            write_jsonl(state / "search_routes.jsonl", self.search_routes())
+            write_jsonl(state / "lqs_scores.jsonl", self.lqs_scores())
+            (state / "corpus_expansion.json").write_text(json.dumps(self.corpus_expansion(), sort_keys=True), encoding="utf-8")
+            self.write_topic_profile(task_dir)
+            audit = self.topic_relevance_audit(raw, self.papers(), self.citation_plan())
+            write_jsonl(state / "topic_relevance_audit.jsonl", audit)
+            write_jsonl(state / "papers.jsonl", [])
+            write_jsonl(state / "citation_plan.jsonl", [])
+
+            status = run_survey_until_complete(task_dir, target="full", max_steps=5)
+
+            self.assertNotEqual(status["status"], "blocked_topic_relevance_rebalance", status)
+            self.assertIn("initialize_ab_selection_from_topic_audit", status["actions"])
+            papers = read_jsonl(state / "papers.jsonl")
+            citation = read_jsonl(state / "citation_plan.jsonl")
+            self.assertGreaterEqual(len(papers), 150)
+            self.assertEqual(sum(1 for row in citation if row.get("depth") == "A"), 25)
+            self.assertEqual(sum(1 for row in citation if row.get("depth") == "B"), 70)
+            self.assertTrue(read_jsonl(state / "initial_selection_decisions.jsonl"))
+
+    def test_initial_topic_selection_uses_stable_paper_id_not_duplicate_candidate_id(self):
+        from scripts.rebalance_ab_selection import initialize_ab_selection_from_topic_audit
+
+        with tempfile.TemporaryDirectory() as tmp:
+            task_dir = initialize_task(Path(tmp), "duplicate candidate ids", target="short")
+            state = task_dir / "state"
+            raw = []
+            audit = []
+            for idx in range(1, 61):
+                pid = f"2501.{idx:05d}v1"
+                raw.append(
+                    {
+                        "candidate_id": f"dup-{idx % 3}",
+                        "arxiv_id": pid,
+                        "title": f"Unique Paper {idx}",
+                        "source": "arXiv",
+                        "query": "visual scratchpad reasoning",
+                        "family": "visual scratchpad",
+                    }
+                )
+                if idx <= 3:
+                    grade, depth, role, family_ok = "core", "A", "core", True
+                elif idx <= 11:
+                    grade, depth, role, family_ok = "core", "B", "core", True
+                elif idx <= 13:
+                    grade, depth, role, family_ok = "direct_related_survey", "C", "related_survey", False
+                else:
+                    grade, depth, role, family_ok = "adjacent_background", "C", "background", False
+                audit.append(
+                    {
+                        "paper_id": pid,
+                        "candidate_id": f"dup-{idx % 3}",
+                        "title": f"Unique Paper {idx}",
+                        "evidence_used": [
+                            {"field": "title", "text": f"Unique Paper {idx}"},
+                            {"field": "abstract_snippet", "text": "Visual scratchpad reasoning metadata."},
+                            {"field": "source_metadata", "text": "arXiv metadata"},
+                        ],
+                        "positive_topic_signals": ["visual scratchpad reasoning"],
+                        "negative_drift_signals": [],
+                        "relevance_grade": grade,
+                        "allowed_depth": depth,
+                        "allowed_role": role,
+                        "family_label_supported": family_ok,
+                        "corrected_family": "visual scratchpad",
+                        "rationale": "The record matches the topic boundary through visual scratchpad reasoning metadata.",
+                    }
+                )
+            write_jsonl(state / "raw_candidates.jsonl", raw)
+            write_jsonl(state / "search_routes.jsonl", self.search_routes(4))
+            write_jsonl(state / "lqs_scores.jsonl", [{"paper_id": row["arxiv_id"], "lqs": 8.0} for row in raw])
+            (state / "corpus_expansion.json").write_text(json.dumps(self.corpus_expansion(), sort_keys=True), encoding="utf-8")
+            write_jsonl(state / "topic_relevance_audit.jsonl", audit)
+
+            result = initialize_ab_selection_from_topic_audit(task_dir, "short")
+
+            self.assertIn(result["status"], {"initialized", "initialized_but_coverage_invalid"}, result)
+            papers = {row["paper_id"]: row for row in read_jsonl(state / "papers.jsonl")}
+            self.assertEqual(papers["2501.00001v1"]["title"], "Unique Paper 1")
+            self.assertEqual(papers["2501.00002v1"]["title"], "Unique Paper 2")
+            self.assertEqual(papers["2501.00003v1"]["title"], "Unique Paper 3")
 
     def test_survey_driver_routes_paper_understanding_and_gate7(self):
         from scripts.paper_understanding_runtime_executor import collect_paper_understanding_status, record_paper_understanding_result

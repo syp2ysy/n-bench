@@ -15,7 +15,7 @@ try:  # pragma: no cover - script import fallback
     from .knowledge_tree_builder import prepare_knowledge_tree_request
     from .paper_reader import prepare_paper_reading
     from .phase_gate import evaluate_phase_barriers
-    from .rebalance_ab_selection import rebalance_ab_selection
+    from .rebalance_ab_selection import initialize_ab_selection_from_topic_audit, rebalance_ab_selection
     from .run_expert_reviews import read_json, read_jsonl, write_json, write_jsonl
     from .spine_planner import prepare_spine_plan_request, validate_spine_plan
     from .status_schema import STATUS_SCHEMA_VERSION
@@ -28,7 +28,7 @@ except ImportError:  # pragma: no cover
     from knowledge_tree_builder import prepare_knowledge_tree_request
     from paper_reader import prepare_paper_reading
     from phase_gate import evaluate_phase_barriers
-    from rebalance_ab_selection import rebalance_ab_selection
+    from rebalance_ab_selection import initialize_ab_selection_from_topic_audit, rebalance_ab_selection
     from run_expert_reviews import read_json, read_jsonl, write_json, write_jsonl
     from spine_planner import prepare_spine_plan_request, validate_spine_plan
     from status_schema import STATUS_SCHEMA_VERSION
@@ -488,6 +488,24 @@ def run_until_complete(task_dir: Path, target: str = "full", max_steps: int = 25
             invalid_ids = topic.get("invalid_ab_paper_ids") or []
             actions.append("rebalance_topic_relevance_ab_selection")
             if not invalid_ids:
+                if not read_jsonl(_state(task_dir) / "papers.jsonl") and not read_jsonl(_state(task_dir) / "citation_plan.jsonl"):
+                    actions.append("initialize_ab_selection_from_topic_audit")
+                    initialized = initialize_ab_selection_from_topic_audit(task_dir, target)
+                    if str(initialized.get("status") or "").startswith("blocked"):
+                        return _finish(
+                            task_dir,
+                            {
+                                "status": "blocked_initial_topic_relevance_selection",
+                                "next_action": "inspect_topic_relevance_audit",
+                                "terminal": True,
+                                "blocked": True,
+                                "blocked_by_phase": "source_verification",
+                                "summary": {"initial_selection": initialized},
+                            },
+                            actions,
+                            phase_status,
+                        )
+                    continue
                 return _finish(
                     task_dir,
                     {

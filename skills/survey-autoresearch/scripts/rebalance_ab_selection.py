@@ -11,12 +11,12 @@ from pathlib import Path
 
 try:  # pragma: no cover - script import fallback
     from .run_expert_reviews import read_json, read_jsonl, write_jsonl
-    from .validate_coverage import validate_coverage
-    from .validate_topic_relevance import DEPTH_RANK, audit_by_paper
+    from .validate_coverage import TARGETS, validate_coverage
+    from .validate_topic_relevance import DEPTH_RANK, audit_by_paper, normalize_family
 except ImportError:  # pragma: no cover
     from run_expert_reviews import read_json, read_jsonl, write_jsonl
-    from validate_coverage import validate_coverage
-    from validate_topic_relevance import DEPTH_RANK, audit_by_paper
+    from validate_coverage import TARGETS, validate_coverage
+    from validate_topic_relevance import DEPTH_RANK, audit_by_paper, normalize_family
 
 
 def _state(task_dir: Path) -> Path:
@@ -30,6 +30,226 @@ def _utc_now() -> str:
 def _hash_rows(rows: list[dict]) -> str:
     payload = "".join(json.dumps(row, sort_keys=True, ensure_ascii=False) + "\n" for row in rows)
     return hashlib.sha256(payload.encode("utf-8")).hexdigest()
+
+
+def _score_by_paper(lqs_scores: list[dict]) -> dict[str, float]:
+    scores: dict[str, float] = {}
+    for row in lqs_scores:
+        pid = str(row.get("paper_id") or row.get("candidate_id") or "").strip()
+        if not pid:
+            continue
+        raw_score = row.get("lqs", row.get("score", row.get("lqs_score", 0)))
+        try:
+            score = float(raw_score)
+        except (TypeError, ValueError):
+            score = 0.0
+        scores[pid] = max(scores.get(pid, 0.0), score)
+    return scores
+
+
+def _candidate_lookup(raw_candidates: list[dict]) -> dict[str, dict]:
+    lookup: dict[str, dict] = {}
+    for row in raw_candidates:
+        keys = [
+            row.get("paper_id"),
+            row.get("arxiv_id"),
+            row.get("arxiv"),
+            row.get("doi"),
+            row.get("url"),
+            row.get("landing_page_url"),
+            row.get("pdf_url"),
+            row.get("candidate_id"),
+        ]
+        for raw_key in keys:
+            key = str(raw_key or "").strip()
+            if key and key not in lookup:
+                lookup[key] = row
+    return lookup
+
+
+def _selection_sort_key(row: dict, audit: dict, score_by_id: dict[str, float]) -> tuple:
+    pid = str(audit.get("paper_id") or row.get("paper_id") or "")
+    cid = str(audit.get("candidate_id") or row.get("candidate_id") or "")
+    score = max(score_by_id.get(pid, 0.0), score_by_id.get(cid, 0.0))
+    try:
+        year = int(row.get("year") or audit.get("year") or 0)
+    except (TypeError, ValueError):
+        year = 0
+    title = str(row.get("title") or audit.get("title") or pid)
+    return (-score, -year, title, pid)
+
+
+def _paper_from_audit(candidate: dict, audit: dict) -> dict:
+    pid = str(audit.get("paper_id") or candidate.get("paper_id") or "").strip()
+    cid = str(audit.get("candidate_id") or candidate.get("candidate_id") or pid).strip()
+    family = str(audit.get("corrected_family") or candidate.get("family") or candidate.get("topic_axis") or "unassigned").strip()
+    grade = str(audit.get("relevance_grade") or "")
+    role = str(audit.get("allowed_role") or "")
+    if role == "core":
+        survey_role = "method"
+    elif role == "related_survey":
+        survey_role = "survey"
+    elif role == "background":
+        survey_role = "background"
+    else:
+        survey_role = "exclude"
+    paper = {
+        "paper_id": pid,
+        "source_candidate_id": cid,
+        "title": candidate.get("title") or audit.get("title") or pid,
+        "authors": candidate.get("authors") or [],
+        "year": candidate.get("year"),
+        "abstract": candidate.get("abstract") or candidate.get("summary") or "",
+        "url": candidate.get("url") or candidate.get("pdf_url") or candidate.get("landing_page_url") or "",
+        "doi": candidate.get("doi") or "",
+        "arxiv_id": candidate.get("arxiv_id") or candidate.get("arxiv") or "",
+        "source": candidate.get("source") or "",
+        "venue": candidate.get("venue") or candidate.get("venue_name") or "",
+        "verified": True,
+        "verification_status": "verified",
+        "verified_sources": candidate.get("verified_sources") or [candidate.get("source") or "topic_relevance_audit"],
+        "verification_note": "Initialized from worker-produced topic relevance audit and discovery metadata.",
+        "survey_role": survey_role,
+        "family": family,
+        "topic_axis": family,
+        "topic_relevance_grade": grade,
+        "topic_relevance_allowed_depth": audit.get("allowed_depth"),
+    }
+    return {key: value for key, value in paper.items() if value not in (None, "", [])}
+
+
+def initialize_ab_selection_from_topic_audit(task_dir: Path, target: str = "full") -> dict:
+    """Create the first retained corpus/citation plan from worker topic audits.
+
+    This runs only when there is no existing retained corpus or citation plan. It
+    consumes worker-produced relevance grades and allowed depths; it does not make
+    independent topic judgments.
+    """
+    state = _state(task_dir)
+    existing_papers = read_jsonl(state / "papers.jsonl")
+    existing_citation = read_jsonl(state / "citation_plan.jsonl")
+    if existing_papers or existing_citation:
+        return {
+            "status": "skipped_existing_selection",
+            "paper_count": len(existing_papers),
+            "citation_plan_count": len(existing_citation),
+        }
+    raw_candidates = read_jsonl(state / "raw_candidates.jsonl")
+    audit_rows = read_jsonl(state / "topic_relevance_audit.jsonl")
+    if not raw_candidates:
+        return {"status": "blocked", "error": "raw_candidates_missing"}
+    if not audit_rows:
+        return {"status": "blocked", "error": "topic_relevance_audit_missing"}
+    audits = audit_by_paper(audit_rows)
+    candidate_by_id = _candidate_lookup(raw_candidates)
+    score_by_id = _score_by_paper(read_jsonl(state / "lqs_scores.jsonl"))
+    retained_papers: list[dict] = []
+    for pid, audit in audits.items():
+        if str(audit.get("relevance_grade") or "") == "out_of_scope" or str(audit.get("allowed_depth") or "") == "exclude":
+            continue
+        candidate = candidate_by_id.get(pid) or candidate_by_id.get(str(audit.get("candidate_id") or "")) or {}
+        retained_papers.append(_paper_from_audit(candidate, audit))
+
+    if len(retained_papers) < TARGETS[target]["verified"]:
+        return {
+            "status": "blocked",
+            "error": "insufficient_topic_qualified_verified_papers",
+            "retained_count": len(retained_papers),
+            "required": TARGETS[target]["verified"],
+        }
+
+    retained_ids = {str(row.get("paper_id") or "") for row in retained_papers}
+    eligible_a = []
+    eligible_b = []
+    related = []
+    background = []
+    for pid in sorted(retained_ids):
+        audit = audits.get(pid, {})
+        candidate = candidate_by_id.get(pid) or candidate_by_id.get(str(audit.get("candidate_id") or "")) or {}
+        grade = str(audit.get("relevance_grade") or "")
+        allowed_depth = str(audit.get("allowed_depth") or "")
+        if grade == "core" and audit.get("family_label_supported") is True and allowed_depth == "A":
+            eligible_a.append((candidate, audit))
+        elif grade == "core" and audit.get("family_label_supported") is True and allowed_depth in {"A", "B"}:
+            eligible_b.append((candidate, audit))
+        elif grade == "direct_related_survey":
+            related.append((candidate, audit))
+        else:
+            background.append((candidate, audit))
+    eligible_a.sort(key=lambda item: _selection_sort_key(item[0], item[1], score_by_id))
+    eligible_b.sort(key=lambda item: _selection_sort_key(item[0], item[1], score_by_id))
+    related.sort(key=lambda item: _selection_sort_key(item[0], item[1], score_by_id))
+    background.sort(key=lambda item: _selection_sort_key(item[0], item[1], score_by_id))
+
+    a_target = TARGETS[target]["a"]
+    b_target = TARGETS[target]["b"]
+    a_ids = [str(audit.get("paper_id")) for _, audit in eligible_a[:a_target]]
+    if len(a_ids) < a_target:
+        return {"status": "blocked", "error": "insufficient_topic_qualified_a_papers", "available": len(a_ids), "required": a_target}
+    selected = set(a_ids)
+    b_pool = [(candidate, audit) for candidate, audit in eligible_a[a_target:] + eligible_b if str(audit.get("paper_id")) not in selected]
+    b_pool.sort(key=lambda item: _selection_sort_key(item[0], item[1], score_by_id))
+    b_ids = [str(audit.get("paper_id")) for _, audit in b_pool[:b_target]]
+    if len(b_ids) < b_target:
+        return {"status": "blocked", "error": "insufficient_topic_qualified_b_papers", "available": len(b_ids), "required": b_target}
+    depth_by_id = {pid: "A" for pid in a_ids}
+    depth_by_id.update({pid: "B" for pid in b_ids})
+    citation_plan: list[dict] = []
+    ordered_pairs = eligible_a + eligible_b + related + background
+    seen: set[str] = set()
+    for candidate, audit in ordered_pairs:
+        pid = str(audit.get("paper_id") or "").strip()
+        if not pid or pid in seen or pid not in retained_ids:
+            continue
+        seen.add(pid)
+        row = {
+            "paper_id": pid,
+            "depth": depth_by_id.get(pid, "C"),
+            "role": "core" if pid in depth_by_id else str(audit.get("allowed_role") or "background"),
+            "topic_relevance_grade": audit.get("relevance_grade"),
+            "family": normalize_family(audit.get("corrected_family")),
+            "selection_reason": "initial_topic_relevance_selection",
+        }
+        citation_plan.append(row)
+    before_papers_hash = _hash_rows([])
+    before_citation_hash = _hash_rows([])
+    after_papers_hash = _hash_rows(retained_papers)
+    after_citation_hash = _hash_rows(citation_plan)
+    write_jsonl(state / "papers.jsonl", retained_papers)
+    write_jsonl(state / "citation_plan.jsonl", citation_plan)
+    decision = {
+        "decided_at": _utc_now(),
+        "decision": "initialize_ab_selection_from_topic_audit",
+        "target": target,
+        "paper_count": len(retained_papers),
+        "citation_plan_count": len(citation_plan),
+        "a_count": len(a_ids),
+        "b_count": len(b_ids),
+        "related_survey_count": sum(1 for _, audit in related),
+        "papers_hash_before": before_papers_hash,
+        "papers_hash_after": after_papers_hash,
+        "citation_plan_hash_before": before_citation_hash,
+        "citation_plan_hash_after": after_citation_hash,
+    }
+    write_jsonl(state / "initial_selection_decisions.jsonl", read_jsonl(state / "initial_selection_decisions.jsonl") + [decision])
+    coverage = validate_coverage(
+        raw_candidates,
+        read_jsonl(state / "search_routes.jsonl"),
+        read_jsonl(state / "lqs_scores.jsonl"),
+        read_json(state / "corpus_expansion.json"),
+        retained_papers,
+        citation_plan,
+        target,
+        survey_type_plan=(state / "survey_type_plan.yml").read_text(encoding="utf-8") if (state / "survey_type_plan.yml").exists() else "",
+        contribution_tree=(task_dir / "outputs" / "contribution_tree.yml").read_text(encoding="utf-8") if (task_dir / "outputs" / "contribution_tree.yml").exists() else "",
+        topic_relevance_audit=audit_rows,
+    )
+    return {
+        "status": "initialized" if coverage.get("valid") else "initialized_but_coverage_invalid",
+        "decision": decision,
+        "coverage_valid": coverage.get("valid"),
+        "coverage_errors": coverage.get("missing") or coverage.get("retained_missing") or [],
+    }
 
 
 def _verified_paper_ids(task_dir: Path) -> set[str]:

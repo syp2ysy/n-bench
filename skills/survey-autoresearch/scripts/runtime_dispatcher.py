@@ -566,8 +566,12 @@ def record_agent_output(task_dir: Path, request_id: str, output_file: Path) -> d
         row["error"] = record_result.get("error")
     elif unavailable_ids and str(parsed.get("status") or "") == "blocked":
         final_status = "rebalance_required"
+        row.pop("error", None)
+        row.pop("failed_at", None)
     else:
         final_status = "result_recorded"
+        row.pop("error", None)
+        row.pop("failed_at", None)
     row["status"] = final_status
     row["result_hash"] = result_hash
     row["recorded_at"] = now
