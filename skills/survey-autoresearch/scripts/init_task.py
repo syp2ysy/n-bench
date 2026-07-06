@@ -51,7 +51,8 @@ def initialize_task(
     target: str = "full",
 ) -> Path:
     task_slug = slug or slugify(topic)
-    task_dir = base_dir / task_slug
+    runs_root = base_dir if base_dir.name == "runs" else base_dir / "runs"
+    task_dir = runs_root / task_slug
     state = task_dir / "state"
     logs = task_dir / "logs"
     outputs = task_dir / "outputs"

@@ -57,7 +57,7 @@ For unattended runs, use the public `paper_reader.py` facade plus `task_queue.py
 
 Paper-understanding worker requests use `result_schema_version: 2` and include `paper_records`, `fetch_candidates_by_paper`, `expected_paper_ids`, `expected_changed_artifacts`, `expected_acceptance_validators`, and `record_command`. Workers must return strict JSON or a fenced `json` block with `batch_id`, `status`, `paper_ids`, `full_text_sources`, `paper_mechanism_cards`, `artifact_hashes_before`, `validator_results`, `unavailable_or_downgrade_candidates`, and `remaining_blockers`. Workers do not write canonical JSONL files directly; the executor merges returned rows and computes `artifact_hashes_after`.
 
-If a paper cannot be read deeply enough, do not fill a weak A/B card. Return it as an unavailable or downgrade candidate, then use `rebalance_ab_selection.py` to downgrade it to C and promote a verified replacement while preserving target A/B counts and coverage. Full-text URL discovery can be planned with `full_text_source_planner.py`, but URL discovery alone is not paper understanding.
+If a paper cannot be read deeply enough, do not fill a weak A/B card. Return it as an unavailable or downgrade candidate, then use `rebalance_ab_selection.py` to downgrade it to C and promote a verified replacement while preserving target A/B counts and coverage. Full-text URL discovery is planned by `paper_reader.py --prepare`, but URL discovery alone is not paper understanding.
 
 A/B papers without full-text access, concrete results, baselines, ablations, limitations, or benchmark/environment details must be downgraded. They may be retained as C/background only when marked `evidence_limited=true`.
 

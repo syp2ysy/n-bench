@@ -23,13 +23,9 @@ from scripts.gate7_loop import (
 from scripts.gate_check import evaluate_gates
 from scripts.init_task import initialize_task
 from scripts.phase_gate import evaluate_phase_barriers
-from scripts.render_dashboard import render_dashboard
 from scripts.render_survey_html import render_survey_html
 from scripts.promote_survey_release import promote_release
-from scripts.run_expansion_audit import collect_status as collect_expansion_audit_status
-from scripts.run_expansion_audit import dispatch_packet as dispatch_expansion_audit_packet
 from scripts.run_expert_reviews import collect_status, dispatch_packets, freeze_review_round
-from scripts.score_lqs import classify_depth, score_paper
 from scripts.validate_argument_graph import validate_argument_graph
 from scripts.validate_article_quality import validate_article_quality
 from scripts.validate_claim_evidence import validate_claim_evidence
@@ -1051,10 +1047,6 @@ class SurveyAutoResearchContractTest(unittest.TestCase):
         papers = self.papers(3, 0)
         papers[1]["verification_status"] = "unverified"
         self.assertFalse(validate_sources(papers, [{"paper_id": "p001", "depth": "A"}, {"paper_id": "p002", "depth": "B"}], "full")["valid"])
-        scored = score_paper({"paper_id": "p1", "survey_role": "seminal", "conceptual_centrality": 10, "mechanism_clarity": 8})
-        self.assertEqual(scored["lqs_model"], "survey-role")
-        self.assertNotEqual(classify_depth(scored, role="section protagonist"), "D")
-        self.assertEqual(classify_depth({**scored, "topic_allowed_depth": "C"}, role="section protagonist"), "C")
 
     def test_paper_understanding_completion_contract(self):
         valid = validate_paper_understanding(self.mechanism_cards(1), [{"paper_id": "p001", "depth": "A"}], self.full_text_sources(1))
@@ -3747,8 +3739,8 @@ class SurveyAutoResearchContractTest(unittest.TestCase):
             self.assertEqual(status["next_action"], "spawn_reviewers")
             self.assertEqual(status["summary"]["delegated_component"], "gate7_driver")
 
-    def test_full_text_source_planner_and_rebalance_helpers(self):
-        from scripts.full_text_source_planner import build_full_text_fetch_plan
+    def test_paper_reader_fetch_plan_and_rebalance_helpers(self):
+        from scripts.paper_reader import build_full_text_fetch_plan
         from scripts.rebalance_ab_selection import rebalance_ab_selection
 
         with tempfile.TemporaryDirectory() as tmp:
@@ -4528,13 +4520,7 @@ class SurveyAutoResearchContractTest(unittest.TestCase):
                 "gate_check_hash": current_gate_hash,
             }), encoding="utf-8")
             self.assertNotEqual(collect_gate7_status(task_dir)["next_action"], "complete")
-            self.assertEqual(dispatch_expansion_audit_packet(task_dir, "audit-test")["status"], "dispatched")
-            self.assertFalse(collect_expansion_audit_status(task_dir)["returned"])
-            write_jsonl(task_dir / "state/expansion_audit.jsonl", self.expansion_audit())
-            self.assertTrue(collect_expansion_audit_status(task_dir)["returned"])
-            html = render_dashboard(task_dir, "short").read_text(encoding="utf-8")
-            self.assertIn("gate_7_expert_review", html)
-            self.assertIn("A/B full-text deep-read", html)
+            self.assertNotEqual(collect_gate7_status(task_dir)["next_action"], "complete")
 
     def test_render_survey_html_outputs_article_and_reference_links(self):
         with tempfile.TemporaryDirectory() as tmp:

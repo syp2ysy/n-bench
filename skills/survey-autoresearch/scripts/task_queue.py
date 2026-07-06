@@ -55,10 +55,13 @@ def _safe_task_id(value: object) -> str:
 def _task_packet(task_dir: Path, row: dict) -> str:
     state = task_dir / "state"
     packets = state / "task_packets"
+    worker_outputs = state / "worker_outputs"
     packets.mkdir(exist_ok=True)
+    worker_outputs.mkdir(exist_ok=True)
     request_type = str(row.get("request_type") or "unknown")
     phase = PHASE_BY_REQUEST_TYPE.get(request_type, "runtime")
     task_id = str(row.get("request_id") or "")
+    result_relative = Path("state") / "worker_outputs" / f"{_safe_task_id(task_id)}.json"
     packet = {
         "schema_version": 1,
         "task_id": task_id,
@@ -74,6 +77,11 @@ def _task_packet(task_dir: Path, row: dict) -> str:
         "expected_result_schema_version": row.get("expected_result_schema_version"),
         "record_command": row.get("record_command"),
         "message": row.get("message"),
+        "output_file": str(result_relative),
+        "worker_output_rule": (
+            "Return strict JSON and also save the same JSON object to output_file. "
+            "Do not write any other research artifacts directly."
+        ),
         "payload": row.get("payload") or {},
         "updated_at": _utc_now(),
     }

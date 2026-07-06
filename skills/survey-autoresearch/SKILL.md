@@ -24,7 +24,7 @@ Treat `state/run_state.json`, `state/tasks.jsonl`, `state/paper_cards/`, `output
 1. Initialize a run with `scripts/init_task.py`.
 2. Resume work only through `scripts/runner.py --task-dir <run> --target <target> --run-until-complete`.
 3. If the runner returns a worker-spawn status, run `scripts/task_queue.py --task-dir <run> --collect-pending` or inspect the normalized `state/tasks.jsonl`.
-4. For each pending task, open its `packet` file under `state/task_packets/` for the worker prompt and result contract, then spawn only that task with `multi_agent_v1.spawn_agent(fork_context=false)`.
+4. For each pending task, open its `packet` file under `state/task_packets/` for the worker prompt, result contract, and `output_file`; spawn only that task with `multi_agent_v1.spawn_agent(fork_context=false)` and instruct the worker to save strict JSON to that output file.
 5. Record each spawned session with `task_queue.py --mark-spawned <request-id> --agent-id <subagent-session-id>`.
 6. Save each worker response exactly as returned and record it with `task_queue.py --record-agent-output <request-id> --output-file <file>`.
 7. Rerun `runner.py --run-until-complete` until completion, quality-limited stop, or a real blocker.
@@ -35,7 +35,7 @@ If the current Codex runtime cannot spawn subagents, report `blocked_subagent_sp
 
 Stop only when one of these is true:
 
-- `survey_driver.py`, `gate7_driver.py`, or a collect-status command returns `complete`.
+- `runner.py`, `gate_engine.py`, or a collect-status command returns `complete`.
 - The run is explicitly `quality_limited`.
 - Fresh subagents or required source documents are unavailable.
 - The same non-worker blocker recurs for three consecutive driver passes with no persisted progress. Worker-spawn states must first rebuild `runtime_active_intent.json` and expose dispatcher pending/spawned/result status.
@@ -66,7 +66,7 @@ Important barriers:
 
 | Purpose | Command |
 | --- | --- |
-| Initialize a run | `python3 scripts/init_task.py --base-dir <base> --topic "<topic>" --slug <slug> --target <short|full|csur>` |
+| Initialize a run | `python3 scripts/init_task.py --base-dir <workspace> --topic "<topic>" --slug <slug> --target <short|full|csur>` creates `<workspace>/runs/<slug>` |
 | Resume or drive the workflow | `python3 scripts/runner.py --task-dir <run> --target <target> --run-until-complete` |
 | Sync compact run state | `python3 scripts/run_state.py --task-dir <run> --target <target> --sync` |
 | Sync compact task queue | `python3 scripts/task_queue.py --task-dir <run> --sync` |
@@ -84,7 +84,7 @@ Important barriers:
 | Record review failures | `python3 scripts/failure_ledger.py --task-dir <run> --append-from-adjudication` |
 | Promote final survey | `python3 scripts/promote_survey_release.py --task-dir <run> --target <target>` |
 
-All other scripts are internal helpers unless a contract below explicitly says otherwise. In particular, `survey_driver.py`, `phase_gate.py`, `gate_check.py`, `runtime_dispatcher.py`, topic-relevance, paper-understanding, and Gate 7 runtime executors prepare or record compatibility state; `runner.py`, `gate_engine.py`, `task_queue.py`, `corpus_pipeline.py`, `paper_reader.py`, `knowledge_tree_builder.py`, and `spine_planner.py` are the public orchestration facade.
+All other scripts are internal helpers unless a contract below explicitly says otherwise. In particular, the compatibility driver, phase gate, final gate check, dispatcher, topic-relevance, paper-understanding, and Gate 7 executors prepare or record compatibility state; `runner.py`, `gate_engine.py`, `task_queue.py`, `corpus_pipeline.py`, `paper_reader.py`, `knowledge_tree_builder.py`, and `spine_planner.py` are the public orchestration facade.
 
 ## Required Contracts
 
