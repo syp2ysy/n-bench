@@ -25,6 +25,7 @@ DEFAULT_BATCH_SIZE = 25
 DEFAULT_SECOND_AUDIT_BATCH_SIZE = 10
 RETRY_SPLIT_FAILURE_THRESHOLD = 2
 RETRY_SPLIT_BATCH_SIZE = 8
+TERMINAL_BATCH_STATUSES = {"resolved", "superseded"}
 REQUIRED_RESULT_KEYS = ["batch_id", "status", "audit_records", "validator_results", "remaining_blockers"]
 SECOND_AUDIT_RESULT_KEYS = ["batch_id", "status", "paper_ids", "secondary_audit_records", "validator_results", "remaining_blockers"]
 VALID_RESULT_STATUSES = {"resolved", "partially_resolved", "blocked"}
@@ -173,7 +174,7 @@ def _second_audit_spawn_request(task_dir: Path, batch: dict, records: dict[str, 
 def _refresh_batch_statuses(doc: dict) -> dict:
     active_batch_id = None
     for batch in doc.get("batches") or []:
-        if batch.get("status") == "resolved":
+        if batch.get("status") in TERMINAL_BATCH_STATUSES:
             continue
         if active_batch_id is None:
             if batch.get("status") in {"blocked_by_upstream", "", None}:
@@ -188,7 +189,7 @@ def _refresh_batch_statuses(doc: dict) -> dict:
 
 def _summary(doc: dict) -> dict:
     batches = doc.get("batches") or []
-    pending = [batch for batch in batches if batch.get("status") != "resolved"]
+    pending = [batch for batch in batches if batch.get("status") not in TERMINAL_BATCH_STATUSES]
     active = next((batch for batch in batches if batch.get("batch_id") == doc.get("active_batch_id")), None)
     return {
         "batch_count": len(batches),
@@ -221,6 +222,122 @@ def _make_batches(paper_ids: list[str], batch_size: int) -> list[dict]:
             }
         )
     return batches
+
+
+def _batch_number(batch_id: str) -> int:
+    value = str(batch_id or "")
+    if not value.startswith("TR"):
+        return 0
+    digits = "".join(ch for ch in value[2:] if ch.isdigit())
+    return int(digits or 0)
+
+
+def _append_incremental_batches(doc: dict, missing_ids: list[str], batch_size: int) -> dict:
+    if not missing_ids:
+        return doc
+    existing_batch_ids = {str(batch.get("batch_id") or "") for batch in doc.get("batches") or []}
+    existing_paper_ids = {
+        str(pid)
+        for batch in doc.get("batches") or []
+        if batch.get("status") not in {"superseded", "stale_superseded"}
+        for pid in batch.get("paper_ids") or []
+        if str(pid)
+    }
+    todo = [pid for pid in missing_ids if pid not in existing_paper_ids]
+    if not todo:
+        return doc
+    next_idx = max([_batch_number(batch_id) for batch_id in existing_batch_ids] or [0]) + 1
+    for start in range(0, len(todo), batch_size):
+        ids = todo[start:start + batch_size]
+        while f"TR{next_idx:03d}" in existing_batch_ids:
+            next_idx += 1
+        batch_id = f"TR{next_idx:03d}"
+        existing_batch_ids.add(batch_id)
+        doc.setdefault("batches", []).append(
+            {
+                "batch_id": batch_id,
+                "status": "pending_spawn",
+                "paper_ids": ids,
+                "paper_count": len(ids),
+                "incremental": True,
+                "created_at": _utc_now(),
+                "reason": "missing_topic_relevance_audit",
+            }
+        )
+        next_idx += 1
+    return doc
+
+
+def _supersede_batch(batch: dict, reason: str) -> dict:
+    updated = dict(batch or {})
+    updated["status"] = "superseded"
+    updated["superseded_reason"] = reason
+    updated["superseded_at"] = _utc_now()
+    return updated
+
+
+def _incremental_missing_audit_doc(
+    existing: dict,
+    paper_ids: list[str],
+    audited_ids: set[str],
+    missing_ids: list[str],
+    batch_size: int,
+    plan_hash: str,
+) -> dict:
+    """Preserve old terminal audit history while scheduling only missing rows."""
+
+    missing_set = set(missing_ids)
+    audited_set = set(audited_ids)
+    doc = dict(existing or {})
+    doc["plan_hash"] = plan_hash
+    doc["batch_size"] = batch_size
+    doc["paper_count"] = len(paper_ids)
+    batches: list[dict] = []
+    covered_missing: set[str] = set()
+
+    for batch in doc.get("batches") or []:
+        current = dict(batch or {})
+        status = str(current.get("status") or "")
+        ids = [str(pid) for pid in current.get("paper_ids") or [] if str(pid)]
+        ids = [pid for pid in ids if pid in set(paper_ids)]
+        missing_in_batch = [pid for pid in ids if pid in missing_set]
+        audited_in_batch = [pid for pid in ids if pid in audited_set]
+
+        if status == "resolved":
+            if missing_in_batch:
+                batches.append(_supersede_batch(current, "resolved_batch_missing_current_audit"))
+            else:
+                batches.append(current)
+            continue
+        if status in {"superseded", "stale_superseded"}:
+            batches.append(current)
+            continue
+        if not missing_in_batch:
+            batches.append(_supersede_batch(current, "already_covered_by_topic_relevance_audit"))
+            continue
+        if audited_in_batch:
+            batches.append(_supersede_batch(current, "replaced_by_incremental_missing_topic_audit"))
+            continue
+
+        current["paper_ids"] = missing_in_batch
+        current["paper_count"] = len(missing_in_batch)
+        current.setdefault("incremental", True)
+        current.setdefault("reason", "missing_topic_relevance_audit")
+        covered_missing.update(missing_in_batch)
+        batches.append(current)
+
+    doc["batches"] = batches
+    todo = [pid for pid in missing_ids if pid not in covered_missing]
+    doc = _append_incremental_batches(doc, todo, batch_size)
+    doc.setdefault("incremental_events", []).append(
+        {
+            "ts": _utc_now(),
+            "reason": "missing_topic_relevance_audit",
+            "missing_count": len(missing_ids),
+            "audited_count": len(audited_ids),
+        }
+    )
+    return doc
 
 
 def _topic_batch_worker_failure_count(task_dir: Path, batch_id: str) -> int:
@@ -383,9 +500,24 @@ def prepare_topic_relevance_batches(task_dir: Path, batch_size: int = DEFAULT_BA
     state = _state(task_dir)
     records = _candidate_records(task_dir)
     paper_ids = sorted(records)
+    audited_ids = {str(row.get("paper_id") or "") for row in read_jsonl(state / "topic_relevance_audit.jsonl") if str(row.get("paper_id") or "")}
+    missing_ids = [pid for pid in paper_ids if pid not in audited_ids]
     plan_hash = _stable_hash({"paper_ids": paper_ids, "batch_size": batch_size})
     existing = read_json(state / "topic_relevance_batches.json")
-    if existing.get("plan_hash") == plan_hash and existing.get("batches"):
+    if paper_ids and not missing_ids:
+        doc = dict(existing or {})
+        doc["plan_hash"] = plan_hash
+        doc["batch_size"] = batch_size
+        doc["paper_count"] = len(paper_ids)
+        doc["batches"] = [
+            batch if batch.get("status") in TERMINAL_BATCH_STATUSES else _supersede_batch(batch, "audit_already_complete")
+            for batch in doc.get("batches") or []
+        ]
+        doc = _refresh_batch_statuses(doc)
+    elif audited_ids and missing_ids:
+        doc = _incremental_missing_audit_doc(existing, paper_ids, audited_ids, missing_ids, batch_size, plan_hash)
+        doc = _refresh_batch_statuses(doc)
+    elif existing.get("plan_hash") == plan_hash and existing.get("batches"):
         doc = _refresh_batch_statuses(existing)
         doc = _split_active_batch_after_worker_failures(task_dir, doc)
         doc = _refresh_batch_statuses(doc)
@@ -449,7 +581,7 @@ def collect_topic_relevance_status(task_dir: Path) -> dict:
         }
     doc = _with_metadata(doc)
     write_json(state / "topic_relevance_batches.json", doc)
-    all_resolved = all(batch.get("status") == "resolved" for batch in doc.get("batches") or [])
+    all_resolved = all(batch.get("status") in TERMINAL_BATCH_STATUSES for batch in doc.get("batches") or [])
     return {
         **status_envelope(
             COMPONENT,

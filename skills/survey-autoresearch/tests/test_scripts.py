@@ -3595,6 +3595,138 @@ class SurveyAutoResearchContractTest(unittest.TestCase):
             self.assertIn("Allowed allowed_role values only: core, related_survey, background, exclude", request["message"])
             self.assertIn("evidence_used must be a list of objects", request["message"])
 
+    def test_topic_relevance_prepare_appends_incremental_missing_audit_batch(self):
+        from scripts.topic_relevance_runtime_executor import prepare_topic_relevance_batches
+
+        with tempfile.TemporaryDirectory() as tmp:
+            task_dir = initialize_task(Path(tmp), "incremental topic relevance", target="full")
+            state = task_dir / "state"
+            write_jsonl(
+                state / "raw_candidates.jsonl",
+                [
+                    {
+                        "paper_id": "p001",
+                        "candidate_id": "cand-001",
+                        "title": "Visual Scratchpad for Multimodal Reasoning",
+                        "abstract": "A visual workspace method for multimodal reasoning.",
+                        "url": "https://example.org/p001",
+                    },
+                    {
+                        "paper_id": "p002",
+                        "candidate_id": "cand-002",
+                        "title": "Survey of Visual Reasoning for Multimodal Agents",
+                        "abstract": "A related survey for visual reasoning agents.",
+                        "url": "https://example.org/p002",
+                    },
+                ],
+            )
+            write_jsonl(
+                state / "topic_relevance_audit.jsonl",
+                [
+                    {
+                        "paper_id": "p001",
+                        "candidate_id": "cand-001",
+                        "evidence_used": [{"field": "title", "text": "Visual Scratchpad for Multimodal Reasoning"}],
+                        "positive_topic_signals": ["visual scratchpad"],
+                        "negative_drift_signals": [],
+                        "relevance_grade": "core",
+                        "allowed_depth": "A",
+                        "allowed_role": "core",
+                        "family_label_supported": True,
+                        "corrected_family": "visual scratchpad",
+                        "rationale": "Primary audit already exists for p001.",
+                    }
+                ],
+            )
+            (state / "topic_relevance_batches.json").write_text(
+                json.dumps(
+                    {
+                        "plan_hash": "old-plan",
+                        "batch_size": 25,
+                        "paper_count": 1,
+                        "active_batch_id": None,
+                        "batches": [{"batch_id": "TR001", "paper_ids": ["p001"], "status": "resolved"}],
+                    },
+                    sort_keys=True,
+                ),
+                encoding="utf-8",
+            )
+
+            status = prepare_topic_relevance_batches(task_dir)
+            self.assertEqual(status["active_batch_id"], "TR002", status)
+            self.assertEqual(status["spawn_requests"][0]["paper_ids"], ["p002"])
+            doc = json.loads((state / "topic_relevance_batches.json").read_text(encoding="utf-8"))
+            self.assertEqual(doc["batches"][0]["status"], "resolved")
+            self.assertEqual(doc["batches"][1]["batch_id"], "TR002")
+            self.assertEqual(doc["batches"][1]["paper_ids"], ["p002"])
+            self.assertTrue(doc["batches"][1]["incremental"])
+
+    def test_topic_relevance_prepare_supersedes_full_reset_when_audit_is_incremental(self):
+        from scripts.topic_relevance_runtime_executor import prepare_topic_relevance_batches
+
+        with tempfile.TemporaryDirectory() as tmp:
+            task_dir = initialize_task(Path(tmp), "incremental topic reset recovery", target="full")
+            state = task_dir / "state"
+            raw = [
+                {
+                    "paper_id": "p001",
+                    "candidate_id": "cand-001",
+                    "title": "Visual Scratchpad for Multimodal Reasoning",
+                    "abstract": "A visual workspace method for multimodal reasoning.",
+                    "url": "https://example.org/p001",
+                },
+                {
+                    "paper_id": "p002",
+                    "candidate_id": "cand-002",
+                    "title": "Survey of Visual Reasoning for Multimodal Agents",
+                    "abstract": "A related survey for visual reasoning agents.",
+                    "url": "https://example.org/p002",
+                },
+            ]
+            write_jsonl(state / "raw_candidates.jsonl", raw)
+            write_jsonl(
+                state / "topic_relevance_audit.jsonl",
+                [
+                    {
+                        "paper_id": "p001",
+                        "candidate_id": "cand-001",
+                        "evidence_used": [{"field": "title", "text": "Visual Scratchpad for Multimodal Reasoning"}],
+                        "positive_topic_signals": ["visual scratchpad"],
+                        "negative_drift_signals": [],
+                        "relevance_grade": "core",
+                        "allowed_depth": "A",
+                        "allowed_role": "core",
+                        "family_label_supported": True,
+                        "corrected_family": "visual scratchpad",
+                        "rationale": "Primary audit already exists for p001.",
+                    }
+                ],
+            )
+            first = prepare_topic_relevance_batches(task_dir)
+            plan_hash = json.loads((state / "topic_relevance_batches.json").read_text(encoding="utf-8"))["plan_hash"]
+            (state / "topic_relevance_batches.json").write_text(
+                json.dumps(
+                    {
+                        "plan_hash": plan_hash,
+                        "batch_size": 25,
+                        "paper_count": 2,
+                        "active_batch_id": "TR001",
+                        "batches": [{"batch_id": "TR001", "paper_ids": ["p001", "p002"], "paper_count": 2, "status": "pending_spawn"}],
+                    },
+                    sort_keys=True,
+                ),
+                encoding="utf-8",
+            )
+
+            recovered = prepare_topic_relevance_batches(task_dir)
+            self.assertEqual(first["spawn_requests"][0]["paper_ids"], ["p002"])
+            self.assertEqual(recovered["spawn_requests"][0]["paper_ids"], ["p002"])
+            doc = json.loads((state / "topic_relevance_batches.json").read_text(encoding="utf-8"))
+            self.assertEqual(doc["batches"][0]["status"], "superseded")
+            self.assertEqual(doc["batches"][0]["superseded_reason"], "replaced_by_incremental_missing_topic_audit")
+            self.assertEqual(doc["batches"][1]["paper_ids"], ["p002"])
+            self.assertTrue(doc["batches"][1]["incremental"])
+
     def test_topic_relevance_repeated_worker_failures_split_active_batch(self):
         from scripts.topic_relevance_runtime_executor import prepare_topic_relevance_batches
 
