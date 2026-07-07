@@ -15,6 +15,7 @@ from pathlib import Path
 try:  # pragma: no cover - script import fallback
     from .discovery_runtime_executor import collect_discovery_status, prepare_discovery_batches, prepare_discovery_enrichment_batches
     from .phase_gate import evaluate_phase_barriers
+    from .rebalance_ab_selection import sync_related_surveys_from_topic_audit
     from .run_expert_reviews import read_json, read_jsonl, write_json
     from .status_schema import status_envelope
     from .topic_relevance_runtime_executor import (
@@ -26,6 +27,7 @@ try:  # pragma: no cover - script import fallback
 except ImportError:  # pragma: no cover
     from discovery_runtime_executor import collect_discovery_status, prepare_discovery_batches, prepare_discovery_enrichment_batches
     from phase_gate import evaluate_phase_barriers
+    from rebalance_ab_selection import sync_related_surveys_from_topic_audit
     from run_expert_reviews import read_json, read_jsonl, write_json
     from status_schema import status_envelope
     from topic_relevance_runtime_executor import (
@@ -164,6 +166,10 @@ def prepare(task_dir: Path, target: str = "full") -> dict:
     elif step == "topic_relevance_second_audit":
         result = _with_pipeline_status(task_dir, prepare_topic_relevance_second_audit_batches(task_dir), "topic_relevance_second_audit")
     elif step == "related_survey_discovery":
+        synced = sync_related_surveys_from_topic_audit(task_dir, target)
+        if synced.get("status") != "no_op":
+            result = _with_pipeline_status(task_dir, synced, "related_survey_sync")
+            return result
         result = _with_pipeline_status(
             task_dir,
             prepare_discovery_enrichment_batches(task_dir, ["related_survey_relevance", "related_surveys"]),

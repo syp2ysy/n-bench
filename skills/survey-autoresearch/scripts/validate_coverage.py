@@ -56,6 +56,8 @@ def _candidate_ids(raw_candidates: list[dict]) -> set[str]:
             ids.add(str(candidate["candidate_id"]))
         if candidate.get("paper_id"):
             ids.add(str(candidate["paper_id"]))
+        if candidate.get("source_candidate_id"):
+            ids.add(str(candidate["source_candidate_id"]))
     return ids
 
 

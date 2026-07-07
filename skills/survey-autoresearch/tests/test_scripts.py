@@ -3060,6 +3060,111 @@ class SurveyAutoResearchContractTest(unittest.TestCase):
             self.assertEqual([row["request_type"] for row in pending["pending_requests"]], ["discovery"])
             self.assertEqual(pending["pending_requests"][0]["batch_id"], "D999R")
 
+    def test_related_survey_shortage_syncs_audited_raw_surveys_before_more_discovery(self):
+        from scripts.survey_driver import run_until_complete as run_survey_until_complete
+
+        with tempfile.TemporaryDirectory() as tmp:
+            task_dir = initialize_task(Path(tmp), "related survey sync route", target="full")
+            self.populate_source_verified_task(task_dir)
+            state = task_dir / "state"
+            raw = read_jsonl(state / "raw_candidates.jsonl")
+            audit_rows = self.topic_relevance_audit()
+            direct_seen = 0
+            for row in audit_rows:
+                if row.get("relevance_grade") != "direct_related_survey":
+                    continue
+                direct_seen += 1
+                if direct_seen > 4:
+                    row["relevance_grade"] = "adjacent_background"
+                    row["allowed_role"] = "background"
+                    row["family_label_supported"] = False
+                    row["corrected_family"] = "related survey taxonomy adjacent background"
+            extra_raw = [
+                {
+                    "paper_id": "RSYNC-001",
+                    "candidate_id": "RSYNC-001",
+                    "title": "Visual Chain-of-Thought Reasoning: A Focused Survey",
+                    "authors": ["Survey Author"],
+                    "year": 2026,
+                    "url": "https://example.org/rsync-001",
+                    "source": "verified related survey metadata",
+                    "verification_status": "verified",
+                    "verified_sources": ["https://example.org/rsync-001"],
+                    "topic_axis": "visual_chain_of_thought_survey",
+                },
+                {
+                    "paper_id": "RSYNC-002",
+                    "candidate_id": "RSYNC-002",
+                    "title": "Image-Grounded Reasoning Actions: A Taxonomy Survey",
+                    "authors": ["Survey Author"],
+                    "year": 2026,
+                    "url": "https://example.org/rsync-002",
+                    "source": "verified related survey metadata",
+                    "verification_status": "verified",
+                    "verified_sources": ["https://example.org/rsync-002"],
+                    "topic_axis": "image_grounded_reasoning_actions_survey",
+                },
+            ]
+            raw.extend(extra_raw)
+            for candidate in extra_raw:
+                audit_rows.append(
+                    {
+                        "paper_id": candidate["paper_id"],
+                        "candidate_id": candidate["candidate_id"],
+                        "title": candidate["title"],
+                        "evidence_used": [
+                            {"field": "title", "text": candidate["title"]},
+                            {"field": "abstract_snippet", "text": "Focused survey of visual intermediate-state reasoning and image-grounded actions."},
+                            {"field": "source_metadata", "text": "Verified related-survey metadata with topic-specific taxonomy evidence."},
+                        ],
+                        "positive_topic_signals": ["visual intermediate-state reasoning", "image-grounded actions"],
+                        "negative_drift_signals": [],
+                        "relevance_grade": "direct_related_survey",
+                        "allowed_depth": "C",
+                        "allowed_role": "related_survey",
+                        "family_label_supported": True,
+                        "corrected_family": candidate["topic_axis"],
+                        "rationale": "The worker audit identifies this as a direct related survey for the visual intermediate-state topic boundary.",
+                    }
+                )
+            write_jsonl(state / "raw_candidates.jsonl", raw)
+            write_jsonl(state / "topic_relevance_audit.jsonl", audit_rows)
+
+            status = run_survey_until_complete(task_dir, target="full", max_steps=5)
+
+            self.assertIn("sync_related_surveys_from_topic_audit", status["actions"], status)
+            self.assertNotEqual(status["next_action"], "spawn_discovery_agents", status)
+            papers = {row["paper_id"]: row for row in read_jsonl(state / "papers.jsonl")}
+            citation = {row["paper_id"]: row for row in read_jsonl(state / "citation_plan.jsonl")}
+            self.assertEqual(papers["RSYNC-001"]["survey_role"], "survey")
+            self.assertEqual(citation["RSYNC-001"]["depth"], "C")
+            self.assertEqual(citation["RSYNC-001"]["role"], "related_survey")
+
+    def test_coverage_candidate_linkage_accepts_source_candidate_id_alias(self):
+        from scripts.validate_coverage import validate_coverage
+
+        raw = self.raw_candidates(total=220, related_surveys=8)
+        raw[0]["paper_id"] = "new-raw-id"
+        raw[0]["candidate_id"] = "new-candidate-id"
+        raw[0]["source_candidate_id"] = "old-paper-id"
+        papers = self.papers(total=160, related_surveys=8)
+        papers[0]["paper_id"] = "old-paper-id"
+        papers[0]["source_candidate_id"] = "old-paper-id"
+        citation = self.citation_plan()
+        citation[0]["paper_id"] = "old-paper-id"
+
+        status = validate_coverage(
+            raw,
+            self.search_routes(),
+            self.lqs_scores(),
+            self.corpus_expansion(),
+            papers,
+            citation,
+            "full",
+        )
+
+        self.assertNotIn("paper_candidate_linkage", status["retained_missing"], status)
+
     def test_runtime_dispatcher_rejects_invalid_output_and_routes_gate7_repair(self):
         from scripts.gate7_runtime_executor import collect_runtime_repair_status
         from scripts.runtime_dispatcher import collect_pending, mark_spawned, record_agent_output

@@ -17,7 +17,7 @@ try:  # pragma: no cover - script import fallback
     from .knowledge_tree_builder import prepare_knowledge_tree_request
     from .paper_reader import prepare_paper_reading
     from .phase_gate import evaluate_phase_barriers
-    from .rebalance_ab_selection import initialize_ab_selection_from_topic_audit, rebalance_ab_selection
+    from .rebalance_ab_selection import initialize_ab_selection_from_topic_audit, rebalance_ab_selection, sync_related_surveys_from_topic_audit
     from .run_expert_reviews import read_json, read_jsonl, write_json, write_jsonl
     from .spine_planner import prepare_spine_plan_request, validate_spine_plan
     from .status_schema import STATUS_SCHEMA_VERSION
@@ -33,7 +33,7 @@ except ImportError:  # pragma: no cover
     from knowledge_tree_builder import prepare_knowledge_tree_request
     from paper_reader import prepare_paper_reading
     from phase_gate import evaluate_phase_barriers
-    from rebalance_ab_selection import initialize_ab_selection_from_topic_audit, rebalance_ab_selection
+    from rebalance_ab_selection import initialize_ab_selection_from_topic_audit, rebalance_ab_selection, sync_related_surveys_from_topic_audit
     from run_expert_reviews import read_json, read_jsonl, write_json, write_jsonl
     from spine_planner import prepare_spine_plan_request, validate_spine_plan
     from status_schema import STATUS_SCHEMA_VERSION
@@ -558,6 +558,10 @@ def run_until_complete(task_dir: Path, target: str = "full", max_steps: int = 25
             runtime = prepare_topic_relevance_second_audit_batches(task_dir)
             return _finish(task_dir, runtime, actions, phase_status)
         if blocked_by == "source_verification" and next_action == "related_survey_discovery":
+            actions.append("sync_related_surveys_from_topic_audit")
+            related_sync = sync_related_surveys_from_topic_audit(task_dir, target)
+            if related_sync.get("status") != "no_op":
+                continue
             actions.append("prepare_related_survey_discovery_enrichment")
             runtime = prepare_discovery_enrichment_batches(task_dir, ["related_survey_relevance", "related_surveys"])
             return _finish(task_dir, runtime, actions, phase_status)

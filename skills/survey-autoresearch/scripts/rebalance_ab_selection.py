@@ -56,9 +56,11 @@ def _candidate_lookup(raw_candidates: list[dict]) -> dict[str, dict]:
             row.get("arxiv"),
             row.get("doi"),
             row.get("url"),
+            row.get("official_url"),
             row.get("landing_page_url"),
             row.get("pdf_url"),
             row.get("candidate_id"),
+            row.get("source_candidate_id"),
         ]
         for raw_key in keys:
             key = str(raw_key or "").strip()
@@ -116,6 +118,157 @@ def _paper_from_audit(candidate: dict, audit: dict) -> dict:
         "topic_relevance_allowed_depth": audit.get("allowed_depth"),
     }
     return {key: value for key, value in paper.items() if value not in (None, "", [])}
+
+
+def _norm_identity(value) -> str:
+    return " ".join(str(value or "").strip().lower().split())
+
+
+def _identity_keys(row: dict) -> set[str]:
+    keys: set[str] = set()
+    for key in ["doi", "arxiv_id", "url", "official_url", "landing_page_url", "pdf_url", "title"]:
+        value = _norm_identity(row.get(key))
+        if value:
+            keys.add(f"{key}:{value}" if key == "title" else value)
+    return keys
+
+
+def _raw_candidate_id(candidate: dict) -> str:
+    return str(candidate.get("candidate_id") or candidate.get("paper_id") or candidate.get("source_candidate_id") or "").strip()
+
+
+def _repair_paper_candidate_linkage(papers: list[dict], raw_candidates: list[dict]) -> tuple[list[dict], list[dict]]:
+    candidate_ids = {
+        str(candidate.get(key) or "").strip()
+        for candidate in raw_candidates
+        for key in ["candidate_id", "paper_id", "source_candidate_id"]
+        if str(candidate.get(key) or "").strip()
+    }
+    identity_lookup: dict[str, dict] = {}
+    for candidate in raw_candidates:
+        for key in _identity_keys(candidate):
+            identity_lookup.setdefault(key, candidate)
+    repaired: list[dict] = []
+    decisions: list[dict] = []
+    for paper in papers:
+        row = dict(paper)
+        source_candidate_id = str(row.get("source_candidate_id") or "").strip()
+        if source_candidate_id and source_candidate_id in candidate_ids:
+            repaired.append(row)
+            continue
+        match = next((identity_lookup.get(key) for key in _identity_keys(row) if identity_lookup.get(key)), None)
+        candidate_id = _raw_candidate_id(match or {})
+        if candidate_id:
+            row["source_candidate_id"] = candidate_id
+            decisions.append(
+                {
+                    "decided_at": _utc_now(),
+                    "decision": "repair_paper_candidate_linkage",
+                    "paper_id": row.get("paper_id"),
+                    "source_candidate_id_before": source_candidate_id,
+                    "source_candidate_id_after": candidate_id,
+                    "matched_title": (match or {}).get("title"),
+                }
+            )
+        repaired.append(row)
+    return repaired, decisions
+
+
+def sync_related_surveys_from_topic_audit(task_dir: Path, target: str = "full") -> dict:
+    """Retain worker-audited direct related surveys as C-level survey records."""
+
+    state = _state(task_dir)
+    raw_candidates = read_jsonl(state / "raw_candidates.jsonl")
+    papers = read_jsonl(state / "papers.jsonl")
+    citation_plan = read_jsonl(state / "citation_plan.jsonl")
+    audit_rows = read_jsonl(state / "topic_relevance_audit.jsonl")
+    if not raw_candidates or not audit_rows:
+        return {"status": "blocked", "error": "raw_candidates_or_topic_audit_missing"}
+    before_papers_hash = _hash_rows(papers)
+    before_citation_hash = _hash_rows(citation_plan)
+    papers, linkage_decisions = _repair_paper_candidate_linkage(papers, raw_candidates)
+    candidate_by_id = _candidate_lookup(raw_candidates)
+    citation_ids = {str(row.get("paper_id") or "") for row in citation_plan}
+    retained_ids = {str(row.get("paper_id") or "") for row in papers}
+    retained_identity = {key for paper in papers for key in _identity_keys(paper)}
+    added_papers: list[dict] = []
+    added_citation: list[dict] = []
+    for audit in audit_rows:
+        if str(audit.get("relevance_grade") or "") != "direct_related_survey":
+            continue
+        if str(audit.get("allowed_role") or "") != "related_survey":
+            continue
+        pid = str(audit.get("paper_id") or "").strip()
+        if not pid or pid in retained_ids:
+            continue
+        candidate = candidate_by_id.get(pid) or candidate_by_id.get(str(audit.get("candidate_id") or "")) or {}
+        if not candidate:
+            continue
+        identity = _identity_keys(candidate) | _identity_keys(audit)
+        if identity & retained_identity:
+            continue
+        paper = _paper_from_audit(candidate, audit)
+        paper["survey_role"] = "survey"
+        paper["selection_reason"] = "related_survey_topic_audit_sync"
+        papers.append(paper)
+        retained_ids.add(pid)
+        retained_identity.update(_identity_keys(paper) | identity)
+        added_papers.append(paper)
+        if pid not in citation_ids:
+            citation_row = {
+                "paper_id": pid,
+                "depth": "C",
+                "role": "related_survey",
+                "topic_relevance_grade": "direct_related_survey",
+                "family": normalize_family(audit.get("corrected_family")),
+                "selection_reason": "related_survey_topic_audit_sync",
+            }
+            citation_plan.append(citation_row)
+            citation_ids.add(pid)
+            added_citation.append(citation_row)
+    if not added_papers and not linkage_decisions:
+        return {
+            "status": "no_op",
+            "paper_count": len(papers),
+            "citation_plan_count": len(citation_plan),
+        }
+    write_jsonl(state / "papers.jsonl", papers)
+    write_jsonl(state / "citation_plan.jsonl", citation_plan)
+    after_papers_hash = _hash_rows(papers)
+    after_citation_hash = _hash_rows(citation_plan)
+    decision = {
+        "decided_at": _utc_now(),
+        "decision": "sync_related_surveys_from_topic_audit",
+        "target": target,
+        "added_paper_ids": [row.get("paper_id") for row in added_papers],
+        "added_citation_ids": [row.get("paper_id") for row in added_citation],
+        "linkage_repair_count": len(linkage_decisions),
+        "papers_hash_before": before_papers_hash,
+        "papers_hash_after": after_papers_hash,
+        "citation_plan_hash_before": before_citation_hash,
+        "citation_plan_hash_after": after_citation_hash,
+    }
+    write_jsonl(state / "related_survey_sync_decisions.jsonl", read_jsonl(state / "related_survey_sync_decisions.jsonl") + [decision])
+    if linkage_decisions:
+        write_jsonl(state / "candidate_linkage_repair_decisions.jsonl", read_jsonl(state / "candidate_linkage_repair_decisions.jsonl") + linkage_decisions)
+    coverage = validate_coverage(
+        raw_candidates,
+        read_jsonl(state / "search_routes.jsonl"),
+        read_jsonl(state / "lqs_scores.jsonl"),
+        read_json(state / "corpus_expansion.json"),
+        papers,
+        citation_plan,
+        target,
+        survey_type_plan=(state / "survey_type_plan.yml").read_text(encoding="utf-8") if (state / "survey_type_plan.yml").exists() else "",
+        contribution_tree=(task_dir / "outputs" / "contribution_tree.yml").read_text(encoding="utf-8") if (task_dir / "outputs" / "contribution_tree.yml").exists() else "",
+        topic_relevance_audit=audit_rows,
+    )
+    return {
+        "status": "synced" if coverage.get("valid") else "synced_but_coverage_invalid",
+        "decision": decision,
+        "coverage_valid": coverage.get("valid"),
+        "coverage_errors": coverage.get("missing") or coverage.get("retained_missing") or [],
+    }
 
 
 def initialize_ab_selection_from_topic_audit(task_dir: Path, target: str = "full") -> dict:
