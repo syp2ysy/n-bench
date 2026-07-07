@@ -13,7 +13,7 @@ import json
 from pathlib import Path
 
 try:  # pragma: no cover - script import fallback
-    from .discovery_runtime_executor import collect_discovery_status, prepare_discovery_batches
+    from .discovery_runtime_executor import collect_discovery_status, prepare_discovery_batches, prepare_discovery_enrichment_batches
     from .phase_gate import evaluate_phase_barriers
     from .run_expert_reviews import read_json, read_jsonl, write_json
     from .status_schema import status_envelope
@@ -24,7 +24,7 @@ try:  # pragma: no cover - script import fallback
     )
     from .validate_topic_profile import validate_topic_profile
 except ImportError:  # pragma: no cover
-    from discovery_runtime_executor import collect_discovery_status, prepare_discovery_batches
+    from discovery_runtime_executor import collect_discovery_status, prepare_discovery_batches, prepare_discovery_enrichment_batches
     from phase_gate import evaluate_phase_barriers
     from run_expert_reviews import read_json, read_jsonl, write_json
     from status_schema import status_envelope
@@ -141,6 +141,7 @@ def _step_from_phase(task_dir: Path, target: str) -> tuple[str, dict]:
     if blocked_by == "source_verification" and next_action in {
         "topic_relevance_audit",
         "topic_relevance_second_audit",
+        "related_survey_discovery",
         "topic_relevance_rebalance",
         "coverage_repair",
     }:
@@ -162,6 +163,12 @@ def prepare(task_dir: Path, target: str = "full") -> dict:
         result = _with_pipeline_status(task_dir, prepare_topic_relevance_batches(task_dir), "topic_relevance_audit")
     elif step == "topic_relevance_second_audit":
         result = _with_pipeline_status(task_dir, prepare_topic_relevance_second_audit_batches(task_dir), "topic_relevance_second_audit")
+    elif step == "related_survey_discovery":
+        result = _with_pipeline_status(
+            task_dir,
+            prepare_discovery_enrichment_batches(task_dir, ["related_survey_relevance", "related_surveys"]),
+            "related_survey_discovery",
+        )
     elif step == "topic_relevance_rebalance":
         result = {
             **status_envelope(

@@ -3022,9 +3022,43 @@ class SurveyAutoResearchContractTest(unittest.TestCase):
             status = run_survey_until_complete(task_dir, target="full", max_steps=5)
             self.assertEqual(status["next_action"], "spawn_topic_relevance_agents", status)
             self.assertNotEqual(status["status"], "blocked_topic_relevance_rebalance", status)
-            self.assertIn("continue_topic_relevance_audit_before_rebalance", status["actions"])
+            self.assertIn("topic_relevance_audit", status["actions"])
             pending = collect_pending(task_dir)
             self.assertEqual([row["request_type"] for row in pending["pending_requests"]], ["topic_relevance"])
+
+    def test_related_survey_shortage_routes_to_discovery_enrichment_not_ab_rebalance(self):
+        from scripts.runtime_dispatcher import collect_pending
+        from scripts.survey_driver import run_until_complete as run_survey_until_complete
+
+        with tempfile.TemporaryDirectory() as tmp:
+            task_dir = initialize_task(Path(tmp), "related survey enrichment route", target="full")
+            self.populate_source_verified_task(task_dir)
+            state = task_dir / "state"
+            audit_rows = self.topic_relevance_audit()
+            direct_seen = 0
+            for row in audit_rows:
+                if row.get("relevance_grade") != "direct_related_survey":
+                    continue
+                direct_seen += 1
+                if direct_seen > 4:
+                    row["relevance_grade"] = "adjacent_background"
+                    row["allowed_role"] = "background"
+                    row["family_label_supported"] = False
+                    row["corrected_family"] = "related survey taxonomy adjacent background"
+            write_jsonl(state / "topic_relevance_audit.jsonl", audit_rows)
+
+            phase = evaluate_phase_barriers(task_dir, "full")
+            self.assertEqual(phase["allowed_next_phase"], "related_survey_discovery", phase)
+
+            status = run_survey_until_complete(task_dir, target="full", max_steps=5)
+            self.assertEqual(status["next_action"], "spawn_discovery_agents", status)
+            self.assertEqual(status["status"], "blocked_discovery_agent_spawn_required", status)
+            self.assertIn("prepare_related_survey_discovery_enrichment", status["actions"])
+            self.assertNotEqual(status["status"], "blocked_topic_relevance_rebalance", status)
+
+            pending = collect_pending(task_dir)
+            self.assertEqual([row["request_type"] for row in pending["pending_requests"]], ["discovery"])
+            self.assertEqual(pending["pending_requests"][0]["batch_id"], "D999R")
 
     def test_runtime_dispatcher_rejects_invalid_output_and_routes_gate7_repair(self):
         from scripts.gate7_runtime_executor import collect_runtime_repair_status

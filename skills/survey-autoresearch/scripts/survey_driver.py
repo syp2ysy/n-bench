@@ -12,7 +12,7 @@ from pathlib import Path
 try:  # pragma: no cover - script import fallback
     from .article_builder import prepare_article_request
     from .argument_builder import prepare_argument_request
-    from .discovery_runtime_executor import prepare_discovery_batches
+    from .discovery_runtime_executor import prepare_discovery_batches, prepare_discovery_enrichment_batches
     from .gate7_driver import run_until_complete as run_gate7_until_complete
     from .knowledge_tree_builder import prepare_knowledge_tree_request
     from .paper_reader import prepare_paper_reading
@@ -28,7 +28,7 @@ try:  # pragma: no cover - script import fallback
 except ImportError:  # pragma: no cover
     from article_builder import prepare_article_request
     from argument_builder import prepare_argument_request
-    from discovery_runtime_executor import prepare_discovery_batches
+    from discovery_runtime_executor import prepare_discovery_batches, prepare_discovery_enrichment_batches
     from gate7_driver import run_until_complete as run_gate7_until_complete
     from knowledge_tree_builder import prepare_knowledge_tree_request
     from paper_reader import prepare_paper_reading
@@ -556,6 +556,10 @@ def run_until_complete(task_dir: Path, target: str = "full", max_steps: int = 25
             return _finish(task_dir, runtime, actions, phase_status)
         if blocked_by == "source_verification" and next_action == "topic_relevance_second_audit":
             runtime = prepare_topic_relevance_second_audit_batches(task_dir)
+            return _finish(task_dir, runtime, actions, phase_status)
+        if blocked_by == "source_verification" and next_action == "related_survey_discovery":
+            actions.append("prepare_related_survey_discovery_enrichment")
+            runtime = prepare_discovery_enrichment_batches(task_dir, ["related_survey_relevance", "related_surveys"])
             return _finish(task_dir, runtime, actions, phase_status)
         if blocked_by == "source_verification" and next_action == "topic_relevance_rebalance":
             if _topic_relevance_audit_incomplete(task_dir):

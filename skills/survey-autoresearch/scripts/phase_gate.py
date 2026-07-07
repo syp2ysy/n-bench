@@ -385,11 +385,20 @@ def evaluate_phase_barriers(task_dir: Path, target: str = "full") -> dict:
         if "topic_relevance_audit_missing" in topic_errors:
             allowed_next_phase = "topic_relevance_audit"
         elif (
+            "missing_raw_candidate_topic_relevance_audits" in topic_errors
+            or "missing_retained_paper_topic_relevance_audits" in topic_errors
+            or "missing_ab_topic_relevance_audits" in topic_errors
+        ):
+            allowed_next_phase = "topic_relevance_audit"
+        elif (
             "ab_topic_relevance_failed" in topic_errors
             or "direct_related_survey_ab_over_limit" in topic_errors
-            or "related_survey_relevance_failed" in topic_errors
         ):
             allowed_next_phase = "topic_relevance_rebalance"
+        elif not retained_coverage_ready and not data["papers"] and not data["citation_plan"]:
+            allowed_next_phase = "topic_relevance_rebalance"
+        elif "related_survey_relevance_failed" in topic_errors:
+            allowed_next_phase = "related_survey_discovery"
         elif "topic_relevance_second_audit_required" in topic_errors:
             allowed_next_phase = "topic_relevance_second_audit"
         elif not retained_coverage_ready:

@@ -1083,6 +1083,53 @@ def _ensure_enrichment_batch(task_dir: Path, doc: dict, blockers: list[str], rec
         _upsert_enrichment_batch(doc, spec, blockers, recorded_at)
 
 
+def _normalize_enrichment_blockers(blockers: list[str]) -> list[str]:
+    normalized: list[str] = []
+    for blocker in blockers:
+        value = str(blocker or "").strip()
+        if value in {"related_survey_relevance", "related_survey_relevance_failed"}:
+            value = "related_surveys"
+        if value and value not in normalized:
+            normalized.append(value)
+    return normalized or ["raw_candidates"]
+
+
+def _source_gate_related_enrichment(batch: dict) -> bool:
+    blockers = {str(item) for item in (batch or {}).get("coverage_blockers") or (batch or {}).get("last_blockers") or []}
+    batch_id = str((batch or {}).get("batch_id") or "")
+    return batch_id.startswith("D999R") and bool(
+        blockers & {"related_surveys", "related_survey_relevance", "related_survey_relevance_failed"}
+    )
+
+
+def prepare_discovery_enrichment_batches(task_dir: Path, blockers: list[str]) -> dict:
+    """Prepare targeted discovery batches for source-gate coverage gaps.
+
+    This is used after the initial discovery merge when retained/source gates
+    reveal an evidence gap, such as too few worker-confirmed direct related
+    surveys. It never fabricates records; it only reopens discovery with a
+    targeted D999* worker batch.
+    """
+    state = _state(task_dir)
+    recorded_at = _utc_now()
+    doc = read_json(state / "discovery_batches.json")
+    if not doc.get("batches"):
+        if read_jsonl(state / "raw_candidates.jsonl"):
+            doc = {
+                "plan_hash": "source_gate_enrichment_without_active_discovery_plan",
+                "route_plan_version": DISCOVERY_ROUTE_PLAN_VERSION,
+                "batches": [],
+            }
+        else:
+            prepare_discovery_batches(task_dir)
+            doc = read_json(state / "discovery_batches.json")
+    blockers = _normalize_enrichment_blockers(blockers)
+    _ensure_enrichment_batch(task_dir, doc, blockers, recorded_at)
+    doc = _with_metadata(_refresh_batch_statuses(doc))
+    write_json(state / "discovery_batches.json", doc)
+    return _write_runtime_action(task_dir, doc)
+
+
 def _retire_obsolete_raw_enrichment_retries(task_dir: Path, doc: dict, blockers: list[str], recorded_at: str) -> bool:
     blocker_set = {str(item) for item in blockers}
     scoring_only = bool(
@@ -1118,6 +1165,8 @@ def _retire_enrichment_after_discovery_sufficient(doc: dict, recorded_at: str) -
     changed = False
     for batch in doc.get("batches") or []:
         batch_id = str(batch.get("batch_id") or "")
+        if _source_gate_related_enrichment(batch):
+            continue
         if (
             batch_id.startswith("D999")
             and not _batch_terminal(batch)
