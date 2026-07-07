@@ -3969,6 +3969,52 @@ class SurveyAutoResearchContractTest(unittest.TestCase):
             decisions = read_jsonl(state / "ab_rebalance_decisions.jsonl")
             self.assertTrue(all(item["reason"] == "topic_relevance_failed_for_a_b" for item in decisions[-len(blocked):]))
 
+    def test_topic_relevance_rebalance_excludes_secondary_downgraded_replacements(self):
+        from scripts.rebalance_ab_selection import rebalance_ab_selection
+
+        with tempfile.TemporaryDirectory() as tmp:
+            task_dir = initialize_task(Path(tmp), "secondary downgraded replacement", target="full")
+            self.populate_source_verified_task(task_dir)
+            state = task_dir / "state"
+            audit = self.topic_relevance_audit()
+            for row in audit:
+                if row["paper_id"] == "p026":
+                    row["relevance_grade"] = "generic_background"
+                    row["allowed_depth"] = "C"
+                    row["allowed_role"] = "background"
+                    row["family_label_supported"] = False
+                if row["paper_id"] in {"p096", "p097"}:
+                    row["relevance_grade"] = "core"
+                    row["allowed_depth"] = "B"
+                    row["allowed_role"] = "core"
+                    row["family_label_supported"] = True
+                    row["subagent_session_id"] = "primary-topic-agent"
+            write_jsonl(state / "topic_relevance_audit.jsonl", audit)
+            write_jsonl(
+                state / "topic_relevance_second_audits.jsonl",
+                [
+                    {
+                        "paper_id": "p096",
+                        "primary_audit_session_id": "primary-topic-agent",
+                        "subagent_session_id": "secondary-topic-agent",
+                        "trigger_reasons": ["negative_drift_signals_present"],
+                        "evidence_used": [{"field": "source_metadata", "text": "Rich metadata narrows this to background use only."}],
+                        "decision": "downgrade_to_C",
+                        "allowed_depth": "C",
+                        "allowed_role": "background",
+                        "rationale": "The secondary audit tightens this paper to C/background, so it must not be promoted as an A/B replacement.",
+                    }
+                ],
+            )
+
+            result = rebalance_ab_selection(task_dir, ["p026"], target="full", reason="topic_relevance")
+
+            self.assertIn(result["status"], {"rebalanced", "rebalanced_but_coverage_invalid"}, result)
+            decision = result["decisions"][0]
+            self.assertEqual(decision["downgraded_paper_id"], "p026")
+            self.assertNotEqual(decision["replacement_paper_id"], "p096")
+            self.assertEqual(decision["replacement_paper_id"], "p097")
+
     def test_survey_driver_initializes_selection_after_complete_topic_audit(self):
         from scripts.survey_driver import run_until_complete as run_survey_until_complete
 

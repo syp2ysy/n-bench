@@ -12,11 +12,11 @@ from pathlib import Path
 try:  # pragma: no cover - script import fallback
     from .run_expert_reviews import read_json, read_jsonl, write_jsonl
     from .validate_coverage import TARGETS, validate_coverage
-    from .validate_topic_relevance import DEPTH_RANK, audit_by_paper, normalize_family
+    from .validate_topic_relevance import DEPTH_RANK, audit_by_paper, normalize_family, secondary_audit_record_errors
 except ImportError:  # pragma: no cover
     from run_expert_reviews import read_json, read_jsonl, write_jsonl
     from validate_coverage import TARGETS, validate_coverage
-    from validate_topic_relevance import DEPTH_RANK, audit_by_paper, normalize_family
+    from validate_topic_relevance import DEPTH_RANK, audit_by_paper, normalize_family, secondary_audit_record_errors
 
 
 def _state(task_dir: Path) -> Path:
@@ -420,9 +420,24 @@ def _topic_relevance_replacement_ids(task_dir: Path, desired_depth: str) -> set[
     audits = audit_by_paper(read_jsonl(_state(task_dir) / "topic_relevance_audit.jsonl"))
     if not audits:
         return None
+    secondaries = audit_by_paper(read_jsonl(_state(task_dir) / "topic_relevance_second_audits.jsonl"))
     allowed: set[str] = set()
     desired_rank = DEPTH_RANK.get(desired_depth, 0)
     for pid, audit in audits.items():
+        secondary = secondaries.get(pid)
+        if secondary:
+            if secondary_audit_record_errors(secondary, audit, desired_depth):
+                continue
+            decision = str(secondary.get("decision") or "")
+            secondary_allowed_depth = str(secondary.get("allowed_depth") or "")
+            secondary_allowed_role = str(secondary.get("allowed_role") or "")
+            if (
+                decision == "confirm_core"
+                and secondary_allowed_role == "core"
+                and DEPTH_RANK.get(secondary_allowed_depth, 0) >= desired_rank
+            ):
+                allowed.add(pid)
+            continue
         if str(audit.get("relevance_grade") or "") != "core":
             continue
         if audit.get("family_label_supported") is not True:
