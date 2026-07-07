@@ -3026,6 +3026,59 @@ class SurveyAutoResearchContractTest(unittest.TestCase):
             pending = collect_pending(task_dir)
             self.assertEqual([row["request_type"] for row in pending["pending_requests"]], ["topic_relevance"])
 
+    def test_survey_driver_rebalances_when_topic_batches_are_superseded_terminal(self):
+        from scripts.survey_driver import run_until_complete as run_survey_until_complete
+
+        with tempfile.TemporaryDirectory() as tmp:
+            task_dir = initialize_task(Path(tmp), "superseded topic audit rebalance", target="full")
+            self.populate_topic_fixture_task(task_dir, "mllm_think_with_image_drift", include_audit=True)
+            state = task_dir / "state"
+            before_citation = read_jsonl(state / "citation_plan.jsonl")
+            invalid_before = [
+                row["paper_id"]
+                for row in before_citation
+                if row.get("depth") in {"A", "B"}
+                and row.get("paper_id")
+                in {
+                    item.get("paper_id")
+                    for item in read_jsonl(state / "topic_relevance_audit.jsonl")
+                    if item.get("relevance_grade") in {"generic_background", "out_of_scope"}
+                }
+            ]
+            self.assertTrue(invalid_before)
+            (state / "topic_relevance_batches.json").write_text(
+                json.dumps(
+                    {
+                        "batch_size": 25,
+                        "paper_count": len(read_jsonl(state / "raw_candidates.jsonl")),
+                        "active_batch_id": None,
+                        "batches": [
+                            {
+                                "batch_id": "TR001",
+                                "paper_ids": [row["paper_id"] for row in read_jsonl(state / "raw_candidates.jsonl")[:25]],
+                                "status": "superseded",
+                                "superseded_reason": "already_covered_by_topic_relevance_audit",
+                            }
+                        ],
+                    },
+                    sort_keys=True,
+                ),
+                encoding="utf-8",
+            )
+
+            status = run_survey_until_complete(task_dir, target="full", max_steps=5)
+
+            self.assertIn("rebalance_topic_relevance_ab_selection", status["actions"], status)
+            self.assertNotIn("continue_topic_relevance_audit_before_rebalance", status["actions"], status)
+            self.assertNotEqual(status["status"], "topic_relevance_batches_resolved", status)
+            self.assertIn(status["status"], {"blocked_topic_relevance_rebalance", "blocked_paper_understanding_agent_spawn_required"}, status)
+            if status["status"] == "blocked_topic_relevance_rebalance":
+                self.assertEqual(status["summary"]["rebalance"]["error"], "no_verified_c_replacement")
+            else:
+                decisions = read_jsonl(state / "ab_rebalance_decisions.jsonl")
+                self.assertTrue(decisions)
+                self.assertTrue(all(item["reason"] == "topic_relevance_failed_for_a_b" for item in decisions))
+
     def test_related_survey_shortage_routes_to_discovery_enrichment_not_ab_rebalance(self):
         from scripts.runtime_dispatcher import collect_pending
         from scripts.survey_driver import run_until_complete as run_survey_until_complete

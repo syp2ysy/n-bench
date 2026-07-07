@@ -431,7 +431,8 @@ def _topic_relevance_audit_incomplete(task_dir: Path) -> bool:
     batches = doc.get("batches") or []
     if not batches:
         return False
-    return any(str(batch.get("status") or "") != "resolved" for batch in batches)
+    terminal_statuses = {"resolved", "superseded"}
+    return any(str(batch.get("status") or "") not in terminal_statuses for batch in batches)
 
 
 def _synthesis_needs_knowledge_tree(phase_status: dict) -> bool:
